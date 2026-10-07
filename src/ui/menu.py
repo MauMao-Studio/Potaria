@@ -658,8 +658,10 @@ class MenuManager:
                     self.sound_manager.play("place")
                     if btn.action == "play":
                         self.state = STATE_PLAYING
+                        return "continue_exploring"
                     elif btn.action == "menu":
                         self.state = STATE_MENU
+                        return "return_to_menu"
         return None
 
     def handle_key(self, event):

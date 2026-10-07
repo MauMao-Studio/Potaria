@@ -248,6 +248,7 @@ class CombatManager:
                 # Slaying Grand Boss Sol-Rho (Phase 2 defeated -> TRUE VICTORY!)
                 if isinstance(self.boss, GrandBossSolRho):
                     self.grand_boss_defeated = True
+                    self.trigger_victory = True
                     self.boss_defeated = True
                     self.particle_system.spawn_sparks(self.boss.center_x, self.boss.center_y, (255, 215, 0), count=70)
                     player.stats.add_exp(2500)

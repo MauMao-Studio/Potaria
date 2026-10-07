@@ -831,6 +831,8 @@ class PotariaGame:
             self.inventory.set_difficulty_loadout(DIFFICULTY_YOLO)
             self.player.inventory = self.inventory
             self.menu.state = STATE_PLAYING
+        elif action == "continue_exploring":
+            self.paused = False
         elif action == "return_to_menu":
             self.return_to_main_menu()
 
@@ -2113,8 +2115,9 @@ class PotariaGame:
         )
 
         # Check Victory Trigger (Only slaying Grand Boss Sol-Rho Phase 2 triggers True Victory!)
-        if self.combat.grand_boss_defeated and self.menu.state == STATE_PLAYING:
+        if getattr(self.combat, "trigger_victory", False) and self.menu.state == STATE_PLAYING:
             self.menu.state = STATE_VICTORY
+            self.combat.trigger_victory = False
             self.sound_manager.play("craft")
 
         # Player Death Handling per Difficulty Mode
@@ -2246,11 +2249,16 @@ class PotariaGame:
 
         # 8. Dynamic Viewport 2D Lighting (Boundless horizontally)
         with self.profiler.section("update_lighting"):
-            min_tx = int(self.camera.x // SCALED_TILE) - 1
-            max_tx = int((self.camera.x + SCREEN_WIDTH) // SCALED_TILE) + 2
-            min_ty = max(0, int(self.camera.y // SCALED_TILE) - 1)
-            max_ty = min(self.world.height - 1, int((self.camera.y + SCREEN_HEIGHT) // SCALED_TILE) + 2)
-    
+            base_min_tx = int(self.camera.x // SCALED_TILE) - 1
+            base_max_tx = int((self.camera.x + SCREEN_WIDTH) // SCALED_TILE) + 2
+            base_min_ty = max(0, int(self.camera.y // SCALED_TILE) - 1)
+            base_max_ty = min(self.world.height - 1, int((self.camera.y + SCREEN_HEIGHT) // SCALED_TILE) + 2)
+            
+            min_tx = base_min_tx - (base_min_tx % 4)
+            max_tx = min_tx + (base_max_tx - base_min_tx) + 4
+            min_ty = base_min_ty - (base_min_ty % 4)
+            max_ty = min_ty + (base_max_ty - base_min_ty) + 4
+            
             # Dynamic light sources: Miner Helmet, Torch, Radiance gear, and Glowing Projectiles
             extra_lights = []
             held_item = self.inventory.get_active_item()
@@ -2341,8 +2349,8 @@ class PotariaGame:
         with self.profiler.section("render_lighting"):
             cam_x = int(round(self.camera.x - self.camera.shake_offset_x))
             cam_y = int(round(self.camera.y - self.camera.shake_offset_y))
-            min_tx = int(cam_x // SCALED_TILE) - 1
-            min_ty = max(0, int(cam_y // SCALED_TILE) - 1)
+            min_tx = self.lighting._last_min_tx if self.lighting._last_min_tx is not None else (int(cam_x // SCALED_TILE) - 1)
+            min_ty = self.lighting._last_min_ty if self.lighting._last_min_ty is not None else max(0, int(cam_y // SCALED_TILE) - 1)
             light_screen_x = min_tx * SCALED_TILE - cam_x
             light_screen_y = min_ty * SCALED_TILE - cam_y
             self.lighting.render_lighting(self.screen, light_screen_x, light_screen_y)

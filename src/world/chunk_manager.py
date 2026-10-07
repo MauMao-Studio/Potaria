@@ -648,6 +648,9 @@ class Chunk:
             for y in range(self.height - 3, self.height):
                 self.tiles[lx][y] = TILE_BEDROCK
 
+import threading
+import concurrent.futures
+
 class ChunkManager:
     def __init__(self, seed=None, world_type="infinite"):
         if seed is None:
@@ -660,15 +663,43 @@ class ChunkManager:
         self.noise_caves = PerlinNoise(seed + 101)
         self.noise_ores = PerlinNoise(seed + 202)
         self.noise_biome = PerlinNoise(seed + 303)
+        
+        self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+        self._generating = set()
+        self._lock = threading.Lock()
+
+    def _generate_async(self, chunk_x):
+        chk = Chunk(
+            chunk_x, self.seed, self.noise_surface,
+            self.noise_caves, self.noise_ores, self.noise_biome
+        )
+        with self._lock:
+            self.chunks[chunk_x] = chk
+            if chunk_x in self._generating:
+                self._generating.remove(chunk_x)
 
     def get_chunk(self, chunk_x):
         """Retrieves or procedurally generates the chunk at chunk_x."""
-        if chunk_x not in self.chunks:
-            self.chunks[chunk_x] = Chunk(
-                chunk_x, self.seed, self.noise_surface,
-                self.noise_caves, self.noise_ores, self.noise_biome
-            )
-        return self.chunks[chunk_x]
+        with self._lock:
+            if chunk_x in self.chunks:
+                return self.chunks[chunk_x]
+        
+        should_generate = False
+        with self._lock:
+            if chunk_x not in self._generating:
+                self._generating.add(chunk_x)
+                should_generate = True
+                
+        if should_generate:
+            self._generate_async(chunk_x)
+                
+        # Wait if it's currently generating in background thread
+        while True:
+            with self._lock:
+                if chunk_x in self.chunks:
+                    return self.chunks[chunk_x]
+            import time
+            time.sleep(0.005)
 
     def get_column_biome(self, gx):
         """Returns the surface/column biome for a given global X coordinate from cached chunk biomes."""
@@ -764,8 +795,14 @@ class ChunkManager:
         """Pre-generates all chunks spanning min_gx to max_gx."""
         min_cx = min_gx // CHUNK_WIDTH
         max_cx = max_gx // CHUNK_WIDTH
-        for cx in range(min_cx, max_cx + 1):
-            self.get_chunk(cx)
+        
+        pad = 4
+        for cx in range(min_cx - pad, max_cx + pad + 1):
+            with self._lock:
+                if cx not in self.chunks and cx not in self._generating:
+                    self._generating.add(cx)
+                    self._executor.submit(self._generate_async, cx)
+
 
     def get_surface_height(self, gx):
         """Returns the procedural surface height (y tile coord) for column gx."""
