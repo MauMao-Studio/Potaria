@@ -76,6 +76,7 @@ class LightingEngine:
         # 2D light array for the viewport
         # 0 = complete pitch black, 15 = maximum brightness
         light = [[0 for _ in range(grid_h)] for _ in range(grid_w)]
+        absorb_grid = [[0 for _ in range(grid_h)] for _ in range(grid_w)]
         queue = collections.deque()
 
         # 1. Inject Sunlight and Tile Emitters
@@ -92,15 +93,16 @@ class LightingEngine:
                 t_id = world.get_tile(tx, ty)
                 w_id = world.get_wall(tx, ty)
                 prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
+                absorb_grid[lx][ly] = prop.get("absorb", 0)
                 
                 # In open air above ground or exposed to sky
-                if w_id == WALL_AIR and not prop["solid"]:
+                if w_id == WALL_AIR and not prop.get("solid", False):
                     if sun_val > light[lx][ly]:
                         light[lx][ly] = sun_val
                         queue.append((lx, ly, sun_val))
-                elif prop["solid"]:
+                elif prop.get("solid", False):
                     # Blocks diminish direct sunlight
-                    sun_val = max(0, sun_val - prop["absorb"] - 2)
+                    sun_val = max(0, sun_val - prop.get("absorb", 0) - 2)
                     if sun_val > light[lx][ly]:
                         light[lx][ly] = sun_val
                         queue.append((lx, ly, sun_val))
@@ -112,7 +114,7 @@ class LightingEngine:
                         queue.append((lx, ly, sun_val))
 
                 # Check block intrinsic light emission (e.g. Torches, Furnaces)
-                emit = prop["light_emit"]
+                emit = prop.get("light_emit", 0)
                 if emit > light[lx][ly]:
                     light[lx][ly] = emit
                     queue.append((lx, ly, emit))
@@ -137,32 +139,33 @@ class LightingEngine:
                 nx = cx + dx
                 ny = cy + dy
                 if 0 <= nx < grid_w and 0 <= ny < grid_h:
-                    ntx = min_tx + nx
-                    nty = min_ty + ny
-                    if 0 <= nty < world.height:
-                        t_id = world.get_tile(ntx, nty)
-                        absorb = TILE_PROPS.get(t_id, {}).get("absorb", 0)
-                        decay = 1 + absorb
-                        next_val = current_val - decay
-                        if next_val > light[nx][ny]:
-                            light[nx][ny] = next_val
-                            queue.append((nx, ny, next_val))
+                    decay = 1 + absorb_grid[nx][ny]
+                    next_val = current_val - decay
+                    if next_val > light[nx][ny]:
+                        light[nx][ny] = next_val
+                        queue.append((nx, ny, next_val))
 
         # 4. Bake into Light Mask Surface
         # Resize surface if viewport tile count changed
         if self.light_surf.get_width() != grid_w or self.light_surf.get_height() != grid_h:
             self.light_surf = pygame.Surface((grid_w, grid_h))
 
-        for lx in range(grid_w):
-            for ly in range(grid_h):
-                val = light[lx][ly]
-                # Map 0..15 to brightness (255 = fully lit, 22 = deep cavern ambient)
-                brightness = int(22 + (val / 15.0) * 233)
-                # Atmospheric color grading tint
-                r = min(255, max(12, int(brightness * ambient_tint[0])))
-                g = min(255, max(12, int(brightness * ambient_tint[1])))
-                b = min(255, max(12, int(brightness * ambient_tint[2])))
-                self.light_surf.set_at((lx, ly), (r, g, b))
+        # Precompute 16-level RGB LUT for atmospheric tinting
+        tint_r, tint_g, tint_b = ambient_tint
+        lut = [
+            self.light_surf.map_rgb((
+                min(255, max(12, int((22 + (v / 15.0) * 233) * tint_r))),
+                min(255, max(12, int((22 + (v / 15.0) * 233) * tint_g))),
+                min(255, max(12, int((22 + (v / 15.0) * 233) * tint_b))),
+            ))
+            for v in range(16)
+        ]
+
+        with pygame.PixelArray(self.light_surf) as pixels:
+            for lx in range(grid_w):
+                col = light[lx]
+                for ly in range(grid_h):
+                    pixels[lx, ly] = lut[col[ly]]
 
         self.dirty = True
 
@@ -174,10 +177,14 @@ class LightingEngine:
         scaled_w = self.light_surf.get_width() * self.scaled_tile
         scaled_h = self.light_surf.get_height() * self.scaled_tile
         
-        # Smooth bilinear upscale with caching
+        # Smooth bilinear upscale with caching and pre-allocated destination surface
         if (self.dirty or self.cached_smooth_light is None or
             self.cached_smooth_light.get_width() != scaled_w or
             self.cached_smooth_light.get_height() != scaled_h):
-            self.cached_smooth_light = pygame.transform.smoothscale(self.light_surf, (scaled_w, scaled_h))
+            if (self.cached_smooth_light is None or
+                self.cached_smooth_light.get_width() != scaled_w or
+                self.cached_smooth_light.get_height() != scaled_h):
+                self.cached_smooth_light = pygame.Surface((scaled_w, scaled_h))
+            pygame.transform.smoothscale(self.light_surf, (scaled_w, scaled_h), self.cached_smooth_light)
             self.dirty = False
         target_surf.blit(self.cached_smooth_light, (offset_x, offset_y), special_flags=pygame.BLEND_MULT)

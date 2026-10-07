@@ -7,6 +7,7 @@ Developer: Kurados
 
 import math
 import random
+import pygame
 from src.constants import (
     SURFACE_LEVEL, UNDERGROUND_LEVEL, CAVERN_LEVEL, DUNGEON_LEVEL,
     TILE_AIR, TILE_DIRT, TILE_GRASS, TILE_STONE, TILE_WOOD,
@@ -15,15 +16,183 @@ from src.constants import (
     TILE_DUNGEON_ALTAR, TILE_SAND, TILE_SANDSTONE, TILE_CACTUS,
     TILE_SNOW, TILE_ICE, TILE_CORRUPT_GRASS, TILE_BLIGHT_GRASS, TILE_EBONSTONE,
     TILE_MUSHROOM_GRASS, TILE_MUSHROOM_STEM, TILE_MUSHROOM_CAP, TILE_CHEST, TILE_WATER,
+    TILE_WORK_BENCH, TILE_WOOD_PLATFORM, TILE_DOOR_CLOSED, TILE_DOOR_OPEN,
+    TILE_TABLE, TILE_CHAIR, TILE_GLASS, TILE_BED, TILE_BOOKSHELF,
+    TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE, TILE_CANDELABRA, TILE_CHANDELIER,
+    TILE_POTTED_PLANT, TILE_DRESSER, TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK,
+    TILE_PAINTING, TILE_WOOD_SHELF,
     WALL_AIR, WALL_DIRT, WALL_STONE, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_MUSHROOM,
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT,
-    BIOME_MUSHROOM, BIOME_DUNGEON, BIOME_CAVERN
+    BIOME_MUSHROOM, BIOME_DUNGEON, BIOME_CAVERN,
+    TILE_PROPS
 )
 from src.world.noise import PerlinNoise
 
 CHUNK_WIDTH = 16
 CHUNK_HEIGHT = 240
+SECTION_HEIGHT = 16
+NUM_SECTIONS = CHUNK_HEIGHT // SECTION_HEIGHT
+
+OPAQUE_EXCLUSIONS = (
+    TILE_WORK_BENCH, TILE_WOOD_PLATFORM, TILE_TORCH, TILE_DOOR_CLOSED,
+    TILE_DOOR_OPEN, TILE_TABLE, TILE_CHAIR, TILE_GLASS, TILE_CHEST,
+    TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
+    TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
+    TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF
+)
+
+class ChunkSection:
+    __slots__ = ("chunk_x", "section_y", "surf", "dirty", "animated_tiles", "is_empty")
+
+    def __init__(self, chunk_x, section_y):
+        self.chunk_x = chunk_x
+        self.section_y = section_y
+        self.surf = None
+        self.dirty = True
+        self.animated_tiles = []
+        self.is_empty = False
+
+    def bake(self, world):
+        sec_w = CHUNK_WIDTH * world.scaled_tile
+        sec_h = SECTION_HEIGHT * world.scaled_tile
+        if self.surf is None or self.surf.get_width() != sec_w or self.surf.get_height() != sec_h:
+            self.surf = pygame.Surface((sec_w, sec_h), pygame.SRCALPHA)
+        else:
+            self.surf.fill((0, 0, 0, 0))
+
+        self.animated_tiles = []
+        drawn_count = 0
+        min_ty = self.section_y * SECTION_HEIGHT
+        max_ty = min_ty + SECTION_HEIGHT
+        chunk = world.chunk_manager.get_chunk(self.chunk_x)
+
+        for lx in range(CHUNK_WIDTH):
+            gx = self.chunk_x * CHUNK_WIDTH + lx
+            surf_y = chunk.surface_heights[lx]
+            col_biome = chunk.col_biomes[lx]
+            is_dungeon_col = (-30 <= gx <= 30)
+            local_px = lx * world.scaled_tile
+            tiles_col = chunk.tiles[lx]
+            walls_col = chunk.walls[lx]
+
+            for ty in range(min_ty, max_ty):
+                local_py = (ty - min_ty) * world.scaled_tile
+                t_id = tiles_col[ty]
+                w_id = walls_col[ty]
+                if t_id != TILE_AIR or w_id != WALL_AIR or ty >= surf_y or ty >= SURFACE_LEVEL:
+                    drawn_count += 1
+                prop = TILE_PROPS.get(t_id, {})
+
+                # 1. Background Walls & Subterranean Cave Backdrop
+                is_full_opaque = prop.get("opaque", False) and prop.get("solid", False) and (t_id not in OPAQUE_EXCLUSIONS)
+
+                if not is_full_opaque:
+                    if w_id != WALL_AIR:
+                        wall_tex = world.scaled_walls.get(w_id)
+                        if wall_tex:
+                            self.surf.blit(wall_tex, (local_px, local_py))
+                    else:
+                        if ty >= surf_y or ty >= SURFACE_LEVEL:
+                            if ty >= DUNGEON_LEVEL - 8 and is_dungeon_col:
+                                sub_w = WALL_DUNGEON
+                            elif ty >= CAVERN_LEVEL - 12:
+                                sub_w = WALL_MUSHROOM if (t_id == TILE_MUSHROOM_GRASS or w_id == WALL_MUSHROOM) else WALL_STONE
+                            elif col_biome == BIOME_DESERT:
+                                sub_w = WALL_SANDSTONE
+                            elif col_biome == BIOME_SNOW:
+                                sub_w = WALL_ICE
+                            elif col_biome == BIOME_CORRUPTION:
+                                sub_w = WALL_EBONSTONE
+                            else:
+                                sub_w = WALL_DIRT if ty < surf_y + 20 else WALL_STONE
+
+                            cave_wall_tex = world.scaled_walls.get(sub_w)
+                            if cave_wall_tex:
+                                self.surf.blit(cave_wall_tex, (local_px, local_py))
+
+                # 2. Foreground Tiles
+                if t_id != TILE_AIR:
+                    if t_id == TILE_TORCH or t_id == TILE_WATER:
+                        self.animated_tiles.append((local_px, local_py, t_id))
+                    elif t_id == TILE_WOOD_TRUNK:
+                        below_id = tiles_col[ty + 1] if ty + 1 < world.height else TILE_BEDROCK
+                        above_id = tiles_col[ty - 1] if ty > 0 else TILE_AIR
+                        left_id = world.get_tile(gx - 1, ty)
+                        right_id = world.get_tile(gx + 1, ty)
+                        in_canopy = (above_id == TILE_LEAVES or left_id == TILE_LEAVES or right_id == TILE_LEAVES)
+
+                        if below_id in (TILE_GRASS, TILE_DIRT, TILE_SNOW, TILE_SAND, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS):
+                            self.surf.blit(world.scaled_trunk_base, (local_px, local_py))
+                        elif not in_canopy and (gx + ty) % 5 == 0:
+                            if col_biome == BIOME_SNOW and hasattr(world, "scaled_trunk_branch_l_snow"):
+                                self.surf.blit(world.scaled_trunk_branch_l_snow, (local_px, local_py))
+                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and hasattr(world, "scaled_trunk_branch_l_blight"):
+                                self.surf.blit(world.scaled_trunk_branch_l_blight, (local_px, local_py))
+                            elif col_biome == BIOME_DESERT and hasattr(world, "scaled_trunk_branch_l_palm"):
+                                self.surf.blit(world.scaled_trunk_branch_l_palm, (local_px, local_py))
+                            else:
+                                self.surf.blit(world.scaled_trunk_branch_l, (local_px, local_py))
+                        elif not in_canopy and (gx + ty) % 5 == 2:
+                            if col_biome == BIOME_SNOW and hasattr(world, "scaled_trunk_branch_r_snow"):
+                                self.surf.blit(world.scaled_trunk_branch_r_snow, (local_px, local_py))
+                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and hasattr(world, "scaled_trunk_branch_r_blight"):
+                                self.surf.blit(world.scaled_trunk_branch_r_blight, (local_px, local_py))
+                            elif col_biome == BIOME_DESERT and hasattr(world, "scaled_trunk_branch_r_palm"):
+                                self.surf.blit(world.scaled_trunk_branch_r_palm, (local_px, local_py))
+                            else:
+                                self.surf.blit(world.scaled_trunk_branch_r, (local_px, local_py))
+                        else:
+                            tile_tex = world.scaled_tiles.get(t_id)
+                            if tile_tex:
+                                self.surf.blit(tile_tex, (local_px, local_py))
+
+                        if in_canopy:
+                            crown_tex = getattr(world, "scaled_trunk_crown", None)
+                            if col_biome == BIOME_SNOW and getattr(world, "scaled_trunk_crown_snow", None):
+                                crown_tex = world.scaled_trunk_crown_snow
+                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and getattr(world, "scaled_trunk_crown_blight", None):
+                                crown_tex = world.scaled_trunk_crown_blight
+                            elif col_biome == BIOME_DESERT and getattr(world, "scaled_trunk_crown_palm", None):
+                                crown_tex = world.scaled_trunk_crown_palm
+                            if crown_tex:
+                                self.surf.blit(crown_tex, (local_px, local_py))
+                    elif t_id == TILE_LEAVES:
+                        up_air = (world.get_tile(gx, ty - 1) == TILE_AIR)
+                        down_air = (world.get_tile(gx, ty + 1) == TILE_AIR)
+                        left_air = (world.get_tile(gx - 1, ty) == TILE_AIR)
+                        right_air = (world.get_tile(gx + 1, ty) == TILE_AIR)
+
+                        b_key = "forest"
+                        if col_biome == BIOME_SNOW:
+                            b_key = "snow"
+                        elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
+                            b_key = "blight"
+                        elif col_biome == BIOME_DESERT:
+                            b_key = "palm"
+
+                        leaf_dict = getattr(world, "scaled_leaf_variants", {}).get(b_key, {})
+                        v_tex = leaf_dict.get((up_air, down_air, left_air, right_air))
+                        if v_tex:
+                            self.surf.blit(v_tex, (local_px, local_py))
+                        else:
+                            if col_biome == BIOME_SNOW:
+                                self.surf.blit(world.scaled_snow_leaves, (local_px, local_py))
+                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
+                                self.surf.blit(world.scaled_blight_leaves, (local_px, local_py))
+                            elif col_biome == BIOME_DESERT and hasattr(world, "scaled_palm_leaves"):
+                                self.surf.blit(world.scaled_palm_leaves, (local_px, local_py))
+                            else:
+                                tile_tex = world.scaled_tiles.get(t_id)
+                                if tile_tex:
+                                    self.surf.blit(tile_tex, (local_px, local_py))
+                    else:
+                        tile_tex = world.scaled_tiles.get(t_id)
+                        if tile_tex:
+                            self.surf.blit(tile_tex, (local_px, local_py))
+
+        self.is_empty = (drawn_count == 0)
+        self.dirty = False
 
 class Chunk:
     def __init__(self, chunk_x, seed, noise_surface, noise_caves, noise_ores, noise_biome):
@@ -33,8 +202,25 @@ class Chunk:
         self.tiles = [[TILE_AIR for _ in range(self.height)] for _ in range(self.width)]
         self.walls = [[WALL_AIR for _ in range(self.height)] for _ in range(self.width)]
         self.modified = False
+        self.sections = {}
 
         self._generate(seed, noise_surface, noise_caves, noise_ores, noise_biome)
+
+    def mark_section_dirty(self, sec_y):
+        if sec_y in self.sections:
+            self.sections[sec_y].dirty = True
+
+    def mark_all_sections_dirty(self):
+        for sec in self.sections.values():
+            sec.dirty = True
+
+    def get_or_bake_section(self, sec_y, world):
+        if sec_y not in self.sections:
+            self.sections[sec_y] = ChunkSection(self.chunk_x, sec_y)
+        sec = self.sections[sec_y]
+        if sec.dirty or sec.surf is None:
+            sec.bake(world)
+        return sec
 
     def _generate(self, seed, noise_surface, noise_caves, noise_ores, noise_biome):
         rng = random.Random(seed ^ (self.chunk_x * 99991))
@@ -530,6 +716,23 @@ class ChunkManager:
         chunk = self.get_chunk(chunk_x)
         chunk.tiles[lx][gy] = tile_id
         chunk.modified = True
+
+        sec_y = gy // SECTION_HEIGHT
+        chunk.mark_section_dirty(sec_y)
+        if gy % SECTION_HEIGHT == 0 and sec_y > 0:
+            chunk.mark_section_dirty(sec_y - 1)
+        elif gy % SECTION_HEIGHT == (SECTION_HEIGHT - 1) and sec_y < (NUM_SECTIONS - 1):
+            chunk.mark_section_dirty(sec_y + 1)
+
+        if lx == 0:
+            left_chunk = self.chunks.get(chunk_x - 1)
+            if left_chunk:
+                left_chunk.mark_section_dirty(sec_y)
+        elif lx == CHUNK_WIDTH - 1:
+            right_chunk = self.chunks.get(chunk_x + 1)
+            if right_chunk:
+                right_chunk.mark_section_dirty(sec_y)
+
         return True
 
     def get_wall(self, gx, gy):
@@ -554,6 +757,7 @@ class ChunkManager:
         chunk = self.get_chunk(chunk_x)
         chunk.walls[lx][gy] = wall_id
         chunk.modified = True
+        chunk.mark_section_dirty(gy // SECTION_HEIGHT)
         return True
 
     def ensure_chunks_in_range(self, min_gx, max_gx):

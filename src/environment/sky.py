@@ -145,24 +145,28 @@ class DayNightCycle:
 
     def _create_mountain_silhouette(self):
         """Generates soft rolling hills parallax silhouette matching reference image."""
-        w, h = SCREEN_WIDTH * 2, 260
+        w, h = SCREEN_WIDTH, 260
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
         color = (65, 120, 145, 180)
 
         points = [(0, h)]
-        step = 30
-        rng = random.Random(999)
+        step = 20
+        # Seamless periodic function so x=0 matches x=w
+        freq = (2.0 * math.pi) / w
         for x in range(0, w + step, step):
-            py = int(70 + 45 * math.sin(x * 0.015) + rng.randint(-15, 15))
+            py = int(70 + 40 * math.sin(x * freq) + 15 * math.sin(x * freq * 2.0))
             points.append((x, py))
         points.append((w, h))
 
         pygame.draw.polygon(surf, color, points)
-        return surf
+        try:
+            return surf.convert_alpha()
+        except pygame.error:
+            return surf
 
     def _create_tree_silhouette(self):
         """Generates mid-ground distant trees parallax silhouette."""
-        w, h = SCREEN_WIDTH * 2, 180
+        w, h = SCREEN_WIDTH, 180
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
         color = (45, 85, 65, 210)
 
@@ -171,27 +175,34 @@ class DayNightCycle:
             # Soft rounded canopy
             pygame.draw.circle(surf, color, (x + 10, h - tree_h + 12), 12)
             pygame.draw.rect(surf, color, (x + 8, h - tree_h + 12, 4, tree_h - 12))
-        return surf
+        try:
+            return surf.convert_alpha()
+        except pygame.error:
+            return surf
 
     def render(self, target_surf, camera):
         """Draws sky gradient, stars, sun/moon celestial bodies, and parallax mountains."""
         sw, sh = target_surf.get_width(), target_surf.get_height()
 
-        # 1. Sky Gradient (Cached: only re-bake when colors shift and at least 200ms elapsed)
+        # 1. Sky Gradient (Cached: only re-bake when colors shift and at least 150ms elapsed)
         top_c, bot_c = self.get_sky_colors()
         now_ticks = pygame.time.get_ticks()
         if (self._cached_sky_surf is None or
-            ((now_ticks - self._last_bake_ticks) > 200 and (self._cached_top_c != top_c or self._cached_bot_c != bot_c)) or
+            ((now_ticks - self._last_bake_ticks) > 150 and (self._cached_top_c != top_c or self._cached_bot_c != bot_c)) or
             self._cached_sky_surf.get_width() != sw or
             self._cached_sky_surf.get_height() != sh):
             
-            steps = 32
-            gradient = pygame.Surface((1, steps))
-            for y in range(steps):
-                frac = y / float(steps)
+            gradient = pygame.Surface((1, sh))
+            inv_sh = 1.0 / float(max(1, sh - 1))
+            for y in range(sh):
+                frac = y * inv_sh
                 c = self._lerp_color(top_c, bot_c, frac)
                 gradient.set_at((0, y), c)
-            self._cached_sky_surf = pygame.transform.smoothscale(gradient, (sw, sh))
+            scaled_grad = pygame.transform.scale(gradient, (sw, sh))
+            try:
+                self._cached_sky_surf = scaled_grad.convert()
+            except pygame.error:
+                self._cached_sky_surf = scaled_grad
             self._cached_top_c = top_c
             self._cached_bot_c = bot_c
             self._last_bake_ticks = now_ticks
@@ -224,12 +235,12 @@ class DayNightCycle:
             moon_y = sh * 0.7 - math.sin(moon_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.moon_surf, (moon_x - 16, moon_y - 16))
 
-        # 4. Parallax Mountain Silhouettes (Scroll factor 0.07)
-        mount_offset = -(camera.x * 0.07) % SCREEN_WIDTH
-        target_surf.blit(self.mountains_surf, (mount_offset - SCREEN_WIDTH, sh - 280))
+        # 4. Parallax Mountain Silhouettes (Scroll factor 0.07, tiled across screen width)
+        mount_offset = int(-(camera.x * 0.07) % sw)
+        target_surf.blit(self.mountains_surf, (mount_offset - sw, sh - 280))
         target_surf.blit(self.mountains_surf, (mount_offset, sh - 280))
 
-        # 5. Parallax Forest Silhouettes (Scroll factor 0.18)
-        tree_offset = -(camera.x * 0.18) % SCREEN_WIDTH
-        target_surf.blit(self.trees_surf, (tree_offset - SCREEN_WIDTH, sh - 170))
+        # 5. Parallax Forest Silhouettes (Scroll factor 0.18, tiled across screen width)
+        tree_offset = int(-(camera.x * 0.18) % sw)
+        target_surf.blit(self.trees_surf, (tree_offset - sw, sh - 170))
         target_surf.blit(self.trees_surf, (tree_offset, sh - 170))

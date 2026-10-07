@@ -23,7 +23,7 @@ from src.constants import (
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT, BIOME_MUSHROOM, BIOME_DUNGEON,
     TILE_PROPS
 )
-from src.world.chunk_manager import ChunkManager, CHUNK_WIDTH, CHUNK_HEIGHT
+from src.world.chunk_manager import ChunkManager, CHUNK_WIDTH, CHUNK_HEIGHT, SECTION_HEIGHT, NUM_SECTIONS
 
 class World:
     def __init__(self, asset_factory, seed=None, world_type="infinite"):
@@ -655,152 +655,57 @@ class World:
         # Stream and ensure chunks in viewport
         self.chunk_manager.ensure_chunks_in_range(min_tx, max_tx)
 
-        # Single-pass viewport rendering: background wall/cave backdrop followed by foreground tile
-        # Pre-calculates column biome and X coordinates to eliminate redundant lookups
-        for tx in range(min_tx, max_tx + 1):
-            surf_y = self.get_surface_height(tx)
-            col_biome = self.chunk_manager.get_column_biome(tx)
-            is_dungeon_col = (-30 <= tx <= 30)
-            screen_px = tx * self.scaled_tile - cam_x
-            chunk = self.chunk_manager.get_chunk(tx // CHUNK_WIDTH)
-            lx = tx % CHUNK_WIDTH
-            tiles_col = chunk.tiles[lx]
-            walls_col = chunk.walls[lx]
+        min_cx = min_tx // CHUNK_WIDTH
+        max_cx = max_tx // CHUNK_WIDTH
+        min_sy = max(0, min_ty // SECTION_HEIGHT)
+        max_sy = min(NUM_SECTIONS - 1, max(0, max_ty // SECTION_HEIGHT))
 
-            for ty in range(min_ty, max_ty + 1):
-                screen_py = ty * self.scaled_tile - cam_y
-                t_id = tiles_col[ty]
-                w_id = walls_col[ty]
-                prop = TILE_PROPS.get(t_id, {})
+        anim_tiles_to_draw = []
 
-                # 1. Background Walls & Subterranean Cave Backdrop
-                # Ensures workbench, wood platforms, torches, doors, etc. have walls/cave rock behind them
-                is_full_opaque = prop.get("opaque", False) and prop.get("solid", False) and (t_id not in (
-                    TILE_WORK_BENCH, TILE_WOOD_PLATFORM, TILE_TORCH, TILE_DOOR_CLOSED,
-                    TILE_DOOR_OPEN, TILE_TABLE, TILE_CHAIR, TILE_GLASS, TILE_CHEST,
-                    TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
-                    TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
-                    TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF
-                ))
+        # Batch blit pre-baked 16x16 chunk sections (only 6-9 blits per frame instead of 1200+ tile draws)
+        sec_w_px = CHUNK_WIDTH * self.scaled_tile
+        sec_h_px = SECTION_HEIGHT * self.scaled_tile
 
-                if not is_full_opaque:
-                    if w_id != WALL_AIR:
-                        wall_tex = self.scaled_walls.get(w_id)
-                        if wall_tex:
-                            target_surf.blit(wall_tex, (screen_px, screen_py))
-                    else:
-                        if ty >= surf_y or ty >= SURFACE_LEVEL:
-                            # Natural cave backdrop when underground without player walls
-                            if ty >= DUNGEON_LEVEL - 8 and is_dungeon_col:
-                                sub_w = WALL_DUNGEON
-                            elif ty >= CAVERN_LEVEL - 12:
-                                sub_w = WALL_MUSHROOM if (t_id == TILE_MUSHROOM_GRASS or w_id == WALL_MUSHROOM) else WALL_STONE
-                            elif col_biome == BIOME_DESERT:
-                                sub_w = WALL_SANDSTONE
-                            elif col_biome == BIOME_SNOW:
-                                sub_w = WALL_ICE
-                            elif col_biome == BIOME_CORRUPTION:
-                                sub_w = WALL_EBONSTONE
-                            else:
-                                sub_w = WALL_DIRT if ty < surf_y + 20 else WALL_STONE
+        for cx in range(min_cx, max_cx + 1):
+            chunk = self.chunk_manager.get_chunk(cx)
+            chunk_screen_px = cx * sec_w_px - cam_x
+            for sy in range(min_sy, max_sy + 1):
+                sec = chunk.get_or_bake_section(sy, self)
+                sec_screen_py = sy * sec_h_px - cam_y
+                if not sec.is_empty:
+                    target_surf.blit(sec.surf, (chunk_screen_px, sec_screen_py))
+                if sec.animated_tiles:
+                    for lpx, lpy, t_id in sec.animated_tiles:
+                        anim_tiles_to_draw.append((chunk_screen_px + lpx, sec_screen_py + lpy, cx, sy, lpx, lpy, t_id))
 
-                            cave_wall_tex = self.scaled_walls.get(sub_w)
-                            if cave_wall_tex:
-                                target_surf.blit(cave_wall_tex, (screen_px, screen_py))
+        # Dynamic overlay: animated torches and water
+        torch_frame = self.scaled_torch_frames[self.torch_frame_idx] if self.scaled_torch_frames else self.scaled_tiles.get(TILE_TORCH)
+        water_frames_len = len(self.scaled_water_frames) if self.scaled_water_frames else 0
+        water_sub_len = len(self.scaled_water_submerged) if self.scaled_water_submerged else 0
 
-                # 2. Foreground Tiles
-                if t_id != TILE_AIR:
-                    if t_id == TILE_TORCH:
-                        target_surf.blit(self.scaled_torch_frames[self.torch_frame_idx], (screen_px, screen_py))
-                    elif t_id == TILE_WATER:
-                        above_id = tiles_col[ty - 1] if ty > 0 else TILE_AIR
-                        if above_id == TILE_AIR and self.scaled_water_frames:
-                            w_tex = self.scaled_water_frames[self.water_frame_idx % len(self.scaled_water_frames)]
-                        elif self.scaled_water_submerged:
-                            w_tex = self.scaled_water_submerged[self.water_frame_idx % len(self.scaled_water_submerged)]
-                        else:
-                            w_tex = self.scaled_tiles.get(t_id)
-                        if w_tex:
-                            target_surf.blit(w_tex, (screen_px, screen_py))
-                    elif t_id == TILE_WOOD_TRUNK:
-                        below_id = tiles_col[ty + 1] if ty + 1 < self.height else TILE_BEDROCK
-                        above_id = tiles_col[ty - 1] if ty > 0 else TILE_AIR
-                        left_id = self.get_tile(tx - 1, ty)
-                        right_id = self.get_tile(tx + 1, ty)
-                        in_canopy = (above_id == TILE_LEAVES or left_id == TILE_LEAVES or right_id == TILE_LEAVES)
+        for spx, spy, cx, sy, lpx, lpy, t_id in anim_tiles_to_draw:
+            if t_id == TILE_TORCH:
+                if torch_frame:
+                    target_surf.blit(torch_frame, (spx, spy))
+            elif t_id == TILE_WATER:
+                gx = cx * CHUNK_WIDTH + (lpx // self.scaled_tile)
+                gy = sy * SECTION_HEIGHT + (lpy // self.scaled_tile)
+                above_id = self.get_tile(gx, gy - 1) if gy > 0 else TILE_AIR
+                if above_id == TILE_AIR and water_frames_len > 0:
+                    w_tex = self.scaled_water_frames[self.water_frame_idx % water_frames_len]
+                elif water_sub_len > 0:
+                    w_tex = self.scaled_water_submerged[self.water_frame_idx % water_sub_len]
+                else:
+                    w_tex = self.scaled_tiles.get(t_id)
+                if w_tex:
+                    target_surf.blit(w_tex, (spx, spy))
 
-                        if below_id in (TILE_GRASS, TILE_DIRT, TILE_SNOW, TILE_SAND, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS):
-                            target_surf.blit(self.scaled_trunk_base, (screen_px, screen_py))
-                        elif not in_canopy and (tx + ty) % 5 == 0:
-                            if col_biome == BIOME_SNOW and hasattr(self, "scaled_trunk_branch_l_snow"):
-                                target_surf.blit(self.scaled_trunk_branch_l_snow, (screen_px, screen_py))
-                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and hasattr(self, "scaled_trunk_branch_l_blight"):
-                                target_surf.blit(self.scaled_trunk_branch_l_blight, (screen_px, screen_py))
-                            elif col_biome == BIOME_DESERT and hasattr(self, "scaled_trunk_branch_l_palm"):
-                                target_surf.blit(self.scaled_trunk_branch_l_palm, (screen_px, screen_py))
-                            else:
-                                target_surf.blit(self.scaled_trunk_branch_l, (screen_px, screen_py))
-                        elif not in_canopy and (tx + ty) % 5 == 2:
-                            if col_biome == BIOME_SNOW and hasattr(self, "scaled_trunk_branch_r_snow"):
-                                target_surf.blit(self.scaled_trunk_branch_r_snow, (screen_px, screen_py))
-                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and hasattr(self, "scaled_trunk_branch_r_blight"):
-                                target_surf.blit(self.scaled_trunk_branch_r_blight, (screen_px, screen_py))
-                            elif col_biome == BIOME_DESERT and hasattr(self, "scaled_trunk_branch_r_palm"):
-                                target_surf.blit(self.scaled_trunk_branch_r_palm, (screen_px, screen_py))
-                            else:
-                                target_surf.blit(self.scaled_trunk_branch_r, (screen_px, screen_py))
-                        else:
-                            tile_tex = self.scaled_tiles.get(t_id)
-                            if tile_tex:
-                                target_surf.blit(tile_tex, (screen_px, screen_py))
-
-                        # Overlay lush canopy foliage on upper wood trunk to fill upper wood with leaves
-                        if in_canopy:
-                            crown_tex = getattr(self, "scaled_trunk_crown", None)
-                            if col_biome == BIOME_SNOW and getattr(self, "scaled_trunk_crown_snow", None):
-                                crown_tex = self.scaled_trunk_crown_snow
-                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and getattr(self, "scaled_trunk_crown_blight", None):
-                                crown_tex = self.scaled_trunk_crown_blight
-                            elif col_biome == BIOME_DESERT and getattr(self, "scaled_trunk_crown_palm", None):
-                                crown_tex = self.scaled_trunk_crown_palm
-                            if crown_tex:
-                                target_surf.blit(crown_tex, (screen_px, screen_py))
-                    elif t_id == TILE_LEAVES:
-                        up_air = (self.get_tile(tx, ty - 1) == TILE_AIR)
-                        down_air = (self.get_tile(tx, ty + 1) == TILE_AIR)
-                        left_air = (self.get_tile(tx - 1, ty) == TILE_AIR)
-                        right_air = (self.get_tile(tx + 1, ty) == TILE_AIR)
-
-                        b_key = "forest"
-                        if col_biome == BIOME_SNOW:
-                            b_key = "snow"
-                        elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
-                            b_key = "blight"
-                        elif col_biome == BIOME_DESERT:
-                            b_key = "palm"
-
-                        leaf_dict = getattr(self, "scaled_leaf_variants", {}).get(b_key, {})
-                        v_tex = leaf_dict.get((up_air, down_air, left_air, right_air))
-                        if v_tex:
-                            target_surf.blit(v_tex, (screen_px, screen_py))
-                        else:
-                            if col_biome == BIOME_SNOW:
-                                target_surf.blit(self.scaled_snow_leaves, (screen_px, screen_py))
-                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
-                                target_surf.blit(self.scaled_blight_leaves, (screen_px, screen_py))
-                            elif col_biome == BIOME_DESERT and hasattr(self, "scaled_palm_leaves"):
-                                target_surf.blit(self.scaled_palm_leaves, (screen_px, screen_py))
-                            else:
-                                tile_tex = self.scaled_tiles.get(t_id)
-                                if tile_tex:
-                                    target_surf.blit(tile_tex, (screen_px, screen_py))
-                    else:
-                        tile_tex = self.scaled_tiles.get(t_id)
-                        if tile_tex:
-                            target_surf.blit(tile_tex, (screen_px, screen_py))
-
-                    if (tx, ty) in self.tile_damage:
-                        cur = self.tile_damage[(tx, ty)]
-                        max_h = max(1, prop.get("hardness", 20))
-                        stage = min(3, int((cur / max_h) * 4))
-                        target_surf.blit(self.scaled_cracks[stage], (screen_px, screen_py))
+        # Dynamic overlay: mining damage cracks
+        if self.tile_damage:
+            for (tx, ty), cur in self.tile_damage.items():
+                if min_tx <= tx <= max_tx and min_ty <= ty <= max_ty:
+                    t_id = self.get_tile(tx, ty)
+                    prop = TILE_PROPS.get(t_id, {})
+                    max_h = max(1, prop.get("hardness", 20))
+                    stage = min(3, int((cur / max_h) * 4))
+                    target_surf.blit(self.scaled_cracks[stage], (tx * self.scaled_tile - cam_x, ty * self.scaled_tile - cam_y))

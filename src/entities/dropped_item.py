@@ -107,5 +107,7 @@ class DroppedItem:
         # Subtle hover oscillation when on ground
         bob_y = math.sin(self.age * 5.0) * 2.0 if self.on_ground else 0.0
         sx, sy = camera.world_to_screen(self.x, self.y + bob_y)
-        if self.icon:
-            target_surf.blit(self.icon, (sx - 4, sy - 4))
+        sw, sh = target_surf.get_width(), target_surf.get_height()
+        if -32 <= sx <= sw + 32 and -32 <= sy <= sh + 32:
+            if self.icon:
+                target_surf.blit(self.icon, (sx - 4, sy - 4))

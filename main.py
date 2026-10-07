@@ -71,6 +71,7 @@ from src.network.server import LANServer
 from src.network.client import LANClient
 from src.environment.sky import DayNightCycle
 from src.rpg.achievements import AchievementManager
+from src.profiler import PotariaProfiler
 
 class PotariaGame:
     def __init__(self):
@@ -82,6 +83,10 @@ class PotariaGame:
         self.paused = False
         self.show_debug = False
         self.fullscreen = False
+        self.profiler = PotariaProfiler(history_size=120)
+        self.profiler.enabled = True
+        self.show_profiler = False
+        self.boost_mode = True
 
         # Fonts
         self.font = pygame.font.SysFont("Arial", 14)
@@ -202,7 +207,7 @@ class PotariaGame:
         feedback = None
 
         if cmd in ("help", "?"):
-            feedback = "Commands: /give <id> [count], /<item_id> [count], /god, /invincible, /heal, /speed [mult], /time <day|night|morning|0.0-1.0>, /spawn <mob|boss> [count], /ancient, /weapons, /killall, /level [count], /allskills, /clear"
+            feedback = "Commands: /give <id> [count], /<item_id> [count], /god, /invincible, /heal, /speed [mult], /time <day|night|morning|0.0-1.0>, /spawn <mob|boss> [count], /ancient, /weapons, /killall, /level [count], /allskills, /boost, /profile, /clear"
 
         elif cmd in ("god", "invincible", "invencible", "immortal"):
             self.god_mode = not getattr(self, "god_mode", False)
@@ -406,6 +411,17 @@ class PotariaGame:
             self.inventory.held_item = None
             feedback = "Cleared inventory and held items."
 
+        elif cmd in ("boost", "opt", "optimize"):
+            self.boost_mode = not getattr(self, "boost_mode", True)
+            self.profiler.enabled = True
+            stats = self.profiler.get_summary_line()
+            feedback = f"⚡ BOOST PIPELINE: {'ACTIVE (High-FPS Caching)' if self.boost_mode else 'DISABLED'}. {stats}"
+
+        elif cmd in ("profile", "profiler", "perf", "telemetry"):
+            self.show_profiler = not getattr(self, "show_profiler", False)
+            self.profiler.enabled = True
+            feedback = f"📊 Performance Profiler Overlay: {'VISIBLE (F3)' if self.show_profiler else 'HIDDEN'}"
+
         else:
             from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
             cand_id = ITEM_ALIASES.get(cmd, cmd)
@@ -533,10 +549,13 @@ class PotariaGame:
     def run(self):
         """Master game loop."""
         while self.running:
-            dt = self.clock.tick(FPS) / 1000.0
-            dt = min(dt, 0.05)
+            self.profiler.start_frame()
+            with self.profiler.section("present"):
+                dt = self.clock.tick(FPS) / 1000.0
+                dt = min(dt, 0.05)
 
-            self.handle_events()
+            with self.profiler.section("input"):
+                self.handle_events()
             
             if self.menu.state == STATE_PLAYING and not self.paused:
                 self.update_gameplay(dt)
@@ -553,6 +572,7 @@ class PotariaGame:
                     self.bgm.update_tick(dt)
 
             self.render()
+            self.profiler.end_frame()
 
         # Clean shutdown
         if self.menu.state == STATE_PLAYING:
@@ -1056,6 +1076,10 @@ class PotariaGame:
 
                 elif event.key == pygame.K_F1:
                     self.show_debug = not self.show_debug
+
+                elif event.key == pygame.K_F3:
+                    self.show_profiler = not getattr(self, "show_profiler", False)
+                    self.profiler.enabled = True
 
                 elif event.key == pygame.K_t:
                     self.sky.time += self.sky.cycle_duration * 0.125
@@ -1840,6 +1864,7 @@ class PotariaGame:
             self.hud.minimap.mark_dirty()
 
     def update_gameplay(self, dt):
+        self.profiler.start_section("update_other")
         keys = pygame.key.get_pressed()
         mouse_x, mouse_y = pygame.mouse.get_pos()
         mouse_wx, mouse_wy = self.camera.screen_to_world(mouse_x, mouse_y)
@@ -1910,8 +1935,10 @@ class PotariaGame:
                 aim_target_wy = self.player.center_y + math.sin(self.player.aim_angle) * 100.0
         else:
             active_keys = keys
-        self.player.handle_input(active_keys, aim_target_wx, aim_target_wy, key_bindings=self.menu.key_bindings)
-        self.player.update(dt, self.world)
+        self.profiler.end_section("update_other")
+        with self.profiler.section("update_player"):
+            self.player.handle_input(active_keys, aim_target_wx, aim_target_wy, key_bindings=self.menu.key_bindings)
+            self.player.update(dt, self.world)
 
         # Update Achievements & Feat Tracking
         self.achievement_manager.update(dt)
@@ -2034,24 +2061,29 @@ class PotariaGame:
         self.camera.update(dt)
 
         # 5. World, Town NPCs & Particles
-        self.world.update(dt)
-        self.world.update_town_npcs(dt, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
-        if hasattr(self, "npc_dialogue"):
-            self.npc_dialogue.update(dt)
-        cam_rect = pygame.Rect(self.camera.x - 32, self.camera.y - 32, SCREEN_WIDTH + 64, SCREEN_HEIGHT + 64)
-        self.world.emit_fireplace_smoke(self.particle_system, cam_rect)
-        self.particle_system.update(dt)
-        if hasattr(self, "vfx_manager") and self.vfx_manager:
-            self.vfx_manager.update(dt)
+        with self.profiler.section("update_world"):
+            self.world.update(dt)
+            self.world.update_town_npcs(dt, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
+            if hasattr(self, "npc_dialogue"):
+                self.npc_dialogue.update(dt)
+            cam_rect = pygame.Rect(self.camera.x - 32, self.camera.y - 32, SCREEN_WIDTH + 64, SCREEN_HEIGHT + 64)
+            self.world.emit_fireplace_smoke(self.particle_system, cam_rect)
+            self.particle_system.update(dt)
+            if hasattr(self, "vfx_manager") and self.vfx_manager:
+                self.vfx_manager.update(dt)
 
         # 6. Day/Night Environment
+        self.profiler.start_section("update_other")
         self.sky.update(dt)
 
+        self.profiler.end_section("update_other")
         # 7. Combat, Mobs & Boss
-        time_of_day = getattr(self.sky, "time_of_day", getattr(self.sky, "time", 0.0) / max(1.0, getattr(self.sky, "cycle_duration", 480.0)))
-        self.combat.update(dt, self.world, self.player, self.sky.is_night, time_of_day=time_of_day)
+        with self.profiler.section("update_combat"):
+            time_of_day = getattr(self.sky, "time_of_day", getattr(self.sky, "time", 0.0) / max(1.0, getattr(self.sky, "cycle_duration", 480.0)))
+            self.combat.update(dt, self.world, self.player, self.sky.is_night, time_of_day=time_of_day)
 
         # God Mode Enforcement
+        self.profiler.start_section("update_other")
         if getattr(self, "god_mode", False):
             self.player.health = self.player.max_health
             if hasattr(self.player, "stats"):
@@ -2210,59 +2242,61 @@ class PotariaGame:
                 if self.inventory.is_open:
                     self.crafting.update_recipes(self.inventory, self.world, self.player)
         self.combat.dropped_items = [it for it in self.combat.dropped_items if not getattr(it, "picked_up", False)]
+        self.profiler.end_section("update_other")
 
         # 8. Dynamic Viewport 2D Lighting (Boundless horizontally)
-        min_tx = int(self.camera.x // SCALED_TILE) - 1
-        max_tx = int((self.camera.x + SCREEN_WIDTH) // SCALED_TILE) + 2
-        min_ty = max(0, int(self.camera.y // SCALED_TILE) - 1)
-        max_ty = min(self.world.height - 1, int((self.camera.y + SCREEN_HEIGHT) // SCALED_TILE) + 2)
-
-        # Dynamic light sources: Miner Helmet, Torch, Radiance gear, and Glowing Projectiles
-        extra_lights = []
-        held_item = self.inventory.get_active_item()
-        has_helmet = self.inventory.has_miner_helmet() or (self.player.equipment.slots.get(SLOT_HEAD) == "miner_helmet")
-        has_radiance = (
-            (hasattr(self.player, "equipment") and self.player.equipment.has_light_emitter())
-            or (hasattr(self.player, "has_effect") and (
-                self.player.has_effect("light radiance")
-                or self.player.has_effect("celestial radiance")
-                or self.player.has_effect("astral sparkles")
-                or self.player.has_effect("supernova")
-            ))
-        )
-
-        if has_helmet or has_radiance or (held_item and held_item.item_id == "torch"):
-            ptx = int(self.player.center_x // SCALED_TILE)
-            pty = int(self.player.center_y // SCALED_TILE)
-            intensity = 15 if (has_helmet or has_radiance) else 13
-            extra_lights.append((ptx, pty, intensity))
-
-        # Dynamic light emitted by falling celestial stars and glowing arrows
-        for p in self.combat.projectiles:
-            if getattr(p, "life", 0) > 0:
-                pos = getattr(p, "pos", None)
-                if pos is not None:
-                    px = getattr(pos, "x", None)
-                    py = getattr(pos, "y", None)
-                else:
-                    px = getattr(p, "x", None)
-                    py = getattr(p, "y", None)
-                if px is not None and py is not None:
-                    intensity = 15 if isinstance(p, CelestialStarProjectile) else 8
-                    extra_lights.append((int(px // SCALED_TILE), int(py // SCALED_TILE), intensity))
-
-        # Atmospheric tinting: Deep Nether Dungeon violet vs sky cycle
-        if self.player.y > 200 * SCALED_TILE:
-            ambient_tint = (1.14, 0.72, 1.28)
-        else:
-            ambient_tint = self.sky.atmospheric_tint
-
-        self.lighting.compute_viewport_light(
-            self.world, min_tx, min_ty, max_tx, max_ty,
-            ambient_sunlight=self.sky.ambient_sunlight,
-            torch_positions=extra_lights,
-            ambient_tint=ambient_tint
-        )
+        with self.profiler.section("update_lighting"):
+            min_tx = int(self.camera.x // SCALED_TILE) - 1
+            max_tx = int((self.camera.x + SCREEN_WIDTH) // SCALED_TILE) + 2
+            min_ty = max(0, int(self.camera.y // SCALED_TILE) - 1)
+            max_ty = min(self.world.height - 1, int((self.camera.y + SCREEN_HEIGHT) // SCALED_TILE) + 2)
+    
+            # Dynamic light sources: Miner Helmet, Torch, Radiance gear, and Glowing Projectiles
+            extra_lights = []
+            held_item = self.inventory.get_active_item()
+            has_helmet = self.inventory.has_miner_helmet() or (self.player.equipment.slots.get(SLOT_HEAD) == "miner_helmet")
+            has_radiance = (
+                (hasattr(self.player, "equipment") and self.player.equipment.has_light_emitter())
+                or (hasattr(self.player, "has_effect") and (
+                    self.player.has_effect("light radiance")
+                    or self.player.has_effect("celestial radiance")
+                    or self.player.has_effect("astral sparkles")
+                    or self.player.has_effect("supernova")
+                ))
+            )
+    
+            if has_helmet or has_radiance or (held_item and held_item.item_id == "torch"):
+                ptx = int(self.player.center_x // SCALED_TILE)
+                pty = int(self.player.center_y // SCALED_TILE)
+                intensity = 15 if (has_helmet or has_radiance) else 13
+                extra_lights.append((ptx, pty, intensity))
+    
+            # Dynamic light emitted by falling celestial stars and glowing arrows
+            for p in self.combat.projectiles:
+                if getattr(p, "life", 0) > 0:
+                    pos = getattr(p, "pos", None)
+                    if pos is not None:
+                        px = getattr(pos, "x", None)
+                        py = getattr(pos, "y", None)
+                    else:
+                        px = getattr(p, "x", None)
+                        py = getattr(p, "y", None)
+                    if px is not None and py is not None:
+                        intensity = 15 if isinstance(p, CelestialStarProjectile) else 8
+                        extra_lights.append((int(px // SCALED_TILE), int(py // SCALED_TILE), intensity))
+    
+            # Atmospheric tinting: Deep Nether Dungeon violet vs sky cycle
+            if self.player.y > 200 * SCALED_TILE:
+                ambient_tint = (1.14, 0.72, 1.28)
+            else:
+                ambient_tint = self.sky.atmospheric_tint
+    
+            self.lighting.compute_viewport_light(
+                self.world, min_tx, min_ty, max_tx, max_ty,
+                ambient_sunlight=self.sky.ambient_sunlight,
+                torch_positions=extra_lights,
+                ambient_tint=ambient_tint
+            )
 
     def render(self):
         if self.menu.state != STATE_PLAYING:
@@ -2271,16 +2305,20 @@ class PotariaGame:
             return
 
         # Layer 1: Parallax Sky & Celestial Bodies
-        self.sky.render(self.screen, self.camera)
+        with self.profiler.section("render_sky"):
+            self.sky.render(self.screen, self.camera)
 
         # Layer 2: World Tiles & Background Walls
-        self.world.render(self.screen, self.camera)
+        with self.profiler.section("render_world"):
+            self.world.render(self.screen, self.camera)
 
         # Layer 3: Particles & Debris
-        self.particle_system.render(self.screen, self.camera)
+        with self.profiler.section("render_particles"):
+            self.particle_system.render(self.screen, self.camera)
 
         # Layer 4: Mobs, Boss & Dropped Items
-        self.combat.render(self.screen, self.camera)
+        with self.profiler.section("render_combat"):
+            self.combat.render(self.screen, self.camera)
 
         # Layer 4.5: Remote LAN Party Members
         if self.client and self.client.connected:
@@ -2300,13 +2338,14 @@ class PotariaGame:
 
         # Layer 6: Dynamic 2D Lighting Atmosphere
         # Pixel-perfect alignment matching world.render() integer rounding eliminates 1px seams
-        cam_x = int(round(self.camera.x - self.camera.shake_offset_x))
-        cam_y = int(round(self.camera.y - self.camera.shake_offset_y))
-        min_tx = int(cam_x // SCALED_TILE) - 1
-        min_ty = max(0, int(cam_y // SCALED_TILE) - 1)
-        light_screen_x = min_tx * SCALED_TILE - cam_x
-        light_screen_y = min_ty * SCALED_TILE - cam_y
-        self.lighting.render_lighting(self.screen, light_screen_x, light_screen_y)
+        with self.profiler.section("render_lighting"):
+            cam_x = int(round(self.camera.x - self.camera.shake_offset_x))
+            cam_y = int(round(self.camera.y - self.camera.shake_offset_y))
+            min_tx = int(cam_x // SCALED_TILE) - 1
+            min_ty = max(0, int(cam_y // SCALED_TILE) - 1)
+            light_screen_x = min_tx * SCALED_TILE - cam_x
+            light_screen_y = min_ty * SCALED_TILE - cam_y
+            self.lighting.render_lighting(self.screen, light_screen_x, light_screen_y)
 
         # Layer 7: Floating Damage Numbers
         for dn in self.combat.damage_numbers:
@@ -2317,33 +2356,34 @@ class PotariaGame:
             self.combat.boss.render_boss_bar(self.screen, self.boss_font, self.title_font)
 
         # Layer 9: HUD, Hotbar, Inventory, Reticle, Party, Minimap & Chat
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        self.hud.render(
-            self.screen, self.player, self.inventory, self.crafting,
-            self.camera, mouse_x, mouse_y, world=self.world, combat=self.combat, lan_client=self.client
-        )
-
-        # Layer 9.5: Character & Paperdoll Equipment Panel (Chroisen Style)
-        if self.character_panel.is_open:
-            self.character_panel.render(self.screen, self.player, mouse_x, mouse_y)
-
-        # Layer 9.6: Town NPC Dialogue & Shop Window
-        if hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
-            self.npc_dialogue.render(self.screen, self.player, self.inventory, mouse_x, mouse_y)
-
-        # Layer 9.8: PvP Last Man Standing Victory Banner
-        if self.pvp_victor_banner:
-            bw, bh = 540, 52
-            bx = SCREEN_WIDTH // 2 - bw // 2
-            by = 40
-            pygame.draw.rect(self.screen, (30, 20, 10, 235), (bx, by, bw, bh), border_radius=10)
-            pygame.draw.rect(self.screen, (255, 215, 0), (bx, by, bw, bh), 2, border_radius=10)
-            b_txt = self.title_font.render(self.pvp_victor_banner, True, (255, 230, 60))
-            self.screen.blit(b_txt, (SCREEN_WIDTH // 2 - b_txt.get_width() // 2, by + 10))
-
-        # Layer 9.9: Mobile Virtual Touch Controls
-        if hasattr(self, "touch_controller") and self.touch_controller.is_visible():
-            self.touch_controller.render(self.screen, self.player, self.inventory, self.camera, game=self)
+        with self.profiler.section("render_hud"):
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            self.hud.render(
+                self.screen, self.player, self.inventory, self.crafting,
+                self.camera, mouse_x, mouse_y, world=self.world, combat=self.combat, lan_client=self.client
+            )
+    
+            # Layer 9.5: Character & Paperdoll Equipment Panel (Chroisen Style)
+            if self.character_panel.is_open:
+                self.character_panel.render(self.screen, self.player, mouse_x, mouse_y)
+    
+            # Layer 9.6: Town NPC Dialogue & Shop Window
+            if hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
+                self.npc_dialogue.render(self.screen, self.player, self.inventory, mouse_x, mouse_y)
+    
+            # Layer 9.8: PvP Last Man Standing Victory Banner
+            if self.pvp_victor_banner:
+                bw, bh = 540, 52
+                bx = SCREEN_WIDTH // 2 - bw // 2
+                by = 40
+                pygame.draw.rect(self.screen, (30, 20, 10, 235), (bx, by, bw, bh), border_radius=10)
+                pygame.draw.rect(self.screen, (255, 215, 0), (bx, by, bw, bh), 2, border_radius=10)
+                b_txt = self.title_font.render(self.pvp_victor_banner, True, (255, 230, 60))
+                self.screen.blit(b_txt, (SCREEN_WIDTH // 2 - b_txt.get_width() // 2, by + 10))
+    
+            # Layer 9.9: Mobile Virtual Touch Controls
+            if hasattr(self, "touch_controller") and self.touch_controller.is_visible():
+                self.touch_controller.render(self.screen, self.player, self.inventory, self.camera, game=self)
 
         # Layer 10: Debug Overlay
         if self.show_debug:
@@ -2362,6 +2402,9 @@ class PotariaGame:
         # Layer 11: Pause Menu Overlay
         if self.paused:
             self._render_pause_menu()
+        # Layer 12: Profiler Overlay
+        if getattr(self, "show_profiler", False):
+            self.profiler.render_overlay(self.screen, self.font)
 
         pygame.display.flip()
 

@@ -175,18 +175,24 @@ class MiniMap:
         frame_rect = pygame.Rect(mx, my, mw, mh)
         pygame.draw.rect(target_surf, (20, 24, 38, 240), frame_rect, border_radius=6)
         
-        # Scale pixel buffer up to window
+        # Scale pixel buffer up to window (Cached: only re-scale when terrain rebuilds or mode changes)
         inner_w = mw - 8
         inner_h = mh - 22
-        scaled_map = pygame.transform.scale(self.map_surf, (inner_w, inner_h))
-        target_surf.blit(scaled_map, (mx + 4, my + 18))
+        if (getattr(self, "_cached_scaled_map", None) is None or
+            needs_rebuild or
+            self._cached_scaled_map.get_width() != inner_w or
+            self._cached_scaled_map.get_height() != inner_h):
+            self._cached_scaled_map = pygame.transform.scale(self.map_surf, (inner_w, inner_h))
+        target_surf.blit(self._cached_scaled_map, (mx + 4, my + 18))
 
         # Golden boundary & title
         pygame.draw.rect(target_surf, COLOR_GOLD, frame_rect, 2, border_radius=6)
         
-        title_txt = "RADAR MAP [M]" if self.mode == "corner" else "WORLD OVERVIEW MAP [M]"
-        hdr = self.font.render(title_txt, True, (255, 230, 100))
-        target_surf.blit(hdr, (mx + 6, my + 3))
+        if getattr(self, "_cached_hdr_mode", None) != self.mode:
+            title_txt = "RADAR MAP [M]" if self.mode == "corner" else "WORLD OVERVIEW MAP [M]"
+            self._cached_hdr = self.font.render(title_txt, True, (255, 230, 100))
+            self._cached_hdr_mode = self.mode
+        target_surf.blit(self._cached_hdr, (mx + 6, my + 3))
 
         # Helper: world coordinates to minimap screen coordinates
         def world_to_map(wx, wy):

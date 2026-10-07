@@ -28,6 +28,25 @@ class AnimatedVFX:
         self.is_alive = True
         self.frame_idx = 0
 
+        # Pre-transform frames once at initialization to eliminate per-frame rotations, scaling and flips
+        transformed = []
+        needs_transform = (self.flip_x or self.flip_y or self.scale != 1.0 or self.rot_deg != 0.0)
+        for f in self.frames:
+            if not f:
+                continue
+            s = f
+            if needs_transform:
+                if self.flip_x or self.flip_y:
+                    s = pygame.transform.flip(s, self.flip_x, self.flip_y)
+                if self.scale != 1.0:
+                    nw = max(1, int(s.get_width() * self.scale))
+                    nh = max(1, int(s.get_height() * self.scale))
+                    s = pygame.transform.scale(s, (nw, nh))
+                if self.rot_deg != 0.0:
+                    s = pygame.transform.rotate(s, self.rot_deg)
+            transformed.append(s)
+        self.prepared_frames = transformed if transformed else self.frames
+
     def update(self, dt):
         if not self.is_alive:
             return
@@ -47,38 +66,31 @@ class AnimatedVFX:
                 return
 
         # Calculate active frame based on progress
-        if len(self.frames) > 0:
+        if len(self.prepared_frames) > 0:
             frac = min(0.999, self.elapsed / self.duration)
-            self.frame_idx = int(frac * len(self.frames))
+            self.frame_idx = int(frac * len(self.prepared_frames))
 
     def render(self, target_surf, camera):
-        if not self.is_alive or not self.frames:
+        if not self.is_alive or not self.prepared_frames:
             return
 
-        surf = self.frames[min(self.frame_idx, len(self.frames) - 1)]
+        surf = self.prepared_frames[min(self.frame_idx, len(self.prepared_frames) - 1)]
         if not surf:
             return
 
-        # Apply horizontal / vertical flipping if requested
-        if self.flip_x or self.flip_y:
-            surf = pygame.transform.flip(surf, self.flip_x, self.flip_y)
-
-        # Apply rotation and scaling if needed
-        if self.scale != 1.0 or self.rot_deg != 0.0:
-            if self.scale != 1.0:
-                nw = max(1, int(surf.get_width() * self.scale))
-                nh = max(1, int(surf.get_height() * self.scale))
-                surf = pygame.transform.scale(surf, (nw, nh))
-            if self.rot_deg != 0.0:
-                surf = pygame.transform.rotate(surf, self.rot_deg)
-
         sx, sy = camera.world_to_screen(self.x, self.y)
-        r = surf.get_rect(center=(int(sx), int(sy)))
+        sw, sh = target_surf.get_width(), target_surf.get_height()
+        w, h = surf.get_width(), surf.get_height()
+        rx = int(sx) - w // 2
+        ry = int(sy) - h // 2
+
+        if rx + w < 0 or rx > sw or ry + h < 0 or ry > sh:
+            return
 
         if self.blend_mode:
-            target_surf.blit(surf, r.topleft, special_flags=self.blend_mode)
+            target_surf.blit(surf, (rx, ry), special_flags=self.blend_mode)
         else:
-            target_surf.blit(surf, r.topleft)
+            target_surf.blit(surf, (rx, ry))
 
 
 class VisualEffectManager:

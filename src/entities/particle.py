@@ -34,7 +34,9 @@ class Particle:
         sx, sy = camera.world_to_screen(self.x, self.y)
         # Fade size slightly towards end of life
         cur_size = max(1, int(self.size * (self.life / self.max_life)))
-        pygame.draw.rect(target_surf, self.color, (int(sx), int(sy), cur_size, cur_size))
+        sw, sh = target_surf.get_width(), target_surf.get_height()
+        if -cur_size <= sx <= sw and -cur_size <= sy <= sh:
+            pygame.draw.rect(target_surf, self.color, (int(sx), int(sy), cur_size, cur_size))
 
 class ParticleSystem:
     def __init__(self, max_particles=250):

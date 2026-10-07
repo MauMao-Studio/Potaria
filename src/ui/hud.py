@@ -39,6 +39,25 @@ class HUD:
         self.font_lg = pygame.font.SysFont("Arial", 16, bold=True)
         self.font_lore = pygame.font.SysFont("Georgia", 11, italic=True)
 
+        # Pre-rendered reticle variants (avoids copying & blending every frame)
+        self.reticle_in_reach = self.reticle
+        self.reticle_out_of_reach = self.reticle.copy()
+        self.reticle_out_of_reach.fill((255, 60, 60, 120), special_flags=pygame.BLEND_RGBA_MULT)
+
+        # Pre-rendered hotbar key hints (1..9, 0)
+        self.cached_key_hints = [self.font_sm.render(str((col + 1) % 10), True, (130, 140, 160)) for col in range(10)]
+
+        # Pre-allocated gauge surface
+        self.gauge_bg = pygame.Surface((26, 5), pygame.SRCALPHA)
+        self.gauge_bg.fill((16, 20, 30, 210))
+
+        # Cached item count glyphs and HUD text surfaces
+        self._cached_count_surfs = {}
+        self._cached_hp_key = None
+        self._cached_hp_surf = None
+        self._cached_mp_key = None
+        self._cached_mp_surf = None
+
         # Chat & Console input state
         self.chat_active = False
         self.chat_input_text = ""
@@ -117,9 +136,12 @@ class HUD:
         start_x = 840     # SCREEN_WIDTH (1280) - right_margin (180) - container_w (260)
         start_y = 18
 
-        # Life Label
-        hp_label = self.font.render(f"Life: {player.stats.hp} / {player.stats.max_hp}  (Lv.{player.stats.level})", True, (255, 90, 90))
-        target_surf.blit(hp_label, (start_x, start_y - 15))
+        # Life Label (Cached)
+        hp_key = (player.stats.hp, player.stats.max_hp, player.stats.level)
+        if hp_key != self._cached_hp_key:
+            self._cached_hp_key = hp_key
+            self._cached_hp_surf = self.font.render(f"Life: {player.stats.hp} / {player.stats.max_hp}  (Lv.{player.stats.level})", True, (255, 90, 90))
+        target_surf.blit(self._cached_hp_surf, (start_x, start_y - 15))
 
         rows = (total_hearts + 9) // 10
         for i in range(total_hearts):
@@ -142,8 +164,12 @@ class HUD:
             pygame.draw.rect(target_surf, (50, 160, 255), (start_x, mp_y, int(mp_w * mp_pct), 10), border_radius=3)
         pygame.draw.rect(target_surf, (80, 120, 180), (start_x, mp_y, mp_w, 10), 1, border_radius=3)
 
-        mp_txt = self.font_sm.render(f"MP: {int(player.stats.mp)} / {player.stats.max_mp}", True, (200, 230, 255))
-        target_surf.blit(mp_txt, (start_x + mp_w // 2 - mp_txt.get_width() // 2, mp_y - 1))
+        int_mp = int(player.stats.mp)
+        mp_key = (int_mp, player.stats.max_mp)
+        if mp_key != self._cached_mp_key:
+            self._cached_mp_key = mp_key
+            self._cached_mp_surf = self.font_sm.render(f"MP: {int_mp} / {player.stats.max_mp}", True, (200, 230, 255))
+        target_surf.blit(self._cached_mp_surf, (start_x + mp_w // 2 - self._cached_mp_surf.get_width() // 2, mp_y - 1))
 
         # Oxygen / Breath Meter (Minecraft-style 10 Air Bubbles displayed when swimming or depleted)
         if getattr(player, "in_water", False) or getattr(player, "oxygen", 100.0) < 99.0:
@@ -253,9 +279,7 @@ class HUD:
                             pygame.draw.line(target_surf, (255, 230, 120), (sx, sy + (SLOT_SIZE - sweep_h)), (sx + SLOT_SIZE - 1, sy + (SLOT_SIZE - sweep_h)), 1)
 
                 if row == 0:
-                    key_hint = str((col + 1) % 10)
-                    hint_surf = self.font_sm.render(key_hint, True, (130, 140, 160))
-                    target_surf.blit(hint_surf, (sx + 3, sy + 2))
+                    target_surf.blit(self.cached_key_hints[col], (sx + 3, sy + 2))
 
                 item = inventory.slots[slot_idx]
                 if item:
@@ -264,10 +288,13 @@ class HUD:
                         target_surf.blit(icon, (sx + 8, sy + 8))
 
                     if item.count > 1:
-                        txt = str(item.count)
-                        shadow = self.font.render(txt, True, (0, 0, 0))
+                        if item.count not in self._cached_count_surfs:
+                            txt = str(item.count)
+                            shd = self.font.render(txt, True, (0, 0, 0))
+                            cnt = self.font.render(txt, True, (255, 255, 255))
+                            self._cached_count_surfs[item.count] = (shd, cnt)
+                        shadow, cnt_surf = self._cached_count_surfs[item.count]
                         target_surf.blit(shadow, (sx + SLOT_SIZE - shadow.get_width() - 3, sy + SLOT_SIZE - 15))
-                        cnt_surf = self.font.render(txt, True, (255, 255, 255))
                         target_surf.blit(cnt_surf, (sx + SLOT_SIZE - cnt_surf.get_width() - 4, sy + SLOT_SIZE - 16))
 
                 if rect.collidepoint(mouse_x, mouse_y):
@@ -521,10 +548,7 @@ class HUD:
                                 player.center_y - (tile_world_y + SCALED_TILE / 2))
         in_reach = (reach_dist <= SCALED_TILE * 5.5)
 
-        reticle_surf = self.reticle.copy()
-        if not in_reach:
-            reticle_surf.fill((255, 60, 60, 120), special_flags=pygame.BLEND_RGBA_MULT)
-
+        reticle_surf = self.reticle_in_reach if in_reach else self.reticle_out_of_reach
         target_surf.blit(reticle_surf, (sx, sy))
 
         # Progressive Block Breaking Progress Bar over targeted tile
@@ -563,9 +587,7 @@ class HUD:
                 charge = max(0.0, min(1.0, 1.0 - (player.attack_cooldown / max_cd)))
                 # Background plate
                 bg_rect = pygame.Rect(gx, gy, gauge_w, gauge_h)
-                bg_surf = pygame.Surface((gauge_w, gauge_h), pygame.SRCALPHA)
-                bg_surf.fill((16, 20, 30, 210))
-                target_surf.blit(bg_surf, (gx, gy))
+                target_surf.blit(self.gauge_bg, (gx, gy))
                 pygame.draw.rect(target_surf, (40, 50, 75), bg_rect, 1, border_radius=2)
                 # Charged progress bar
                 fill_w = int((gauge_w - 2) * charge)
