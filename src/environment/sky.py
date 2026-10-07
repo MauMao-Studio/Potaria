@@ -31,6 +31,12 @@ class DayNightCycle:
         self.mountains_surf = self._create_mountain_silhouette()
         self.trees_surf = self._create_tree_silhouette()
 
+        # Cached sky gradient surface for high performance
+        self._cached_sky_surf = None
+        self._cached_top_c = None
+        self._cached_bot_c = None
+        self._last_bake_ticks = 0
+
     @property
     def time_of_day(self):
         """Returns 0.0 to 1.0 representing progress through 24-hour cycle."""
@@ -171,16 +177,26 @@ class DayNightCycle:
         """Draws sky gradient, stars, sun/moon celestial bodies, and parallax mountains."""
         sw, sh = target_surf.get_width(), target_surf.get_height()
 
-        # 1. Sky Gradient
+        # 1. Sky Gradient (Cached: only re-bake when colors shift and at least 200ms elapsed)
         top_c, bot_c = self.get_sky_colors()
-        # Fast vertical gradient line blit
-        gradient = pygame.Surface((1, sh))
-        for y in range(sh):
-            frac = y / float(sh)
-            c = self._lerp_color(top_c, bot_c, frac)
-            gradient.set_at((0, y), c)
-        scaled_sky = pygame.transform.scale(gradient, (sw, sh))
-        target_surf.blit(scaled_sky, (0, 0))
+        now_ticks = pygame.time.get_ticks()
+        if (self._cached_sky_surf is None or
+            ((now_ticks - self._last_bake_ticks) > 200 and (self._cached_top_c != top_c or self._cached_bot_c != bot_c)) or
+            self._cached_sky_surf.get_width() != sw or
+            self._cached_sky_surf.get_height() != sh):
+            
+            steps = 32
+            gradient = pygame.Surface((1, steps))
+            for y in range(steps):
+                frac = y / float(steps)
+                c = self._lerp_color(top_c, bot_c, frac)
+                gradient.set_at((0, y), c)
+            self._cached_sky_surf = pygame.transform.smoothscale(gradient, (sw, sh))
+            self._cached_top_c = top_c
+            self._cached_bot_c = bot_c
+            self._last_bake_ticks = now_ticks
+
+        target_surf.blit(self._cached_sky_surf, (0, 0))
 
         # 2. Twinkling Stars (if nighttime)
         if self.is_night or self.time_of_day > 0.52:

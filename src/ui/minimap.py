@@ -85,21 +85,33 @@ class MiniMap:
         self.grid_h = 44
         self.map_surf = pygame.Surface((self.grid_w, self.grid_h))
 
+        # High-performance caching for 60 FPS stability
+        self._cached_min_tx = None
+        self._cached_min_ty = None
+        self._cached_chests = []
+        self._dirty = True
+
         pygame.font.init()
         self.font = pygame.font.SysFont("Arial", 11, bold=True)
         self.font_sm = pygame.font.SysFont("Arial", 9)
+
+    def mark_dirty(self):
+        """Forces minimap terrain to re-bake on next render."""
+        self._dirty = True
 
     def toggle(self):
         """Cycles between Corner Minimap -> Large Map -> Hidden."""
         if self.mode == "corner":
             self.mode = "large"
             self.is_open = True
+            self._dirty = True
         elif self.mode == "large":
             self.mode = "hidden"
             self.is_open = False
         else:
             self.mode = "corner"
             self.is_open = True
+            self._dirty = True
 
     def render(self, target_surf, world, player, combat, lan_client=None):
         if not self.is_open or self.mode == "hidden":
@@ -111,31 +123,43 @@ class MiniMap:
         min_tx = ptx - self.grid_w // 2
         min_ty = pty - self.grid_h // 2
 
-        # 1. Bake terrain scan to map surface
-        for lx in range(self.grid_w):
-            tx = min_tx + lx
-            for ly in range(self.grid_h):
-                ty = min_ty + ly
-                if ty < 0:
-                    self.map_surf.set_at((lx, ly), (110, 180, 245)) # Sky
-                    continue
-                if ty >= world.height:
-                    self.map_surf.set_at((lx, ly), (20, 20, 20)) # Deep Bedrock
-                    continue
+        needs_rebuild = (self._dirty or
+                         self._cached_min_tx != min_tx or
+                         self._cached_min_ty != min_ty)
 
-                t_id = world.get_tile(tx, ty)
-                if t_id == TILE_AIR:
-                    w_id = world.get_wall(tx, ty)
-                    surf_y = world.get_surface_height(tx) if hasattr(world, "get_surface_height") else SURFACE_LEVEL
-                    if w_id != WALL_AIR:
-                        self.map_surf.set_at((lx, ly), (45, 38, 32))
-                    elif ty >= surf_y or ty >= SURFACE_LEVEL:
-                        self.map_surf.set_at((lx, ly), (32, 28, 25)) # Cavern air
+        # 1. Bake terrain scan to map surface (Cached: only rebuilds when player crosses tile or world changes)
+        if needs_rebuild:
+            self._cached_min_tx = min_tx
+            self._cached_min_ty = min_ty
+            self._cached_chests = []
+            self._dirty = False
+
+            for lx in range(self.grid_w):
+                tx = min_tx + lx
+                for ly in range(self.grid_h):
+                    ty = min_ty + ly
+                    if ty < 0:
+                        self.map_surf.set_at((lx, ly), (110, 180, 245)) # Sky
+                        continue
+                    if ty >= world.height:
+                        self.map_surf.set_at((lx, ly), (20, 20, 20)) # Deep Bedrock
+                        continue
+
+                    t_id = world.get_tile(tx, ty)
+                    if t_id == TILE_AIR:
+                        w_id = world.get_wall(tx, ty)
+                        surf_y = world.get_surface_height(tx) if hasattr(world, "get_surface_height") else SURFACE_LEVEL
+                        if w_id != WALL_AIR:
+                            self.map_surf.set_at((lx, ly), (45, 38, 32))
+                        elif ty >= surf_y or ty >= SURFACE_LEVEL:
+                            self.map_surf.set_at((lx, ly), (32, 28, 25)) # Cavern air
+                        else:
+                            self.map_surf.set_at((lx, ly), (110, 180, 245)) # Open sky
                     else:
-                        self.map_surf.set_at((lx, ly), (110, 180, 245)) # Open sky
-                else:
-                    col = TILE_MAP_COLORS.get(t_id, (100, 100, 100))
-                    self.map_surf.set_at((lx, ly), col)
+                        if t_id == TILE_CHEST:
+                            self._cached_chests.append((tx, ty))
+                        col = TILE_MAP_COLORS.get(t_id, (100, 100, 100))
+                        self.map_surf.set_at((lx, ly), col)
 
         # 2. Setup Screen Positioning
         if self.mode == "large":
@@ -172,15 +196,11 @@ class MiniMap:
             py = my + 18 + int(fy * inner_h)
             return px, py
 
-        # 3. Blips: Chests
-        for lx in range(self.grid_w):
-            tx = min_tx + lx
-            for ly in range(self.grid_h):
-                ty = min_ty + ly
-                if world.get_tile(tx, ty) == TILE_CHEST:
-                    cx, cy = world_to_map((tx + 0.5) * SCALED_TILE, (ty + 0.5) * SCALED_TILE)
-                    if mx + 4 <= cx <= mx + 4 + inner_w and my + 18 <= cy <= my + 18 + inner_h:
-                        pygame.draw.rect(target_surf, (255, 220, 0), (cx - 2, cy - 2, 4, 4))
+        # 3. Blips: Chests (drawn from cached list without scanning 2,816 tiles!)
+        for tx, ty in self._cached_chests:
+            cx, cy = world_to_map((tx + 0.5) * SCALED_TILE, (ty + 0.5) * SCALED_TILE)
+            if mx + 4 <= cx <= mx + 4 + inner_w and my + 18 <= cy <= my + 18 + inner_h:
+                pygame.draw.rect(target_surf, (255, 220, 0), (cx - 2, cy - 2, 4, 4))
 
         # 4. Blips: Regular Mobs (Red dots)
         for mob in combat.mobs:

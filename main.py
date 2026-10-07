@@ -12,6 +12,14 @@ import random
 # Enable HD crisp pixel scaling (nearest-neighbor) in scaled and fullscreen modes
 os.environ["SDL_RENDER_SCALE_QUALITY"] = "nearest"
 
+# Enable 1ms Windows timer resolution for rock-solid 60 FPS frame pacing
+if sys.platform == "win32":
+    try:
+        import ctypes
+        ctypes.windll.winmm.timeBeginPeriod(1)
+    except Exception:
+        pass
+
 import pygame
 
 # Import Game Definitions & Modules
@@ -555,6 +563,12 @@ class PotariaGame:
             self.client.disconnect()
         if self.server:
             self.server.stop()
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                ctypes.windll.winmm.timeEndPeriod(1)
+            except Exception:
+                pass
         pygame.quit()
         sys.exit()
 
@@ -1745,6 +1759,8 @@ class PotariaGame:
                             )
                         self.world.last_felled_tree = None
                         self.world.last_felled_trunks = []
+                self.lighting.dirty = True
+                self.hud.minimap.mark_dirty()
 
     def _get_tile_debris_color(self, tile_id):
         colors = {
@@ -1820,6 +1836,8 @@ class PotariaGame:
                 self.inventory.slots[self.inventory.selected_slot] = None
             if self.world.check_shelter(tx, ty):
                 self.achievement_manager.unlock("home_sweet_home")
+            self.lighting.dirty = True
+            self.hud.minimap.mark_dirty()
 
     def update_gameplay(self, dt):
         keys = pygame.key.get_pressed()

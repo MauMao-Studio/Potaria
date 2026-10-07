@@ -25,6 +25,15 @@ class LightingEngine:
         self.cached_smooth_light = None
         self.dirty = True
 
+        # State tracking for skipping redundant BFS & smoothscale passes
+        self._last_min_tx = None
+        self._last_min_ty = None
+        self._last_max_tx = None
+        self._last_max_ty = None
+        self._last_sunlight = None
+        self._last_torch_keys = None
+        self._last_tint = None
+
     def compute_viewport_light(self, world, min_tx, min_ty, max_tx, max_ty, ambient_sunlight=15, torch_positions=None, ambient_tint=(1.0, 1.0, 1.0)):
         """
         Calculates 2D light levels for the current camera viewport using BFS propagation.
@@ -40,6 +49,29 @@ class LightingEngine:
         grid_h = max_ty - min_ty + 1
         if grid_w <= 0 or grid_h <= 0:
             return
+
+        # Check if lighting conditions actually changed
+        torch_keys = tuple(torch_positions) if torch_positions else ()
+        state_changed = (
+            self.dirty or
+            min_tx != self._last_min_tx or
+            min_ty != self._last_min_ty or
+            max_tx != self._last_max_tx or
+            max_ty != self._last_max_ty or
+            ambient_sunlight != self._last_sunlight or
+            torch_keys != self._last_torch_keys or
+            ambient_tint != self._last_tint
+        )
+        if not state_changed:
+            return
+
+        self._last_min_tx = min_tx
+        self._last_min_ty = min_ty
+        self._last_max_tx = max_tx
+        self._last_max_ty = max_ty
+        self._last_sunlight = ambient_sunlight
+        self._last_torch_keys = torch_keys
+        self._last_tint = ambient_tint
 
         # 2D light array for the viewport
         # 0 = complete pitch black, 15 = maximum brightness
