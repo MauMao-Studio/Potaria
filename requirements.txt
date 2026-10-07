@@ -1,0 +1,4 @@
+# Potaria - Python Dependencies
+# Developed by Kurados
+
+pygame-ce>=2.5.0

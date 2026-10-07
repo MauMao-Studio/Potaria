@@ -1,0 +1,749 @@
+"""
+Potaria - Boss Entity System: Dungeon Mini-Bosses & Souls-Like Grand Boss
+Featuring:
+- Underground Mini-Bosses: Lord Malus, Ignis Colossus, Cryo-Spud, Necro-Tuber
+- Grand Boss: SOL-RHO THE CELESTIAL TITAN (2-Phase Souls-like battle with color transformation,
+  dual health bars, Black Hole Singularity, Void Meteors, and LAN multiplayer difficulty scaling!)
+Developer: Kurados
+"""
+
+import math
+import random
+import pygame
+from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALED_TILE
+
+class BossProjectile:
+    """Universal ballistic or homing boss projectile."""
+    def __init__(self, x, y, vx, vy, sprite, damage=18, radius=12, life=4.0, p_type="linear", gravity=0.0):
+        self.x = float(x)
+        self.y = float(y)
+        self.vx = float(vx)
+        self.vy = float(vy)
+        self.sprite = sprite
+        self.damage = damage
+        self.radius = radius
+        self.life = float(life)
+        self.max_life = float(life)
+        self.p_type = p_type  # "linear", "homing", "gravity", "singularity", "meteor"
+        self.gravity = gravity
+        self.frect = pygame.FRect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
+
+    @property
+    def rect(self):
+        self.frect.x = self.x - self.radius
+        self.frect.y = self.y - self.radius
+        return self.frect
+
+    def update(self, dt, player=None):
+        self.life -= dt
+        
+        if self.p_type == "gravity":
+            self.vy += self.gravity * dt
+            self.x += self.vx
+            self.y += self.vy
+
+        elif self.p_type == "homing" and player and not player.is_dead:
+            # Gentle steering towards player
+            angle_to_player = math.atan2(player.center_y - self.y, player.center_x - self.x)
+            cur_speed = math.hypot(self.vx, self.vy)
+            self.vx = self.vx * 0.94 + math.cos(angle_to_player) * cur_speed * 0.06
+            self.vy = self.vy * 0.94 + math.sin(angle_to_player) * cur_speed * 0.06
+            self.x += self.vx
+            self.y += self.vy
+
+        elif self.p_type == "singularity" and player and not player.is_dead:
+            # Gravitational vortex pull on player!
+            dist = math.hypot(player.center_x - self.x, player.center_y - self.y)
+            if dist < 320.0 and dist > 10.0:
+                pull = (1.0 - (dist / 320.0)) * 4.5
+                angle = math.atan2(self.y - player.center_y, self.x - player.center_x)
+                player.vx += math.cos(angle) * pull * 0.5
+                player.vy += math.sin(angle) * pull * 0.5
+            self.x += self.vx
+            self.y += self.vy
+
+        else: # "linear" or "meteor"
+            self.x += self.vx
+            self.y += self.vy
+
+    def render(self, target_surf, camera):
+        sw = self.sprite.get_width()
+        sh = self.sprite.get_height()
+        sx, sy = camera.world_to_screen(self.x - sw // 2, self.y - sh // 2)
+        target_surf.blit(self.sprite, (sx, sy))
+
+
+# ==============================================================================
+# BASE DUNGEON MINI-BOSS
+# ==============================================================================
+class DungeonMiniBoss:
+    """Base class for subterranean dungeon mini-boss encounters."""
+    def __init__(self, x, y, asset_factory, sound_manager, name, max_hp, damage, sprite_key, proj_key):
+        self.x = float(x)
+        self.y = float(y)
+        self.width = 96
+        self.height = 96
+        self.max_hp = max_hp
+        self.hp = max_hp
+        self.damage = damage
+        self.name = name
+        self.is_mini_boss = True
+        self.boss_type = "dungeon_mini_boss"
+        self.frect = pygame.FRect(self.x, self.y, self.width, self.height)
+
+        self.asset_factory = asset_factory
+        self.sound_manager = sound_manager
+
+        raw_frames = asset_factory.boss.get(sprite_key, asset_factory.boss["lord_malus"])
+        self.frames = [pygame.transform.scale(f, (self.width, self.height)) for f in raw_frames]
+        self.proj_sprite = pygame.transform.scale(asset_factory.boss.get(proj_key, asset_factory.boss["fireball"]), (28, 28))
+
+        self.frame_idx = 0
+        self.anim_timer = 0.0
+        self.state = "hover"
+        self.state_timer = 2.5
+        self.vx = 0.0
+        self.vy = 0.0
+        self.is_dead = False
+        self.hurt_timer = 0.0
+        self.phase = 1
+        self.projectiles = []
+        self.attack_cooldown = 1.6
+
+        # Status Effects (Burn & Bleed DoT)
+        self.burn_timer = 0.0
+        self.burn_dps = 0
+        self.bleed_timer = 0.0
+        self.bleed_dps = 0
+        self.dot_tick_timer = 0.0
+
+    def apply_burn(self, dps=10, duration=4.0):
+        self.burn_dps = max(self.burn_dps, dps)
+        self.burn_timer = max(self.burn_timer, duration)
+
+    def apply_bleed(self, dps=10, duration=5.0):
+        self.bleed_dps = max(self.bleed_dps, dps)
+        self.bleed_timer = max(self.bleed_timer, duration)
+
+    def update_dots(self, dt):
+        """Ticks active burn and bleed DoT timers and inflicts periodic tick damage to boss."""
+        if (self.burn_timer > 0 or self.bleed_timer > 0) and not self.is_dead:
+            self.dot_tick_timer += dt
+            if self.burn_timer > 0:
+                self.burn_timer -= dt
+                if self.burn_timer <= 0:
+                    self.burn_dps = 0
+            if self.bleed_timer > 0:
+                self.bleed_timer -= dt
+                if self.bleed_timer <= 0:
+                    self.bleed_dps = 0
+
+            if self.dot_tick_timer >= 1.0:
+                self.dot_tick_timer = 0.0
+                total_dot = (self.burn_dps if self.burn_dps > 0 else 0) + (self.bleed_dps if self.bleed_dps > 0 else 0)
+                if total_dot > 0:
+                    self.take_damage(total_dot)
+
+    @property
+    def rect(self):
+        self.frect.x = self.x
+        self.frect.y = self.y
+        return self.frect
+
+    @property
+    def center_x(self):
+        return self.x + self.width / 2.0
+
+    @property
+    def center_y(self):
+        return self.y + self.height / 2.0
+
+    @property
+    def is_alive(self):
+        return not self.is_dead and self.hp > 0
+
+    @property
+    def alive(self):
+        return not self.is_dead and self.hp > 0
+
+    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=0.0):
+        if self.is_dead:
+            return False
+        self.hp -= amount
+        self.hurt_timer = 0.15
+        self.vx += knockback_vx * 0.15
+        self.vy += knockback_vy * 0.15
+
+        if self.hp <= self.max_hp * 0.5 and self.phase == 1:
+            self.phase = 2
+            self.attack_cooldown = 0.95
+
+        if self.hp <= 0:
+            self.hp = 0
+            self.is_dead = True
+        return True
+
+    def update(self, dt, world, player, particle_system, camera):
+        if self.is_dead:
+            return
+
+        if self.hurt_timer > 0:
+            self.hurt_timer -= dt
+
+        self.anim_timer += dt
+        if self.anim_timer >= 0.18:
+            self.anim_timer = 0.0
+            self.frame_idx = (self.frame_idx + 1) % len(self.frames)
+
+        dist_x = player.center_x - self.center_x
+        dist_y = player.center_y - self.center_y
+
+        self.state_timer -= dt
+        self.attack_cooldown -= dt
+
+        if self.state == "hover":
+            target_x = player.center_x + math.sin(pygame.time.get_ticks() * 0.002) * 160
+            target_y = player.center_y - 130 + math.cos(pygame.time.get_ticks() * 0.003) * 50
+            self.vx += (target_x - self.x) * 0.035
+            self.vy += (target_y - self.y) * 0.035
+            self.vx *= 0.92
+            self.vy *= 0.92
+
+            if self.attack_cooldown <= 0:
+                self.attack_cooldown = 1.6 if self.phase == 1 else 0.95
+                self._cast_attack(player, particle_system)
+
+            if self.state_timer <= 0:
+                self.state = "charge"
+                self.state_timer = 1.3
+                charge_speed = 6.8 if self.phase == 1 else 8.8
+                angle = math.atan2(dist_y, dist_x)
+                self.vx = math.cos(angle) * charge_speed
+                self.vy = math.sin(angle) * charge_speed
+                camera.add_shake(4.0, 0.3)
+
+        elif self.state == "charge":
+            self.vx *= 0.98
+            self.vy *= 0.98
+            particle_system.spawn_debris(self.center_x, self.center_y, self._trail_color(), count=2)
+            if self.state_timer <= 0:
+                self.state = "hover"
+                self.state_timer = random.uniform(2.4, 3.6)
+
+        self.x += self.vx
+        self.y += self.vy
+
+        # Update Projectiles
+        for p in self.projectiles:
+            p.update(dt, player)
+            if p.rect.colliderect(player.rect):
+                damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-3.5)
+                if damaged:
+                    p.life = 0
+                    particle_system.spawn_sparks(player.center_x, player.center_y, self._trail_color(), 8)
+                    camera.add_shake(4.0, 0.2)
+
+        self.projectiles = [p for p in self.projectiles if p.life > 0]
+
+    def _cast_attack(self, player, particle_system):
+        angle = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+        speed = 5.4
+        vx = math.cos(angle) * speed
+        vy = math.sin(angle) * speed
+        self.projectiles.append(BossProjectile(self.center_x, self.center_y, vx, vy, self.proj_sprite, damage=self.damage - 4))
+
+        if self.phase == 2:
+            for offset in (-0.35, 0.35):
+                svx = math.cos(angle + offset) * speed
+                svy = math.sin(angle + offset) * speed
+                self.projectiles.append(BossProjectile(self.center_x, self.center_y, svx, svy, self.proj_sprite, damage=self.damage - 4))
+        particle_system.spawn_sparks(self.center_x, self.center_y, self._trail_color(), count=10)
+
+    def _trail_color(self):
+        return (160, 50, 180)
+
+    def render(self, target_surf, camera):
+        if self.is_dead:
+            return
+
+        for p in self.projectiles:
+            p.render(target_surf, camera)
+
+        sx, sy = camera.world_to_screen(self.x, self.y)
+        cur_surf = self.frames[self.frame_idx]
+
+        if self.hurt_timer > 0:
+            tinted = cur_surf.copy()
+            tinted.fill((255, 80, 80, 180), special_flags=pygame.BLEND_RGBA_MULT)
+            cur_surf = tinted
+
+        target_surf.blit(cur_surf, (sx, sy))
+
+    def render_boss_bar(self, target_surf, font, font_title):
+        if self.is_dead:
+            return
+        bar_w = 460
+        bar_h = 22
+        bar_x = (SCREEN_WIDTH - bar_w) // 2
+        bar_y = 25
+
+        pygame.draw.rect(target_surf, (20, 15, 30, 230), (bar_x - 6, bar_y - 20, bar_w + 12, bar_h + 28), border_radius=6)
+        pygame.draw.rect(target_surf, (255, 215, 0), (bar_x - 6, bar_y - 20, bar_w + 12, bar_h + 28), 2, border_radius=6)
+
+        title_txt = font.render(f"DUNGEON MINI-BOSS: {self.name.upper()}", True, (255, 230, 100))
+        target_surf.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, bar_y - 17))
+
+        pct = max(0.0, min(1.0, self.hp / float(self.max_hp)))
+        fill_w = int(bar_w * pct)
+        pygame.draw.rect(target_surf, (45, 20, 35), (bar_x, bar_y, bar_w, bar_h))
+        if fill_w > 0:
+            pygame.draw.rect(target_surf, (220, 40, 60), (bar_x, bar_y, fill_w, bar_h))
+            pygame.draw.rect(target_surf, (255, 130, 160), (bar_x, bar_y, fill_w, 4))
+        pygame.draw.rect(target_surf, (200, 180, 120), (bar_x, bar_y, bar_w, bar_h), 2)
+
+        hp_str = f"{self.hp} / {self.max_hp}"
+        num_txt = font.render(hp_str, True, (255, 255, 255))
+        target_surf.blit(num_txt, (SCREEN_WIDTH // 2 - num_txt.get_width() // 2, bar_y + 3))
+
+
+# Specific Mini-Boss Classes
+class LordMalus(DungeonMiniBoss):
+    boss_type = "lord_malus"
+    def __init__(self, x, y, asset_factory, sound_manager):
+        super().__init__(x, y, asset_factory, sound_manager,
+                         name="Lord Malus - The Blight-Bringer",
+                         max_hp=450, damage=22,
+                         sprite_key="lord_malus", proj_key="fireball")
+        self.boss_type = "lord_malus"
+
+    def _trail_color(self):
+        return (140, 40, 180)
+
+class IgnisColossus(DungeonMiniBoss):
+    boss_type = "ignis_colossus"
+    def __init__(self, x, y, asset_factory, sound_manager):
+        super().__init__(x, y, asset_factory, sound_manager,
+                         name="Ignis Colossus - The Magma Golem",
+                         max_hp=500, damage=26,
+                         sprite_key="ignis_colossus", proj_key="magma_bomb")
+        self.boss_type = "ignis_colossus"
+
+    def _trail_color(self):
+        return (255, 80, 20)
+
+class CryoSpud(DungeonMiniBoss):
+    boss_type = "cryo_spud"
+    def __init__(self, x, y, asset_factory, sound_manager):
+        super().__init__(x, y, asset_factory, sound_manager,
+                         name="Cryo-Spud - The Glacial Terror",
+                         max_hp=460, damage=20,
+                         sprite_key="cryo_spud", proj_key="frost_shard")
+        self.boss_type = "cryo_spud"
+
+    def _trail_color(self):
+        return (120, 220, 255)
+
+class NecroTuber(DungeonMiniBoss):
+    boss_type = "necro_tuber"
+    def __init__(self, x, y, asset_factory, sound_manager):
+        super().__init__(x, y, asset_factory, sound_manager,
+                         name="Necro-Tuber - Lord of Bones",
+                         max_hp=440, damage=24,
+                         sprite_key="necro_tuber", proj_key="ghost_skull")
+        self.boss_type = "necro_tuber"
+
+    def _trail_color(self):
+        return (200, 200, 210)
+
+
+# ==============================================================================
+# GRAND BOSS: SOL-RHO THE CELESTIAL TITAN (2-PHASE SOULS-LIKE BATTLE)
+# ==============================================================================
+class GrandBossSolRho:
+    boss_type = "grand_boss_sol_rho"
+    """
+    The Ultimate Grand Boss of Potaria:
+    - Phase 1: Radiant Golden Solar Titan (1000 base HP). Sweeping solar flare rays, homing solar orbs, dive bomb.
+    - Transformation: Screen shakes violently, sky darkens, golden form shatters and resurrects as Dark Void Obsidian!
+    - Phase 2: Awakened Void Incarnate (1400 full second health bar). Black Hole Singularity, Void Meteor Rain, Warp Blitz!
+    - Multiplayer: Dynamic HP & speed scaling when party size > 1.
+    """
+    def __init__(self, x, y, asset_factory, sound_manager, party_size=1):
+        self.x = float(x)
+        self.y = float(y)
+        self.width = 128
+        self.height = 128
+        self.party_size = max(1, party_size)
+        self.is_mini_boss = False
+        self.boss_type = "grand_boss_sol_rho"
+
+        # Scaled Boss HP for multiplayer parties!
+        scale_factor = 1.0 + (self.party_size - 1) * 0.6
+        self.p1_max_hp = int(1000 * scale_factor)
+        self.p2_max_hp = int(1400 * scale_factor)
+        self.max_hp = self.p1_max_hp
+        self.hp = self.max_hp
+        self.damage = 30 + int((self.party_size - 1) * 4)
+
+        self.name = "Sol-Rho - The Celestial Titan"
+        self.frect = pygame.FRect(self.x, self.y, self.width, self.height)
+
+        self.asset_factory = asset_factory
+        self.sound_manager = sound_manager
+
+        # Sprites for Phase 1 (Golden) and Phase 2 (Void Obsidian)
+        p1_raw = asset_factory.boss["sol_rho_phase1"]
+        p2_raw = asset_factory.boss["sol_rho_phase2"]
+        self.p1_frames = [pygame.transform.scale(f, (self.width, self.height)) for f in p1_raw]
+        self.p2_frames = [pygame.transform.scale(f, (self.width, self.height)) for f in p2_raw]
+
+        self.solar_orb_sprite = pygame.transform.scale(asset_factory.boss["solar_orb"], (32, 32))
+        self.void_meteor_sprite = pygame.transform.scale(asset_factory.boss["void_meteor"], (36, 36))
+        self.singularity_sprite = pygame.transform.scale(asset_factory.boss["singularity"], (64, 64))
+
+        self.frame_idx = 0
+        self.anim_timer = 0.0
+
+        # State & Phase Management
+        self.phase = 1
+        self.is_transforming = False
+        self.transform_timer = 0.0
+        self.state = "float"  # float, solar_beam, meteor_rain, singularity_cast, blitz
+        self.state_timer = 3.0
+        self.attack_cooldown = 1.4
+
+        self.vx = 0.0
+        self.vy = 0.0
+        self.is_dead = False
+        self.grand_boss_defeated = False
+        self.hurt_timer = 0.0
+        self.projectiles = []
+
+        # Status Effects (Burn & Bleed DoT)
+        self.burn_timer = 0.0
+        self.burn_dps = 0
+        self.bleed_timer = 0.0
+        self.bleed_dps = 0
+        self.dot_tick_timer = 0.0
+
+    def apply_burn(self, dps=12, duration=4.0):
+        self.burn_dps = max(self.burn_dps, dps)
+        self.burn_timer = max(self.burn_timer, duration)
+
+    def apply_bleed(self, dps=12, duration=5.0):
+        self.bleed_dps = max(self.bleed_dps, dps)
+        self.bleed_timer = max(self.bleed_timer, duration)
+
+    def update_dots(self, dt):
+        """Ticks active burn and bleed DoT timers and inflicts periodic tick damage to grand boss."""
+        if (self.burn_timer > 0 or self.bleed_timer > 0) and not self.is_dead and not self.grand_boss_defeated and not self.is_transforming:
+            self.dot_tick_timer += dt
+            if self.burn_timer > 0:
+                self.burn_timer -= dt
+                if self.burn_timer <= 0:
+                    self.burn_dps = 0
+            if self.bleed_timer > 0:
+                self.bleed_timer -= dt
+                if self.bleed_timer <= 0:
+                    self.bleed_dps = 0
+
+            if self.dot_tick_timer >= 1.0:
+                self.dot_tick_timer = 0.0
+                total_dot = (self.burn_dps if self.burn_dps > 0 else 0) + (self.bleed_dps if self.bleed_dps > 0 else 0)
+                if total_dot > 0:
+                    self.take_damage(total_dot)
+
+    @property
+    def rect(self):
+        self.frect.x = self.x
+        self.frect.y = self.y
+        return self.frect
+
+    @property
+    def center_x(self):
+        return self.x + self.width / 2.0
+
+    @property
+    def center_y(self):
+        return self.y + self.height / 2.0
+
+    @property
+    def is_alive(self):
+        return not self.is_dead and not self.grand_boss_defeated
+
+    @property
+    def alive(self):
+        return not self.is_dead and not self.grand_boss_defeated
+
+    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=0.0):
+        if self.is_dead or self.is_transforming:
+            return False
+
+        self.hp -= amount
+        self.hurt_timer = 0.15
+        self.vx += knockback_vx * 0.08
+        self.vy += knockback_vy * 0.08
+
+        # PHASE 1 DEPLETED -> TRIGGER DRAMATIC SOULS-LIKE RESURRECTION & TRANSFORMATION!
+        if self.phase == 1 and self.hp <= 0:
+            self.hp = 0
+            self.is_transforming = True
+            self.transform_timer = 2.2
+            self.sound_manager.play("craft")
+            return True
+
+        # PHASE 2 DEPLETED -> TRUE VICTORY!
+        if self.phase == 2 and self.hp <= 0:
+            self.hp = 0
+            self.is_dead = True
+            self.grand_boss_defeated = True
+            return True
+
+        return True
+
+    def update(self, dt, world, player, particle_system, camera):
+        if self.is_dead:
+            return
+
+        if self.hurt_timer > 0:
+            self.hurt_timer -= dt
+
+        # Handle Phase Transition Animation
+        if self.is_transforming:
+            self.transform_timer -= dt
+            self.vx = 0.0
+            self.vy = 0.0
+            camera.add_shake(12.0, 0.4)
+            # Explode in cosmic void sparks
+            particle_system.spawn_sparks(self.center_x + random.uniform(-40, 40),
+                                         self.center_y + random.uniform(-40, 40),
+                                         (220, 40, 180), count=4)
+
+            if self.transform_timer <= 0:
+                # Awaken Phase 2!
+                self.is_transforming = False
+                self.phase = 2
+                self.name = "Awakened Sol-Rho - Void Incarnate"
+                self.max_hp = self.p2_max_hp
+                self.hp = self.p2_max_hp
+                self.damage += 8
+                self.state = "float"
+                self.state_timer = 2.5
+                self.attack_cooldown = 1.0
+                camera.add_shake(18.0, 0.8)
+                self.sound_manager.play("hurt")
+            return
+
+        # Animate titan breathing
+        self.anim_timer += dt
+        frames_list = self.p1_frames if self.phase == 1 else self.p2_frames
+        if self.anim_timer >= 0.14:
+            self.anim_timer = 0.0
+            self.frame_idx = (self.frame_idx + 1) % len(frames_list)
+
+        self.state_timer -= dt
+        self.attack_cooldown -= dt
+
+        dist_x = player.center_x - self.center_x
+        dist_y = player.center_y - self.center_y
+
+        # ==========================================
+        # PHASE 1 AI: RADIANT SOLAR TITAN
+        # ==========================================
+        if self.phase == 1:
+            if self.state == "float":
+                target_x = player.center_x + math.sin(pygame.time.get_ticks() * 0.002) * 180
+                target_y = player.center_y - 150 + math.cos(pygame.time.get_ticks() * 0.003) * 60
+                self.vx += (target_x - self.x) * 0.035
+                self.vy += (target_y - self.y) * 0.035
+                self.vx *= 0.92
+                self.vy *= 0.92
+
+                if self.attack_cooldown <= 0:
+                    self.attack_cooldown = 1.5 / (1.0 + (self.party_size - 1) * 0.2)
+                    self._cast_solar_orbs(player, particle_system)
+
+                if self.state_timer <= 0:
+                    self.state = "dive"
+                    self.state_timer = 1.4
+                    ang = math.atan2(dist_y, dist_x)
+                    self.vx = math.cos(ang) * 9.5
+                    self.vy = math.sin(ang) * 9.5
+                    camera.add_shake(6.0, 0.3)
+
+            elif self.state == "dive":
+                self.vx *= 0.98
+                self.vy *= 0.98
+                particle_system.spawn_debris(self.center_x, self.center_y, (255, 215, 0), count=3)
+                if self.state_timer <= 0:
+                    self.state = "float"
+                    self.state_timer = random.uniform(2.5, 3.8)
+
+        # ==========================================
+        # PHASE 2 AI: AWAKENED VOID GOD
+        # ==========================================
+        else:
+            if self.state == "float":
+                target_x = player.center_x + math.sin(pygame.time.get_ticks() * 0.003) * 220
+                target_y = player.center_y - 170 + math.cos(pygame.time.get_ticks() * 0.004) * 70
+                self.vx += (target_x - self.x) * 0.045
+                self.vy += (target_y - self.y) * 0.045
+                self.vx *= 0.93
+                self.vy *= 0.93
+
+                if self.attack_cooldown <= 0:
+                    self.attack_cooldown = 1.1 / (1.0 + (self.party_size - 1) * 0.25)
+                    r_atk = random.random()
+                    if r_atk < 0.45:
+                        self._cast_void_meteors(player, particle_system, camera)
+                    elif r_atk < 0.75:
+                        self._cast_singularity(player, particle_system, camera)
+                    else:
+                        self._cast_solar_orbs(player, particle_system)
+
+                if self.state_timer <= 0:
+                    # Switch to Abyssal Warp Blitz
+                    self.state = "blitz"
+                    self.state_timer = 1.2
+                    # Teleport near player
+                    self.x = player.center_x + random.choice([-240, 240])
+                    self.y = player.center_y - 80
+                    ang = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+                    self.vx = math.cos(ang) * 12.0
+                    self.vy = math.sin(ang) * 12.0
+                    camera.add_shake(8.0, 0.4)
+                    particle_system.spawn_sparks(self.center_x, self.center_y, (200, 40, 255), count=25)
+
+            elif self.state == "blitz":
+                self.vx *= 0.97
+                self.vy *= 0.97
+                particle_system.spawn_debris(self.center_x, self.center_y, (180, 20, 220), count=4)
+                if self.state_timer <= 0:
+                    self.state = "float"
+                    self.state_timer = random.uniform(2.0, 3.2)
+
+        self.x += self.vx
+        self.y += self.vy
+
+        # Update Projectiles
+        for p in self.projectiles:
+            p.update(dt, player)
+            if p.rect.colliderect(player.rect):
+                damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-4.0)
+                if damaged:
+                    if p.p_type != "singularity":
+                        p.life = 0
+                    particle_system.spawn_sparks(player.center_x, player.center_y, (255, 60, 160), 10)
+                    camera.add_shake(5.0, 0.25)
+
+        self.projectiles = [p for p in self.projectiles if p.life > 0]
+
+    def _cast_solar_orbs(self, player, particle_system):
+        angle = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+        speed = 5.8
+        count = 3 if self.phase == 1 else 5
+        offsets = [-0.4, 0.0, 0.4] if count == 3 else [-0.6, -0.3, 0.0, 0.3, 0.6]
+
+        for off in offsets:
+            svx = math.cos(angle + off) * speed
+            svy = math.sin(angle + off) * speed
+            sprite = self.solar_orb_sprite if self.phase == 1 else self.void_meteor_sprite
+            p_type = "homing" if self.phase == 2 else "linear"
+            self.projectiles.append(BossProjectile(self.center_x, self.center_y, svx, svy, sprite, damage=self.damage - 5, p_type=p_type))
+
+        col = (255, 230, 80) if self.phase == 1 else (200, 50, 255)
+        particle_system.spawn_sparks(self.center_x, self.center_y, col, count=16)
+
+    def _cast_void_meteors(self, player, particle_system, camera):
+        camera.add_shake(7.0, 0.4)
+        for i in range(5):
+            mx = player.center_x + random.uniform(-350, 350)
+            my = player.center_y - random.uniform(400, 550)
+            self.projectiles.append(BossProjectile(mx, my, vx=random.uniform(-1.5, 1.5), vy=8.5,
+                                                   sprite=self.void_meteor_sprite, damage=self.damage + 2,
+                                                   radius=14, p_type="meteor"))
+        particle_system.spawn_sparks(self.center_x, self.center_y, (255, 60, 120), count=15)
+
+    def _cast_singularity(self, player, particle_system, camera):
+        camera.add_shake(9.0, 0.5)
+        # Spawn black hole near player
+        sx = player.center_x + random.uniform(-140, 140)
+        sy = player.center_y - 80
+        self.projectiles.append(BossProjectile(sx, sy, vx=0.0, vy=0.0,
+                                               sprite=self.singularity_sprite, damage=14,
+                                               radius=28, life=4.5, p_type="singularity"))
+        particle_system.spawn_sparks(sx, sy, (140, 30, 240), count=25)
+
+    def render(self, target_surf, camera):
+        if self.is_dead:
+            return
+
+        for p in self.projectiles:
+            p.render(target_surf, camera)
+
+        sx, sy = camera.world_to_screen(self.x, self.y)
+        frames_list = self.p1_frames if self.phase == 1 else self.p2_frames
+        cur_surf = frames_list[self.frame_idx % len(frames_list)]
+
+        if self.hurt_timer > 0 or self.is_transforming:
+            tinted = cur_surf.copy()
+            tint_color = (255, 255, 255, 220) if self.is_transforming else (255, 70, 70, 180)
+            tinted.fill(tint_color, special_flags=pygame.BLEND_RGBA_MULT)
+            cur_surf = tinted
+
+        target_surf.blit(cur_surf, (sx, sy))
+
+    def render_boss_bar(self, target_surf, font, font_title):
+        if self.is_dead:
+            return
+        bar_w = 560
+        bar_h = 26
+        bar_x = (SCREEN_WIDTH - bar_w) // 2
+        bar_y = 25
+
+        border_col = (255, 215, 0) if self.phase == 1 else (220, 60, 255)
+        bg_col = (20, 15, 30, 245)
+
+        pygame.draw.rect(target_surf, bg_col, (bar_x - 8, bar_y - 22, bar_w + 16, bar_h + 32), border_radius=8)
+        pygame.draw.rect(target_surf, border_col, (bar_x - 8, bar_y - 22, bar_w + 16, bar_h + 32), 2, border_radius=8)
+
+        # Title
+        p_tag = "PHASE I: CELESTIAL TITAN" if self.phase == 1 else "✦ PHASE II: AWAKENED VOID GOD ✦"
+        t_col = (255, 235, 100) if self.phase == 1 else (255, 120, 240)
+        title_txt = font.render(f"{self.name.upper()}  [{p_tag}]", True, t_col)
+        target_surf.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, bar_y - 18))
+
+        pct = max(0.0, min(1.0, self.hp / float(self.max_hp)))
+        fill_w = int(bar_w * pct)
+
+        pygame.draw.rect(target_surf, (40, 15, 35), (bar_x, bar_y, bar_w, bar_h))
+        fill_col = (255, 160, 20) if self.phase == 1 else (160, 20, 220)
+        hi_col = (255, 235, 120) if self.phase == 1 else (255, 100, 220)
+
+        if fill_w > 0:
+            pygame.draw.rect(target_surf, fill_col, (bar_x, bar_y, fill_w, bar_h))
+            pygame.draw.rect(target_surf, hi_col, (bar_x, bar_y, fill_w, 4))
+
+        pygame.draw.rect(target_surf, (220, 200, 140), (bar_x, bar_y, bar_w, bar_h), 2)
+
+        hp_str = f"{self.hp} / {self.max_hp}"
+        if self.is_transforming:
+            hp_str = "✦ AWAKENING TRUE VOID FORM... ✦"
+        num_txt = font.render(hp_str, True, (255, 255, 255))
+        target_surf.blit(num_txt, (SCREEN_WIDTH // 2 - num_txt.get_width() // 2, bar_y + 4))
+
+
+BOSS_TYPE_REGISTRY = {
+    "lord_malus": LordMalus,
+    "ignis_colossus": IgnisColossus,
+    "cryo_spud": CryoSpud,
+    "necro_tuber": NecroTuber,
+    "grand_boss_sol_rho": GrandBossSolRho,
+}
+
+def create_boss_by_type(boss_type, x, y, asset_factory, sound_manager, party_size=1):
+    """Instantiates a boss entity by its string identifier."""
+    cls = BOSS_TYPE_REGISTRY.get(boss_type, LordMalus)
+    if cls is GrandBossSolRho:
+        return cls(x, y, asset_factory, sound_manager, party_size=party_size)
+    return cls(x, y, asset_factory, sound_manager)

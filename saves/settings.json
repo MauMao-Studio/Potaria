@@ -1,0 +1,24 @@
+{
+  "settings": {
+    "master_volume": 0.8,
+    "bgm_volume": 0.65,
+    "sfx_volume": 0.88,
+    "fullscreen": true,
+    "screen_shake": false,
+    "touch_controls": "on",
+    "touch_opacity": 0.75
+  },
+  "key_bindings": {
+    "Move Left": 97,
+    "Move Right": 100,
+    "Jump": 32,
+    "Drop Platform": 115,
+    "Inventory": 101,
+    "Character Status": 99,
+    "Toggle Mini-Map": 109,
+    "Skill Q": 113,
+    "Skill F": 102,
+    "Skill V": 118,
+    "Skill R": 114
+  }
+}

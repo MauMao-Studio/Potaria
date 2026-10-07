@@ -1,0 +1,575 @@
+"""
+Potaria - Heads-Up Display (HUD) & Party Interface
+Renders health hearts, MP bar, EXP bar, hotbar slots, skill bar cooldowns,
+LAN multiplayer party members, text chat, toggleable mini-map, and rich item tooltips.
+Developer: Kurados
+"""
+
+import math
+import pygame
+from src.constants import (
+    SCREEN_WIDTH, SCREEN_HEIGHT, SLOT_SIZE, SLOT_PADDING,
+    HOTBAR_SLOTS, INV_COLS, INV_ROWS, SCALED_TILE, COLOR_GOLD,
+    RARITY_COLORS, RARITY_COMMON
+)
+from src.ui.inventory import ITEM_REGISTRY
+from src.rpg.skills import SKILL_DEFINITIONS
+from src.ui.minimap import MiniMap
+
+class HUD:
+    def __init__(self, asset_factory):
+        self.asset_factory = asset_factory
+        
+        self.heart_full = pygame.transform.scale(asset_factory.ui["heart_full"], (22, 22))
+        self.heart_empty = pygame.transform.scale(asset_factory.ui["heart_empty"], (22, 22))
+        self.slot_frame = asset_factory.ui["slot_frame"]
+        self.slot_selected = asset_factory.ui["slot_selected"]
+        self.reticle = pygame.transform.scale(asset_factory.ui["reticle"], (SCALED_TILE, SCALED_TILE))
+        self.bubble_full = asset_factory.ui.get("bubble_full")
+        self.bubble_empty = asset_factory.ui.get("bubble_empty")
+        self.bubble_pop = asset_factory.ui.get("bubble_pop")
+
+        # MiniMap component (Corner Radar & Expanded Map)
+        self.minimap = MiniMap()
+
+        # Fonts
+        pygame.font.init()
+        self.font = pygame.font.SysFont("Arial", 13, bold=True)
+        self.font_sm = pygame.font.SysFont("Arial", 11)
+        self.font_lg = pygame.font.SysFont("Arial", 16, bold=True)
+        self.font_lore = pygame.font.SysFont("Georgia", 11, italic=True)
+
+        # Chat & Console input state
+        self.chat_active = False
+        self.chat_input_text = ""
+        self.local_chat_history = []
+
+    def render(self, target_surf, player, inventory, crafting_system, camera, mouse_x, mouse_y, world=None, combat=None, lan_client=None):
+        # 1. Health & Mana (Top Right)
+        self._render_hp_and_mp(target_surf, player)
+
+        # 2. Mini-Map (Corner Radar or Overview Map toggled via [M])
+        if world and combat:
+            self.minimap.render(target_surf, world, player, combat, lan_client)
+
+        # 3. Notification Banner (Learned Skill / Event Notifications)
+        if getattr(inventory, "last_learned_message", None):
+            self._render_notification_banner(target_surf, inventory.last_learned_message)
+
+        # 4. Inventory Slots (Hotbar & Backpack)
+        hovered_slot = self._render_inventory(target_surf, inventory, mouse_x, mouse_y, player=player)
+
+        # 5. Quick Skill Bar with Cooldown Overlays (Bottom Center)
+        self._render_skill_bar(target_surf, player)
+
+        # 6. Crafting Menu
+        if inventory.is_open:
+            crafting_system.render(target_surf, mouse_x, mouse_y, self.font)
+
+        # 7. Item Tooltip (Rich Rarity, Stats, Description, Special Effects & Lore)
+        if hovered_slot and hovered_slot.data:
+            self._render_tooltip(target_surf, mouse_x, mouse_y, hovered_slot)
+
+        # 8. Held Dragging Item
+        if inventory.held_item:
+            icon = self.asset_factory.items.get(inventory.held_item.item_id)
+            if icon:
+                target_surf.blit(icon, (mouse_x - 12, mouse_y - 12))
+            if inventory.held_item.count > 1:
+                cnt_txt = self.font.render(str(inventory.held_item.count), True, (255, 255, 255))
+                target_surf.blit(cnt_txt, (mouse_x + 4, mouse_y + 4))
+
+        # 9. LAN Multiplayer Party HUD & Chat / Cheat Console
+        if lan_client and (lan_client.connected or lan_client.remote_players):
+            self._render_party_hud(target_surf, lan_client, inventory, crafting_system)
+            self._render_chat(target_surf, lan_client)
+        elif self.chat_active or (hasattr(self, "local_chat_history") and self.local_chat_history):
+            self._render_chat(target_surf, None)
+
+        # 9.5. Celebratory Ancient Relic Discovery Banner / Toast
+        if combat and getattr(combat, "ancient_drop_banner", None):
+            b_name = combat.ancient_drop_banner.get("name", "Ancient Relic")
+            self._render_ancient_drop_toast(target_surf, b_name)
+
+        # 10. Reticle & Attack Recharge Gauge & Mining Progress
+        self._render_reticle(target_surf, player, camera, mouse_x, mouse_y, inventory=inventory, world=world)
+
+    def _render_notification_banner(self, target_surf, message):
+        """Displays a prominent banner across top-center when learning skills or completing feats."""
+        txt_surf = self.font.render(message, True, (255, 235, 100))
+        bw = txt_surf.get_width() + 36
+        bh = 34
+        bx = SCREEN_WIDTH // 2 - bw // 2
+        by = 16
+
+        bg_rect = pygame.Rect(bx, by, bw, bh)
+        pygame.draw.rect(target_surf, (22, 28, 46, 245), bg_rect, border_radius=8)
+        pygame.draw.rect(target_surf, COLOR_GOLD, bg_rect, 2, border_radius=8)
+        target_surf.blit(txt_surf, (bx + 18, by + 8))
+
+    def _render_hp_and_mp(self, target_surf, player):
+        """Draws health hearts, numeric life, and glowing mana bar positioned to the left of the radar map."""
+        total_hearts = max(1, player.stats.max_hp // 20)
+        cur_hearts = int(math.ceil(player.stats.hp / 20.0))
+
+        # Position to the left of the minimap radar so they never overlap (Minimap is at x=1116..1264)
+        container_w = 260 # Fixed 10-heart container width prevents horizontal HUD shifting on level-up
+        start_x = 840     # SCREEN_WIDTH (1280) - right_margin (180) - container_w (260)
+        start_y = 18
+
+        # Life Label
+        hp_label = self.font.render(f"Life: {player.stats.hp} / {player.stats.max_hp}  (Lv.{player.stats.level})", True, (255, 90, 90))
+        target_surf.blit(hp_label, (start_x, start_y - 15))
+
+        rows = (total_hearts + 9) // 10
+        for i in range(total_hearts):
+            r_idx = i // 10
+            c_idx = i % 10
+            hx = start_x + c_idx * 26
+            hy = start_y + r_idx * 24
+            if i < cur_hearts:
+                target_surf.blit(self.heart_full, (hx, hy))
+            else:
+                target_surf.blit(self.heart_empty, (hx, hy))
+
+        # Mana Bar (Fixed 260px wide bar beneath hearts)
+        mp_y = start_y + rows * 24 + 2
+        mp_w = container_w
+        mp_pct = max(0.0, min(1.0, player.stats.mp / float(max(1, player.stats.max_mp))))
+        
+        pygame.draw.rect(target_surf, (15, 25, 45), (start_x, mp_y, mp_w, 10), border_radius=3)
+        if mp_pct > 0:
+            pygame.draw.rect(target_surf, (50, 160, 255), (start_x, mp_y, int(mp_w * mp_pct), 10), border_radius=3)
+        pygame.draw.rect(target_surf, (80, 120, 180), (start_x, mp_y, mp_w, 10), 1, border_radius=3)
+
+        mp_txt = self.font_sm.render(f"MP: {int(player.stats.mp)} / {player.stats.max_mp}", True, (200, 230, 255))
+        target_surf.blit(mp_txt, (start_x + mp_w // 2 - mp_txt.get_width() // 2, mp_y - 1))
+
+        # Oxygen / Breath Meter (Minecraft-style 10 Air Bubbles displayed when swimming or depleted)
+        if getattr(player, "in_water", False) or getattr(player, "oxygen", 100.0) < 99.0:
+            bubble_y = mp_y + 14
+            cur_bubbles = int(math.ceil(getattr(player, "oxygen", 100.0) / 10.0))
+            is_low = getattr(player, "oxygen", 100.0) < 30.0
+
+            ox_label = self.font_sm.render(f"Air: {int(getattr(player, 'oxygen', 100.0))}%", True, (130, 220, 255))
+            target_surf.blit(ox_label, (start_x, bubble_y - 1))
+
+            import random
+            for b_idx in range(10):
+                bx = start_x + 65 + b_idx * 16
+                by = bubble_y - 1
+                if is_low and b_idx < cur_bubbles:
+                    by += random.randint(-1, 1)
+
+                if b_idx < cur_bubbles:
+                    if self.bubble_full:
+                        target_surf.blit(self.bubble_full, (bx, by))
+                    else:
+                        pygame.draw.circle(target_surf, (80, 190, 255), (bx + 6, by + 6), 5)
+                elif b_idx == cur_bubbles and self.bubble_pop:
+                    target_surf.blit(self.bubble_pop, (bx, by))
+                elif self.bubble_empty:
+                    target_surf.blit(self.bubble_empty, (bx, by))
+                else:
+                    pygame.draw.circle(target_surf, (50, 80, 110), (bx + 6, by + 6), 5, 1)
+
+    def _render_skill_bar(self, target_surf, player):
+        """Draws active skill icons and cooldown sweeps dynamically from player's hotkey loadout."""
+        skills = list(player.skills.hotkey_bindings.items()) if hasattr(player.skills, "hotkey_bindings") else [
+            ("Q", "power_slash"), ("F", "whirlwind"), ("V", "dash"), ("R", "fireball")
+        ]
+        bw, bh = 42, 42
+        gap = 8
+        total_w = len(skills) * (bw + gap) - gap
+        start_x = (SCREEN_WIDTH - total_w) // 2
+        start_y = SCREEN_HEIGHT - 54
+
+        for i, (key, s_id) in enumerate(skills):
+            sx = start_x + i * (bw + gap)
+            rect = pygame.Rect(sx, start_y, bw, bh)
+
+            is_learned = s_id in player.skills.learned_skills if s_id else False
+            cd_left = player.skills.cooldowns.get(s_id, 0.0) if s_id else 0.0
+
+            # Slot box
+            pygame.draw.rect(target_surf, (35, 40, 60, 220), rect, border_radius=6)
+            pygame.draw.rect(target_surf, (120, 140, 180) if is_learned else (60, 65, 80), rect, 1, border_radius=6)
+
+            # Hotkey badge
+            k_txt = self.font.render(key, True, (255, 215, 0) if is_learned else (110, 110, 110))
+            target_surf.blit(k_txt, (sx + 4, start_y + 2))
+
+            # Skill level indicator
+            if is_learned and hasattr(player.skills, "get_skill_level"):
+                lvl = player.skills.get_skill_level(s_id)
+                lvl_txt = self.font_sm.render(f"Lv.{lvl}", True, (255, 230, 80))
+                target_surf.blit(lvl_txt, (sx + bw - lvl_txt.get_width() - 3, start_y + 2))
+
+            # Skill name abbreviation
+            s_name = SKILL_DEFINITIONS.get(s_id, {}).get("name", "---")[:3] if s_id else "---"
+            n_txt = self.font_sm.render(s_name, True, (255, 255, 255) if is_learned else (110, 110, 110))
+            target_surf.blit(n_txt, (sx + 14, start_y + 20))
+
+            # Cooldown shadow sweep
+            if cd_left > 0 and s_id in SKILL_DEFINITIONS:
+                max_cd = SKILL_DEFINITIONS[s_id]["cooldown"]
+                sweep_pct = cd_left / max_cd
+                sweep_h = int(bh * sweep_pct)
+                cd_rect = pygame.Rect(sx, start_y + (bh - sweep_h), bw, sweep_h)
+                cd_surf = pygame.Surface((bw, sweep_h), pygame.SRCALPHA)
+                cd_surf.fill((0, 0, 0, 160))
+                target_surf.blit(cd_surf, cd_rect.topleft)
+
+                cd_txt = self.font_sm.render(f"{cd_left:.1f}", True, (255, 255, 255))
+                target_surf.blit(cd_txt, (sx + bw // 2 - cd_txt.get_width() // 2, start_y + 12))
+
+    def _render_inventory(self, target_surf, inventory, mouse_x, mouse_y, player=None):
+        start_x = 20
+        start_y = 20
+        rows = INV_ROWS if inventory.is_open else 1
+        hovered = None
+
+        for row in range(rows):
+            for col in range(INV_COLS):
+                slot_idx = row * INV_COLS + col
+                sx = start_x + col * (SLOT_SIZE + SLOT_PADDING)
+                sy = start_y + row * (SLOT_SIZE + SLOT_PADDING)
+                rect = pygame.Rect(sx, sy, SLOT_SIZE, SLOT_SIZE)
+
+                target_surf.blit(self.slot_frame, (sx, sy))
+
+                if row == 0 and col == inventory.selected_slot:
+                    target_surf.blit(self.slot_selected, (sx, sy))
+
+                    # Cooldown sweep overlay on active attack slot
+                    if player and getattr(player, "attack_cooldown", 0.0) > 0:
+                        max_cd = max(0.001, getattr(player, "max_attack_cooldown", 0.24))
+                        sweep_pct = max(0.0, min(1.0, player.attack_cooldown / max_cd))
+                        sweep_h = int(SLOT_SIZE * sweep_pct)
+                        if sweep_h > 0:
+                            cd_surf = pygame.Surface((SLOT_SIZE, sweep_h), pygame.SRCALPHA)
+                            cd_surf.fill((0, 0, 0, 150))
+                            target_surf.blit(cd_surf, (sx, sy + (SLOT_SIZE - sweep_h)))
+                            pygame.draw.line(target_surf, (255, 230, 120), (sx, sy + (SLOT_SIZE - sweep_h)), (sx + SLOT_SIZE - 1, sy + (SLOT_SIZE - sweep_h)), 1)
+
+                if row == 0:
+                    key_hint = str((col + 1) % 10)
+                    hint_surf = self.font_sm.render(key_hint, True, (130, 140, 160))
+                    target_surf.blit(hint_surf, (sx + 3, sy + 2))
+
+                item = inventory.slots[slot_idx]
+                if item:
+                    icon = self.asset_factory.items.get(item.item_id)
+                    if icon:
+                        target_surf.blit(icon, (sx + 8, sy + 8))
+
+                    if item.count > 1:
+                        txt = str(item.count)
+                        shadow = self.font.render(txt, True, (0, 0, 0))
+                        target_surf.blit(shadow, (sx + SLOT_SIZE - shadow.get_width() - 3, sy + SLOT_SIZE - 15))
+                        cnt_surf = self.font.render(txt, True, (255, 255, 255))
+                        target_surf.blit(cnt_surf, (sx + SLOT_SIZE - cnt_surf.get_width() - 4, sy + SLOT_SIZE - 16))
+
+                if rect.collidepoint(mouse_x, mouse_y):
+                    pygame.draw.rect(target_surf, (255, 255, 255), rect, 1)
+                    if item:
+                        hovered = item
+
+        if inventory.is_open:
+            drop_hint = self.font_sm.render("[G/Q/Backspace] Drop • Click [DROP] Button", True, (255, 230, 100))
+            target_surf.blit(drop_hint, (start_x + 4, start_y + rows * (SLOT_SIZE + SLOT_PADDING) + 5))
+
+            # Interactive DROP button
+            btn_rect = inventory.get_drop_button_rect()
+            is_hover = btn_rect.collidepoint(mouse_x, mouse_y)
+            bg = (70, 85, 120) if is_hover else (45, 55, 80)
+            border = (255, 230, 100) if is_hover else (100, 120, 160)
+            pygame.draw.rect(target_surf, bg, btn_rect, border_radius=4)
+            pygame.draw.rect(target_surf, border, btn_rect, 1, border_radius=4)
+            d_txt = self.font_sm.render("DROP", True, (255, 255, 255) if not is_hover else (255, 230, 100))
+            target_surf.blit(d_txt, (btn_rect.centerx - d_txt.get_width() // 2, btn_rect.centery - d_txt.get_height() // 2))
+
+            # Interactive RECYCLE / TRASH button
+            rec_rect = inventory.get_recycle_button_rect()
+            is_rec_hover = rec_rect.collidepoint(mouse_x, mouse_y)
+            rec_bg = (130, 42, 42) if is_rec_hover else (82, 28, 28)
+            rec_border = (255, 120, 120) if is_rec_hover else (160, 60, 60)
+            pygame.draw.rect(target_surf, rec_bg, rec_rect, border_radius=4)
+            pygame.draw.rect(target_surf, rec_border, rec_rect, 1, border_radius=4)
+            r_txt = self.font_sm.render("RECYCLE", True, (255, 235, 235) if not is_rec_hover else (255, 200, 200))
+            target_surf.blit(r_txt, (rec_rect.centerx - r_txt.get_width() // 2, rec_rect.centery - r_txt.get_height() // 2))
+
+            if is_rec_hover:
+                tt_text = "Permanently disposes selected or held item"
+                tt_surf = self.font_sm.render(tt_text, True, (255, 220, 220))
+                tt_bg = pygame.Rect(mouse_x + 10, mouse_y + 12, tt_surf.get_width() + 10, tt_surf.get_height() + 6)
+                pygame.draw.rect(target_surf, (40, 15, 15, 230), tt_bg, border_radius=4)
+                pygame.draw.rect(target_surf, (220, 60, 60), tt_bg, 1, border_radius=4)
+                target_surf.blit(tt_surf, (tt_bg.x + 5, tt_bg.y + 3))
+
+        return hovered
+
+    def _render_party_hud(self, target_surf, lan_client, inventory=None, crafting_system=None):
+        """Displays party members (up to 5 players) with health bars in a dedicated clean panel."""
+        p_count = len(lan_client.remote_players) + 1
+        remotes = list(lan_client.remote_players.items())
+        
+        # Calculate panel dimensions
+        panel_w = 216
+        row_count = max(1, len(remotes))
+        panel_h = 24 + row_count * 22 + 4
+
+        # Determine non-overlapping position
+        if inventory and inventory.is_open:
+            # When inventory is open, place cleanly to the right of the backpack (which occupies x=20..460)
+            # This completely avoids overlapping with Crafting Recipes (at x=20..272, y=230+) and Chat
+            px = 480
+            py = 20
+        else:
+            # When inventory is closed, cleanly tuck right below the hotbar (which occupies y=20..60)
+            px = 20
+            py = 72
+
+        # Draw translucent styled background panel with subtle border
+        bg_rect = pygame.Rect(px - 6, py - 4, panel_w, panel_h)
+        panel_surf = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
+        panel_surf.fill((18, 22, 34, 220))
+        target_surf.blit(panel_surf, (px - 6, py - 4))
+        pygame.draw.rect(target_surf, (65, 80, 115), bg_rect, 1, border_radius=6)
+
+        # Header Title
+        hdr = self.font_sm.render(f"LAN PARTY ({p_count}/5 Players)", True, (255, 215, 0))
+        target_surf.blit(hdr, (px, py))
+
+        if not remotes:
+            waiting_txt = self.font_sm.render("Waiting for players...", True, (140, 155, 175))
+            target_surf.blit(waiting_txt, (px, py + 20))
+        else:
+            for i, (pid, pinfo) in enumerate(remotes):
+                sy = py + 20 + i * 22
+                pname = pinfo.get("name", f"Player {pid}")
+                php = pinfo.get("hp", 100)
+                pmax = max(1, pinfo.get("max_hp", 100))
+                lvl = pinfo.get("level", 1)
+
+                # Name label with Level badge
+                nl = self.font_sm.render(f"{pname} (Lv.{lvl})", True, (220, 230, 245))
+                target_surf.blit(nl, (px, sy))
+
+                # Mini health bar
+                bar_x = px + 126
+                bar_w = 70
+                hp_pct = max(0.0, min(1.0, php / float(pmax)))
+                pygame.draw.rect(target_surf, (40, 20, 20), (bar_x, sy + 3, bar_w, 7))
+                pygame.draw.rect(target_surf, (50, 220, 50), (bar_x, sy + 3, int(bar_w * hp_pct), 7))
+                pygame.draw.rect(target_surf, (0, 0, 0), (bar_x, sy + 3, bar_w, 7), 1)
+
+    def _render_chat(self, target_surf, lan_client=None):
+        """Draws chat/command log messages and active typing box in both singleplayer & multiplayer."""
+        cx = 20
+        cy = SCREEN_HEIGHT - 170
+
+        # Draw last 5 chat messages
+        if lan_client and hasattr(lan_client, "chat_messages") and lan_client.chat_messages:
+            raw_entries = lan_client.chat_messages[-5:]
+        else:
+            raw_entries = getattr(self, "local_chat_history", [])[-5:]
+
+        lines = []
+        for item in raw_entries:
+            if isinstance(item, (tuple, list)) and len(item) >= 2:
+                lines.append(f"[{item[0]}]: {item[1]}")
+            else:
+                lines.append(str(item))
+
+        for i, line in enumerate(lines):
+            ts = self.font_sm.render(str(line), True, (255, 255, 255))
+            bg = pygame.Rect(cx, cy + i * 18, ts.get_width() + 6, 16)
+            pygame.draw.rect(target_surf, (0, 0, 0, 160), bg, border_radius=3)
+            target_surf.blit(ts, (cx + 3, cy + i * 18))
+
+        # If currently typing
+        if self.chat_active:
+            box_y = SCREEN_HEIGHT - 65
+            box_rect = pygame.Rect(cx, box_y, 420, 24)
+            pygame.draw.rect(target_surf, (20, 25, 40, 240), box_rect, border_radius=4)
+            pygame.draw.rect(target_surf, COLOR_GOLD, box_rect, 1, border_radius=4)
+            cursor_vis = "_" if int(pygame.time.get_ticks() / 400) % 2 == 0 else ""
+            in_surf = self.font_sm.render(f"> {self.chat_input_text}{cursor_vis}", True, (255, 255, 255))
+            target_surf.blit(in_surf, (cx + 6, box_y + 4))
+
+    def _render_ancient_drop_toast(self, target_surf, banner_name):
+        """Renders radiant celebratory toast banner for Ancient Relic discoveries."""
+        t_ticks = pygame.time.get_ticks() * 0.005
+        pulse = math.sin(t_ticks * 3.0) * 2.0
+        bw = 620
+        bh = 48 + int(pulse)
+        bx = SCREEN_WIDTH // 2 - bw // 2
+        by = 28
+        b_rect = pygame.Rect(bx, by, bw, bh)
+
+        pygame.draw.rect(target_surf, (25, 10, 18, 245), b_rect, border_radius=10)
+        pygame.draw.rect(target_surf, (255, 215, 60), b_rect, 3, border_radius=10)
+        pygame.draw.rect(target_surf, (245, 60, 75), b_rect.inflate(-4, -4), 1, border_radius=8)
+
+        text_str = f"★ ANCIENT RELIC DISCOVERED: {banner_name.upper()} ★"
+        txt = self.font_lg.render(text_str, True, (255, 225, 90))
+        sh = self.font_lg.render(text_str, True, (0, 0, 0))
+        target_surf.blit(sh, (SCREEN_WIDTH // 2 - txt.get_width() // 2 + 1, by + 14))
+        target_surf.blit(txt, (SCREEN_WIDTH // 2 - txt.get_width() // 2, by + 13))
+
+    def _render_tooltip(self, target_surf, mx, my, item):
+        """Rich Diablo/Torchlight-style item tooltip with rarity tiers, stats, lore, and descriptions."""
+        data = item.data
+        name = data.get("name", item.item_id)
+        cat = data.get("cat", "item").replace("_", " ").title()
+        rarity = data.get("rarity", RARITY_COMMON)
+        r_color = RARITY_COLORS.get(rarity, (220, 220, 220))
+
+        lines = []
+        # 1. Item Name in Rarity Color
+        lines.append((name, r_color, self.font))
+
+        # 2. Rarity Tier & Type Badge
+        badge = f"[{rarity.upper()} {cat.upper()}]"
+        lines.append((badge, r_color, self.font_sm))
+
+        # 3. Numeric Combat & Mining Stats
+        if data.get("damage", 0) > 0:
+            lines.append((f"Weapon Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+        if data.get("cat") == "weapon" or data.get("damage", 0) > 0:
+            iid = item.item_id.lower()
+            if any(w in iid for w in ("dagger", "shortsword", "knife", "stiletto")):
+                speed_str = "Very Fast Speed (0.22s)"
+            elif any(w in iid for w in ("greatsword", "cleaver", "hammer", "scythe", "titan", "colossus")):
+                speed_str = "Slow, Heavy Speed (0.46s)"
+            elif "bow" in iid:
+                speed_str = "Average Speed (0.36s)"
+            elif any(w in iid for w in ("staff", "wand", "scepter", "rod")):
+                speed_str = "Average Speed (0.34s)"
+            elif any(w in iid for w in ("katana", "saber", "rapier", "spear")):
+                speed_str = "Fast Speed (0.26s)"
+            else:
+                speed_str = "Fast Speed (0.32s)"
+            lines.append((f"Use Speed: {speed_str}", (240, 230, 160), self.font_sm))
+
+        if data.get("power", 0) > 0:
+            lines.append((f"Pickaxe Power: {data['power']}%", (120, 210, 255), self.font_sm))
+        if data.get("def", 0) > 0:
+            lines.append((f"+{data['def']} Defense", (140, 230, 140), self.font_sm))
+        if data.get("atk", 0) > 0:
+            lines.append((f"+{data['atk']} Attack", (255, 205, 110), self.font_sm))
+        if data.get("crit", 0) > 0:
+            lines.append((f"+{data['crit']}% Critical Strike Chance", (255, 175, 80), self.font_sm))
+        if data.get("speed", 0) > 0:
+            if data.get("cat") == "weapon":
+                lines.append((f"+{int(data['speed'] * 100)}% Attack Speed", (255, 235, 140), self.font_sm))
+            else:
+                lines.append((f"+{data['speed']}% Movement Speed", (200, 210, 255), self.font_sm))
+        if data.get("hp", 0) > 0:
+            lines.append((f"+{data['hp']} Max HP", (255, 120, 120), self.font_sm))
+        if data.get("mp", 0) > 0:
+            lines.append((f"+{data['mp']} Max MP", (100, 180, 255), self.font_sm))
+        if data.get("mp_regen", 0) > 0:
+            lines.append((f"+{data['mp_regen']:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
+        if data.get("heal", 0) > 0:
+            lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
+
+        # 4. Special Effects (Bulleted for upper rarities)
+        effects = data.get("effects", [])
+        if effects:
+            for eff in effects:
+                lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
+        elif data.get("special"):
+            lines.append((f"Special: {data['special']}", (100, 240, 240), self.font_sm))
+
+        # 5. Usage / Description
+        if data.get("desc"):
+            lines.append((data["desc"], (215, 225, 240), self.font_sm))
+
+        # 6. Lore Quote (Diablo / Torchlight style)
+        if data.get("lore"):
+            lines.append((data["lore"], (240, 205, 120), self.font_lore))
+
+        # Calculate bounding dimensions
+        rendered_surfs = [fnt.render(text, True, col) for text, col, fnt in lines]
+        tw = max(s.get_width() for s in rendered_surfs) + 20
+        th = sum(s.get_height() + 3 for s in rendered_surfs) + 12
+
+        tx = min(SCREEN_WIDTH - tw - 12, mx + 16)
+        ty = min(SCREEN_HEIGHT - th - 12, my + 16)
+        if ty < 10:
+            ty = 10
+
+        rect = pygame.Rect(tx, ty, tw, th)
+        # Background plate with rarity-colored border
+        pygame.draw.rect(target_surf, (20, 24, 38, 245), rect, border_radius=6)
+        pygame.draw.rect(target_surf, r_color, rect, 1, border_radius=6)
+
+        cur_y = ty + 6
+        for s in rendered_surfs:
+            target_surf.blit(s, (tx + 10, cur_y))
+            cur_y += s.get_height() + 3
+
+    def _render_reticle(self, target_surf, player, camera, mouse_x, mouse_y, inventory=None, world=None):
+        tx, ty = camera.screen_to_tile(mouse_x, mouse_y)
+        tile_world_x = tx * SCALED_TILE
+        tile_world_y = ty * SCALED_TILE
+        sx, sy = camera.world_to_screen(tile_world_x, tile_world_y)
+
+        reach_dist = math.hypot(player.center_x - (tile_world_x + SCALED_TILE / 2),
+                                player.center_y - (tile_world_y + SCALED_TILE / 2))
+        in_reach = (reach_dist <= SCALED_TILE * 5.5)
+
+        reticle_surf = self.reticle.copy()
+        if not in_reach:
+            reticle_surf.fill((255, 60, 60, 120), special_flags=pygame.BLEND_RGBA_MULT)
+
+        target_surf.blit(reticle_surf, (sx, sy))
+
+        # Progressive Block Breaking Progress Bar over targeted tile
+        if world and hasattr(world, "tile_damage") and (tx, ty) in world.tile_damage:
+            cur_dmg = world.tile_damage.get((tx, ty), 0.0)
+            from src.constants import TILE_PROPS
+            t_id = world.get_tile(tx, ty)
+            prop = TILE_PROPS.get(t_id, {})
+            max_h = max(1, prop.get("hardness", 20))
+            break_pct = max(0.0, min(1.0, float(cur_dmg) / float(max_h)))
+            if break_pct > 0.0:
+                bar_w = SCALED_TILE - 4
+                bar_h = 4
+                bx = sx + 2
+                by = sy + SCALED_TILE - 6
+                # Dark backing
+                pygame.draw.rect(target_surf, (15, 18, 28, 230), (bx - 1, by - 1, bar_w + 2, bar_h + 2), border_radius=2)
+                # Outer border
+                pygame.draw.rect(target_surf, (180, 140, 50), (bx - 1, by - 1, bar_w + 2, bar_h + 2), 1, border_radius=2)
+                # Filled progress (transitions from yellow to hot orange as it nears breaking)
+                fill_w = int(bar_w * break_pct)
+                if fill_w > 0:
+                    bar_col = (255, 215, 60) if break_pct < 0.6 else (255, 120, 30)
+                    pygame.draw.rect(target_surf, bar_col, (bx, by, fill_w, bar_h), border_radius=1)
+
+        # Dynamic Attack Recharge Gauge under cursor when wielding a weapon on cooldown
+        if inventory:
+            active_item = inventory.get_active_item() if hasattr(inventory, "get_active_item") else None
+            is_weapon = active_item and (active_item.data.get("cat") == "weapon" or active_item.data.get("damage", 0) > 0)
+            if is_weapon and getattr(player, "attack_cooldown", 0.0) > 0:
+                gauge_w = 26
+                gauge_h = 5
+                gx = mouse_x - gauge_w // 2
+                gy = mouse_y + 18
+                max_cd = max(0.001, getattr(player, "max_attack_cooldown", 0.24))
+                charge = max(0.0, min(1.0, 1.0 - (player.attack_cooldown / max_cd)))
+                # Background plate
+                bg_rect = pygame.Rect(gx, gy, gauge_w, gauge_h)
+                bg_surf = pygame.Surface((gauge_w, gauge_h), pygame.SRCALPHA)
+                bg_surf.fill((16, 20, 30, 210))
+                target_surf.blit(bg_surf, (gx, gy))
+                pygame.draw.rect(target_surf, (40, 50, 75), bg_rect, 1, border_radius=2)
+                # Charged progress bar
+                fill_w = int((gauge_w - 2) * charge)
+                if fill_w > 0:
+                    fill_rect = pygame.Rect(gx + 1, gy + 1, fill_w, gauge_h - 2)
+                    fill_col = (255, 215, 80) if charge < 0.9 else (120, 240, 255)
+                    pygame.draw.rect(target_surf, fill_col, fill_rect, border_radius=1)

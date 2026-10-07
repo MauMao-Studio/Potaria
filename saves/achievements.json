@@ -1,0 +1,32 @@
+{
+  "unlocked": [
+    "rarity_ancient",
+    "clean_freak",
+    "deep_diver",
+    "recycle_master_3",
+    "master_crafter",
+    "hold_your_breath",
+    "first_blood",
+    "into_the_depths",
+    "recycle_master_1",
+    "slayer_of_titans",
+    "recycle_master_2",
+    "timber",
+    "pack_mule"
+  ],
+  "timestamps": {
+    "deep_diver": 1791297713.8363328,
+    "slayer_of_titans": 1791298038.582666,
+    "first_blood": 1791298046.7212052,
+    "pack_mule": 1791298084.42518,
+    "hold_your_breath": 1791298247.9297738,
+    "master_crafter": 1791299006.3981638,
+    "timber": 1791299154.056422,
+    "into_the_depths": 1791299537.1875381,
+    "clean_freak": 1791302700.8344717,
+    "recycle_master_1": 1791305080.363171,
+    "recycle_master_2": 1791305080.3642914,
+    "recycle_master_3": 1791305080.3649352,
+    "rarity_ancient": 1791386670.1476724
+  }
+}

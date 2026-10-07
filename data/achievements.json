@@ -1,0 +1,1528 @@
+[
+  {
+    "id": "timber",
+    "name": "Timber!",
+    "desc": "Chop down your first tree and harvest wood.",
+    "icon": "wood",
+    "category": "exploration"
+  },
+  {
+    "id": "first_blood",
+    "name": "First Blood",
+    "desc": "Defeat a monster in combat.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "deep_diver",
+    "name": "Deep Diver",
+    "desc": "Take a dive and swim in water.",
+    "icon": "water",
+    "category": "exploration"
+  },
+  {
+    "id": "hold_your_breath",
+    "name": "Hold Your Breath",
+    "desc": "Survive 5 consecutive seconds submerged underwater.",
+    "icon": "bubble",
+    "category": "survival"
+  },
+  {
+    "id": "into_the_depths",
+    "name": "Into the Depths",
+    "desc": "Descend deep into the subterranean cavern layers.",
+    "icon": "pickaxe",
+    "category": "exploration"
+  },
+  {
+    "id": "master_crafter",
+    "name": "Master Crafter",
+    "desc": "Craft an item or tool at a workbench or furnace.",
+    "icon": "workbench",
+    "category": "crafting"
+  },
+  {
+    "id": "slayer_of_titans",
+    "name": "Slayer of Titans",
+    "desc": "Defeat a subterranean mini-boss or Grand Boss Sol-Rho.",
+    "icon": "trophy",
+    "category": "combat"
+  },
+  {
+    "id": "pack_mule",
+    "name": "Full Inventory",
+    "desc": "Fill every slot of your backpack with items.",
+    "icon": "chest",
+    "category": "inventory"
+  },
+  {
+    "id": "star_catcher",
+    "name": "Star Catcher",
+    "desc": "Collect a fallen star from the night sky.",
+    "icon": "star",
+    "category": "magic"
+  },
+  {
+    "id": "home_sweet_home",
+    "name": "Home Sweet Home",
+    "desc": "Construct a sheltered room with walls, a door, and a light source.",
+    "icon": "door",
+    "category": "building"
+  },
+  {
+    "id": "iron_age",
+    "name": "Iron Age",
+    "desc": "Smelt iron ore into sturdy iron bars.",
+    "icon": "iron_bar",
+    "category": "crafting"
+  },
+  {
+    "id": "potaria_hero",
+    "name": "Savior of Potaria",
+    "desc": "Defeat Grand Boss Sol-Rho and bring peace to the realm.",
+    "icon": "crown",
+    "category": "boss"
+  },
+  {
+    "id": "clean_freak",
+    "name": "Clean Freak",
+    "desc": "Recycle or trash an unwanted item in your inventory.",
+    "icon": "recycle",
+    "category": "inventory"
+  },
+  {
+    "id": "recycle_master_1",
+    "name": "Scrap Merchant",
+    "desc": "Recycle 10 surplus or unwanted items for materials.",
+    "icon": "recycle",
+    "category": "inventory"
+  },
+  {
+    "id": "recycle_master_2",
+    "name": "Waste Not",
+    "desc": "Recycle 50 unwanted items and clear out your inventory clutter.",
+    "icon": "recycle",
+    "category": "inventory"
+  },
+  {
+    "id": "recycle_master_3",
+    "name": "Zero Waste Champion",
+    "desc": "Recycle 100 items into fresh components and materials.",
+    "icon": "recycle",
+    "category": "inventory"
+  },
+  {
+    "id": "chest_maker",
+    "name": "Organized Hoarder",
+    "desc": "Craft and place 5 wooden storage chests.",
+    "icon": "chest",
+    "category": "inventory"
+  },
+  {
+    "id": "vault_keeper",
+    "name": "Treasury Vault",
+    "desc": "Craft and place 20 high-capacity storage chests.",
+    "icon": "chest",
+    "category": "inventory"
+  },
+  {
+    "id": "slime_slayer_1",
+    "name": "Slime Squasher I",
+    "desc": "Slay 5 green or blue slimes.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "slime_slayer_2",
+    "name": "Slime Squasher II",
+    "desc": "Slay 25 slimes of any variety.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "slime_slayer_3",
+    "name": "Slime Purger",
+    "desc": "Slay 100 bouncy gelatinous threats.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "zombie_hunter_1",
+    "name": "Night Watchman",
+    "desc": "Slay 5 surface zombies under the moonlight.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "zombie_hunter_2",
+    "name": "Walking Nightmare",
+    "desc": "Slay 25 undead walkers.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "zombie_hunter_3",
+    "name": "Gravekeeper",
+    "desc": "Slay 100 zombies and clear the night fields.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "bat_swatter_1",
+    "name": "Bat Swatter",
+    "desc": "Exterminate 5 cave bats in the underworld.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "bat_swatter_2",
+    "name": "Wing Clipper",
+    "desc": "Exterminate 25 cave and ice bats.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "bat_swatter_3",
+    "name": "Echo Silencer",
+    "desc": "Exterminate 75 flying cave terrors.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "skeleton_smasher_1",
+    "name": "Bone Cracker",
+    "desc": "Shatter 5 dungeon skeletons.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "skeleton_smasher_2",
+    "name": "Rib Breaker",
+    "desc": "Shatter 25 subterranean skeletons.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "skeleton_smasher_3",
+    "name": "Crypt Cleanser",
+    "desc": "Shatter 100 calcified horrors.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "scorpion_hunter",
+    "name": "Desert Stinger",
+    "desc": "Slay 10 venomous desert scorpions.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "mummy_unwrapper",
+    "name": "Pharaonic Curse",
+    "desc": "Put 10 ancient mummies to rest in the desert sands.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "demon_slayer",
+    "name": "Gaze into the Void",
+    "desc": "Defeat 10 flying Night Gazers.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "crawler_crusher",
+    "name": "Shadow Stalker",
+    "desc": "Eliminate 15 shadow crawlers in the blighted chasms.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "rock_breaker",
+    "name": "Pebble Pounder",
+    "desc": "Shatter 10 hardened rock zombies.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "shield_piercer",
+    "name": "Barrier Shatterer",
+    "desc": "Destroy 10 mystic barriers conjured by shield weavers.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "digger_terminator",
+    "name": "Earth Tremor",
+    "desc": "Hunt down 10 subterranean diggers before they breach your base.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "combo_master",
+    "name": "Flourish of Steel",
+    "desc": "Land 10 consecutive strikes without missing.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "critical_strike",
+    "name": "Devastating Blow",
+    "desc": "Land a critical hit dealing over 100 damage.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "super_critical",
+    "name": "Decapitating Force",
+    "desc": "Land a critical strike dealing over 250 damage.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "dual_wielder",
+    "name": "Quick Draw",
+    "desc": "Switch weapons mid-combat and land a finishing blow.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "brawler",
+    "name": "Bare-Knuckle Tuber",
+    "desc": "Deal damage to a monster with empty hands.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "sharpshooter_1",
+    "name": "Keen Eye",
+    "desc": "Strike an enemy with an arrow from over 400 pixels away.",
+    "icon": "bow",
+    "category": "combat"
+  },
+  {
+    "id": "sharpshooter_2",
+    "name": "Bullseye Prodigy",
+    "desc": "Strike an enemy with an arrow from over 800 pixels away.",
+    "icon": "bow",
+    "category": "combat"
+  },
+  {
+    "id": "volley_fire",
+    "name": "Rain of Arrows",
+    "desc": "Fire 20 arrows in rapid succession.",
+    "icon": "bow",
+    "category": "combat"
+  },
+  {
+    "id": "sorcerer_flame",
+    "name": "Pyroclasm",
+    "desc": "Vanquish 20 foes using flame magic or fire staves.",
+    "icon": "wand",
+    "category": "combat"
+  },
+  {
+    "id": "sorcerer_frost",
+    "name": "Absolute Zero",
+    "desc": "Freeze and shatter 20 foes using ice needle or frost magic.",
+    "icon": "wand",
+    "category": "combat"
+  },
+  {
+    "id": "sorcerer_void",
+    "name": "Abyssal Eclipse",
+    "desc": "Annihilate 20 foes using void scepters and dark incantations.",
+    "icon": "wand",
+    "category": "combat"
+  },
+  {
+    "id": "unstoppable",
+    "name": "Unstoppable Force",
+    "desc": "Slay 10 monsters without taking any damage.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "berserker",
+    "name": "Blood Frenzy",
+    "desc": "Slay 3 enemies while below 20% maximum health.",
+    "icon": "sword",
+    "category": "combat"
+  },
+  {
+    "id": "pacifist_moment",
+    "name": "Evasive Maneuvers",
+    "desc": "Dodge 10 incoming enemy projectiles in a single encounter.",
+    "icon": "boots",
+    "category": "combat"
+  },
+  {
+    "id": "dirt_digger",
+    "name": "Soil Shoveler",
+    "desc": "Dig up 50 blocks of fertile soil.",
+    "icon": "pickaxe",
+    "category": "mining"
+  },
+  {
+    "id": "stone_breaker",
+    "name": "Stone Mason",
+    "desc": "Mine 100 blocks of subterranean stone.",
+    "icon": "pickaxe",
+    "category": "mining"
+  },
+  {
+    "id": "copper_prospector",
+    "name": "Copper Prospector",
+    "desc": "Unearth your first vein of raw copper ore.",
+    "icon": "pickaxe",
+    "category": "mining"
+  },
+  {
+    "id": "copper_vein",
+    "name": "Bronze Age Ready",
+    "desc": "Mine 50 chunks of copper ore.",
+    "icon": "pickaxe",
+    "category": "mining"
+  },
+  {
+    "id": "iron_rush",
+    "name": "Heavy Metal",
+    "desc": "Mine 50 chunks of raw iron ore.",
+    "icon": "pickaxe",
+    "category": "mining"
+  },
+  {
+    "id": "gold_digger_feat",
+    "name": "Golden Opportunity",
+    "desc": "Strike a rich vein of subterranean gold ore.",
+    "icon": "pickaxe",
+    "category": "mining"
+  },
+  {
+    "id": "gold_hoard",
+    "name": "Midas Touch",
+    "desc": "Mine 100 chunks of precious gold ore.",
+    "icon": "pickaxe",
+    "category": "mining"
+  },
+  {
+    "id": "amethyst_gleam",
+    "name": "Purple Radiance",
+    "desc": "Extract glowing purple amethyst from crystal pockets.",
+    "icon": "gem",
+    "category": "mining"
+  },
+  {
+    "id": "ruby_luster",
+    "name": "Crimson Gem",
+    "desc": "Discover and mine rare fiery rubies.",
+    "icon": "gem",
+    "category": "mining"
+  },
+  {
+    "id": "sapphire_deep",
+    "name": "Azure Spark",
+    "desc": "Extract deep blue sapphires from the underground.",
+    "icon": "gem",
+    "category": "mining"
+  },
+  {
+    "id": "emerald_find",
+    "name": "Verdant Treasure",
+    "desc": "Mine brilliant green emeralds in the caverns.",
+    "icon": "gem",
+    "category": "mining"
+  },
+  {
+    "id": "diamond_sparkle",
+    "name": "Hard as Nails",
+    "desc": "Unearth an exquisite diamond from the deepest stone layer.",
+    "icon": "gem",
+    "category": "mining"
+  },
+  {
+    "id": "bedrock_touch",
+    "name": "Bottom of the Realm",
+    "desc": "Reach the indestructible bedrock floor of the world.",
+    "icon": "bedrock",
+    "category": "mining"
+  },
+  {
+    "id": "pot_smasher_1",
+    "name": "Jar Smasher",
+    "desc": "Smash 10 ancient clay pots found in the caverns.",
+    "icon": "pot",
+    "category": "mining"
+  },
+  {
+    "id": "pot_smasher_2",
+    "name": "Relic Breaker",
+    "desc": "Smash 50 ancient clay pots and gather their hidden coins.",
+    "icon": "pot",
+    "category": "mining"
+  },
+  {
+    "id": "torch_bearer",
+    "name": "Light in the Dark",
+    "desc": "Place 50 torches to illuminate the underground darkness.",
+    "icon": "torch",
+    "category": "mining"
+  },
+  {
+    "id": "lighthouse",
+    "name": "Grand Illuminator",
+    "desc": "Place 200 torches across cavern highways.",
+    "icon": "torch",
+    "category": "mining"
+  },
+  {
+    "id": "cartographer",
+    "name": "Master Surveyor",
+    "desc": "Fully illuminate a 100x100 block region of the world.",
+    "icon": "torch",
+    "category": "mining"
+  },
+  {
+    "id": "spelunker_1",
+    "name": "Cavern Cartographer",
+    "desc": "Discover 5 distinct natural subterranean cave pockets.",
+    "icon": "compass",
+    "category": "exploration"
+  },
+  {
+    "id": "spelunker_2",
+    "name": "Subterranean Spelunker",
+    "desc": "Explore 20 distinct natural cavern chambers.",
+    "icon": "compass",
+    "category": "exploration"
+  },
+  {
+    "id": "spelunker_3",
+    "name": "Heart of the Earth",
+    "desc": "Uncover 50 underground cavern systems.",
+    "icon": "compass",
+    "category": "exploration"
+  },
+  {
+    "id": "desert_crossing",
+    "name": "Dune Nomad",
+    "desc": "Journey across the vast sun-baked arid desert.",
+    "icon": "cactus",
+    "category": "exploration"
+  },
+  {
+    "id": "polar_expedition",
+    "name": "Snowfield Trekker",
+    "desc": "Traverse the freezing tundra and snowy peaks.",
+    "icon": "snowflake",
+    "category": "exploration"
+  },
+  {
+    "id": "blight_incursion",
+    "name": "Tainted Horizon",
+    "desc": "Set foot into the dangerous corruption chasms.",
+    "icon": "skull",
+    "category": "exploration"
+  },
+  {
+    "id": "fungal_cavern",
+    "name": "Bioluminescent Grotto",
+    "desc": "Discover a subterranean glowing mushroom biome.",
+    "icon": "mushroom",
+    "category": "exploration"
+  },
+  {
+    "id": "dungeon_explorer",
+    "name": "Gates of the Crypt",
+    "desc": "Locate the ancient underground dungeon brick citadel.",
+    "icon": "brick",
+    "category": "exploration"
+  },
+  {
+    "id": "sky_high",
+    "name": "Skyward Spud",
+    "desc": "Build or jump higher than the cloud line into the stratosphere.",
+    "icon": "cloud",
+    "category": "exploration"
+  },
+  {
+    "id": "world_traveler_1",
+    "name": "Globe Trotter",
+    "desc": "Travel over 2,000 blocks horizontally in an infinite world.",
+    "icon": "boots",
+    "category": "exploration"
+  },
+  {
+    "id": "world_traveler_2",
+    "name": "Continental Explorer",
+    "desc": "Travel over 10,000 blocks horizontally from world spawn.",
+    "icon": "boots",
+    "category": "exploration"
+  },
+  {
+    "id": "world_traveler_3",
+    "name": "Odyssey of Spud",
+    "desc": "Travel over 25,000 blocks into uncharted frontiers.",
+    "icon": "boots",
+    "category": "exploration"
+  },
+  {
+    "id": "crafting_novice",
+    "name": "First Tools",
+    "desc": "Craft a wooden pickaxe, axe, and broadsword.",
+    "icon": "workbench",
+    "category": "crafting"
+  },
+  {
+    "id": "wood_craftsman",
+    "name": "Carpenter",
+    "desc": "Craft 50 decorative wood walls and structural beams.",
+    "icon": "wood",
+    "category": "crafting"
+  },
+  {
+    "id": "workbench_tier2",
+    "name": "Workstation Deluxe",
+    "desc": "Upgrade to an advanced anvil and metal forge.",
+    "icon": "anvil",
+    "category": "crafting"
+  },
+  {
+    "id": "copper_smith",
+    "name": "Copper Armaments",
+    "desc": "Forge a full set of copper tools and weaponry.",
+    "icon": "sword",
+    "category": "crafting"
+  },
+  {
+    "id": "iron_smith",
+    "name": "Ironclad Arsenal",
+    "desc": "Forge a full suite of sturdy iron armaments.",
+    "icon": "sword",
+    "category": "crafting"
+  },
+  {
+    "id": "gold_smith",
+    "name": "Gilded Regalia",
+    "desc": "Forge high-luster gold weaponry and implements.",
+    "icon": "sword",
+    "category": "crafting"
+  },
+  {
+    "id": "glass_blower",
+    "name": "Vitreous Art",
+    "desc": "Smelt sand into clear glass blocks and transparent windows.",
+    "icon": "furnace",
+    "category": "crafting"
+  },
+  {
+    "id": "furniture_maker",
+    "name": "Cozy Quarters",
+    "desc": "Craft a wooden chair, table, and bed for your house.",
+    "icon": "door",
+    "category": "crafting"
+  },
+  {
+    "id": "door_maker",
+    "name": "Secure Entry",
+    "desc": "Craft and install 5 operable wooden doors.",
+    "icon": "door",
+    "category": "crafting"
+  },
+  {
+    "id": "platform_builder",
+    "name": "Aerial Scaffolding",
+    "desc": "Craft and place 100 wooden climbing platforms.",
+    "icon": "wood",
+    "category": "crafting"
+  },
+  {
+    "id": "brick_mason",
+    "name": "Kiln Master",
+    "desc": "Bake 100 clay blocks into red brick masonry.",
+    "icon": "furnace",
+    "category": "crafting"
+  },
+  {
+    "id": "stone_brick_architect",
+    "name": "Fortress Walls",
+    "desc": "Place 200 carved stone brick blocks.",
+    "icon": "brick",
+    "category": "crafting"
+  },
+  {
+    "id": "dungeon_builder",
+    "name": "Nether Fortress",
+    "desc": "Decorate a chamber using authentic dungeon bricks and dark walls.",
+    "icon": "brick",
+    "category": "crafting"
+  },
+  {
+    "id": "culinary_start",
+    "name": "Campfire Snack",
+    "desc": "Cook your first roasted potato or mushroom skewers.",
+    "icon": "food",
+    "category": "crafting"
+  },
+  {
+    "id": "culinary_chef",
+    "name": "Master Chef",
+    "desc": "Cook 10 savory meals at a cooking pot or campfire.",
+    "icon": "food",
+    "category": "crafting"
+  },
+  {
+    "id": "gourmet_feast",
+    "name": "Royal Banquet",
+    "desc": "Prepare a lavish multi-course feast granting supreme stat buffs.",
+    "icon": "food",
+    "category": "crafting"
+  },
+  {
+    "id": "potion_brewer_1",
+    "name": "Herbal Apprentice",
+    "desc": "Brew a minor healing potion at an alchemy bottle station.",
+    "icon": "potion",
+    "category": "crafting"
+  },
+  {
+    "id": "potion_brewer_2",
+    "name": "Alchemist",
+    "desc": "Brew 10 restorative potions and mana elixirs.",
+    "icon": "potion",
+    "category": "crafting"
+  },
+  {
+    "id": "potion_brewer_3",
+    "name": "Grand Chemist",
+    "desc": "Brew 30 potent combat elixirs and buff draughts.",
+    "icon": "potion",
+    "category": "crafting"
+  },
+  {
+    "id": "arrow_fletcher",
+    "name": "Fletcher",
+    "desc": "Craft 100 wooden and flint arrows.",
+    "icon": "bow",
+    "category": "crafting"
+  },
+  {
+    "id": "flaming_arrows",
+    "name": "Pyrotechnic Fletcher",
+    "desc": "Craft 50 flaming arrows imbued with torch embers.",
+    "icon": "bow",
+    "category": "crafting"
+  },
+  {
+    "id": "frost_arrows",
+    "name": "Permafrost Tips",
+    "desc": "Craft 50 freezing frostburn arrows.",
+    "icon": "bow",
+    "category": "crafting"
+  },
+  {
+    "id": "unholy_arrows",
+    "name": "Dark Piercers",
+    "desc": "Craft 50 unholy arrows carved from corrupted bone.",
+    "icon": "bow",
+    "category": "crafting"
+  },
+  {
+    "id": "rune_crafter_desert",
+    "name": "Sun Rune Inscriber",
+    "desc": "Craft the Sun Altar Rune using desert catalysts.",
+    "icon": "rune",
+    "category": "crafting"
+  },
+  {
+    "id": "rune_crafter_cryo",
+    "name": "Glacial Rune Inscriber",
+    "desc": "Craft the Glacial Altar Rune using pure permafrost ice.",
+    "icon": "rune",
+    "category": "crafting"
+  },
+  {
+    "id": "rune_crafter_necro",
+    "name": "Blight Rune Inscriber",
+    "desc": "Craft the Blight Altar Rune using shadowy essences.",
+    "icon": "rune",
+    "category": "crafting"
+  },
+  {
+    "id": "keystone_artificer",
+    "name": "Celestial Artificer",
+    "desc": "Assemble the Celestial Keystone from 4 portal shards.",
+    "icon": "keystone",
+    "category": "crafting"
+  },
+  {
+    "id": "estate_builder",
+    "name": "Multi-Story Manor",
+    "desc": "Construct a sheltered complex with at least 5 furnished rooms.",
+    "icon": "door",
+    "category": "crafting"
+  },
+  {
+    "id": "village_founder",
+    "name": "Spud Settlement",
+    "desc": "Build housing suitable for an entire community of potato villagers.",
+    "icon": "door",
+    "category": "crafting"
+  },
+  {
+    "id": "monument_builder",
+    "name": "Sky Spire",
+    "desc": "Construct a towering spire reaching 100 blocks above the surface.",
+    "icon": "brick",
+    "category": "crafting"
+  },
+  {
+    "id": "level_2",
+    "name": "First Steps",
+    "desc": "Reach Player Character Level 2.",
+    "icon": "level",
+    "category": "leveling"
+  },
+  {
+    "id": "level_5",
+    "name": "Novice Adventurer",
+    "desc": "Reach Player Character Level 5.",
+    "icon": "level",
+    "category": "leveling"
+  },
+  {
+    "id": "level_10",
+    "name": "Hardened Explorer",
+    "desc": "Reach Player Character Level 10.",
+    "icon": "level",
+    "category": "leveling"
+  },
+  {
+    "id": "level_15",
+    "name": "Realm Defender",
+    "desc": "Reach Player Character Level 15.",
+    "icon": "level",
+    "category": "leveling"
+  },
+  {
+    "id": "level_20",
+    "name": "Champion of the Soil",
+    "desc": "Reach Player Character Level 20.",
+    "icon": "level",
+    "category": "leveling"
+  },
+  {
+    "id": "level_25",
+    "name": "Mythic Hero",
+    "desc": "Reach Player Character Level 25.",
+    "icon": "level",
+    "category": "leveling"
+  },
+  {
+    "id": "level_30",
+    "name": "Ascended Tuber",
+    "desc": "Reach the supreme Player Character Level 30.",
+    "icon": "crown",
+    "category": "leveling"
+  },
+  {
+    "id": "skill_apprentice",
+    "name": "Grim Apprentice",
+    "desc": "Learn your first active combat or utility spell from a Grimoire.",
+    "icon": "grimoire",
+    "category": "leveling"
+  },
+  {
+    "id": "skill_master_fire",
+    "name": "Master of Sparks",
+    "desc": "Upgrade Fireball or Flame Burst to Level 5.",
+    "icon": "flame",
+    "category": "leveling"
+  },
+  {
+    "id": "skill_master_frost",
+    "name": "Frost Weaver",
+    "desc": "Upgrade Freezing Needles or Blizzard to Level 5.",
+    "icon": "snowflake",
+    "category": "leveling"
+  },
+  {
+    "id": "skill_master_earth",
+    "name": "Earthen Bulwark",
+    "desc": "Upgrade Stone Barrier or Tremor to Level 5.",
+    "icon": "shield",
+    "category": "leveling"
+  },
+  {
+    "id": "skill_master_wind",
+    "name": "Gale Stride",
+    "desc": "Upgrade Dash or Wind Dash to Level 5.",
+    "icon": "boots",
+    "category": "leveling"
+  },
+  {
+    "id": "skill_master_astral",
+    "name": "Starfall Sage",
+    "desc": "Upgrade Astral Arrow or Celestial Beam to Level 5.",
+    "icon": "star",
+    "category": "leveling"
+  },
+  {
+    "id": "legendary_skill_unlock",
+    "name": "Grand Legendary Power",
+    "desc": "Master a Grand Legendary skill beyond Lv. 5.",
+    "icon": "star",
+    "category": "leveling"
+  },
+  {
+    "id": "skill_tree_completionist",
+    "name": "Grimoire Savant",
+    "desc": "Learn all available Grimoire spells across all elemental schools.",
+    "icon": "grimoire",
+    "category": "leveling"
+  },
+  {
+    "id": "stat_vitality",
+    "name": "Hearty Spud",
+    "desc": "Increase maximum HP to over 200 through leveling and gear.",
+    "icon": "heart",
+    "category": "leveling"
+  },
+  {
+    "id": "stat_mana",
+    "name": "Arcane Reservoir",
+    "desc": "Increase maximum MP to over 150 through leveling and accessories.",
+    "icon": "mana",
+    "category": "leveling"
+  },
+  {
+    "id": "stat_defense",
+    "name": "Walking Fortress",
+    "desc": "Achieve a combined Defense rating of 40 or higher.",
+    "icon": "shield",
+    "category": "leveling"
+  },
+  {
+    "id": "stat_attack",
+    "name": "Colossal Might",
+    "desc": "Achieve a combined Attack Power rating of 60 or higher.",
+    "icon": "sword",
+    "category": "leveling"
+  },
+  {
+    "id": "stat_regen",
+    "name": "Rapid Recovery",
+    "desc": "Achieve a Health Regeneration bonus exceeding 3.0 HP/s.",
+    "icon": "heart",
+    "category": "leveling"
+  },
+  {
+    "id": "stat_mana_regen",
+    "name": "Leyline Conduit",
+    "desc": "Achieve a Mana Regeneration rate exceeding 5.0 MP/s.",
+    "icon": "mana",
+    "category": "leveling"
+  },
+  {
+    "id": "exp_hoarder_1",
+    "name": "EXP Gatherer",
+    "desc": "Accumulate 1,000 total experience points.",
+    "icon": "exp",
+    "category": "leveling"
+  },
+  {
+    "id": "exp_hoarder_2",
+    "name": "EXP Veteran",
+    "desc": "Accumulate 5,000 total experience points.",
+    "icon": "exp",
+    "category": "leveling"
+  },
+  {
+    "id": "exp_hoarder_3",
+    "name": "EXP Sovereign",
+    "desc": "Accumulate 20,000 total experience points.",
+    "icon": "exp",
+    "category": "leveling"
+  },
+  {
+    "id": "rebinder",
+    "name": "Personalized Controls",
+    "desc": "Customize and rebind an active ability or action hotkey.",
+    "icon": "key",
+    "category": "leveling"
+  },
+  {
+    "id": "boss_ignis_duel",
+    "name": "Desert Trial",
+    "desc": "Teleport to the Arid Waste Pocket Dimension and confront Ignis Colossus.",
+    "icon": "flame",
+    "category": "boss"
+  },
+  {
+    "id": "boss_ignis_slain",
+    "name": "Magma Extinguished",
+    "desc": "Slay the fiery Ignis Colossus in single combat.",
+    "icon": "trophy",
+    "category": "boss"
+  },
+  {
+    "id": "boss_cryo_duel",
+    "name": "Frozen Crucible",
+    "desc": "Teleport to the Glacial Permafrost Pocket Dimension and duel Cryo-Spud.",
+    "icon": "snowflake",
+    "category": "boss"
+  },
+  {
+    "id": "boss_cryo_slain",
+    "name": "Thaw of the Terror",
+    "desc": "Slay Cryo-Spud and shatter the glacial prison.",
+    "icon": "trophy",
+    "category": "boss"
+  },
+  {
+    "id": "boss_necro_duel",
+    "name": "Crypt of Shadows",
+    "desc": "Teleport to the Blight Shadow Pocket Dimension and challenge Necro-Tuber.",
+    "icon": "skull",
+    "category": "boss"
+  },
+  {
+    "id": "boss_necro_slain",
+    "name": "Rest in Soil",
+    "desc": "Slay the undead Necro-Tuber and cleanse the crypt.",
+    "icon": "trophy",
+    "category": "boss"
+  },
+  {
+    "id": "boss_malus_lair",
+    "name": "Lair of the Nether Lord",
+    "desc": "Awaken Lord Malus in the deep subterranean Nether Dungeon.",
+    "icon": "skull",
+    "category": "boss"
+  },
+  {
+    "id": "boss_malus_slain",
+    "name": "Underworld Liberated",
+    "desc": "Slay Lord Malus and claim the ancient Nether Cleaver.",
+    "icon": "trophy",
+    "category": "boss"
+  },
+  {
+    "id": "boss_sol_rho_summon",
+    "name": "Call of the Heavens",
+    "desc": "Use the Celestial Keystone to summon Grand Boss Sol-Rho.",
+    "icon": "sun",
+    "category": "boss"
+  },
+  {
+    "id": "boss_sol_rho_phase2",
+    "name": "Solar Ascendance",
+    "desc": "Force Grand Boss Sol-Rho into Phase 2 Solar Titan form.",
+    "icon": "sun",
+    "category": "boss"
+  },
+  {
+    "id": "boss_sol_rho_conqueror",
+    "name": "Celestial Titan Toppled",
+    "desc": "Slay Phase 2 Sol-Rho and achieve True Victory.",
+    "icon": "trophy",
+    "category": "boss"
+  },
+  {
+    "id": "boss_speedrun",
+    "name": "Swift Retribution",
+    "desc": "Defeat any mini-boss in under 45 seconds.",
+    "icon": "stopwatch",
+    "category": "boss"
+  },
+  {
+    "id": "boss_flawless",
+    "name": "Untouchable Duelist",
+    "desc": "Defeat an arena boss without taking any damage.",
+    "icon": "shield",
+    "category": "boss"
+  },
+  {
+    "id": "boss_marathon",
+    "name": "Boss Marathon",
+    "desc": "Defeat all 4 mini-bosses in a single game session.",
+    "icon": "trophy",
+    "category": "boss"
+  },
+  {
+    "id": "shard_gatherer_1",
+    "name": "Astral Fragment",
+    "desc": "Collect your first Celestial Portal Shard from a slain mini-boss.",
+    "icon": "shard",
+    "category": "boss"
+  },
+  {
+    "id": "shard_gatherer_4",
+    "name": "Full Shard Set",
+    "desc": "Collect all 4 Celestial Portal Shards required for the Keystone.",
+    "icon": "shard",
+    "category": "boss"
+  },
+  {
+    "id": "shard_gatherer_10",
+    "name": "Shard Hoarder",
+    "desc": "Collect 10 Celestial Portal Shards across multiple boss victories.",
+    "icon": "shard",
+    "category": "boss"
+  },
+  {
+    "id": "arena_conqueror",
+    "name": "Arena Gladiator",
+    "desc": "Triumph in all 3 pocket dimension arena duels.",
+    "icon": "trophy",
+    "category": "boss"
+  },
+  {
+    "id": "dungeon_guardian_down",
+    "name": "Skull Smasher",
+    "desc": "Survive and defeat a dungeon guardian entity.",
+    "icon": "skull",
+    "category": "boss"
+  },
+  {
+    "id": "boss_revenge",
+    "name": "Second Reckoning",
+    "desc": "Defeat a boss rematch after previously falling in battle.",
+    "icon": "sword",
+    "category": "boss"
+  },
+  {
+    "id": "coop_boss_triumph",
+    "name": "United Against Titans",
+    "desc": "Defeat a boss alongside cooperative LAN party members.",
+    "icon": "trophy",
+    "category": "boss"
+  },
+  {
+    "id": "true_titan_slayer",
+    "name": "Titan Eradicator",
+    "desc": "Slay Sol-Rho on Hardcore or YOLO mode.",
+    "icon": "crown",
+    "category": "boss"
+  },
+  {
+    "id": "boss_melee_only",
+    "name": "Blade Against Behemoths",
+    "desc": "Defeat a mini-boss using melee weapons exclusively.",
+    "icon": "sword",
+    "category": "boss"
+  },
+  {
+    "id": "boss_ranged_only",
+    "name": "Sniper from Afar",
+    "desc": "Defeat a mini-boss using bows and arrows exclusively.",
+    "icon": "bow",
+    "category": "boss"
+  },
+  {
+    "id": "boss_magic_only",
+    "name": "Wizard's Triumph",
+    "desc": "Defeat a mini-boss using magic staves exclusively.",
+    "icon": "wand",
+    "category": "boss"
+  },
+  {
+    "id": "survivor_day_1",
+    "name": "Dawn of Day 2",
+    "desc": "Survive your very first night against surface zombies.",
+    "icon": "sun",
+    "category": "survival"
+  },
+  {
+    "id": "survivor_day_5",
+    "name": "Seasoned Survivor",
+    "desc": "Survive 5 complete in-game day/night cycles.",
+    "icon": "sun",
+    "category": "survival"
+  },
+  {
+    "id": "survivor_day_10",
+    "name": "Frontier Settler",
+    "desc": "Survive 10 complete in-game day/night cycles.",
+    "icon": "sun",
+    "category": "survival"
+  },
+  {
+    "id": "survivor_day_20",
+    "name": "Master of the Wilds",
+    "desc": "Survive 20 complete in-game day/night cycles.",
+    "icon": "sun",
+    "category": "survival"
+  },
+  {
+    "id": "drown_escape",
+    "name": "Gulp of Air",
+    "desc": "Resurface from underwater with under 10% oxygen remaining.",
+    "icon": "bubble",
+    "category": "survival"
+  },
+  {
+    "id": "fire_walker",
+    "name": "Trial by Fire",
+    "desc": "Survive burning damage for 4 seconds and heal back to full health.",
+    "icon": "flame",
+    "category": "survival"
+  },
+  {
+    "id": "chill_endured",
+    "name": "Frostbitten",
+    "desc": "Survive frost status effects in the glacial mountains.",
+    "icon": "snowflake",
+    "category": "survival"
+  },
+  {
+    "id": "bleed_stop",
+    "name": "Clotted Roots",
+    "desc": "Survive severe bleeding and patch your wounds with bandages.",
+    "icon": "potion",
+    "category": "survival"
+  },
+  {
+    "id": "clutch_heal",
+    "name": "By the Skin of Your Tuber",
+    "desc": "Consume a healing potion while at 5 HP or lower and survive.",
+    "icon": "heart",
+    "category": "survival"
+  },
+  {
+    "id": "fall_cushion",
+    "name": "Soft Landing",
+    "desc": "Break a long vertical fall into deep water unharmed.",
+    "icon": "water",
+    "category": "survival"
+  },
+  {
+    "id": "hardcore_initiate",
+    "name": "No Safety Net",
+    "desc": "Create and embark on an adventure in Hardcore difficulty.",
+    "icon": "skull",
+    "category": "survival"
+  },
+  {
+    "id": "hardcore_level_10",
+    "name": "Hardcore Veteran",
+    "desc": "Reach Level 10 in a Hardcore difficulty world.",
+    "icon": "skull",
+    "category": "survival"
+  },
+  {
+    "id": "yolo_initiate",
+    "name": "One Heart Wonder",
+    "desc": "Start a world in YOLO 1-Heart Permadeath mode.",
+    "icon": "heart",
+    "category": "survival"
+  },
+  {
+    "id": "yolo_level_5",
+    "name": "Living on the Edge",
+    "desc": "Reach Level 5 in YOLO mode without losing your single heart.",
+    "icon": "heart",
+    "category": "survival"
+  },
+  {
+    "id": "yolo_boss_kill",
+    "name": "Impossible Feat",
+    "desc": "Defeat a mini-boss in YOLO 1-Heart Permadeath mode.",
+    "icon": "trophy",
+    "category": "survival"
+  },
+  {
+    "id": "lms_warrior",
+    "name": "Battle Royale Contender",
+    "desc": "Participate in a Last Man Standing multiplayer match.",
+    "icon": "sword",
+    "category": "survival"
+  },
+  {
+    "id": "lms_champion",
+    "name": "Last Tuber Standing",
+    "desc": "Win a Last Man Standing PvP match against rival tubers.",
+    "icon": "trophy",
+    "category": "survival"
+  },
+  {
+    "id": "friendly_fire_pvp",
+    "name": "Friendly Fire",
+    "desc": "Damage another player during friendly fire combat.",
+    "icon": "sword",
+    "category": "survival"
+  },
+  {
+    "id": "full_recovery",
+    "name": "Rest and Recuperation",
+    "desc": "Sleep in a comfortable bed to restore full health and mana.",
+    "icon": "bed",
+    "category": "survival"
+  },
+  {
+    "id": "snack_pack",
+    "name": "Well Fed",
+    "desc": "Keep the well-fed nourishment buff active for 10 minutes.",
+    "icon": "food",
+    "category": "survival"
+  },
+  {
+    "id": "marathon_runner",
+    "name": "Iron Spud",
+    "desc": "Sprint continuously for 60 seconds across the plains.",
+    "icon": "boots",
+    "category": "survival"
+  },
+  {
+    "id": "swimmer_marathon",
+    "name": "Long Distance Swim",
+    "desc": "Swim 300 tiles across surface lakes and flooded caverns.",
+    "icon": "water",
+    "category": "survival"
+  },
+  {
+    "id": "escape_artist",
+    "name": "Tactical Retreat",
+    "desc": "Escape combat below 15 HP using dash skills.",
+    "icon": "boots",
+    "category": "survival"
+  },
+  {
+    "id": "armor_tank",
+    "name": "Iron Wall",
+    "desc": "Mitigate over 100 incoming damage using armor defense and barriers.",
+    "icon": "shield",
+    "category": "survival"
+  },
+  {
+    "id": "shield_absorb",
+    "name": "Barrier Aegis",
+    "desc": "Absorb 200 total damage using magical shields and wards.",
+    "icon": "shield",
+    "category": "survival"
+  },
+  {
+    "id": "rarity_uncommon",
+    "name": "A Cut Above",
+    "desc": "Obtain your first Uncommon (Green) tier item.",
+    "icon": "gem",
+    "category": "secrets"
+  },
+  {
+    "id": "rarity_rare",
+    "name": "Rare Find",
+    "desc": "Equip a Rare (Blue) tier weapon or accessory.",
+    "icon": "gem",
+    "category": "secrets"
+  },
+  {
+    "id": "rarity_epic",
+    "name": "Epic Relic",
+    "desc": "Equip an Epic (Purple) tier weapon or enchanted armor piece.",
+    "icon": "gem",
+    "category": "secrets"
+  },
+  {
+    "id": "rarity_mythic",
+    "name": "Mythic Wonder",
+    "desc": "Wield a Mythic (Gold) tier weapon of immense power.",
+    "icon": "gem",
+    "category": "secrets"
+  },
+  {
+    "id": "rarity_legendary",
+    "name": "Stuff of Legends",
+    "desc": "Equip a Legendary (Orange) tier ancient implement.",
+    "icon": "gem",
+    "category": "secrets"
+  },
+  {
+    "id": "rarity_ancient",
+    "name": "Ancient Artifact",
+    "desc": "Discover a build-defining Ancient (Red) artifact.",
+    "icon": "gem",
+    "category": "secrets"
+  },
+  {
+    "id": "full_set_wood",
+    "name": "Splinter Guard",
+    "desc": "Equip a complete matching suit of wooden armor.",
+    "icon": "wood",
+    "category": "secrets"
+  },
+  {
+    "id": "full_set_copper",
+    "name": "Gleaming Bronze",
+    "desc": "Equip a complete matching suit of copper armor.",
+    "icon": "shield",
+    "category": "secrets"
+  },
+  {
+    "id": "full_set_iron",
+    "name": "Walking Anvil",
+    "desc": "Equip a complete matching suit of iron armor.",
+    "icon": "shield",
+    "category": "secrets"
+  },
+  {
+    "id": "full_set_gold",
+    "name": "Gilded Majesty",
+    "desc": "Equip a complete matching suit of radiant gold armor.",
+    "icon": "crown",
+    "category": "secrets"
+  },
+  {
+    "id": "full_set_titan",
+    "name": "Titan's Regalia",
+    "desc": "Equip the supreme celestial Titan armor set.",
+    "icon": "crown",
+    "category": "secrets"
+  },
+  {
+    "id": "crown_bearer",
+    "name": "Crown of Potaria",
+    "desc": "Don the legendary Crown of Potaria dropped by Lord Malus.",
+    "icon": "crown",
+    "category": "secrets"
+  },
+  {
+    "id": "cleaver_wielder",
+    "name": "Nether Sovereign",
+    "desc": "Brandish the Nether Cleaver in combat.",
+    "icon": "sword",
+    "category": "secrets"
+  },
+  {
+    "id": "sword_collector_1",
+    "name": "Blade Collector",
+    "desc": "Own 5 distinct swords in your inventory and chests.",
+    "icon": "sword",
+    "category": "secrets"
+  },
+  {
+    "id": "sword_collector_2",
+    "name": "Armory of Blades",
+    "desc": "Collect 20 distinct blades, broadswords, and scythes.",
+    "icon": "sword",
+    "category": "secrets"
+  },
+  {
+    "id": "bow_collector",
+    "name": "Ranger's Arsenal",
+    "desc": "Collect 10 distinct longbows and composite bows.",
+    "icon": "bow",
+    "category": "secrets"
+  },
+  {
+    "id": "staff_collector",
+    "name": "Archmage's Stash",
+    "desc": "Collect 10 distinct magical staves and wands.",
+    "icon": "wand",
+    "category": "secrets"
+  },
+  {
+    "id": "accessory_collector",
+    "name": "Baubles and Trinkets",
+    "desc": "Fill all accessory slots with enchanted jewelry.",
+    "icon": "gem",
+    "category": "secrets"
+  },
+  {
+    "id": "winged_tuber",
+    "name": "Flying High",
+    "desc": "Equip wings or an enchanted floating charm.",
+    "icon": "boots",
+    "category": "secrets"
+  },
+  {
+    "id": "golden_fry",
+    "name": "Sacred Snack",
+    "desc": "Discover and consume the legendary Golden Fry.",
+    "icon": "food",
+    "category": "secrets"
+  },
+  {
+    "id": "lore_seeker_1",
+    "name": "Reader of Runes",
+    "desc": "Read the flavor lore of 10 distinct equipment pieces.",
+    "icon": "grimoire",
+    "category": "secrets"
+  },
+  {
+    "id": "lore_seeker_2",
+    "name": "Realm Scholar",
+    "desc": "Read the flavor lore of 50 unique items and artifacts.",
+    "icon": "grimoire",
+    "category": "secrets"
+  },
+  {
+    "id": "lore_master",
+    "name": "Grand Archivist",
+    "desc": "Collect and inspect lore for 100 distinct items.",
+    "icon": "grimoire",
+    "category": "secrets"
+  },
+  {
+    "id": "paperdoll_fashion",
+    "name": "Haute Couture Spud",
+    "desc": "Equip cosmetic vanity armor in your character slots.",
+    "icon": "crown",
+    "category": "secrets"
+  },
+  {
+    "id": "piggy_bank",
+    "name": "Penny Pincher",
+    "desc": "Accumulate over 1,000 copper coins in savings.",
+    "icon": "coin",
+    "category": "secrets"
+  },
+  {
+    "id": "gold_reserves",
+    "name": "Wealthy Landowner",
+    "desc": "Accumulate over 100 gold coins.",
+    "icon": "coin",
+    "category": "secrets"
+  },
+  {
+    "id": "millionaire_spud",
+    "name": "Tycoon of the Soil",
+    "desc": "Accumulate over 1,000 gold coins.",
+    "icon": "coin",
+    "category": "secrets"
+  },
+  {
+    "id": "night_owl",
+    "name": "Midnight Stroll",
+    "desc": "Walk under the night stars for an entire night cycle without lighting a torch.",
+    "icon": "star",
+    "category": "secrets"
+  },
+  {
+    "id": "tree_hugger",
+    "name": "Arborist",
+    "desc": "Plant 20 acorn saplings and watch them grow into cohesive leafy trees.",
+    "icon": "wood",
+    "category": "secrets"
+  },
+  {
+    "id": "reforestation",
+    "name": "Great Forester",
+    "desc": "Plant 50 saplings to regenerate harvested woodlands.",
+    "icon": "wood",
+    "category": "secrets"
+  },
+  {
+    "id": "secret_vault",
+    "name": "Hidden Stash",
+    "desc": "Uncover a secret treasure chest hidden deep behind dungeon walls.",
+    "icon": "chest",
+    "category": "secrets"
+  },
+  {
+    "id": "rarity_ancient",
+    "name": "Ancient Relic Discovered",
+    "desc": "Acquire an ancient weapon or equipment piece from the dawn of Potaria.",
+    "icon": "ancient",
+    "category": "loot"
+  }
+]

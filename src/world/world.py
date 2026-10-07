@@ -1,0 +1,806 @@
+"""
+Potaria - World Manager (Boundless Open World)
+Routes tile queries, mining, building, and rendering through ChunkManager.
+Developer: Kurados
+"""
+
+import math
+import random
+import pygame
+from src.constants import (
+    SCALE, SCALED_TILE, SURFACE_LEVEL, UNDERGROUND_LEVEL, CAVERN_LEVEL, DUNGEON_LEVEL,
+    TILE_AIR, TILE_DIRT, TILE_GRASS, TILE_STONE, TILE_WOOD, TILE_LEAVES, TILE_WOOD_TRUNK,
+    TILE_COPPER_ORE, TILE_IRON_ORE, TILE_GOLD_ORE, TILE_WOOD_PLATFORM, TILE_WORK_BENCH,
+    TILE_FURNACE, TILE_TORCH, TILE_STONE_BRICK, TILE_BEDROCK, TILE_DUNGEON_BRICK,
+    TILE_DUNGEON_ALTAR, TILE_CHEST, TILE_ROOF_TILES, TILE_WOOD_PLANKS, TILE_GLASS,
+    TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_TABLE, TILE_CHAIR, TILE_WATER,
+    TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
+    TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
+    TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
+    TILE_SAND, TILE_SNOW, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS, TILE_BLIGHTSTONE, TILE_EBONSTONE,
+    WALL_AIR, WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
+    WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_MUSHROOM,
+    BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT, BIOME_MUSHROOM, BIOME_DUNGEON,
+    TILE_PROPS
+)
+from src.world.chunk_manager import ChunkManager, CHUNK_WIDTH, CHUNK_HEIGHT
+
+class World:
+    def __init__(self, asset_factory, seed=None, world_type="infinite"):
+        self.scale = SCALE
+        self.scaled_tile = SCALED_TILE
+        self.height = CHUNK_HEIGHT
+        self.asset_factory = asset_factory
+        self.world_type = world_type
+
+        # Initialize Chunk Manager
+        self.chunk_manager = ChunkManager(seed, world_type=world_type)
+        self.seed = self.chunk_manager.seed
+
+        # Pre-scale textures for fast blitting at 32x32
+        self.scaled_tiles = {}
+        for tid, surf in asset_factory.tiles.items():
+            if isinstance(surf, pygame.Surface):
+                self.scaled_tiles[tid] = pygame.transform.scale(surf, (self.scaled_tile, self.scaled_tile))
+            elif isinstance(surf, list):
+                self.scaled_tiles[tid] = [
+                    pygame.transform.scale(f, (self.scaled_tile, self.scaled_tile))
+                    for f in surf if isinstance(f, pygame.Surface)
+                ]
+
+        self.scaled_walls = {}
+        for wid, surf in asset_factory.walls.items():
+            self.scaled_walls[wid] = pygame.transform.scale(surf, (self.scaled_tile, self.scaled_tile))
+
+        self.scaled_cracks = [
+            pygame.transform.scale(c, (self.scaled_tile, self.scaled_tile))
+            for c in asset_factory.ui["cracks"]
+        ]
+
+        self.scaled_torch_frames = [
+            pygame.transform.scale(f, (self.scaled_tile, self.scaled_tile))
+            for f in asset_factory.torch_frames
+        ]
+        self.torch_anim_timer = 0
+        self.torch_frame_idx = 0
+
+        # Water animation frames
+        self.scaled_water_frames = [
+            pygame.transform.scale(f, (self.scaled_tile, self.scaled_tile))
+            for f in getattr(asset_factory, "water_frames", [])
+        ]
+        self.scaled_water_submerged = [
+            pygame.transform.scale(f, (self.scaled_tile, self.scaled_tile))
+            for f in getattr(asset_factory, "water_submerged_frames", [])
+        ]
+        self.water_anim_timer = 0.0
+        self.water_frame_idx = 0
+
+        # Cute Terraria Tree assets
+        if hasattr(asset_factory, "trunk_base"):
+            self.scaled_trunk_base = pygame.transform.scale(asset_factory.trunk_base, (self.scaled_tile, self.scaled_tile))
+        else:
+            self.scaled_trunk_base = self.scaled_tiles.get(TILE_WOOD_TRUNK)
+
+        if hasattr(asset_factory, "trunk_branch_l"):
+            self.scaled_trunk_branch_l = pygame.transform.scale(asset_factory.trunk_branch_l, (self.scaled_tile, self.scaled_tile))
+            self.scaled_trunk_branch_r = pygame.transform.scale(asset_factory.trunk_branch_r, (self.scaled_tile, self.scaled_tile))
+        else:
+            self.scaled_trunk_branch_l = self.scaled_tiles.get(TILE_WOOD_TRUNK)
+            self.scaled_trunk_branch_r = self.scaled_tiles.get(TILE_WOOD_TRUNK)
+
+        if hasattr(asset_factory, "snow_leaves"):
+            self.scaled_snow_leaves = pygame.transform.scale(asset_factory.snow_leaves, (self.scaled_tile, self.scaled_tile))
+        else:
+            self.scaled_snow_leaves = self.scaled_tiles.get(TILE_LEAVES)
+
+        if hasattr(asset_factory, "blight_leaves"):
+            self.scaled_blight_leaves = pygame.transform.scale(asset_factory.blight_leaves, (self.scaled_tile, self.scaled_tile))
+        else:
+            self.scaled_blight_leaves = self.scaled_tiles.get(TILE_LEAVES)
+
+        if hasattr(asset_factory, "palm_leaves"):
+            self.scaled_palm_leaves = pygame.transform.scale(asset_factory.palm_leaves, (self.scaled_tile, self.scaled_tile))
+        else:
+            self.scaled_palm_leaves = self.scaled_tiles.get(TILE_LEAVES)
+
+        if hasattr(asset_factory, "autumn_leaves"):
+            self.scaled_autumn_leaves = pygame.transform.scale(asset_factory.autumn_leaves, (self.scaled_tile, self.scaled_tile))
+        else:
+            self.scaled_autumn_leaves = self.scaled_tiles.get(TILE_LEAVES)
+
+        for suffix in ("snow", "blight", "palm"):
+            attr_l = f"trunk_branch_l_{suffix}"
+            attr_r = f"trunk_branch_r_{suffix}"
+            if hasattr(asset_factory, attr_l):
+                setattr(self, f"scaled_{attr_l}", pygame.transform.scale(getattr(asset_factory, attr_l), (self.scaled_tile, self.scaled_tile)))
+                setattr(self, f"scaled_{attr_r}", pygame.transform.scale(getattr(asset_factory, attr_r), (self.scaled_tile, self.scaled_tile)))
+
+        # Cute Terraria Tree Trunk Crown foliage overlays
+        for c_name in ("trunk_crown", "trunk_crown_snow", "trunk_crown_blight", "trunk_crown_palm"):
+            if hasattr(asset_factory, c_name):
+                setattr(self, f"scaled_{c_name}", pygame.transform.scale(getattr(asset_factory, c_name), (self.scaled_tile, self.scaled_tile)))
+            else:
+                setattr(self, f"scaled_{c_name}", None)
+
+        # Pre-scaled border-aware cute leaf variants (16 combinations per biome)
+        self.scaled_leaf_variants = {}
+        raw_leaf_variants = getattr(asset_factory, "leaf_variants", {})
+        for b_key, vdict in raw_leaf_variants.items():
+            self.scaled_leaf_variants[b_key] = {}
+            for k, surf in vdict.items():
+                self.scaled_leaf_variants[b_key][k] = pygame.transform.scale(surf, (self.scaled_tile, self.scaled_tile))
+
+        self.last_felled_tree = (0, [])
+        self.last_felled_trunks = []
+        self.tile_damage = {}
+        self.last_damaged_tile = None
+        self.damage_decay_timer = 0
+        self.player_placed_tiles = set()
+        self.fireplaces = set()
+
+        # Determine Spud surface spawn point (around gx=0)
+        self.chunk_manager.ensure_chunks_in_range(-2, 2)
+        spawn_y = 60
+        for y in range(30, 100):
+            if self.chunk_manager.get_tile(0, y) != TILE_AIR:
+                spawn_y = y - 3
+                break
+        self.spawn_point = (0, spawn_y * self.scaled_tile)
+        self.dungeon_spawn = (0, (DUNGEON_LEVEL + 10) * self.scaled_tile)
+        self.desert_arena_spawn = (5000 * self.scaled_tile, 52 * self.scaled_tile)
+        self.cryo_arena_spawn = (-5000 * self.scaled_tile, 52 * self.scaled_tile)
+        self.necro_arena_spawn = (8000 * self.scaled_tile, 52 * self.scaled_tile)
+
+        # Town NPCs & Housing Settlement System
+        self.town_npcs = []
+        self.housing_check_timer = 0.0
+
+    def get_biome_spawn(self, player_idx=1):
+        """Returns surface spawn coordinates in different biomes for LMS / PvP mode."""
+        coords = {1: 0, 2: 70, 3: -70, 4: 120, 5: -120}
+        gx = coords.get(player_idx, (player_idx - 1) * 60)
+        self.chunk_manager.ensure_chunks_in_range(gx - 1, gx + 1)
+        surf_y = self.get_surface_height(gx)
+        return (gx * self.scaled_tile, (surf_y - 3) * self.scaled_tile)
+
+    def update(self, dt):
+        self.torch_anim_timer += dt
+        if self.torch_anim_timer >= 0.15:
+            self.torch_anim_timer = 0
+            self.torch_frame_idx = (self.torch_frame_idx + 1) % len(self.scaled_torch_frames)
+
+        self.water_anim_timer += dt
+        if self.water_anim_timer >= 0.12:
+            self.water_anim_timer = 0
+            if self.scaled_water_frames:
+                self.water_frame_idx = (self.water_frame_idx + 1) % len(self.scaled_water_frames)
+
+        self.damage_decay_timer += dt
+        if self.damage_decay_timer > 3.0 and self.tile_damage:
+            self.tile_damage.clear()
+            self.damage_decay_timer = 0
+
+    def get_tile(self, tx, ty):
+        return self.chunk_manager.get_tile(tx, ty)
+
+    def set_tile(self, tx, ty, tile_id):
+        res = self.chunk_manager.set_tile(tx, ty, tile_id)
+        if tile_id == TILE_FIREPLACE:
+            self.fireplaces.add((tx, ty))
+        elif (tx, ty) in self.fireplaces:
+            self.fireplaces.discard((tx, ty))
+        return res
+
+    def get_wall(self, tx, ty):
+        return self.chunk_manager.get_wall(tx, ty)
+
+    def set_wall(self, tx, ty, wall_id):
+        return self.chunk_manager.set_wall(tx, ty, wall_id)
+
+    def get_surface_height(self, tx):
+        return self.chunk_manager.get_surface_height(tx)
+
+    def get_biome_at(self, tx, ty):
+        return self.chunk_manager.get_biome_at(tx, ty)
+
+    def get_biome_at_world(self, world_x, world_y):
+        tx = int(math.floor(world_x / self.scaled_tile))
+        ty = int(math.floor(world_y / self.scaled_tile))
+        return self.chunk_manager.get_biome_at(tx, ty)
+
+    def is_water(self, tx, ty):
+        """Returns True if the tile at (tx, ty) is liquid water."""
+        return self.get_tile(tx, ty) == TILE_WATER
+
+    def is_water_world(self, wx, wy):
+        """Returns True if world pixel coordinates are inside liquid water."""
+        tx = int(math.floor(wx / self.scaled_tile))
+        ty = int(math.floor(wy / self.scaled_tile))
+        return self.is_water(tx, ty)
+
+    def get_water_rects_in_bounds(self, rect_world_px):
+        """Returns bounding rects of liquid water tiles overlapping rect_world_px."""
+        min_tx = int(rect_world_px.left // self.scaled_tile)
+        max_tx = int(rect_world_px.right // self.scaled_tile)
+        min_ty = max(0, int(rect_world_px.top // self.scaled_tile))
+        max_ty = min(self.height - 1, int(rect_world_px.bottom // self.scaled_tile))
+
+        self.chunk_manager.ensure_chunks_in_range(min_tx, max_tx)
+
+        waters = []
+        for tx in range(min_tx, max_tx + 1):
+            for ty in range(min_ty, max_ty + 1):
+                if self.get_tile(tx, ty) == TILE_WATER:
+                    waters.append(pygame.Rect(
+                        tx * self.scaled_tile,
+                        ty * self.scaled_tile,
+                        self.scaled_tile,
+                        self.scaled_tile
+                    ))
+        return waters
+
+    def fell_tree(self, start_tx, start_ty):
+        """
+        Fells tree starting from (start_tx, start_ty) upwards.
+        Finds all contiguous wood trunk blocks upwards and attached leaves,
+        destroys them, and returns: (felled_trunks_count, list_of_felled_leaf_coords)
+        Also stores full trunk list in self.last_felled_trunks for block_delta/sync.
+        """
+        felled_trunks = []
+        felled_leaves = []
+
+        # 1. Traverse trunk upward from start_ty
+        queue = [(start_tx, start_ty)]
+        visited_trunk = set([(start_tx, start_ty)])
+
+        while queue:
+            cx, cy = queue.pop(0)
+            felled_trunks.append((cx, cy))
+            for dx, dy in [(0, -1), (-1, -1), (1, -1), (-1, 0), (1, 0)]:
+                nx, ny = cx + dx, cy + dy
+                if (nx, ny) not in visited_trunk:
+                    # Never traverse into player-placed blocks (houses, platforms, walls)
+                    if (nx, ny) in self.player_placed_tiles:
+                        continue
+                    if self.get_tile(nx, ny) in (TILE_WOOD_TRUNK, TILE_WOOD):
+                        visited_trunk.add((nx, ny))
+                        queue.append((nx, ny))
+
+        if not felled_trunks:
+            return 0, []
+
+        felled_trunk_cols = {tx for tx, _ in felled_trunks}
+        min_tx = min(tx for tx, _ in felled_trunks)
+        max_tx = max(tx for tx, _ in felled_trunks)
+        min_ty = min(ty for _, ty in felled_trunks)
+        max_ty = max(ty for _, ty in felled_trunks)
+
+        # 2. Find all surviving standing tree trunks in the vicinity (excluding felled tree columns and player-placed blocks)
+        surviving_trunks = set()
+        for sx in range(min_tx - 10, max_tx + 11):
+            if sx in felled_trunk_cols:
+                continue
+            for sy in range(min_ty - 8, max_ty + 8):
+                if (sx, sy) not in visited_trunk and (sx, sy) not in self.player_placed_tiles:
+                    if self.get_tile(sx, sy) in (TILE_WOOD_TRUNK, TILE_WOOD):
+                        surviving_trunks.add((sx, sy))
+
+        # 3. Find candidate leaves belonging to the felled trunk's crown
+        # Natural tree canopies extend at most 4 tiles horizontally and 5 tiles vertically from trunk blocks
+        candidate_leaves = set()
+        for tx, ty in felled_trunks:
+            for lx in range(tx - 4, tx + 5):
+                for ly in range(ty - 5, ty + 5):
+                    if (lx, ly) not in self.player_placed_tiles and self.get_tile(lx, ly) == TILE_LEAVES:
+                        candidate_leaves.add((lx, ly))
+
+        # 4. Filter leaves: Any leaf that belongs to or is supported by a surviving tree trunk MUST NOT be felled!
+        for lx, ly in candidate_leaves:
+            is_surviving_leaf = False
+            for stx, sty in surviving_trunks:
+                if abs(lx - stx) <= 3 and abs(ly - sty) <= 4:
+                    is_surviving_leaf = True
+                    break
+
+            if not is_surviving_leaf:
+                felled_leaves.append((lx, ly))
+
+        # 3. Clear all felled blocks
+        for tx, ty in felled_trunks:
+            self.chunk_manager.set_tile(tx, ty, TILE_AIR)
+            self.player_placed_tiles.discard((tx, ty))
+            self.tile_damage.pop((tx, ty), None)
+
+        for lx, ly in felled_leaves:
+            self.chunk_manager.set_tile(lx, ly, TILE_AIR)
+            self.player_placed_tiles.discard((lx, ly))
+            self.tile_damage.pop((lx, ly), None)
+
+        self.last_felled_trunks = list(felled_trunks)
+        return len(felled_trunks), felled_leaves
+
+    def damage_tile_at(self, tx, ty, power):
+        t_id = self.get_tile(tx, ty)
+        if t_id == TILE_AIR or t_id == TILE_BEDROCK or t_id == TILE_WATER:
+            return False, None, t_id
+
+        # Foliage protection: Player can only destroy wood, never bush/leaves directly!
+        if t_id == TILE_LEAVES:
+            return False, None, t_id
+
+        prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
+        max_health = prop.get("hardness", 20)
+
+        coord = (tx, ty)
+        current = float(self.tile_damage.get(coord, 0.0)) + float(power)
+        self.tile_damage[coord] = current
+        self.last_damaged_tile = coord
+        self.damage_decay_timer = 0
+
+        if current >= max_health:
+            del self.tile_damage[coord]
+            is_player_placed = (tx, ty) in self.player_placed_tiles
+            self.player_placed_tiles.discard((tx, ty))
+            drop = prop.get("drop")
+
+            # Felling only cascades for natural tree trunks or unplaced tree wood, NOT player-placed structures
+            if (t_id in (TILE_WOOD_TRUNK, TILE_WOOD)) and not is_player_placed:
+                felled_count, leaf_coords = self.fell_tree(tx, ty)
+                self.last_felled_tree = (felled_count, leaf_coords)
+                return True, "wood", t_id
+
+            if (tx, ty) in self.fireplaces:
+                self.fireplaces.discard((tx, ty))
+            self.chunk_manager.set_tile(tx, ty, TILE_AIR)
+            return True, drop, t_id
+
+        return False, None, t_id
+
+    def place_tile(self, tx, ty, tile_id):
+        cur = self.get_tile(tx, ty)
+        if cur != TILE_AIR and cur != TILE_WATER:
+            return False
+
+        # Adjacency check
+        has_neighbor = (self.get_wall(tx, ty) != WALL_AIR)
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            if self.get_tile(tx + dx, ty + dy) not in (TILE_AIR, TILE_WATER):
+                has_neighbor = True
+                break
+
+        if not has_neighbor:
+            return False
+
+        placed = self.chunk_manager.set_tile(tx, ty, tile_id)
+        if placed:
+            self.player_placed_tiles.add((tx, ty))
+            if tile_id == TILE_FIREPLACE:
+                self.fireplaces.add((tx, ty))
+        return placed
+
+    def toggle_door(self, tx, ty, player_rect=None):
+        """Toggles a wooden door between open and closed state without trapping the player."""
+        t_id = self.get_tile(tx, ty)
+        if t_id == TILE_DOOR_CLOSED:
+            self.set_tile(tx, ty, TILE_DOOR_OPEN)
+            return True
+        elif t_id == TILE_DOOR_OPEN:
+            door_rect = pygame.Rect(tx * self.scaled_tile, ty * self.scaled_tile, self.scaled_tile, self.scaled_tile)
+            if player_rect and door_rect.colliderect(player_rect):
+                return False  # Prevent trapping player inside solid closed door
+            self.set_tile(tx, ty, TILE_DOOR_CLOSED)
+            return True
+        return False
+
+    def place_wall(self, tx, ty, wall_id):
+        """Places a background wall at (tx, ty)."""
+        if self.get_wall(tx, ty) == wall_id:
+            return False
+        return self.chunk_manager.set_wall(tx, ty, wall_id)
+
+    def check_house_validity(self, tx, ty):
+        """Validates if (tx, ty) belongs to a fully sheltered, furnished, and illuminated
+        room suitable for a Town NPC to move into.
+        Returns: (is_valid, reason, center_x, center_y)"""
+        if self.is_tile_solid(tx, ty):
+            found_air = False
+            for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+                if not self.is_tile_solid(tx + dx, ty + dy):
+                    tx, ty = tx + dx, ty + dy
+                    found_air = True
+                    break
+            if not found_air:
+                return False, "Not an open room interior.", None, None
+
+        visited = set()
+        queue = [(tx, ty)]
+        visited.add((tx, ty))
+
+        has_door = False
+        has_light = False
+        has_flat_surface = False
+        has_comfort = False
+        wall_count = 0
+        max_room_tiles = 250
+        min_room_tiles = 15
+
+        light_tiles = (TILE_TORCH, TILE_FIREPLACE, TILE_CANDELABRA, TILE_CHANDELIER)
+        door_tiles = (TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_WOOD_PLATFORM)
+        flat_tiles = (TILE_WORK_BENCH, TILE_TABLE, TILE_BOOKSHELF, TILE_DRESSER)
+        comfort_tiles = (TILE_CHAIR, TILE_BED)
+        blight_tiles = (TILE_BLIGHTSTONE, TILE_BLIGHT_GRASS, TILE_EBONSTONE, TILE_CORRUPT_GRASS)
+
+        room_tiles = []
+
+        while queue:
+            cx, cy = queue.pop(0)
+            room_tiles.append((cx, cy))
+            if len(room_tiles) > max_room_tiles:
+                return False, "Room is too large or not enclosed.", None, None
+
+            if self.get_wall(cx, cy) != 0:
+                wall_count += 1
+
+            t_cur = self.get_tile(cx, cy)
+            if t_cur in light_tiles:
+                has_light = True
+            if t_cur in door_tiles:
+                has_door = True
+            if t_cur in flat_tiles:
+                has_flat_surface = True
+            if t_cur in comfort_tiles:
+                has_comfort = True
+            if t_cur in blight_tiles:
+                return False, "Room is contaminated by Blight.", None, None
+
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nx, ny = cx + dx, cy + dy
+                if (nx, ny) in visited:
+                    continue
+
+                nt = self.get_tile(nx, ny)
+                if nt in blight_tiles:
+                    return False, "Room is contaminated by Blight.", None, None
+
+                if nt in door_tiles:
+                    has_door = True
+                if nt in light_tiles:
+                    has_light = True
+                if nt in flat_tiles:
+                    has_flat_surface = True
+                if nt in comfort_tiles:
+                    has_comfort = True
+
+                if self.is_tile_solid(nx, ny):
+                    continue
+
+                visited.add((nx, ny))
+                queue.append((nx, ny))
+
+        if len(room_tiles) < min_room_tiles:
+            return False, f"Room is too small ({len(room_tiles)}/{min_room_tiles} tiles).", None, None
+
+        wall_ratio = wall_count / len(room_tiles)
+        if wall_ratio < 0.50:
+            return False, f"Room needs background walls ({int(wall_ratio*100)}% / 50%).", None, None
+
+        if not has_door:
+            return False, "Room needs an entrance door or wooden platform.", None, None
+
+        if not has_light:
+            return False, "Room needs a light source (Torch, Fireplace, or Candelabra).", None, None
+
+        if not has_flat_surface:
+            return False, "Room needs a flat surface item (Table, Work Bench, or Dresser).", None, None
+
+        if not has_comfort:
+            return False, "Room needs a comfort item (Chair or Bed).", None, None
+
+        avg_x = sum(x for x, y in room_tiles) // len(room_tiles)
+        avg_y = sum(y for x, y in room_tiles) // len(room_tiles)
+
+        return True, "Valid shelter suitable for Town NPC!", avg_x, avg_y
+
+    def check_shelter(self, tx, ty, radius=6):
+        """Checks if (tx, ty) is part of a valid sheltered house with walls, door, and torch."""
+        is_valid, _, _, _ = self.check_house_validity(tx, ty)
+        if is_valid:
+            return True
+        # Fallback check for compatibility with legacy tests
+        has_door = False
+        has_torch = False
+        wall_count = 0
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                cur_x = tx + dx
+                cur_y = ty + dy
+                t = self.get_tile(cur_x, cur_y)
+                if t in (TILE_DOOR_CLOSED, TILE_DOOR_OPEN):
+                    has_door = True
+                if t in (TILE_TORCH, TILE_FIREPLACE, TILE_CANDELABRA, TILE_CHANDELIER):
+                    has_torch = True
+                if self.get_wall(cur_x, cur_y) != 0:
+                    wall_count += 1
+        return has_door and has_torch and (wall_count >= 4)
+
+    def check_and_spawn_town_npcs(self, player, inventory, asset_factory, sound_manager, combat=None):
+        """Periodically scans surrounding player-built houses and settles eligible Town NPCs."""
+        from src.entities.npc import GuideNPC, MerchantNPC, NurseNPC, BlacksmithNPC
+
+        active_types = {npc.npc_type for npc in self.town_npcs}
+        occupied_homes = {npc.home_tile for npc in self.town_npcs if npc.home_tile}
+
+        candidates = [
+            ("guide", GuideNPC, lambda: True),
+            ("merchant", MerchantNPC, lambda: (inventory and (inventory.count_item("copper_coin") >= 25 or inventory.count_item("copper_ore") >= 5)) or getattr(player.stats, "level", 1) >= 2),
+            ("nurse", NurseNPC, lambda: player.max_health > 100 or player.health < player.max_health or getattr(combat, "mini_bosses_slain", 0) > 0),
+            ("blacksmith", BlacksmithNPC, lambda: (inventory and (inventory.count_item("copper_bar") > 0 or inventory.count_item("iron_bar") > 0)) or getattr(combat, "dungeon_boss_slain", False)),
+        ]
+
+        ptx = int(player.center_x // self.scaled_tile)
+        pty = int(player.center_y // self.scaled_tile)
+
+        for c_type, c_cls, c_cond in candidates:
+            if c_type in active_types:
+                continue
+            if not c_cond():
+                continue
+
+            found_home = None
+            for dy in range(-15, 16, 3):
+                for dx in range(-25, 26, 3):
+                    hx, hy = ptx + dx, pty + dy
+                    if (hx, hy) in occupied_homes:
+                        continue
+                    is_valid, _, cx, cy = self.check_house_validity(hx, hy)
+                    if is_valid and (cx, cy) not in occupied_homes:
+                        found_home = (cx, cy)
+                        break
+                if found_home:
+                    break
+
+            # If Guide hasn't spawned yet and no house is built yet, spawn near world spawn
+            if not found_home and c_type == "guide" and len(self.town_npcs) == 0:
+                sp_x, sp_y = self.spawn_point
+                found_home = (int(sp_x // self.scaled_tile), int(sp_y // self.scaled_tile) - 1)
+
+            if found_home:
+                hx, hy = found_home
+                world_x = hx * self.scaled_tile
+                world_y = hy * self.scaled_tile
+                from src.entities.npc import NPC_TITLES
+                name, role_title, _ = NPC_TITLES.get(c_type, ("Spud", "Villager", (255, 255, 255)))
+                new_npc = c_cls(name, c_type, world_x, world_y, asset_factory, sound_manager, home_tile=found_home)
+                self.town_npcs.append(new_npc)
+                occupied_homes.add(found_home)
+                active_types.add(c_type)
+                if inventory and hasattr(inventory, "notify"):
+                    inventory.notify(f"{name} the {role_title} has settled in!")
+                sound_manager.play("craft")
+                break
+
+    def update_town_npcs(self, dt, player, inventory, asset_factory, sound_manager, combat=None):
+        """Updates AI and housing checks for all active Town NPCs."""
+        self.housing_check_timer += dt
+        if self.housing_check_timer >= 3.5:
+            self.housing_check_timer = 0.0
+            self.check_and_spawn_town_npcs(player, inventory, asset_factory, sound_manager, combat)
+
+        for npc in self.town_npcs:
+            npc.update(dt, self)
+
+    def render_town_npcs(self, target_surf, camera, player=None):
+        """Renders Town NPCs and their name badges."""
+        for npc in self.town_npcs:
+            npc.render(target_surf, camera, player=player)
+
+    def get_npc_at(self, world_x, world_y, radius=45.0):
+        """Returns the TownNPC closest to (world_x, world_y) within reach radius, if any."""
+        for npc in self.town_npcs:
+            if math.hypot(npc.center_x - world_x, npc.center_y - world_y) <= radius:
+                return npc
+        return None
+
+    def is_tile_solid(self, tx, ty):
+        """Returns True if the tile at (tx, ty) is solid."""
+        t_id = self.get_tile(tx, ty)
+        return TILE_PROPS.get(t_id, {}).get("solid", False)
+
+    def get_solid_rects_in_bounds(self, rect_world_px):
+        min_tx = int(rect_world_px.left // self.scaled_tile)
+        max_tx = int(rect_world_px.right // self.scaled_tile)
+        min_ty = max(0, int(rect_world_px.top // self.scaled_tile))
+        max_ty = min(self.height - 1, int(rect_world_px.bottom // self.scaled_tile))
+
+        self.chunk_manager.ensure_chunks_in_range(min_tx, max_tx)
+
+        solids = []
+        for tx in range(min_tx, max_tx + 1):
+            for ty in range(min_ty, max_ty + 1):
+                t_id = self.get_tile(tx, ty)
+                prop = TILE_PROPS.get(t_id, {})
+                if prop.get("solid", False) or prop.get("platform", False):
+                    tile_rect = pygame.Rect(
+                        tx * self.scaled_tile,
+                        ty * self.scaled_tile,
+                        self.scaled_tile,
+                        self.scaled_tile
+                    )
+                    solids.append((tile_rect, prop.get("platform", False)))
+        return solids
+
+    def emit_fireplace_smoke(self, particle_system, cam_rect=None):
+        """Emits subtle rising smoke and warm embers from active fireplaces."""
+        for fx, fy in list(self.fireplaces):
+            wx = fx * self.scaled_tile + self.scaled_tile // 2
+            wy = fy * self.scaled_tile + 4
+            if cam_rect is None or cam_rect.collidepoint(wx, wy):
+                if random.random() < 0.25:
+                    particle_system.spawn_smoke(wx + random.randint(-4, 4), wy, color=(170, 170, 180), count=1)
+                if random.random() < 0.08:
+                    particle_system.spawn_sparks(wx + random.randint(-3, 3), wy + 6, color=(255, 140, 40), count=1)
+
+    def render(self, target_surf, camera):
+        # Precise integer rounding eliminates any 1px subpixel seams between adjacent blocks/chunks
+        cam_x = int(round(camera.x - camera.shake_offset_x))
+        cam_y = int(round(camera.y - camera.shake_offset_y))
+        sw, sh = target_surf.get_width(), target_surf.get_height()
+
+        min_tx = int(cam_x // self.scaled_tile) - 1
+        max_tx = int((cam_x + sw) // self.scaled_tile) + 1
+        min_ty = max(0, int(cam_y // self.scaled_tile) - 1)
+        max_ty = min(self.height - 1, int((cam_y + sh) // self.scaled_tile) + 1)
+
+        # Stream and ensure chunks in viewport
+        self.chunk_manager.ensure_chunks_in_range(min_tx, max_tx)
+
+        # Single-pass viewport rendering: background wall/cave backdrop followed by foreground tile
+        # Pre-calculates column biome and X coordinates to eliminate redundant lookups
+        for tx in range(min_tx, max_tx + 1):
+            surf_y = self.get_surface_height(tx)
+            col_biome = self.chunk_manager.get_column_biome(tx)
+            is_dungeon_col = (-30 <= tx <= 30)
+            screen_px = tx * self.scaled_tile - cam_x
+            chunk = self.chunk_manager.get_chunk(tx // CHUNK_WIDTH)
+            lx = tx % CHUNK_WIDTH
+            tiles_col = chunk.tiles[lx]
+            walls_col = chunk.walls[lx]
+
+            for ty in range(min_ty, max_ty + 1):
+                screen_py = ty * self.scaled_tile - cam_y
+                t_id = tiles_col[ty]
+                w_id = walls_col[ty]
+                prop = TILE_PROPS.get(t_id, {})
+
+                # 1. Background Walls & Subterranean Cave Backdrop
+                # Ensures workbench, wood platforms, torches, doors, etc. have walls/cave rock behind them
+                is_full_opaque = prop.get("opaque", False) and prop.get("solid", False) and (t_id not in (
+                    TILE_WORK_BENCH, TILE_WOOD_PLATFORM, TILE_TORCH, TILE_DOOR_CLOSED,
+                    TILE_DOOR_OPEN, TILE_TABLE, TILE_CHAIR, TILE_GLASS, TILE_CHEST,
+                    TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
+                    TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
+                    TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF
+                ))
+
+                if not is_full_opaque:
+                    if w_id != WALL_AIR:
+                        wall_tex = self.scaled_walls.get(w_id)
+                        if wall_tex:
+                            target_surf.blit(wall_tex, (screen_px, screen_py))
+                    else:
+                        if ty >= surf_y or ty >= SURFACE_LEVEL:
+                            # Natural cave backdrop when underground without player walls
+                            if ty >= DUNGEON_LEVEL - 8 and is_dungeon_col:
+                                sub_w = WALL_DUNGEON
+                            elif ty >= CAVERN_LEVEL - 12:
+                                sub_w = WALL_MUSHROOM if (t_id == TILE_MUSHROOM_GRASS or w_id == WALL_MUSHROOM) else WALL_STONE
+                            elif col_biome == BIOME_DESERT:
+                                sub_w = WALL_SANDSTONE
+                            elif col_biome == BIOME_SNOW:
+                                sub_w = WALL_ICE
+                            elif col_biome == BIOME_CORRUPTION:
+                                sub_w = WALL_EBONSTONE
+                            else:
+                                sub_w = WALL_DIRT if ty < surf_y + 20 else WALL_STONE
+
+                            cave_wall_tex = self.scaled_walls.get(sub_w)
+                            if cave_wall_tex:
+                                target_surf.blit(cave_wall_tex, (screen_px, screen_py))
+
+                # 2. Foreground Tiles
+                if t_id != TILE_AIR:
+                    if t_id == TILE_TORCH:
+                        target_surf.blit(self.scaled_torch_frames[self.torch_frame_idx], (screen_px, screen_py))
+                    elif t_id == TILE_WATER:
+                        above_id = tiles_col[ty - 1] if ty > 0 else TILE_AIR
+                        if above_id == TILE_AIR and self.scaled_water_frames:
+                            w_tex = self.scaled_water_frames[self.water_frame_idx % len(self.scaled_water_frames)]
+                        elif self.scaled_water_submerged:
+                            w_tex = self.scaled_water_submerged[self.water_frame_idx % len(self.scaled_water_submerged)]
+                        else:
+                            w_tex = self.scaled_tiles.get(t_id)
+                        if w_tex:
+                            target_surf.blit(w_tex, (screen_px, screen_py))
+                    elif t_id == TILE_WOOD_TRUNK:
+                        below_id = tiles_col[ty + 1] if ty + 1 < self.height else TILE_BEDROCK
+                        above_id = tiles_col[ty - 1] if ty > 0 else TILE_AIR
+                        left_id = self.get_tile(tx - 1, ty)
+                        right_id = self.get_tile(tx + 1, ty)
+                        in_canopy = (above_id == TILE_LEAVES or left_id == TILE_LEAVES or right_id == TILE_LEAVES)
+
+                        if below_id in (TILE_GRASS, TILE_DIRT, TILE_SNOW, TILE_SAND, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS):
+                            target_surf.blit(self.scaled_trunk_base, (screen_px, screen_py))
+                        elif not in_canopy and (tx + ty) % 5 == 0:
+                            if col_biome == BIOME_SNOW and hasattr(self, "scaled_trunk_branch_l_snow"):
+                                target_surf.blit(self.scaled_trunk_branch_l_snow, (screen_px, screen_py))
+                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and hasattr(self, "scaled_trunk_branch_l_blight"):
+                                target_surf.blit(self.scaled_trunk_branch_l_blight, (screen_px, screen_py))
+                            elif col_biome == BIOME_DESERT and hasattr(self, "scaled_trunk_branch_l_palm"):
+                                target_surf.blit(self.scaled_trunk_branch_l_palm, (screen_px, screen_py))
+                            else:
+                                target_surf.blit(self.scaled_trunk_branch_l, (screen_px, screen_py))
+                        elif not in_canopy and (tx + ty) % 5 == 2:
+                            if col_biome == BIOME_SNOW and hasattr(self, "scaled_trunk_branch_r_snow"):
+                                target_surf.blit(self.scaled_trunk_branch_r_snow, (screen_px, screen_py))
+                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and hasattr(self, "scaled_trunk_branch_r_blight"):
+                                target_surf.blit(self.scaled_trunk_branch_r_blight, (screen_px, screen_py))
+                            elif col_biome == BIOME_DESERT and hasattr(self, "scaled_trunk_branch_r_palm"):
+                                target_surf.blit(self.scaled_trunk_branch_r_palm, (screen_px, screen_py))
+                            else:
+                                target_surf.blit(self.scaled_trunk_branch_r, (screen_px, screen_py))
+                        else:
+                            tile_tex = self.scaled_tiles.get(t_id)
+                            if tile_tex:
+                                target_surf.blit(tile_tex, (screen_px, screen_py))
+
+                        # Overlay lush canopy foliage on upper wood trunk to fill upper wood with leaves
+                        if in_canopy:
+                            crown_tex = getattr(self, "scaled_trunk_crown", None)
+                            if col_biome == BIOME_SNOW and getattr(self, "scaled_trunk_crown_snow", None):
+                                crown_tex = self.scaled_trunk_crown_snow
+                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and getattr(self, "scaled_trunk_crown_blight", None):
+                                crown_tex = self.scaled_trunk_crown_blight
+                            elif col_biome == BIOME_DESERT and getattr(self, "scaled_trunk_crown_palm", None):
+                                crown_tex = self.scaled_trunk_crown_palm
+                            if crown_tex:
+                                target_surf.blit(crown_tex, (screen_px, screen_py))
+                    elif t_id == TILE_LEAVES:
+                        up_air = (self.get_tile(tx, ty - 1) == TILE_AIR)
+                        down_air = (self.get_tile(tx, ty + 1) == TILE_AIR)
+                        left_air = (self.get_tile(tx - 1, ty) == TILE_AIR)
+                        right_air = (self.get_tile(tx + 1, ty) == TILE_AIR)
+
+                        b_key = "forest"
+                        if col_biome == BIOME_SNOW:
+                            b_key = "snow"
+                        elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
+                            b_key = "blight"
+                        elif col_biome == BIOME_DESERT:
+                            b_key = "palm"
+
+                        leaf_dict = getattr(self, "scaled_leaf_variants", {}).get(b_key, {})
+                        v_tex = leaf_dict.get((up_air, down_air, left_air, right_air))
+                        if v_tex:
+                            target_surf.blit(v_tex, (screen_px, screen_py))
+                        else:
+                            if col_biome == BIOME_SNOW:
+                                target_surf.blit(self.scaled_snow_leaves, (screen_px, screen_py))
+                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
+                                target_surf.blit(self.scaled_blight_leaves, (screen_px, screen_py))
+                            elif col_biome == BIOME_DESERT and hasattr(self, "scaled_palm_leaves"):
+                                target_surf.blit(self.scaled_palm_leaves, (screen_px, screen_py))
+                            else:
+                                tile_tex = self.scaled_tiles.get(t_id)
+                                if tile_tex:
+                                    target_surf.blit(tile_tex, (screen_px, screen_py))
+                    else:
+                        tile_tex = self.scaled_tiles.get(t_id)
+                        if tile_tex:
+                            target_surf.blit(tile_tex, (screen_px, screen_py))
+
+                    if (tx, ty) in self.tile_damage:
+                        cur = self.tile_damage[(tx, ty)]
+                        max_h = max(1, prop.get("hardness", 20))
+                        stage = min(3, int((cur / max_h) * 4))
+                        target_surf.blit(self.scaled_cracks[stage], (screen_px, screen_py))
