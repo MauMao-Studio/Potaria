@@ -271,13 +271,9 @@ class TestInventoryCoinsAndMining(unittest.TestCase):
         celestial_axe_hits = math.ceil(wood_hardness / celestial_axe_dmg)
         self.assertEqual(celestial_axe_hits, 1)  # 1 hit (instant)
 
-        # 6. Stone Mining: Pickaxe vs Hand
+        # 6. Stone Mining: Pickaxe vs Hand (Stone requires a pickaxe; bare hands cannot mine stone)
         hand_stone_dmg = get_mining_damage(None, TILE_STONE)
-        self.assertEqual(hand_stone_dmg, 1.2)
-        hand_stone_hits = math.ceil(stone_hardness / hand_stone_dmg)
-        hand_stone_time = hand_stone_hits * rate
-        self.assertEqual(hand_stone_hits, 30)
-        self.assertAlmostEqual(hand_stone_time, 4.5, delta=0.1)
+        self.assertEqual(hand_stone_dmg, 0.0)
 
         copper_pick = ItemStack("copper_pickaxe", 1)
         copper_pick_dmg = get_mining_damage(copper_pick, TILE_STONE)
@@ -295,8 +291,8 @@ class TestInventoryCoinsAndMining(unittest.TestCase):
         self.assertEqual(iron_pick_hits, 8)
         self.assertAlmostEqual(iron_pick_time, 1.20, delta=0.1)
 
-        # Pickaxe is more than 2x faster than bare hands on stone
-        self.assertLess(copper_pick_time, hand_stone_time * 0.5)
+        # Pickaxe breaks stone rapidly compared to non-pick tools
+        self.assertLess(copper_pick_time, 2.5)
 
         # 7. Mismatched Tool: Axe on Stone only deals hand damage
         axe_on_stone_dmg = get_mining_damage(wood_axe, TILE_STONE)

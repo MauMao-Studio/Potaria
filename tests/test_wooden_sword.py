@@ -28,7 +28,7 @@ pygame.display.set_mode((1280, 720))
 
 from src.constants import (
     RARITY_COMMON, CAT_WEAPON, SCALED_TILE, TILE_WORK_BENCH,
-    TILE_WOOD, TILE_WOOD_TRUNK, TILE_DIRT, TILE_GRASS
+    TILE_WOOD, TILE_WOOD_TRUNK, TILE_DIRT, TILE_GRASS, TILE_STONE, TILE_COPPER_ORE
 )
 from src.assets.asset_factory import AssetFactory
 from src.audio.sound_effects import SoundManager
@@ -280,11 +280,13 @@ class TestWoodenSword(unittest.TestCase):
         char_panel._render_equipped_tooltip(target_surf, 150, 150, "wood_axe")
         char_panel._render_equipped_tooltip(target_surf, 150, 150, "wooden_sword")
 
-        # 3. Bare Hand Harvesting (Anti-Softlock)
+        # 3. Bare Hand Harvesting (Anti-Softlock: wood and dirt only, stone/ores disallowed)
         self.assertEqual(get_mining_damage(None, TILE_WOOD), 1.2)
         self.assertEqual(get_mining_damage(None, TILE_WOOD_TRUNK), 1.2)
         self.assertEqual(get_mining_damage(None, TILE_DIRT), 1.2)
         self.assertEqual(get_mining_damage(None, TILE_GRASS), 1.2)
+        self.assertEqual(get_mining_damage(None, TILE_STONE), 0.0)
+        self.assertEqual(get_mining_damage(None, TILE_COPPER_ORE), 0.0)
 
         # 4. In-game Bare Hand Mining Integration
         game = PotariaGame()

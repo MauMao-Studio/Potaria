@@ -490,10 +490,27 @@ class CharacterPanel:
             reg_val = armor.get("mp_regen", reg.get("mp_regen", 0))
             lines.append((f"+{reg_val:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
 
-        # Effects & Special Perks
+        # Tool power (Axe Power, Pickaxe Power, Shovel Power, Hammer Power)
+        if reg.get("power", 0) > 0:
+            iid = item_id.lower()
+            if "axe" in iid and "pickaxe" not in iid:
+                p_label = "Axe Power"
+            elif "pickaxe" in iid or "drill" in iid:
+                p_label = "Pickaxe Power"
+            elif "shovel" in iid or "spade" in iid:
+                p_label = "Shovel Power"
+            elif "hammer" in iid:
+                p_label = "Hammer Power"
+            else:
+                p_label = "Tool Power"
+            lines.append((f"{p_label}: {reg['power']}%", (120, 210, 255), self.font_sm))
+
+        # Effects & Special Perks (Only Epic, Mythic, Legendary, Ancient; suppressed for wooden and low-tier)
         effects = reg.get("effects") or armor.get("effects", [])
         iid = item_id.lower()
-        if "wood" not in iid:
+        rarity_str = str(rarity).lower()
+        is_high_tier = rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient")
+        if "wood" not in iid and is_high_tier:
             if effects:
                 for eff in effects:
                     lines.append((f"• {eff}", (100, 240, 240), self.font_sm))

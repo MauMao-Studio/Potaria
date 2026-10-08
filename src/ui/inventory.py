@@ -1898,9 +1898,11 @@ def get_mining_damage(active_item, tile_id):
     if tile_id in FRAGILE_TILES:
         return 10.0
 
-    # Bare hands (active_item is None)
+    # Bare hands (active_item is None) - limited to wood and dirt only (anti-softlock for crafting tools)
     if not active_item:
-        return 1.2
+        if tile_id in WOOD_TILES or tile_id in DIRT_TILES:
+            return 1.2
+        return 0.0
 
     item_id = active_item.item_id if hasattr(active_item, "item_id") else str(active_item)
     data = active_item.data if hasattr(active_item, "data") else {}

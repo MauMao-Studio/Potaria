@@ -10,7 +10,7 @@ import pygame
 from src.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, SLOT_SIZE, SLOT_PADDING,
     HOTBAR_SLOTS, INV_COLS, INV_ROWS, SCALED_TILE, COLOR_GOLD,
-    RARITY_COLORS, RARITY_COMMON, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT
+    RARITY_COLORS, RARITY_COMMON, RARITY_EPIC, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT
 )
 from src.ui.inventory import ITEM_REGISTRY
 from src.rpg.skills import SKILL_DEFINITIONS
@@ -513,10 +513,12 @@ class HUD:
         if data.get("heal", 0) > 0:
             lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
 
-        # 4. Special Effects (Bulleted for upper rarities; suppressed for basic wooden items)
+        # 4. Special Effects (Bulleted for upper rarities: Epic, Mythic, Legendary, Ancient; suppressed for low-tier and wooden items)
         effects = data.get("effects", [])
         iid = item.item_id.lower()
-        if "wood" not in iid:
+        rarity_str = str(rarity).lower()
+        is_high_tier = rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient")
+        if "wood" not in iid and is_high_tier:
             if effects:
                 for eff in effects:
                     lines.append((f"• {eff}", (100, 240, 240), self.font_sm))

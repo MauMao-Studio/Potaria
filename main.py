@@ -1537,10 +1537,11 @@ class PotariaGame:
         reach = math.hypot(self.player.center_x - (tile_world_x + SCALED_TILE / 2),
                            self.player.center_y - (tile_world_y + SCALED_TILE / 2))
         tile_id = self.world.get_tile(tx, ty)
-        is_target_mineable = (reach <= SCALED_TILE * 5.5 and tile_id not in (TILE_AIR, TILE_BEDROCK, TILE_WATER, TILE_LEAVES))
+        mining_dmg = get_mining_damage(active, tile_id)
+        is_target_mineable = (reach <= SCALED_TILE * 5.5 and mining_dmg > 0)
 
-        # Bare hands can mine wood, dirt, and blocks if targeting an in-reach block.
-        # If targeting air/empty space, bare hands with an equipped paperdoll weapon performs combat attack.
+        # Bare hands can mine wood and dirt if targeting an in-reach block.
+        # If targeting unmineable stone/air, bare hands with an equipped paperdoll weapon performs combat attack.
         is_bare_hands_weapon = (active is None and equipped_weapon is not None and not is_target_mineable)
         is_combat_attack = is_held_weapon or is_bare_hands_weapon
 
