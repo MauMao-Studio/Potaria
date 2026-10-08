@@ -34,6 +34,10 @@ RECIPES = [
         "ingredients": [("wood", 6)]
     },
     {
+        "result": "wooden_sword", "count": 1, "station": None,
+        "ingredients": [("wood", 7)]
+    },
+    {
         "result": "wood_shovel", "count": 1, "station": None,
         "ingredients": [("wood", 4)]
     },

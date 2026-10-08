@@ -66,8 +66,10 @@ THEME_PALETTES = [
      {"primary": (195, 140, 80), "secondary": (135, 220, 65), "shadow": (130, 85, 45), "outline": (50, 32, 18), "glow": (235, 250, 180), "accent": (220, 175, 110)}),
     (["dune", "sandstorm", "arid", "scorpion", "oasis", "mirage", "sirocco", "desert", "dust", "pharaoh"],
      {"primary": (240, 190, 85), "secondary": (255, 235, 155), "shadow": (170, 120, 45), "outline": (65, 40, 18), "glow": (255, 250, 205), "accent": (215, 150, 60)}),
-    (["verdant", "grove", "bramble", "thorn", "wild", "flora", "canopy", "moss", "spore", "petal", "timber"],
+    (["verdant", "grove", "bramble", "thorn", "wild", "flora", "canopy", "moss", "spore", "petal"],
      {"primary": (75, 185, 60), "secondary": (165, 240, 110), "shadow": (35, 115, 30), "outline": (18, 50, 18), "glow": (225, 255, 190), "accent": (110, 220, 75)}),
+    (["wood", "wooden", "timber", "plank"],
+     {"primary": (170, 115, 60), "secondary": (220, 175, 110), "shadow": (110, 70, 35), "outline": (45, 28, 12), "glow": (240, 210, 155), "accent": (140, 90, 45)}),
     (["zephyr", "tempest", "gale", "vortex", "cyclone", "thunder", "lightning", "breeze", "storm", "squall"],
      {"primary": (60, 190, 255), "secondary": (255, 245, 105), "shadow": (25, 110, 175), "outline": (15, 35, 65), "glow": (235, 250, 255), "accent": (100, 225, 255)}),
     (["ancient", "primordial", "eldritch", "forgotten", "eternal", "genesis", "timeless", "chrono", "relic", "ancestral"],
@@ -2505,7 +2507,7 @@ class AssetFactory:
             self.items[name] = self.generate_item_icon(name)
 
         for name in [
-            "copper_shortsword", "copper_broadsword", "iron_broadsword", "gold_broadsword",
+            "wooden_sword", "copper_shortsword", "copper_broadsword", "iron_broadsword", "gold_broadsword",
             "starch_blade", "nether_cleaver", "cactus_sword", "frost_blade",
             "sandstorm_spear", "shadow_cleaver", "bone_scythe", "magma_greatsword",
             "void_edge", "celestial_greatsword"

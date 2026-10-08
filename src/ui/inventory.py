@@ -52,6 +52,9 @@ ITEM_ALIASES = {
     "art": "painting",
     "wall_art": "painting",
     "stone": "stone_block",
+    "wood_sword": "wooden_sword",
+    "wood_block": "wood",
+    "wood_blocks": "wood",
 }
 REVERSE_ITEM_ALIASES = {v: k for k, v in ITEM_ALIASES.items()}
 
@@ -143,6 +146,14 @@ ITEM_REGISTRY = {
         "desc": "Tempered iron spade for rapid trench excavation and gravel clearing.",
         "lore": "'Digs twice as deep in half the time.'",
         "special": "22% Digging Power"
+    },
+    "wooden_sword": {
+        "name": "Wooden Sword", "cat": CAT_WEAPON, "power": 0, "damage": 7, "atk": 7, "def": 0,
+        "crit": 2.0, "speed": 0.0, "max_stack": 1, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "A basic wooden sword carved from raw timber. Ideal for fending off early surface beasts.",
+        "lore": "'A humble blade carved from sturdy timber, trusted by fledgling adventurers.'",
+        "special": "Slashing Strike"
     },
     "copper_shortsword": {
         "name": "Spud Shortsword", "cat": CAT_WEAPON, "power": 0, "damage": 9, "max_stack": 1, "tile": None,

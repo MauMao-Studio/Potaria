@@ -74,6 +74,8 @@ ARMOR_DATA = {
     "frost_amulet": {"slot": SLOT_ACCESSORY, "name": "Glacial Frost Amulet", "def": 11, "hp": 45, "atk": 6, "crit": 4.0, "speed": 0, "mp_regen": 1.2},
 
     # WEAPONS
+    "wooden_sword": {"slot": SLOT_WEAPON, "name": "Wooden Sword", "def": 0, "hp": 0, "atk": 7, "crit": 2.0, "speed": 0, "rarity": "common", "lore": "'A humble blade carved from sturdy timber, trusted by fledgling adventurers.'"},
+    "wood_sword": {"slot": SLOT_WEAPON, "name": "Wooden Sword", "def": 0, "hp": 0, "atk": 7, "crit": 2.0, "speed": 0, "rarity": "common", "lore": "'A humble blade carved from sturdy timber, trusted by fledgling adventurers.'"},
     "copper_shortsword": {"slot": SLOT_WEAPON, "name": "Copper Shortsword", "def": 0, "hp": 0, "atk": 8, "crit": 2.0, "speed": 0},
     "cactus_sword": {"slot": SLOT_WEAPON, "name": "Cactus Sword", "def": 0, "hp": 0, "atk": 12, "crit": 3.0, "speed": 0},
     "copper_broadsword": {"slot": SLOT_WEAPON, "name": "Copper Broadsword", "def": 0, "hp": 0, "atk": 14, "crit": 3.0, "speed": 0},

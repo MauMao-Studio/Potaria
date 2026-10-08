@@ -180,6 +180,24 @@ def generate_weapons(count=600):
     # Canonical scrubbed items first!
     canonical_weapons = [
         {
+            "id": "wooden_sword",
+            "name": "Wooden Sword",
+            "cat": "weapon",
+            "rarity": RARITY_COMMON,
+            "color": RARITY_COLORS[RARITY_COMMON],
+            "atk": 7,
+            "def": 0,
+            "crit": 2.0,
+            "speed": 0.0,
+            "hp": 0,
+            "mp": 0,
+            "mp_regen": 0.0,
+            "effects": [],
+            "lore": "'A humble blade carved from sturdy timber, trusted by fledgling adventurers.'",
+            "desc": "A basic wooden sword carved from raw timber. Ideal for fending off early surface beasts.",
+            "special": "Slashing Strike"
+        },
+        {
             "id": "astral_wrath",
             "name": "Astral Wrath",
             "cat": "weapon",
