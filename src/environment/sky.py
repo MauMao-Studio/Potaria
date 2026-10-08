@@ -27,6 +27,9 @@ class DayNightCycle:
             brightness = rng.uniform(0.4, 1.0)
             self.stars.append((sx, sy, brightness))
 
+        # Pre-computed twinkling star frames for high performance
+        self.star_frames = self._create_star_frames()
+
         # Generate Parallax Silhouette Surfaces
         self.mountains_surf = self._create_mountain_silhouette()
         self.trees_surf = self._create_tree_silhouette()
@@ -180,6 +183,21 @@ class DayNightCycle:
         except pygame.error:
             return surf
 
+    def _create_star_frames(self):
+        """Pre-computes 4 discrete twinkle phases as coordinate-color tuples."""
+        frames = []
+        for f in range(4):
+            frame_stars = []
+            for sx, sy, bright in self.stars:
+                phase = (f * 1.57 + sx * 0.1) % (math.pi * 2.0)
+                twinkle = (math.sin(phase) + 1.0) * 0.5 * bright
+                alpha = int(twinkle * 220)
+                if alpha > 30:
+                    val = min(255, max(80, int(150 + twinkle * 105)))
+                    frame_stars.append((sx, sy, (val, val, val)))
+            frames.append(frame_stars)
+        return frames
+
     def render(self, target_surf, camera):
         """Draws sky gradient, stars, sun/moon celestial bodies, and parallax mountains."""
         sw, sh = target_surf.get_width(), target_surf.get_height()
@@ -209,15 +227,11 @@ class DayNightCycle:
 
         target_surf.blit(self._cached_sky_surf, (0, 0))
 
-        # 2. Twinkling Stars (if nighttime)
+        # 2. Twinkling Stars (if nighttime - fast precomputed tuple writes, zero math)
         if self.is_night or self.time_of_day > 0.52:
-            time_sec = pygame.time.get_ticks() * 0.003
-            for sx, sy, bright in self.stars:
-                twinkle = (math.sin(time_sec + sx) + 1.0) * 0.5 * bright
-                alpha = int(twinkle * 220)
-                if alpha > 20:
-                    star_c = (255, 255, 255)
-                    target_surf.set_at((sx, sy), star_c)
+            frame_idx = (now_ticks // 220) % len(self.star_frames)
+            for sx, sy, star_c in self.star_frames[frame_idx]:
+                target_surf.set_at((sx, sy), star_c)
 
         # 3. Celestial Orbit (Sun & Moon Arc)
         # Sun: active during day (0.0 to 0.5)
