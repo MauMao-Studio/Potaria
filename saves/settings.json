@@ -6,7 +6,7 @@
     "fullscreen": true,
     "screen_shake": false,
     "touch_controls": "on",
-    "touch_opacity": 0.75
+    "touch_opacity": 0.5
   },
   "key_bindings": {
     "Move Left": 97,

@@ -28,9 +28,9 @@
 ## D. Remaining Bottlenecks
 - **Sky Rendering (1.69 ms):** Due to the active iteration over 90 stars calculating sine waves and applying `set_at()` pixel mutations each frame during nighttime.
 - **World Rendering (1.40 ms):** Although chunk baking is highly efficient, drawing chunk surfaces combined with dynamic overlay animations (water frames and torches) still dominates frame time.
-- **World Update (1.05 ms):** Logic updating Town NPCs, particles, and chunks.
+- **World Update (1.05 ms):** Logic updating particles and chunks (town/housing checks disabled).
 
 ## E. Future Optimization Recommendations
 1. **Pre-Rendered Starfield Layers:** The twinkling star logic in `sky.py` should be baked into 3 to 4 distinct semi-transparent star layers that are panned/toggled at different opacities, avoiding costly per-pixel `set_at()` calls.
-2. **Dynamic Chunk Throttling:** Throttle off-screen Town NPC and particle logic when they aren't near the player's viewport or if FPS drops.
+2. **Dynamic Chunk Throttling:** Throttle off-screen particle logic when not near the player's viewport or if FPS drops.
 3. **Dirty-Region Based Screen Updates:** Track explicitly what regions of the screen changed and only pass those rects to `pygame.display.update(rects)` instead of flipping the full screen every frame.

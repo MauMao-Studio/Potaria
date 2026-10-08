@@ -6,6 +6,7 @@ Developer: Kurados
 
 import math
 import random
+import collections
 import pygame
 from src.constants import (
     SCALE, SCALED_TILE, SURFACE_LEVEL, UNDERGROUND_LEVEL, CAVERN_LEVEL, DUNGEON_LEVEL,
@@ -138,6 +139,7 @@ class World:
         self.damage_decay_timer = 0
         self.player_placed_tiles = set()
         self.fireplaces = set()
+        self.comfort_tiles = set()
 
         # Determine Spud surface spawn point (around gx=0)
         self.chunk_manager.ensure_chunks_in_range(-2, 2)
@@ -155,6 +157,7 @@ class World:
         # Town NPCs & Housing Settlement System
         self.town_npcs = []
         self.housing_check_timer = 0.0
+        self.town_housing_enabled = False  # Town checking disabled: Potaria does not have towns
 
     def get_biome_spawn(self, player_idx=1):
         """Returns surface spawn coordinates in different biomes for LMS / PvP mode."""
@@ -184,12 +187,20 @@ class World:
     def get_tile(self, tx, ty):
         return self.chunk_manager.get_tile(tx, ty)
 
+    def has_chunk(self, chunk_x):
+        return self.chunk_manager.has_chunk(chunk_x)
+
     def set_tile(self, tx, ty, tile_id):
         res = self.chunk_manager.set_tile(tx, ty, tile_id)
         if tile_id == TILE_FIREPLACE:
             self.fireplaces.add((tx, ty))
         elif (tx, ty) in self.fireplaces:
             self.fireplaces.discard((tx, ty))
+
+        if tile_id in (TILE_CHAIR, TILE_BED):
+            self.comfort_tiles.add((tx, ty))
+        elif (tx, ty) in self.comfort_tiles:
+            self.comfort_tiles.discard((tx, ty))
         return res
 
     def get_wall(self, tx, ty):
@@ -350,9 +361,7 @@ class World:
                 self.last_felled_tree = (felled_count, leaf_coords)
                 return True, "wood", t_id
 
-            if (tx, ty) in self.fireplaces:
-                self.fireplaces.discard((tx, ty))
-            self.chunk_manager.set_tile(tx, ty, TILE_AIR)
+            self.set_tile(tx, ty, TILE_AIR)
             return True, drop, t_id
 
         return False, None, t_id
@@ -372,11 +381,9 @@ class World:
         if not has_neighbor:
             return False
 
-        placed = self.chunk_manager.set_tile(tx, ty, tile_id)
+        placed = self.set_tile(tx, ty, tile_id)
         if placed:
             self.player_placed_tiles.add((tx, ty))
-            if tile_id == TILE_FIREPLACE:
-                self.fireplaces.add((tx, ty))
         return placed
 
     def toggle_door(self, tx, ty, player_rect=None):
@@ -399,11 +406,16 @@ class World:
             return False
         return self.chunk_manager.set_wall(tx, ty, wall_id)
 
-    def check_house_validity(self, tx, ty):
+    def check_house_validity(self, tx, ty, visited_cache=None):
         """Validates if (tx, ty) belongs to a fully sheltered, furnished, and illuminated
         room suitable for a Town NPC to move into.
         Returns: (is_valid, reason, center_x, center_y)"""
+        if visited_cache is not None and (tx, ty) in visited_cache:
+            return False, "Room already visited and invalid.", None, None
+
         if self.is_tile_solid(tx, ty):
+            if visited_cache is not None:
+                visited_cache.add((tx, ty))
             found_air = False
             for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
                 if not self.is_tile_solid(tx + dx, ty + dy):
@@ -412,9 +424,11 @@ class World:
                     break
             if not found_air:
                 return False, "Not an open room interior.", None, None
+            if visited_cache is not None and (tx, ty) in visited_cache:
+                return False, "Room already visited and invalid.", None, None
 
         visited = set()
-        queue = [(tx, ty)]
+        queue = collections.deque([(tx, ty)])
         visited.add((tx, ty))
 
         has_door = False
@@ -434,9 +448,17 @@ class World:
         room_tiles = []
 
         while queue:
-            cx, cy = queue.pop(0)
+            cx, cy = queue.popleft()
             room_tiles.append((cx, cy))
             if len(room_tiles) > max_room_tiles:
+                if visited_cache is not None:
+                    visited_cache.update(visited)
+                return False, "Room is too large or not enclosed.", None, None
+
+            # Fast abort in wide open wilderness: if exploring pure wilderness with no walls and no shelter props
+            if len(room_tiles) > 60 and wall_count == 0 and not (has_door or has_light or has_flat_surface or has_comfort):
+                if visited_cache is not None:
+                    visited_cache.update(visited)
                 return False, "Room is too large or not enclosed.", None, None
 
             if self.get_wall(cx, cy) != 0:
@@ -452,6 +474,8 @@ class World:
             if t_cur in comfort_tiles:
                 has_comfort = True
             if t_cur in blight_tiles:
+                if visited_cache is not None:
+                    visited_cache.update(visited)
                 return False, "Room is contaminated by Blight.", None, None
 
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -459,8 +483,16 @@ class World:
                 if (nx, ny) in visited:
                     continue
 
+                ncx = nx // CHUNK_WIDTH
+                if not self.has_chunk(ncx):
+                    if visited_cache is not None:
+                        visited_cache.update(visited)
+                    return False, "Room is too large or not enclosed.", None, None
+
                 nt = self.get_tile(nx, ny)
                 if nt in blight_tiles:
+                    if visited_cache is not None:
+                        visited_cache.update(visited)
                     return False, "Room is contaminated by Blight.", None, None
 
                 if nt in door_tiles:
@@ -477,6 +509,9 @@ class World:
 
                 visited.add((nx, ny))
                 queue.append((nx, ny))
+
+        if visited_cache is not None:
+            visited_cache.update(visited)
 
         if len(room_tiles) < min_room_tiles:
             return False, f"Room is too small ({len(room_tiles)}/{min_room_tiles} tiles).", None, None
@@ -538,54 +573,81 @@ class World:
             ("blacksmith", BlacksmithNPC, lambda: (inventory and (inventory.count_item("copper_bar") > 0 or inventory.count_item("iron_bar") > 0)) or getattr(combat, "dungeon_boss_slain", False)),
         ]
 
+        eligible = [
+            (c_type, c_cls) for c_type, c_cls, c_cond in candidates
+            if c_type not in active_types and c_cond()
+        ]
+        if not eligible:
+            return
+
         ptx = int(player.center_x // self.scaled_tile)
         pty = int(player.center_y // self.scaled_tile)
 
-        for c_type, c_cls, c_cond in candidates:
-            if c_type in active_types:
-                continue
-            if not c_cond():
-                continue
+        found_home = None
+        visited_in_scan = set()
 
-            found_home = None
-            for dy in range(-15, 16, 3):
-                for dx in range(-25, 26, 3):
-                    hx, hy = ptx + dx, pty + dy
-                    if (hx, hy) in occupied_homes:
-                        continue
-                    is_valid, _, cx, cy = self.check_house_validity(hx, hy)
-                    if is_valid and (cx, cy) not in occupied_homes:
-                        found_home = (cx, cy)
-                        break
-                if found_home:
+        # Collect candidate comfort furniture positions in range of player.
+        # A valid room strictly requires a comfort item (TILE_CHAIR or TILE_BED).
+        candidate_tiles = set()
+        for fx, fy in list(self.comfort_tiles):
+            if abs(fx - ptx) <= 25 and abs(fy - pty) <= 15:
+                candidate_tiles.add((fx, fy))
+
+        # Also inspect already loaded chunks around player to catch any untracked comfort items
+        min_cx = (ptx - 25) // CHUNK_WIDTH
+        max_cx = (ptx + 25) // CHUNK_WIDTH
+        for cx in range(min_cx, max_cx + 1):
+            chunk = self.chunk_manager.chunks.get(cx)
+            if chunk is None:
+                continue
+            for lx in range(CHUNK_WIDTH):
+                gx = cx * CHUNK_WIDTH + lx
+                if abs(gx - ptx) > 25:
+                    continue
+                col_tiles = chunk.tiles[lx]
+                min_y = max(0, pty - 15)
+                max_y = min(self.height - 1, pty + 15)
+                for gy in range(min_y, max_y + 1):
+                    if col_tiles[gy] in (TILE_CHAIR, TILE_BED):
+                        candidate_tiles.add((gx, gy))
+                        self.comfort_tiles.add((gx, gy))
+
+        # Test each comfort furniture anchor (runs in <0.02ms directly inside candidate rooms)
+        for fx, fy in candidate_tiles:
+            if (fx, fy) not in occupied_homes and (fx, fy) not in visited_in_scan:
+                is_valid, _, cx, cy = self.check_house_validity(fx, fy, visited_cache=visited_in_scan)
+                if is_valid and (cx, cy) not in occupied_homes:
+                    found_home = (cx, cy)
                     break
 
-            # If Guide hasn't spawned yet and no house is built yet, spawn near world spawn
-            if not found_home and c_type == "guide" and len(self.town_npcs) == 0:
-                sp_x, sp_y = self.spawn_point
-                found_home = (int(sp_x // self.scaled_tile), int(sp_y // self.scaled_tile) - 1)
+        c_type, c_cls = eligible[0]
 
-            if found_home:
-                hx, hy = found_home
-                world_x = hx * self.scaled_tile
-                world_y = hy * self.scaled_tile
-                from src.entities.npc import NPC_TITLES
-                name, role_title, _ = NPC_TITLES.get(c_type, ("Spud", "Villager", (255, 255, 255)))
-                new_npc = c_cls(name, c_type, world_x, world_y, asset_factory, sound_manager, home_tile=found_home)
-                self.town_npcs.append(new_npc)
-                occupied_homes.add(found_home)
-                active_types.add(c_type)
-                if inventory and hasattr(inventory, "notify"):
-                    inventory.notify(f"{name} the {role_title} has settled in!")
-                sound_manager.play("craft")
-                break
+        # If Guide hasn't spawned yet and no house is built yet, spawn near world spawn
+        if not found_home and c_type == "guide" and len(self.town_npcs) == 0:
+            sp_x, sp_y = self.spawn_point
+            found_home = (int(sp_x // self.scaled_tile), int(sp_y // self.scaled_tile) - 1)
+
+        if found_home:
+            hx, hy = found_home
+            world_x = hx * self.scaled_tile
+            world_y = hy * self.scaled_tile
+            from src.entities.npc import NPC_TITLES
+            name, role_title, _ = NPC_TITLES.get(c_type, ("Spud", "Villager", (255, 255, 255)))
+            new_npc = c_cls(name, c_type, world_x, world_y, asset_factory, sound_manager, home_tile=found_home)
+            self.town_npcs.append(new_npc)
+            occupied_homes.add(found_home)
+            active_types.add(c_type)
+            if inventory and hasattr(inventory, "notify"):
+                inventory.notify(f"{name} the {role_title} has settled in!")
+            sound_manager.play("craft")
 
     def update_town_npcs(self, dt, player, inventory, asset_factory, sound_manager, combat=None):
-        """Updates AI and housing checks for all active Town NPCs."""
-        self.housing_check_timer += dt
-        if self.housing_check_timer >= 3.5:
-            self.housing_check_timer = 0.0
-            self.check_and_spawn_town_npcs(player, inventory, asset_factory, sound_manager, combat)
+        """Updates AI for active Town NPCs. Housing & town checks are disabled in Potaria."""
+        if getattr(self, "town_housing_enabled", False):
+            self.housing_check_timer += dt
+            if self.housing_check_timer >= 3.5:
+                self.housing_check_timer = 0.0
+                self.check_and_spawn_town_npcs(player, inventory, asset_factory, sound_manager, combat)
 
         for npc in self.town_npcs:
             npc.update(dt, self)
@@ -668,6 +730,8 @@ class World:
 
         for cx in range(min_cx, max_cx + 1):
             chunk = self.chunk_manager.get_chunk(cx)
+            if chunk is None:
+                continue
             chunk_screen_px = cx * sec_w_px - cam_x
             for sy in range(min_sy, max_sy + 1):
                 sec = chunk.get_or_bake_section(sy, self)

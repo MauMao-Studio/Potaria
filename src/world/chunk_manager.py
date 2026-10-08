@@ -66,6 +66,10 @@ class ChunkSection:
         min_ty = self.section_y * SECTION_HEIGHT
         max_ty = min_ty + SECTION_HEIGHT
         chunk = world.chunk_manager.get_chunk(self.chunk_x)
+        if chunk is None:
+            self.is_empty = True
+            self.dirty = False
+            return
 
         for lx in range(CHUNK_WIDTH):
             gx = self.chunk_x * CHUNK_WIDTH + lx
@@ -665,47 +669,50 @@ class ChunkManager:
         self.noise_biome = PerlinNoise(seed + 303)
         
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
-        self._generating = set()
+        self._generating = {}
         self._lock = threading.Lock()
 
-    def _generate_async(self, chunk_x):
-        chk = Chunk(
+    def _create_chunk(self, chunk_x):
+        return Chunk(
             chunk_x, self.seed, self.noise_surface,
             self.noise_caves, self.noise_ores, self.noise_biome
         )
+
+    def _generate_async(self, chunk_x):
+        chk = self._create_chunk(chunk_x)
         with self._lock:
             self.chunks[chunk_x] = chk
-            if chunk_x in self._generating:
-                self._generating.remove(chunk_x)
+            self._generating.pop(chunk_x, None)
+        return chk
+
+    def has_chunk(self, chunk_x):
+        """Returns True if the chunk at chunk_x is already generated and cached."""
+        with self._lock:
+            return chunk_x in self.chunks
 
     def get_chunk(self, chunk_x):
         """Retrieves or procedurally generates the chunk at chunk_x."""
         with self._lock:
             if chunk_x in self.chunks:
                 return self.chunks[chunk_x]
-        
-        should_generate = False
+            fut = self._generating.get(chunk_x)
+
+        if fut is not None:
+            return fut.result()
+
+        chk = self._create_chunk(chunk_x)
         with self._lock:
-            if chunk_x not in self._generating:
-                self._generating.add(chunk_x)
-                should_generate = True
-                
-        if should_generate:
-            self._generate_async(chunk_x)
-                
-        # Wait if it's currently generating in background thread
-        while True:
-            with self._lock:
-                if chunk_x in self.chunks:
-                    return self.chunks[chunk_x]
-            import time
-            time.sleep(0.005)
+            self.chunks[chunk_x] = chk
+            self._generating.pop(chunk_x, None)
+        return chk
 
     def get_column_biome(self, gx):
         """Returns the surface/column biome for a given global X coordinate from cached chunk biomes."""
         chunk_x = gx // CHUNK_WIDTH
         lx = gx % CHUNK_WIDTH
         chunk = self.get_chunk(chunk_x)
+        if chunk is None:
+            return BIOME_FOREST
         return chunk.col_biomes[lx]
 
     def get_biome_at(self, gx, gy):
@@ -732,6 +739,8 @@ class ChunkManager:
         chunk_x = gx // CHUNK_WIDTH
         lx = gx % CHUNK_WIDTH
         chunk = self.get_chunk(chunk_x)
+        if chunk is None:
+            return TILE_AIR
         return chunk.tiles[lx][gy]
 
     def set_tile(self, gx, gy, tile_id):
@@ -745,6 +754,8 @@ class ChunkManager:
         chunk_x = gx // CHUNK_WIDTH
         lx = gx % CHUNK_WIDTH
         chunk = self.get_chunk(chunk_x)
+        if chunk is None:
+            return False
         chunk.tiles[lx][gy] = tile_id
         chunk.modified = True
 
@@ -777,6 +788,8 @@ class ChunkManager:
         chunk_x = gx // CHUNK_WIDTH
         lx = gx % CHUNK_WIDTH
         chunk = self.get_chunk(chunk_x)
+        if chunk is None:
+            return WALL_AIR
         return chunk.walls[lx][gy]
 
     def set_wall(self, gx, gy, wall_id):
@@ -786,6 +799,8 @@ class ChunkManager:
         chunk_x = gx // CHUNK_WIDTH
         lx = gx % CHUNK_WIDTH
         chunk = self.get_chunk(chunk_x)
+        if chunk is None:
+            return False
         chunk.walls[lx][gy] = wall_id
         chunk.modified = True
         chunk.mark_section_dirty(gy // SECTION_HEIGHT)
@@ -800,8 +815,8 @@ class ChunkManager:
         for cx in range(min_cx - pad, max_cx + pad + 1):
             with self._lock:
                 if cx not in self.chunks and cx not in self._generating:
-                    self._generating.add(cx)
-                    self._executor.submit(self._generate_async, cx)
+                    fut = self._executor.submit(self._generate_async, cx)
+                    self._generating[cx] = fut
 
 
     def get_surface_height(self, gx):
@@ -809,6 +824,6 @@ class ChunkManager:
         chunk_x = gx // CHUNK_WIDTH
         lx = gx % CHUNK_WIDTH
         chunk = self.get_chunk(chunk_x)
-        if hasattr(chunk, "surface_heights"):
-            return chunk.surface_heights[lx]
-        return SURFACE_LEVEL
+        if chunk is None or not hasattr(chunk, "surface_heights"):
+            return SURFACE_LEVEL
+        return chunk.surface_heights[lx]

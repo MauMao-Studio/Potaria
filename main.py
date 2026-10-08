@@ -2065,7 +2065,8 @@ class PotariaGame:
         # 5. World, Town NPCs & Particles
         with self.profiler.section("update_world"):
             self.world.update(dt)
-            self.world.update_town_npcs(dt, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
+            if getattr(self.world, "town_housing_enabled", False) or getattr(self.world, "town_npcs", None):
+                self.world.update_town_npcs(dt, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
             if hasattr(self, "npc_dialogue"):
                 self.npc_dialogue.update(dt)
             cam_rect = pygame.Rect(self.camera.x - 32, self.camera.y - 32, SCREEN_WIDTH + 64, SCREEN_HEIGHT + 64)
