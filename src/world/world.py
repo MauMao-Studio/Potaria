@@ -643,22 +643,28 @@ class World:
 
     def update_town_npcs(self, dt, player, inventory, asset_factory, sound_manager, combat=None):
         """Updates AI for active Town NPCs. Housing & town checks are disabled in Potaria."""
-        if getattr(self, "town_housing_enabled", False):
-            self.housing_check_timer += dt
-            if self.housing_check_timer >= 3.5:
-                self.housing_check_timer = 0.0
-                self.check_and_spawn_town_npcs(player, inventory, asset_factory, sound_manager, combat)
+        if not getattr(self, "town_housing_enabled", False):
+            return
+
+        self.housing_check_timer += dt
+        if self.housing_check_timer >= 3.5:
+            self.housing_check_timer = 0.0
+            self.check_and_spawn_town_npcs(player, inventory, asset_factory, sound_manager, combat)
 
         for npc in self.town_npcs:
             npc.update(dt, self)
 
     def render_town_npcs(self, target_surf, camera, player=None):
         """Renders Town NPCs and their name badges."""
+        if not getattr(self, "town_housing_enabled", False):
+            return
         for npc in self.town_npcs:
             npc.render(target_surf, camera, player=player)
 
     def get_npc_at(self, world_x, world_y, radius=45.0):
         """Returns the TownNPC closest to (world_x, world_y) within reach radius, if any."""
+        if not getattr(self, "town_housing_enabled", False):
+            return None
         for npc in self.town_npcs:
             if math.hypot(npc.center_x - world_x, npc.center_y - world_y) <= radius:
                 return npc

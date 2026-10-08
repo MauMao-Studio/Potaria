@@ -251,6 +251,29 @@ class TestTownNPCsAndHousing(unittest.TestCase):
         # Cleanup
         delete_world(world_name)
 
+    def test_11_town_mechanics_disabled_in_potaria(self):
+        """Verifies that town checks and NPC interactions are completely disabled in Potaria."""
+        # 1. World default has town housing disabled
+        self.assertFalse(self.world.town_housing_enabled)
+
+        # 2. Add an NPC manually to world.town_npcs
+        guide = GuideNPC("Pip", "guide", self.player.center_x, self.player.center_y, self.asset_factory, self.sound_manager)
+        self.world.town_npcs = [guide]
+
+        # 3. get_npc_at returns None because town is disabled
+        self.assertIsNone(self.world.get_npc_at(self.player.center_x, self.player.center_y))
+
+        # 4. update_town_npcs does not advance housing check or spawn new NPCs
+        self.world.housing_check_timer = 3.4
+        self.world.update_town_npcs(1.0, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
+        # Timer should not have reset to 0 or spawned additional NPCs because check is disabled
+        self.assertEqual(len(self.world.town_npcs), 1)
+
+        # 5. When explicitly enabled (e.g. in test suites), get_npc_at works
+        self.world.town_housing_enabled = True
+        self.assertIsNotNone(self.world.get_npc_at(self.player.center_x, self.player.center_y))
+        self.world.town_housing_enabled = False
+
 
 if __name__ == "__main__":
     unittest.main()

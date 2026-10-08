@@ -830,11 +830,12 @@ class TouchController:
         game.player.aim_angle = math.atan2(mouse_wy - game.player.center_y, mouse_wx - game.player.center_x)
         game.player.facing_right = (mouse_wx >= game.player.center_x)
 
-        # 1. Check friendly NPC interaction
-        clicked_npc = game.world.get_npc_at(mouse_wx, mouse_wy, radius=32.0)
-        if clicked_npc and clicked_npc.can_interact(game.player):
-            game.npc_dialogue.open(clicked_npc, game.player, game.world, game.combat)
-            return
+        # 1. Check friendly NPC interaction (if town mechanics enabled)
+        if getattr(game.world, "town_housing_enabled", False):
+            clicked_npc = game.world.get_npc_at(mouse_wx, mouse_wy, radius=32.0)
+            if clicked_npc and clicked_npc.can_interact(game.player):
+                game.npc_dialogue.open(clicked_npc, game.player, game.world, game.combat)
+                return
 
         # 2. Check interactive world tiles within reach (Chests, Doors, Beds, Altar, Clock)
         tx, ty = game.camera.screen_to_tile(px, py)

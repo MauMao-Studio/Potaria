@@ -1045,13 +1045,14 @@ class PotariaGame:
                     self.character_panel.toggle()
 
                 elif event.key == k_inv:
-                    # Check if Spud is interacting with a nearby Town NPC!
+                    # Check if Spud is interacting with a nearby Town NPC (only if town mechanics enabled)
                     nearby_npc = None
-                    if not self.inventory.is_open and not (hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open):
-                        for npc in getattr(self.world, "town_npcs", []):
-                            if npc.can_interact(self.player):
-                                nearby_npc = npc
-                                break
+                    if getattr(self.world, "town_housing_enabled", False):
+                        if not self.inventory.is_open and not (hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open):
+                            for npc in getattr(self.world, "town_npcs", []):
+                                if npc.can_interact(self.player):
+                                    nearby_npc = npc
+                                    break
                     if nearby_npc and hasattr(self, "npc_dialogue"):
                         self.npc_dialogue.open(nearby_npc, self.player, self.world, self.combat)
                     elif hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
@@ -1211,7 +1212,7 @@ class PotariaGame:
                 # Gameplay World interaction
                 if not ui_consumed and not self.paused:
                     mouse_wx, mouse_wy = self.camera.screen_to_world(mouse_x, mouse_y)
-                    clicked_npc = self.world.get_npc_at(mouse_wx, mouse_wy, radius=32.0)
+                    clicked_npc = self.world.get_npc_at(mouse_wx, mouse_wy, radius=32.0) if getattr(self.world, "town_housing_enabled", False) else None
                     if clicked_npc and clicked_npc.can_interact(self.player):
                         self.npc_dialogue.open(clicked_npc, self.player, self.world, self.combat)
                         ui_consumed = True
@@ -2065,7 +2066,7 @@ class PotariaGame:
         # 5. World, Town NPCs & Particles
         with self.profiler.section("update_world"):
             self.world.update(dt)
-            if getattr(self.world, "town_housing_enabled", False) or getattr(self.world, "town_npcs", None):
+            if getattr(self.world, "town_housing_enabled", False):
                 self.world.update_town_npcs(dt, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
             if hasattr(self, "npc_dialogue"):
                 self.npc_dialogue.update(dt)
@@ -2334,7 +2335,8 @@ class PotariaGame:
             self.client.render_remote_players(self.screen, self.camera, self.asset_factory)
 
         # Layer 4.8: Friendly Town NPCs & Villagers
-        self.world.render_town_npcs(self.screen, self.camera, player=self.player)
+        if getattr(self.world, "town_housing_enabled", False):
+            self.world.render_town_npcs(self.screen, self.camera, player=self.player)
 
         # Layer 5: Spud the Potato Hero
         active_item = self.inventory.get_active_item()
@@ -2377,7 +2379,7 @@ class PotariaGame:
                 self.character_panel.render(self.screen, self.player, mouse_x, mouse_y)
     
             # Layer 9.6: Town NPC Dialogue & Shop Window
-            if hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
+            if getattr(self.world, "town_housing_enabled", False) and hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
                 self.npc_dialogue.render(self.screen, self.player, self.inventory, mouse_x, mouse_y)
     
             # Layer 9.8: PvP Last Man Standing Victory Banner
