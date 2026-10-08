@@ -3,9 +3,9 @@
     "master_volume": 0.8,
     "bgm_volume": 0.65,
     "sfx_volume": 0.88,
-    "fullscreen": true,
+    "fullscreen": false,
     "screen_shake": false,
-    "touch_controls": "off",
+    "touch_controls": "on",
     "touch_opacity": 0.5
   },
   "key_bindings": {

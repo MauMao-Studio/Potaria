@@ -181,11 +181,24 @@ class CelestialStarProjectile:
 
         # Area of Effect (AoE) Splash Damage (Radius: 72 pixels)
         splash_radius = 72.0
-        for mob in mobs:
-            d = math.hypot(mob.center_x - self.pos.x, mob.center_y - self.pos.y)
-            if d <= splash_radius:
-                dmg = int(self.damage * (1.0 - (d / splash_radius) * 0.4))
-                mob.take_damage(dmg, knockback_vx=4.0 if mob.center_x > self.pos.x else -4.0, knockback_vy=-3.5)
+        is_ancient = getattr(self, "is_ancient", False)
+        if is_ancient:
+            for mob in mobs:
+                d = math.hypot(mob.center_x - self.pos.x, mob.center_y - self.pos.y)
+                if d <= splash_radius:
+                    dmg = int(self.damage * (1.0 - (d / splash_radius) * 0.4))
+                    mob.take_damage(dmg, knockback_vx=4.0 if mob.center_x > self.pos.x else -4.0, knockback_vy=-3.5)
+        else:
+            closest_mob = None
+            min_d = splash_radius + 1.0
+            for mob in mobs:
+                d = math.hypot(mob.center_x - self.pos.x, mob.center_y - self.pos.y)
+                if d <= splash_radius and d < min_d:
+                    min_d = d
+                    closest_mob = mob
+            if closest_mob:
+                dmg = int(self.damage * (1.0 - (min_d / splash_radius) * 0.4))
+                closest_mob.take_damage(dmg, knockback_vx=4.0 if closest_mob.center_x > self.pos.x else -4.0, knockback_vy=-3.5)
 
         if boss and not boss.is_dead:
             d = math.hypot(boss.center_x - self.pos.x, boss.center_y - self.pos.y)
@@ -293,7 +306,9 @@ class FreezingNeedleProjectile:
                         combat.client.send_mob_damage(getattr(mob, "mob_id", 0), self.damage, self.vel.x * 0.25, -2.0)
                     if mob.is_dead and hasattr(combat, "_on_mob_slain"):
                         combat._on_mob_slain(mob, player)
-                if self.pierce_left <= 0:
+                is_ancient = getattr(self, "is_ancient", False)
+                if not is_ancient or self.pierce_left <= 0:
+                    self.pierce_left = 0
                     self.life = 0
                     break
 
@@ -307,7 +322,9 @@ class FreezingNeedleProjectile:
                 combat.spawn_damage_number(boss.center_x, boss.y - 14, self.damage, color=(160, 230, 255))
                 if getattr(combat, "is_client", False) and getattr(combat, "client", None) and combat.client.connected:
                     combat.client.send_mob_damage("boss", self.damage, self.vel.x * 0.1, 0.0)
-            if self.pierce_left <= 0:
+            is_ancient = getattr(self, "is_ancient", False)
+            if not is_ancient or self.pierce_left <= 0:
+                self.pierce_left = 0
                 self.life = 0
 
     def render(self, target_surf, camera):
@@ -431,6 +448,7 @@ class SolarFlareShockwave:
             ry = self.y + math.sin(ang) * self.radius
             particle_system.spawn_sparks(rx, ry, color=random.choice([(255, 120, 20), (255, 200, 40), (255, 60, 20)]), count=1)
 
+        is_ancient = getattr(self, "is_ancient", False)
         for mob in mobs:
             if mob.is_alive and mob not in self.hit_entities:
                 dist = math.hypot(mob.center_x - self.x, mob.center_y - self.y)
@@ -447,6 +465,9 @@ class SolarFlareShockwave:
                             combat.client.send_mob_damage(getattr(mob, "mob_id", 0), self.damage, k_dir * 4.5, -3.0)
                         if mob.is_dead and hasattr(combat, "_on_mob_slain"):
                             combat._on_mob_slain(mob, player)
+                    if not is_ancient:
+                        self.life = 0
+                        break
 
         if boss and not boss.is_dead and boss not in self.hit_entities:
             dist = math.hypot(boss.center_x - self.x, boss.center_y - self.y)
@@ -460,6 +481,8 @@ class SolarFlareShockwave:
                     combat.spawn_damage_number(boss.center_x, boss.y - 14, self.damage, color=(255, 140, 30))
                     if getattr(combat, "is_client", False) and getattr(combat, "client", None) and combat.client.connected:
                         combat.client.send_mob_damage("boss", self.damage, 2.0, 0.0)
+                if not is_ancient:
+                    self.life = 0
 
     def render(self, target_surf, camera):
         if self.life <= 0:
@@ -513,15 +536,34 @@ class GravitationalPulseProjectile:
         if self.life <= 0 and not self.exploded:
             self.exploded = True
             sound_manager.play_spatial("explode", self.x, self.y, player.center_x, player.center_y)
-            for mob in mobs:
-                if mob.is_alive and math.hypot(self.x - mob.center_x, self.y - mob.center_y) < 65.0:
-                    mob.take_damage(self.damage, knockback_vx=random.uniform(-4, 4), knockback_vy=-3.5)
+            is_ancient = getattr(self, "is_ancient", False)
+            if is_ancient:
+                for mob in mobs:
+                    if mob.is_alive and math.hypot(self.x - mob.center_x, self.y - mob.center_y) < 65.0:
+                        mob.take_damage(self.damage, knockback_vx=random.uniform(-4, 4), knockback_vy=-3.5)
+                        if combat:
+                            combat.spawn_damage_number(mob.center_x, mob.y - 12, self.damage, color=(200, 150, 255))
+                            if getattr(combat, "is_client", False) and getattr(combat, "client", None) and combat.client.connected:
+                                combat.client.send_mob_damage(getattr(mob, "mob_id", 0), self.damage, 0.0, -3.0)
+                            if mob.is_dead and hasattr(combat, "_on_mob_slain"):
+                                combat._on_mob_slain(mob, player)
+            else:
+                closest_mob = None
+                min_d = 65.0
+                for mob in mobs:
+                    if mob.is_alive:
+                        d = math.hypot(self.x - mob.center_x, self.y - mob.center_y)
+                        if d < min_d:
+                            min_d = d
+                            closest_mob = mob
+                if closest_mob:
+                    closest_mob.take_damage(self.damage, knockback_vx=random.uniform(-4, 4), knockback_vy=-3.5)
                     if combat:
-                        combat.spawn_damage_number(mob.center_x, mob.y - 12, self.damage, color=(200, 150, 255))
+                        combat.spawn_damage_number(closest_mob.center_x, closest_mob.y - 12, self.damage, color=(200, 150, 255))
                         if getattr(combat, "is_client", False) and getattr(combat, "client", None) and combat.client.connected:
-                            combat.client.send_mob_damage(getattr(mob, "mob_id", 0), self.damage, 0.0, -3.0)
-                        if mob.is_dead and hasattr(combat, "_on_mob_slain"):
-                            combat._on_mob_slain(mob, player)
+                            combat.client.send_mob_damage(getattr(closest_mob, "mob_id", 0), self.damage, 0.0, -3.0)
+                        if closest_mob.is_dead and hasattr(combat, "_on_mob_slain"):
+                            combat._on_mob_slain(closest_mob, player)
             if boss and not boss.is_dead and math.hypot(self.x - boss.center_x, self.y - boss.center_y) < 75.0:
                 boss.take_damage(self.damage, knockback_vx=1.0)
                 if combat:

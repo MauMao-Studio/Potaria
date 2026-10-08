@@ -1613,6 +1613,7 @@ class PotariaGame:
                 spawn_x = self.player.center_x + math.cos(angle) * 16.0
                 spawn_y = self.player.center_y + math.sin(angle) * 16.0
                 arrow = ArrowProjectile(spawn_x, spawn_y, angle, speed=arrow_speed, damage=total_arrow_dmg, arrow_type=arrow_type)
+                arrow.is_ancient = bool(active and (active.data.get("rarity") == "ancient" or "ancient" in held_id))
                 self.combat.spawn_projectile(arrow)
                 self.sound_manager.play_spatial("bow", self.player.center_x, self.player.center_y, self.player.center_x, self.player.center_y)
 
@@ -1630,7 +1631,8 @@ class PotariaGame:
             self.combat.trigger_weapon_swing_effects(self.player, mouse_wx, mouse_wy, active_item=active)
 
             # Grand Ancient weapon visuals
-            if active and (active.data.get("rarity") == "ancient" or "ancient" in held_id):
+            is_ancient_weap = bool(active and (active.data.get("rarity") == "ancient" or "ancient" in held_id))
+            if is_ancient_weap:
                 if hasattr(self, "vfx_manager") and self.vfx_manager:
                     swing_ang = math.atan2(mouse_wy - self.player.center_y, mouse_wx - self.player.center_x)
                     slash_x = self.player.center_x + math.cos(swing_ang) * 32.0
@@ -1651,6 +1653,7 @@ class PotariaGame:
                 dmg = active.data.get("atk", active.data.get("damage", 32))
                 cat_sprite = self.asset_factory.projectiles.get("catalyst_orb")
                 star_proj = CatalystStarProjectile(self.player.center_x, self.player.center_y, fb_vx, fb_vy, sprite=cat_sprite, damage=dmg, max_distance=560.0, combat=self.combat)
+                star_proj.is_ancient = is_ancient_weap
                 self.player.fireballs.append(star_proj)
                 self.sound_manager.play("swing")
                 self.particle_system.spawn_sparks(self.player.center_x, self.player.center_y, (255, 220, 80), count=12)
@@ -1677,6 +1680,7 @@ class PotariaGame:
                     spark_col = (80, 230, 90)
                 staff_sprite = self.asset_factory.projectiles.get("staff_bolt")
                 bolt = StaffBoltProjectile(self.player.center_x, self.player.center_y, fb_vx, fb_vy, sprite=staff_sprite, damage=dmg, max_distance=560.0, element=elem)
+                bolt.is_ancient = is_ancient_weap
                 self.player.fireballs.append(bolt)
                 self.sound_manager.play("swing")
                 self.particle_system.spawn_sparks(self.player.center_x, self.player.center_y, spark_col, count=8)
@@ -1692,6 +1696,7 @@ class PotariaGame:
                 dmg = active.data.get("atk", active.data.get("damage", 26))
                 rod_sprite = self.asset_factory.projectiles.get("rod_javelin")
                 javelin = RodJavelinProjectile(self.player.center_x, self.player.center_y, fb_vx, fb_vy, sprite=rod_sprite, damage=dmg, max_distance=560.0)
+                javelin.is_ancient = is_ancient_weap
                 self.player.fireballs.append(javelin)
                 self.sound_manager.play("swing")
                 self.particle_system.spawn_sparks(self.player.center_x, self.player.center_y, (120, 240, 255), count=10)
@@ -1707,6 +1712,7 @@ class PotariaGame:
                 dmg = active.data.get("atk", active.data.get("damage", 34))
                 scepter_sprite = self.asset_factory.projectiles.get("scepter_pulse")
                 pulse = ScepterPulseProjectile(self.player.center_x, self.player.center_y, fb_vx, fb_vy, sprite=scepter_sprite, damage=dmg, max_distance=560.0)
+                pulse.is_ancient = is_ancient_weap
                 self.player.fireballs.append(pulse)
                 self.sound_manager.play("swing")
                 self.particle_system.spawn_sparks(self.player.center_x, self.player.center_y, (210, 100, 255), count=10)

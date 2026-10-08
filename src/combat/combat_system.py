@@ -429,6 +429,7 @@ class CombatManager:
         for fb in player.fireballs:
             if getattr(fb, "life", 0) <= 0:
                 continue
+            is_ancient_fb = getattr(fb, "is_ancient", False)
             for mob in self.mobs:
                 if mob.is_alive and fb.rect.colliderect(mob.rect):
                     if hasattr(fb, "hit_entities") and mob in fb.hit_entities:
@@ -436,7 +437,7 @@ class CombatManager:
                     if hasattr(fb, "hit_entities"):
                         fb.hit_entities.add(mob)
                     mob.take_damage(fb.damage, knockback_vx=fb.vx * 0.5, knockback_vy=-3.0)
-                    if hasattr(fb, "pierce_left"):
+                    if is_ancient_fb and hasattr(fb, "pierce_left"):
                         fb.pierce_left -= 1
                         if fb.pierce_left <= 0:
                             fb.life = 0
@@ -459,7 +460,7 @@ class CombatManager:
                     if hasattr(fb, "hit_entities"):
                         fb.hit_entities.add(self.boss)
                     self.boss.take_damage(fb.damage, knockback_vx=fb.vx * 0.2)
-                    if hasattr(fb, "pierce_left"):
+                    if is_ancient_fb and hasattr(fb, "pierce_left"):
                         fb.pierce_left -= 1
                         if fb.pierce_left <= 0:
                             fb.life = 0
@@ -479,6 +480,11 @@ class CombatManager:
                 if not p.stuck and p.life > 0:
                     for mob in self.mobs:
                         if mob.is_alive and p.frect.colliderect(mob.rect) and mob.hurt_timer <= 0:
+                            if hasattr(p, "hit_entities") and mob in p.hit_entities:
+                                continue
+                            if not hasattr(p, "hit_entities"):
+                                p.hit_entities = set()
+                            p.hit_entities.add(mob)
                             is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
                             dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
                             if is_crit:
@@ -509,9 +515,23 @@ class CombatManager:
                                 self.client.send_mob_damage(getattr(mob, "mob_id", 0), dmg, p.vel.x * 0.35, -2.5, is_crit=is_crit)
                             if mob.is_dead:
                                 self._on_mob_slain(mob, player)
-                            p.life = 0
-                            break
+                            if not getattr(p, "is_ancient", False):
+                                p.life = 0
+                                break
+                            else:
+                                if not hasattr(p, "pierce_left"):
+                                    p.pierce_left = 4
+                                p.pierce_left -= 1
+                                if p.pierce_left <= 0:
+                                    p.life = 0
+                                    break
                     if p.life > 0 and self.boss and not self.boss.is_dead and p.frect.colliderect(self.boss.rect):
+                        if hasattr(p, "hit_entities") and self.boss in p.hit_entities:
+                            pass
+                        else:
+                            if not hasattr(p, "hit_entities"):
+                                p.hit_entities = set()
+                            p.hit_entities.add(self.boss)
                         is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
                         dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
                         self.boss.take_damage(dmg, knockback_vx=p.vel.x * 0.15)
@@ -545,16 +565,34 @@ class CombatManager:
                 prev_exploded = p.exploded
                 p.update(dt, world, self.particle_system, self.sound_manager, self.camera, self.mobs, self.boss, player)
                 if p.exploded and not prev_exploded:
-                    for mob in self.mobs:
-                        if mob.is_alive:
-                            d = math.hypot(mob.center_x - p.pos.x, mob.center_y - p.pos.y)
-                            if d <= 72.0:
-                                dmg = int(p.damage * (1.0 - (d / 72.0) * 0.4))
-                                self.spawn_damage_number(mob.center_x, mob.y - 16, dmg, color=(255, 240, 60), is_crit=True)
-                                if self.is_client and self.client and self.client.connected:
-                                    self.client.send_mob_damage(getattr(mob, "mob_id", 0), dmg, 0.0, -2.0, is_crit=True)
-                                if mob.is_dead:
-                                    self._on_mob_slain(mob, player)
+                    is_ancient_star = getattr(p, "is_ancient", False)
+                    if is_ancient_star:
+                        for mob in self.mobs:
+                            if mob.is_alive:
+                                d = math.hypot(mob.center_x - p.pos.x, mob.center_y - p.pos.y)
+                                if d <= 72.0:
+                                    dmg = int(p.damage * (1.0 - (d / 72.0) * 0.4))
+                                    self.spawn_damage_number(mob.center_x, mob.y - 16, dmg, color=(255, 240, 60), is_crit=True)
+                                    if self.is_client and self.client and self.client.connected:
+                                        self.client.send_mob_damage(getattr(mob, "mob_id", 0), dmg, 0.0, -2.0, is_crit=True)
+                                    if mob.is_dead:
+                                        self._on_mob_slain(mob, player)
+                    else:
+                        closest_mob = None
+                        min_d = 72.0
+                        for mob in self.mobs:
+                            if mob.is_alive:
+                                d = math.hypot(mob.center_x - p.pos.x, mob.center_y - p.pos.y)
+                                if d <= min_d:
+                                    min_d = d
+                                    closest_mob = mob
+                        if closest_mob:
+                            dmg = int(p.damage * (1.0 - (min_d / 72.0) * 0.4))
+                            self.spawn_damage_number(closest_mob.center_x, closest_mob.y - 16, dmg, color=(255, 240, 60), is_crit=True)
+                            if self.is_client and self.client and self.client.connected:
+                                self.client.send_mob_damage(getattr(closest_mob, "mob_id", 0), dmg, 0.0, -2.0, is_crit=True)
+                            if closest_mob.is_dead:
+                                self._on_mob_slain(closest_mob, player)
                     if self.boss and not self.boss.is_dead:
                         d = math.hypot(self.boss.center_x - p.pos.x, self.boss.center_y - p.pos.y)
                         if d <= 72.0:
@@ -647,7 +685,7 @@ class CombatManager:
                                 self.client.send_mob_damage(getattr(mob, "mob_id", 0), dmg, p.vx * 0.35, -2.0, is_crit=is_crit)
                             if mob.is_dead:
                                 self._on_mob_slain(mob, player)
-                            if p.pierce_left <= 0:
+                            if not getattr(p, "is_ancient", False) or p.pierce_left <= 0:
                                 p.life = 0
                                 break
                     if p.pierce_left > 0 and self.boss and not self.boss.is_dead and self.boss not in p.hit_entities and p.rect.colliderect(self.boss.rect):
@@ -831,6 +869,20 @@ class CombatManager:
         if active_item and hasattr(active_item, "data"):
             effects.extend(active_item.data.get("effects", []))
 
+        is_ancient = False
+        if active_item and hasattr(active_item, "data"):
+            rarity = str(active_item.data.get("rarity", "")).lower()
+            if rarity in ("ancient", "rarity_ancient") or "ancient" in getattr(active_item, "item_id", "").lower():
+                is_ancient = True
+        elif hasattr(player, "equipment") and hasattr(player.equipment, "slots"):
+            eq_weap = player.equipment.slots.get("weapon")
+            if eq_weap:
+                from src.rpg.equipment import ARMOR_DATA
+                eq_data = ARMOR_DATA.get(eq_weap, {})
+                rarity = str(eq_data.get("rarity", "")).lower()
+                if rarity in ("ancient", "rarity_ancient") or "ancient" in str(eq_weap).lower():
+                    is_ancient = True
+
         angle = math.atan2(mouse_wy - player.center_y, mouse_wx - player.center_x)
         base_atk = player.stats.total_atk
 
@@ -845,46 +897,74 @@ class CombatManager:
             if "freezing needles" in eff_l and not has_spawned_needle:
                 has_spawned_needle = True
                 needle_dmg = max(18, int(base_atk * 0.85))
-                self.spawn_projectile(FreezingNeedleProjectile(player.center_x, player.center_y, angle, damage=needle_dmg, speed=16.0))
+                needle_proj = FreezingNeedleProjectile(player.center_x, player.center_y, angle, damage=needle_dmg, speed=16.0)
+                needle_proj.is_ancient = is_ancient
+                self.spawn_projectile(needle_proj)
                 self.sound_manager.play_spatial("hit_block", player.center_x, player.center_y, player.center_x, player.center_y)
 
             if "celestial star on swing" in eff_l and not has_spawned_star:
                 has_spawned_star = True
                 star_dmg = max(35, int(base_atk * 1.2))
-                self.spawn_projectile(CelestialStarProjectile(mouse_wx, mouse_wy, self.camera.offset_y - 80, damage=star_dmg))
+                star_proj = CelestialStarProjectile(mouse_wx, mouse_wy, self.camera.offset_y - 80, damage=star_dmg)
+                star_proj.is_ancient = is_ancient
+                self.spawn_projectile(star_proj)
                 self.sound_manager.play_spatial("starfury", player.center_x, player.center_y, player.center_x, player.center_y)
 
             if "starlight volley" in eff_l and not has_spawned_astral:
                 has_spawned_astral = True
                 arrow_dmg = max(20, int(base_atk * 0.75))
-                self.spawn_projectile(AstralArrowProjectile(player.center_x, player.center_y, angle - 0.12, damage=arrow_dmg, speed=15.0))
-                self.spawn_projectile(AstralArrowProjectile(player.center_x, player.center_y, angle + 0.12, damage=arrow_dmg, speed=15.0))
+                p1 = AstralArrowProjectile(player.center_x, player.center_y, angle - 0.12, damage=arrow_dmg, speed=15.0)
+                p2 = AstralArrowProjectile(player.center_x, player.center_y, angle + 0.12, damage=arrow_dmg, speed=15.0)
+                p1.is_ancient = is_ancient
+                p2.is_ancient = is_ancient
+                self.spawn_projectile(p1)
+                self.spawn_projectile(p2)
 
             if ("solar flare shockwave" in eff_l or "solar supernova" in eff_l) and not has_spawned_solar:
                 has_spawned_solar = True
                 shock_dmg = max(26, int(base_atk * 0.9)) if "solar flare shockwave" in eff_l else max(36, int(base_atk * 1.5))
-                self.spawn_projectile(SolarFlareShockwave(player.center_x, player.center_y, damage=shock_dmg, max_radius=85.0))
+                shock_proj = SolarFlareShockwave(player.center_x, player.center_y, damage=shock_dmg, max_radius=85.0)
+                shock_proj.is_ancient = is_ancient
+                self.spawn_projectile(shock_proj)
                 self.sound_manager.play_spatial("explode", player.center_x, player.center_y, player.center_x, player.center_y)
 
             if "gravitational pulse" in eff_l and not has_spawned_grav:
                 has_spawned_grav = True
                 grav_dmg = max(30, int(base_atk * 1.05))
-                self.spawn_projectile(GravitationalPulseProjectile(mouse_wx, mouse_wy, damage=grav_dmg, pull_radius=110.0))
+                grav_proj = GravitationalPulseProjectile(mouse_wx, mouse_wy, damage=grav_dmg, pull_radius=110.0)
+                grav_proj.is_ancient = is_ancient
+                self.spawn_projectile(grav_proj)
 
     def _check_weapon_hits(self, player, world=None):
         # Ranged weapons (bows, crossbows, staves, wands) deal damage via projectiles, NOT melee strikes!
         active = getattr(player, "inventory", None).get_active_item() if getattr(player, "inventory", None) else None
         is_tool = False
         tool_dmg = 2
+        is_ancient = False
         if active:
             item_id = active.item_id.lower()
             item_data = getattr(active, "data", {}) or {}
             item_name = item_data.get("name", "").lower()
+            rarity = str(item_data.get("rarity", "")).lower()
+            if rarity in ("ancient", "rarity_ancient") or "ancient" in item_id:
+                is_ancient = True
             if any(w in item_id or w in item_name for w in ("bow", "crossbow", "recurve", "shortbow", "longbow")) or any(w in item_id or w in item_name for w in ("staff", "wand", "scepter", "rod", "catalyst", "focus", "grimoire")):
                 return
             if item_data.get("cat") == "tool" or item_data.get("category") == "tool" or any(t in item_id for t in ("pickaxe", "axe", "shovel", "hammer")) or any(t in item_name for t in ("pickaxe", "axe", "shovel", "hammer")):
                 is_tool = True
                 tool_dmg = item_data.get("damage", 2)
+        elif hasattr(player, "equipment") and hasattr(player.equipment, "slots"):
+            eq_weap = player.equipment.slots.get("weapon")
+            if eq_weap:
+                from src.rpg.equipment import ARMOR_DATA
+                eq_data = ARMOR_DATA.get(eq_weap, {})
+                rarity = str(eq_data.get("rarity", "")).lower()
+                if rarity in ("ancient", "rarity_ancient") or "ancient" in str(eq_weap).lower():
+                    is_ancient = True
+
+        # Single-target constraint: Non-ancient melee weapons damage at most 1 enemy per swing!
+        if not is_ancient and getattr(player, "swing_hit_targets", None) and len(player.swing_hit_targets) >= 1:
+            return
 
         reach = 40.0
         hx = player.center_x + math.cos(player.aim_angle) * reach
@@ -938,7 +1018,8 @@ class CombatManager:
                             self.particle_system.spawn_sparks(self.boss.center_x, self.boss.center_y, (200, 30, 30), count=8)
                     if self.is_client and self.client and self.client.connected:
                         self.client.send_mob_damage("boss", final_dmg, knock_x, 0.0, is_crit=is_crit)
-                    return
+                    if not is_ancient:
+                        return
 
         for mob in self.mobs:
             if mob.is_alive and mob.hurt_timer <= 0 and hitbox.colliderect(mob.rect):
@@ -976,13 +1057,13 @@ class CombatManager:
                     if (player.has_effect("lacerating strike") or player.has_effect("lacerate")) and hasattr(mob, "apply_bleed"):
                         mob.apply_bleed(dps=7, duration=4.0)
                         self.particle_system.spawn_sparks(mob.center_x, mob.center_y, (200, 30, 30), count=6)
-                    if player.has_effect("starburst explosion"):
+                    if player.has_effect("starburst explosion") and is_ancient:
                         self.particle_system.spawn_sparks(mob.center_x, mob.center_y, (255, 230, 80), count=15)
                         for other in self.mobs:
                             if other != mob and other.is_alive:
                                 if math.hypot(other.center_x - mob.center_x, other.center_y - mob.center_y) <= 72.0:
                                     other.take_damage(max(1, int(final_dmg * 0.65)), knockback_vx=knock_x * 0.5, knockback_vy=-2.0)
-                    if player.has_effect("dark cleave"):
+                    if player.has_effect("dark cleave") and is_ancient:
                         cleave_count = 0
                         for other in self.mobs:
                             if other != mob and other.is_alive and cleave_count < 3:
@@ -995,6 +1076,10 @@ class CombatManager:
 
                 if self.is_client and self.client and self.client.connected:
                     self.client.send_mob_damage(getattr(mob, "mob_id", 0), final_dmg, knock_x, knock_y, is_crit=is_crit)
+
+                # Single-target constraint: Non-ancient weapons only damage 1 enemy per swing!
+                if not is_ancient:
+                    return
 
     def _drop_mob_loot(self, mob):
         mx, my = mob.center_x, mob.center_y

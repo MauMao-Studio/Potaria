@@ -159,9 +159,17 @@ class Player:
     def center_x(self):
         return self.x + self.width / 2.0
 
+    @center_x.setter
+    def center_x(self, val):
+        self.x = float(val) - self.width / 2.0
+
     @property
     def center_y(self):
         return self.y + self.height / 2.0
+
+    @center_y.setter
+    def center_y(self, val):
+        self.y = float(val) - self.height / 2.0
 
     @property
     def health(self):
