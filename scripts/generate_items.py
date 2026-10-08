@@ -9,8 +9,12 @@ import os
 import json
 import random
 
+import sys
+
 # Project Paths
 SCRATCH_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if SCRATCH_DIR not in sys.path:
+    sys.path.insert(0, SCRATCH_DIR)
 DATA_DIR = os.path.join(SCRATCH_DIR, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -461,6 +465,8 @@ def generate_weapons(count=600):
                 "effects": make_effects(rarity, "weapon"),
                 "lore": make_lore(rarity),
             }
+            from scripts.enrich_item_descriptions import generate_weapon_desc
+            entry["desc"] = generate_weapon_desc(entry)
             weapons.append(entry)
 
     return weapons
@@ -730,6 +736,8 @@ def generate_equipments(count=600):
                     "effects": make_effects(rarity, c),
                     "lore": make_lore(rarity),
                 }
+                from scripts.enrich_item_descriptions import generate_equipment_desc
+                entry["desc"] = generate_equipment_desc(entry)
                 equipments.append(entry)
 
     return equipments

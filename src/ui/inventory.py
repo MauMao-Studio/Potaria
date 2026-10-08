@@ -55,6 +55,17 @@ ITEM_ALIASES = {
     "wood_sword": "wooden_sword",
     "wood_block": "wood",
     "wood_blocks": "wood",
+    "celestial_shard": "portal_shard",
+    "celestial_shards": "portal_shard",
+    "portal_shards": "portal_shard",
+    "celestial_fragment": "portal_shard",
+    "celestial_fragments": "portal_shard",
+    "dirt": "dirt_block",
+    "tile_wood": "wood",
+    "arrow": "wooden_arrow",
+    "iron_sword": "iron_broadsword",
+    "star": "fallen_star",
+    "falling_star": "fallen_star",
 }
 REVERSE_ITEM_ALIASES = {v: k for k, v in ITEM_ALIASES.items()}
 
@@ -64,84 +75,84 @@ ITEM_REGISTRY = {
     # Tools & Weapons
     # ----------------------------------------------------
     "copper_pickaxe": {
-        "name": "Copper Pickaxe", "cat": CAT_TOOL, "power": 12, "damage": 4, "max_stack": 1, "tile": None,
+        "name": "Copper Pickaxe", "cat": CAT_TOOL, "power": 12, "damage": 3, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Starter mining tool. Digs through dirt, clay, and soft copper veins.",
         "lore": "",
         "special": ""
     },
     "iron_pickaxe": {
-        "name": "Iron Pickaxe", "cat": CAT_TOOL, "power": 18, "damage": 6, "max_stack": 1, "tile": None,
+        "name": "Iron Pickaxe", "cat": CAT_TOOL, "power": 18, "damage": 4, "max_stack": 1, "tile": None,
         "rarity": RARITY_UNCOMMON,
         "desc": "Tempered iron head that swiftly breaks through dense stone and minerals.",
         "lore": "",
         "special": ""
     },
     "gold_pickaxe": {
-        "name": "Gold Pickaxe", "cat": CAT_TOOL, "power": 28, "damage": 9, "max_stack": 1, "tile": None,
+        "name": "Gold Pickaxe", "cat": CAT_TOOL, "power": 28, "damage": 5, "max_stack": 1, "tile": None,
         "rarity": RARITY_RARE,
         "desc": "Lustrous gilded pickaxe boasting exceptional digging speed.",
         "lore": "",
         "special": ""
     },
     "wood_pickaxe": {
-        "name": "Wooden Pickaxe", "cat": CAT_TOOL, "power": 8, "damage": 3, "max_stack": 1, "tile": None,
+        "name": "Wooden Pickaxe", "cat": CAT_TOOL, "power": 8, "damage": 2, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Crude wooden pick. Slowly chips through soft earth and stone.",
         "lore": "",
         "special": ""
     },
     "wood_axe": {
-        "name": "Wooden Axe", "cat": CAT_TOOL, "power": 10, "damage": 5, "max_stack": 1, "tile": None,
+        "name": "Wooden Axe", "cat": CAT_TOOL, "power": 10, "damage": 2, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "A basic axe carved from raw timber. Chops down trees.",
         "lore": "",
         "special": ""
     },
     "copper_axe": {
-        "name": "Copper Axe", "cat": CAT_TOOL, "power": 18, "damage": 8, "max_stack": 1, "tile": None,
+        "name": "Copper Axe", "cat": CAT_TOOL, "power": 18, "damage": 3, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Sturdy forged copper axe head. Efficient woodcutter.",
         "lore": "",
         "special": ""
     },
     "iron_axe": {
-        "name": "Iron Axe", "cat": CAT_TOOL, "power": 26, "damage": 11, "max_stack": 1, "tile": None,
+        "name": "Iron Axe", "cat": CAT_TOOL, "power": 26, "damage": 4, "max_stack": 1, "tile": None,
         "rarity": RARITY_UNCOMMON,
         "desc": "Hardened iron lumber axe. Swiftly fells towering trees and dense trunks.",
         "lore": "",
         "special": ""
     },
     "gold_axe": {
-        "name": "Gold Axe", "cat": CAT_TOOL, "power": 38, "damage": 15, "max_stack": 1, "tile": None,
+        "name": "Gold Axe", "cat": CAT_TOOL, "power": 38, "damage": 5, "max_stack": 1, "tile": None,
         "rarity": RARITY_RARE,
         "desc": "Lustrous gold axe with unmatched cutting velocity. Cleaves wood in seconds.",
         "lore": "",
         "special": ""
     },
     "celestial_axe": {
-        "name": "Celestial Axe", "cat": CAT_TOOL, "power": 65, "damage": 28, "max_stack": 1, "tile": None,
+        "name": "Celestial Axe", "cat": CAT_TOOL, "power": 65, "damage": 8, "max_stack": 1, "tile": None,
         "rarity": RARITY_LEGENDARY,
-        "desc": "Star-forged battle axe. Instantly annihilates ancient trees and foes alike.",
+        "desc": "Star-forged battle axe. Instantly annihilates ancient trees and dense timber.",
         "lore": "'Sundered stars woven into a lumberjack's dream.'",
-        "special": "65% Axe Power • Godly Speed"
+        "special": "Godly Woodcutting Speed"
     },
     "celestial_pickaxe": {
-        "name": "Celestial Pickaxe", "cat": CAT_TOOL, "power": 65, "damage": 24, "max_stack": 1, "tile": None,
+        "name": "Celestial Pickaxe", "cat": CAT_TOOL, "power": 65, "damage": 7, "max_stack": 1, "tile": None,
         "rarity": RARITY_LEGENDARY,
         "desc": "Starlight mining pickaxe. Effortlessly shreds subterranean bedrock and gems.",
         "lore": "'The cosmos parts before its crystalline tip.'",
-        "special": "65% Pickaxe Power • Laser Dig"
+        "special": "Subterranean Laser Digging Speed"
     },
     "wood_shovel": {
-        "name": "Wooden Shovel", "cat": CAT_TOOL, "power": 10, "damage": 3, "max_stack": 1, "tile": None,
+        "name": "Wooden Shovel", "cat": CAT_TOOL, "power": 10, "damage": 2, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Wooden scoop tool for swiftly excavating soft dirt and sand.",
         "lore": "",
         "special": ""
     },
     "iron_shovel": {
-        "name": "Iron Shovel", "cat": CAT_TOOL, "power": 22, "damage": 6, "max_stack": 1, "tile": None,
+        "name": "Iron Shovel", "cat": CAT_TOOL, "power": 22, "damage": 4, "max_stack": 1, "tile": None,
         "rarity": RARITY_UNCOMMON,
         "desc": "Tempered iron spade for rapid trench excavation and gravel clearing.",
         "lore": "",
@@ -176,6 +187,13 @@ ITEM_REGISTRY = {
         "desc": "Broad cutting arc capable of keeping creeping slimes at bay.",
         "lore": "'Balanced weight, reliable steel, and sharp enough for any wanderer.'",
         "special": "Wide Slashing Arc"
+    },
+    "iron_broadsword": {
+        "name": "Iron Broadsword", "cat": CAT_WEAPON, "power": 0, "damage": 18, "atk": 18, "crit": 4.0, "speed": 0.0,
+        "max_stack": 1, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Forged iron broadsword with a balanced crossguard. Dependable blade against underground threats.",
+        "lore": "'Forged from tempered iron ingots to withstand subterranean terrors.'",
+        "special": "Heavy Slashing Strike"
     },
     "frost_blade": {
         "name": "Frost Blade", "cat": CAT_WEAPON, "power": 0, "damage": 18, "max_stack": 1, "tile": None,
@@ -1136,6 +1154,20 @@ ITEM_REGISTRY = {
         "lore": "'Makes your roots move faster than a subterranean river.'",
         "special": "+30% Sprint Speed Boost"
     },
+    "apple": {
+        "name": "Crisp Apple", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "A juicy red apple shaken free from tree canopies. Right-click to consume for +15 HP.",
+        "lore": "'Freshly harvested from surface orchard canopies.'",
+        "special": "Restores 15 Health"
+    },
+    "bomb": {
+        "name": "Excavation Bomb", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "A volatile demolition charge sold by Blacksmith Russet. Blows away dense subterranean rock formations.",
+        "lore": "'Handle with care. Packed with explosive blasting powder.'",
+        "special": "Excavation Explosive"
+    },
     "dungeon_rune": {
         "name": "Dungeon Teleporter Rune", "cat": CAT_SPECIAL, "power": 0, "damage": 0, "max_stack": 10, "tile": None,
         "rarity": RARITY_EPIC,
@@ -1204,12 +1236,47 @@ ITEM_REGISTRY = {
         "lore": "'A crystalline sliver fallen from the celestial gates.'",
         "special": "Boss Summoning Key Component"
     },
+    "celestial_shard": {
+        "name": "Celestial Portal Shard", "cat": CAT_SPECIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Dropped by subterranean mini-bosses. Craft 4 into a Celestial Keystone at a Work Bench!",
+        "lore": "'A crystalline sliver fallen from the celestial gates.'",
+        "special": "Boss Summoning Key Component"
+    },
+    "celestial_fragment": {
+        "name": "Celestial Fragment", "cat": CAT_SPECIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "A luminous crystal shard radiating celestial starlight. A vital component for summoning keystones.",
+        "lore": "'Fallen from the highest reaches of the cosmos.'",
+        "special": "Boss Summoning Key Component"
+    },
     "celestial_keystone": {
         "name": "Celestial Keystone", "cat": CAT_SPECIAL, "power": 0, "damage": 0, "max_stack": 10, "tile": None,
         "rarity": RARITY_LEGENDARY,
         "desc": "Right-click to summon Grand Boss Sol-Rho - The Celestial Titan!",
         "lore": "'When held aloft, the sky quivers and the titan descends.'",
         "special": "Summons 2-Phase Grand Boss Sol-Rho"
+    },
+    "fallen_star": {
+        "name": "Fallen Star", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "A luminous star that fell from the cosmos during nightfall. Used to craft astral ammunition and celestial relics.",
+        "lore": "'A fragment of pure starlight plucked from the night sky.'",
+        "special": "Astral Crafting Catalyst"
+    },
+    "celestial_star": {
+        "name": "Celestial Star", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_LEGENDARY,
+        "desc": "Radiant starlight core summoned from the heavens. Pulses with pure cosmic energy.",
+        "lore": "'Stars forged in the primordial crucible.'",
+        "special": "Cosmic Power Source"
+    },
+    "acorn": {
+        "name": "Tree Acorn", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "A hardy seed gathered from fallen tree canopies. Essential for reforestation of the surface meadows.",
+        "lore": "'A mighty oak awaits within this modest shell.'",
+        "special": "Plantable Seed"
     },
 
     # ----------------------------------------------------
@@ -1331,6 +1398,9 @@ def load_custom_items():
                         effs = []
                         special_str = ""
                         lore = ""
+                    existing_desc = ITEM_REGISTRY[item_id].get("desc") if item_id in ITEM_REGISTRY else ""
+                    w_desc = w.get("desc")
+                    final_desc = w_desc or existing_desc or f"A {rarity.title()} weapon forged in Potaria."
                     ITEM_REGISTRY[item_id] = {
                         "name": w["name"],
                         "cat": CAT_WEAPON,
@@ -1347,7 +1417,7 @@ def load_custom_items():
                         "tile": None,
                         "rarity": rarity,
                         "color": w.get("color", RARITY_HEX_COLORS.get(rarity, "#9E9E9E")),
-                        "desc": w.get("desc", f"A {rarity.title()} weapon forged in Potaria."),
+                        "desc": final_desc,
                         "lore": lore,
                         "effects": effs,
                         "special": special_str,
@@ -1377,6 +1447,9 @@ def load_custom_items():
                         effs = []
                         special_str = ""
                         lore = ""
+                    existing_eq_desc = ITEM_REGISTRY[item_id].get("desc") if item_id in ITEM_REGISTRY else ""
+                    eq_desc = eq.get("desc")
+                    final_eq_desc = eq_desc or existing_eq_desc or f"A {rarity.title()} {c} piece."
                     ITEM_REGISTRY[item_id] = {
                         "name": eq["name"],
                         "cat": cat_str,
@@ -1393,7 +1466,7 @@ def load_custom_items():
                         "tile": None,
                         "rarity": rarity,
                         "color": eq.get("color", RARITY_HEX_COLORS.get(rarity, "#9E9E9E")),
-                        "desc": eq.get("desc", f"A {rarity.title()} {c} piece."),
+                        "desc": final_eq_desc,
                         "lore": lore,
                         "effects": effs,
                         "special": special_str,

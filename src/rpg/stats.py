@@ -164,7 +164,7 @@ class PlayerStats:
                 self.base_crit_rate += 1.0
 
             # Exponential EXP curve
-            self.exp_to_next = int(100 * (self.level ** 1.6))
+            self.exp_to_next = int(100 * (self.level ** 2.1))
 
             # Full heal upon level up!
             self.hp = self.max_hp

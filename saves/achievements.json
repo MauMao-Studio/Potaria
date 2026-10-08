@@ -1,19 +1,19 @@
 {
   "unlocked": [
-    "slayer_of_titans",
-    "recycle_master_1",
-    "potaria_hero",
-    "clean_freak",
-    "recycle_master_3",
-    "master_crafter",
-    "timber",
     "recycle_master_2",
     "hold_your_breath",
-    "deep_diver",
-    "first_blood",
-    "pack_mule",
     "rarity_ancient",
-    "into_the_depths"
+    "deep_diver",
+    "pack_mule",
+    "master_crafter",
+    "potaria_hero",
+    "clean_freak",
+    "into_the_depths",
+    "recycle_master_1",
+    "timber",
+    "slayer_of_titans",
+    "first_blood",
+    "recycle_master_3"
   ],
   "timestamps": {
     "deep_diver": 1791297713.8363328,
@@ -28,7 +28,7 @@
     "recycle_master_1": 1791305080.363171,
     "recycle_master_2": 1791305080.3642914,
     "recycle_master_3": 1791305080.3649352,
-    "rarity_ancient": 1791436822.6335988,
+    "rarity_ancient": 1791454677.7757943,
     "potaria_hero": 1791394964.3947768
   }
 }

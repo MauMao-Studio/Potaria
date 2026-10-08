@@ -85,6 +85,7 @@ class DungeonMiniBoss:
         self.height = 96
         self.max_hp = max_hp
         self.hp = max_hp
+        self.display_hp = float(max_hp)
         self.damage = damage
         self.name = name
         self.is_mini_boss = True
@@ -282,28 +283,72 @@ class DungeonMiniBoss:
     def render_boss_bar(self, target_surf, font, font_title):
         if self.is_dead:
             return
-        bar_w = 460
-        bar_h = 22
+        bar_w = 480
+        bar_h = 20
         bar_x = (SCREEN_WIDTH - bar_w) // 2
-        bar_y = 25
+        bar_y = 86  # Positioned with clean clearance below hotbar (y=20..64) and player hearts (y=3..75)
 
-        pygame.draw.rect(target_surf, (20, 15, 30, 230), (bar_x - 6, bar_y - 20, bar_w + 12, bar_h + 28), border_radius=6)
-        pygame.draw.rect(target_surf, (255, 215, 0), (bar_x - 6, bar_y - 20, bar_w + 12, bar_h + 28), 2, border_radius=6)
+        # Smooth ghost damage lag interpolation
+        if not hasattr(self, "display_hp"):
+            self.display_hp = float(self.hp)
+        if self.display_hp > self.hp:
+            self.display_hp = max(float(self.hp), self.display_hp - max(15.0, (self.display_hp - self.hp) * 0.08))
+        elif self.display_hp < self.hp:
+            self.display_hp = float(self.hp)
 
-        title_txt = font.render(f"DUNGEON MINI-BOSS: {self.name.upper()}", True, (255, 230, 100))
-        target_surf.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, bar_y - 17))
+        panel_x = bar_x - 10
+        panel_y = bar_y - 24
+        panel_w = bar_w + 20
+        panel_h = bar_h + 32
 
+        # 1. Backing Plate with Drop Shadow
+        pygame.draw.rect(target_surf, (5, 6, 12, 170), (panel_x + 2, panel_y + 3, panel_w, panel_h), border_radius=8)
+        pygame.draw.rect(target_surf, (15, 18, 28, 245), (panel_x, panel_y, panel_w, panel_h), border_radius=8)
+        # Double Metallic Border
+        pygame.draw.rect(target_surf, (120, 95, 45), (panel_x, panel_y, panel_w, panel_h), 1, border_radius=8)
+        pygame.draw.rect(target_surf, (245, 205, 75), (panel_x + 2, panel_y + 2, panel_w - 4, panel_h - 4), 1, border_radius=6)
+
+        # 2. Boss Crest & Name Header
+        crest_txt = font.render("☠", True, (255, 80, 80))
+        target_surf.blit(crest_txt, (bar_x, bar_y - 20))
+
+        title_str = f"MINI-BOSS: {self.name.upper()}"
+        sh_title = font.render(title_str, True, (0, 0, 0))
+        title_txt = font.render(title_str, True, (255, 230, 100))
+        target_surf.blit(sh_title, (bar_x + 19, bar_y - 19))
+        target_surf.blit(title_txt, (bar_x + 18, bar_y - 20))
+
+        # 3. Bar Trench (Abyssal Red)
+        pygame.draw.rect(target_surf, (35, 15, 22), (bar_x, bar_y, bar_w, bar_h), border_radius=4)
+
+        # 4. Ghost Damage Lag Bar (Amber)
+        ghost_pct = max(0.0, min(1.0, self.display_hp / float(self.max_hp)))
+        ghost_w = int(bar_w * ghost_pct)
+        if ghost_w > 0:
+            pygame.draw.rect(target_surf, (240, 160, 45), (bar_x, bar_y, ghost_w, bar_h), border_radius=4)
+
+        # 5. Current Health Bar (Crimson with Top Highlight)
         pct = max(0.0, min(1.0, self.hp / float(self.max_hp)))
         fill_w = int(bar_w * pct)
-        pygame.draw.rect(target_surf, (45, 20, 35), (bar_x, bar_y, bar_w, bar_h))
         if fill_w > 0:
-            pygame.draw.rect(target_surf, (220, 40, 60), (bar_x, bar_y, fill_w, bar_h))
-            pygame.draw.rect(target_surf, (255, 130, 160), (bar_x, bar_y, fill_w, 4))
-        pygame.draw.rect(target_surf, (200, 180, 120), (bar_x, bar_y, bar_w, bar_h), 2)
+            pygame.draw.rect(target_surf, (220, 38, 58), (bar_x, bar_y, fill_w, bar_h), border_radius=4)
+            pygame.draw.rect(target_surf, (255, 125, 145), (bar_x, bar_y, fill_w, 3), border_top_left_radius=4, border_top_right_radius=4)
 
-        hp_str = f"{self.hp} / {self.max_hp}"
+        # 6. Phase Threshold Markers (25%, 50%, 75%)
+        for t in (0.25, 0.50, 0.75):
+            tx = bar_x + int(bar_w * t)
+            pygame.draw.line(target_surf, (80, 25, 30), (tx, bar_y), (tx, bar_y + bar_h - 1), 1)
+
+        # Inner border
+        pygame.draw.rect(target_surf, (210, 185, 120), (bar_x, bar_y, bar_w, bar_h), 1, border_radius=4)
+
+        # 7. High-Contrast HP Readout with Percentage
+        hp_str = f"{self.hp:,} / {self.max_hp:,}  ({pct * 100:.1f}%)"
+        sh_num = font.render(hp_str, True, (0, 0, 0))
         num_txt = font.render(hp_str, True, (255, 255, 255))
-        target_surf.blit(num_txt, (SCREEN_WIDTH // 2 - num_txt.get_width() // 2, bar_y + 3))
+        cx = SCREEN_WIDTH // 2
+        target_surf.blit(sh_num, (cx - num_txt.get_width() // 2 + 1, bar_y + 3))
+        target_surf.blit(num_txt, (cx - num_txt.get_width() // 2, bar_y + 2))
 
 
 # Specific Mini-Boss Classes
@@ -383,6 +428,7 @@ class GrandBossSolRho:
         self.p2_max_hp = int(1400 * scale_factor)
         self.max_hp = self.p1_max_hp
         self.hp = self.max_hp
+        self.display_hp = float(self.max_hp)
         self.damage = 30 + int((self.party_size - 1) * 4)
 
         self.name = "Sol-Rho - The Celestial Titan"
@@ -526,6 +572,7 @@ class GrandBossSolRho:
                 self.name = "Awakened Sol-Rho - Void Incarnate"
                 self.max_hp = self.p2_max_hp
                 self.hp = self.p2_max_hp
+                self.display_hp = float(self.p2_max_hp)
                 self.damage += 8
                 self.state = "float"
                 self.state_timer = 2.5
@@ -696,41 +743,102 @@ class GrandBossSolRho:
     def render_boss_bar(self, target_surf, font, font_title):
         if self.is_dead:
             return
-        bar_w = 560
-        bar_h = 26
+        bar_w = 520
+        bar_h = 22
         bar_x = (SCREEN_WIDTH - bar_w) // 2
-        bar_y = 25
+        bar_y = 86  # Positioned with clean clearance below hotbar (y=20..64) and player hearts (y=3..75)
 
-        border_col = (255, 215, 0) if self.phase == 1 else (220, 60, 255)
-        bg_col = (20, 15, 30, 245)
+        # Smooth ghost damage lag interpolation
+        if not hasattr(self, "display_hp"):
+            self.display_hp = float(self.hp)
+        if self.display_hp > self.hp:
+            self.display_hp = max(float(self.hp), self.display_hp - max(20.0, (self.display_hp - self.hp) * 0.08))
+        elif self.display_hp < self.hp:
+            self.display_hp = float(self.hp)
 
-        pygame.draw.rect(target_surf, bg_col, (bar_x - 8, bar_y - 22, bar_w + 16, bar_h + 32), border_radius=8)
-        pygame.draw.rect(target_surf, border_col, (bar_x - 8, bar_y - 22, bar_w + 16, bar_h + 32), 2, border_radius=8)
+        panel_x = bar_x - 12
+        panel_y = bar_y - 25
+        panel_w = bar_w + 24
+        panel_h = bar_h + 35
 
-        # Title
-        p_tag = "PHASE I: CELESTIAL TITAN" if self.phase == 1 else "✦ PHASE II: AWAKENED VOID GOD ✦"
-        t_col = (255, 235, 100) if self.phase == 1 else (255, 120, 240)
-        title_txt = font.render(f"{self.name.upper()}  [{p_tag}]", True, t_col)
-        target_surf.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, bar_y - 18))
+        # Dynamic Phase Themes
+        if self.phase == 1:
+            outer_rim = (150, 120, 50)
+            inner_rim = (255, 215, 75)
+            t_col = (255, 235, 110)
+            p_tag = "PHASE I: CELESTIAL TITAN"
+            fill_col = (245, 140, 25)
+            hi_col = (255, 225, 110)
+            ghost_col = (255, 185, 70)
+            crest_symbol = "☀"
+            crest_col = (255, 215, 80)
+        else:
+            outer_rim = (120, 40, 160)
+            inner_rim = (225, 75, 255)
+            t_col = (255, 130, 245)
+            p_tag = "✦ PHASE II: AWAKENED VOID GOD ✦"
+            fill_col = (165, 25, 225)
+            hi_col = (240, 120, 255)
+            ghost_col = (200, 70, 180)
+            crest_symbol = "🌑"
+            crest_col = (220, 80, 255)
 
+        # 1. Backing Plate with Drop Shadow
+        pygame.draw.rect(target_surf, (5, 6, 12, 180), (panel_x + 3, panel_y + 4, panel_w, panel_h), border_radius=9)
+        pygame.draw.rect(target_surf, (16, 18, 30, 248), (panel_x, panel_y, panel_w, panel_h), border_radius=9)
+        # Double Metallic Ornate Border
+        pygame.draw.rect(target_surf, outer_rim, (panel_x, panel_y, panel_w, panel_h), 1, border_radius=9)
+        pygame.draw.rect(target_surf, inner_rim, (panel_x + 2, panel_y + 2, panel_w - 4, panel_h - 4), 1, border_radius=7)
+
+        # 2. Crest & Boss Title Header
+        crest_txt = font.render(crest_symbol, True, crest_col)
+        target_surf.blit(crest_txt, (bar_x, bar_y - 21))
+
+        title_str = f"{self.name.upper()}  [{p_tag}]"
+        sh_title = font.render(title_str, True, (0, 0, 0))
+        title_txt = font.render(title_str, True, t_col)
+        target_surf.blit(sh_title, (bar_x + 21, bar_y - 20))
+        target_surf.blit(title_txt, (bar_x + 20, bar_y - 21))
+
+        # 3. Bar Trench (Abyssal Void)
+        pygame.draw.rect(target_surf, (30, 14, 30), (bar_x, bar_y, bar_w, bar_h), border_radius=4)
+
+        # 4. Ghost Damage Lag Bar
+        ghost_pct = max(0.0, min(1.0, self.display_hp / float(self.max_hp)))
+        ghost_w = int(bar_w * ghost_pct)
+        if ghost_w > 0:
+            pygame.draw.rect(target_surf, ghost_col, (bar_x, bar_y, ghost_w, bar_h), border_radius=4)
+
+        # 5. Current Health Bar with Dual Highlight
         pct = max(0.0, min(1.0, self.hp / float(self.max_hp)))
         fill_w = int(bar_w * pct)
-
-        pygame.draw.rect(target_surf, (40, 15, 35), (bar_x, bar_y, bar_w, bar_h))
-        fill_col = (255, 160, 20) if self.phase == 1 else (160, 20, 220)
-        hi_col = (255, 235, 120) if self.phase == 1 else (255, 100, 220)
-
         if fill_w > 0:
-            pygame.draw.rect(target_surf, fill_col, (bar_x, bar_y, fill_w, bar_h))
-            pygame.draw.rect(target_surf, hi_col, (bar_x, bar_y, fill_w, 4))
+            pygame.draw.rect(target_surf, fill_col, (bar_x, bar_y, fill_w, bar_h), border_radius=4)
+            pygame.draw.rect(target_surf, hi_col, (bar_x, bar_y, fill_w, 4), border_top_left_radius=4, border_top_right_radius=4)
 
-        pygame.draw.rect(target_surf, (220, 200, 140), (bar_x, bar_y, bar_w, bar_h), 2)
+        # 6. Phase Threshold Markers (25%, 50%, 75%)
+        for t in (0.25, 0.50, 0.75):
+            tx = bar_x + int(bar_w * t)
+            pygame.draw.line(target_surf, (70, 25, 60), (tx, bar_y), (tx, bar_y + bar_h - 1), 1)
 
-        hp_str = f"{self.hp} / {self.max_hp}"
+        # Inner Frame
+        pygame.draw.rect(target_surf, (220, 195, 130) if self.phase == 1 else (210, 130, 240), (bar_x, bar_y, bar_w, bar_h), 1, border_radius=4)
+
+        # 7. Status & High-Contrast HP Readout
         if self.is_transforming:
+            pulse = int((math.sin(pygame.time.get_ticks() * 0.008) + 1.0) * 127)
             hp_str = "✦ AWAKENING TRUE VOID FORM... ✦"
-        num_txt = font.render(hp_str, True, (255, 255, 255))
-        target_surf.blit(num_txt, (SCREEN_WIDTH // 2 - num_txt.get_width() // 2, bar_y + 4))
+            pulse_col = (255, pulse, 255)
+            sh_num = font.render(hp_str, True, (0, 0, 0))
+            num_txt = font.render(hp_str, True, pulse_col)
+        else:
+            hp_str = f"{self.hp:,} / {self.max_hp:,}  ({pct * 100:.1f}%)"
+            sh_num = font.render(hp_str, True, (0, 0, 0))
+            num_txt = font.render(hp_str, True, (255, 255, 255))
+
+        cx = SCREEN_WIDTH // 2
+        target_surf.blit(sh_num, (cx - num_txt.get_width() // 2 + 1, bar_y + 4))
+        target_surf.blit(num_txt, (cx - num_txt.get_width() // 2, bar_y + 3))
 
 
 BOSS_TYPE_REGISTRY = {

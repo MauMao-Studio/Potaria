@@ -414,9 +414,11 @@ class Equipment:
                 bonus_atk_speed += w_data.get("speed", w_data.get("atk_speed", 0.0))
                 bonus_mp_regen += w_data.get("mp_regen", 0.0)
             else:
-                from src.ui.inventory import ITEM_REGISTRY, CAT_WEAPON
+                from src.ui.inventory import ITEM_REGISTRY, CAT_WEAPON, CAT_TOOL
                 reg = ITEM_REGISTRY.get(held_id, {})
-                if reg.get("cat") == CAT_WEAPON or reg.get("damage", 0) > 0:
+                cat = reg.get("cat")
+                is_tool = (cat == CAT_TOOL or cat == "tool" or any(w in held_id.lower() for w in ("axe", "pickaxe", "shovel", "drill", "hammer")))
+                if cat == CAT_WEAPON or (reg.get("damage", 0) > 0 and not is_tool):
                     bonus_atk += reg.get("damage", 0)
                     bonus_crit += reg.get("crit", 0.0)
                     bonus_atk_speed += reg.get("speed", reg.get("atk_speed", 0.0))

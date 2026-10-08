@@ -162,13 +162,15 @@ class CombatManager:
     # Alias for underground mini-boss summoning
     spawn_mini_boss = spawn_boss
 
-    def spawn_mob(self, mob):
+    def spawn_mob(self, mob, player=None):
         if getattr(mob, "mob_id", None) is None:
             mob.mob_id = self.next_mob_id
             self.next_mob_id += 1
         if getattr(mob, "mob_type", None) is None:
             from src.entities.mob import CLASS_TO_MOB_TYPE
             mob.mob_type = CLASS_TO_MOB_TYPE.get(mob.__class__, "green_slime")
+        if player and hasattr(player, "stats") and hasattr(mob, "scale_to_player"):
+            mob.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0))
         self.mobs.append(mob)
 
     def spawn_damage_number(self, world_x, world_y, amount, color=(255, 210, 50), is_crit=False):
@@ -183,7 +185,9 @@ class CombatManager:
         if hasattr(player, "has_effect") and player.has_effect("soul harvest"):
             player.health = min(player.max_health, player.health + 5)
             self.particle_system.spawn_sparks(player.center_x, player.center_y, (100, 255, 140), count=6)
-        exp_reward = max(20, int(getattr(mob, "max_hp", 30) * 1.2))
+        base_hp = getattr(mob, "base_max_hp", getattr(mob, "max_hp", 30))
+        mob_lvl = getattr(mob, "level", 1)
+        exp_reward = max(15, int(base_hp * 0.8 + (mob_lvl - 1) * 6))
         leveled = player.stats.add_exp(exp_reward)
         if leveled:
             self.sound_manager.play("craft")
@@ -375,7 +379,11 @@ class CombatManager:
             self.mobs = [m for m in self.mobs if not m.is_dead and m.hp > 0]
         else:
             # Host / Singleplayer: full authoritative physics & AI
+            p_level = getattr(getattr(player, "stats", None), "level", 1)
+            p_atk = getattr(getattr(player, "stats", None), "total_atk", 0)
             for mob in self.mobs:
+                if hasattr(mob, "scale_to_player") and getattr(mob, "level", 1) < p_level:
+                    mob.scale_to_player(p_level, p_atk)
                 if hasattr(mob, "pending_projectiles") and mob.pending_projectiles:
                     self.enemy_projectiles.extend(mob.pending_projectiles)
                     mob.pending_projectiles.clear()
@@ -866,11 +874,17 @@ class CombatManager:
     def _check_weapon_hits(self, player, world=None):
         # Ranged weapons (bows, crossbows, staves, wands) deal damage via projectiles, NOT melee strikes!
         active = getattr(player, "inventory", None).get_active_item() if getattr(player, "inventory", None) else None
+        is_tool = False
+        tool_dmg = 2
         if active:
             item_id = active.item_id.lower()
-            item_name = active.data.get("name", "").lower() if hasattr(active, "data") else ""
+            item_data = getattr(active, "data", {}) or {}
+            item_name = item_data.get("name", "").lower()
             if any(w in item_id or w in item_name for w in ("bow", "crossbow", "recurve", "shortbow", "longbow")) or any(w in item_id or w in item_name for w in ("staff", "wand", "scepter", "rod", "catalyst", "focus", "grimoire")):
                 return
+            if item_data.get("cat") == "tool" or item_data.get("category") == "tool" or any(t in item_id for t in ("pickaxe", "axe", "shovel", "hammer")) or any(t in item_name for t in ("pickaxe", "axe", "shovel", "hammer")):
+                is_tool = True
+                tool_dmg = item_data.get("damage", 2)
 
         reach = 40.0
         hx = player.center_x + math.cos(player.aim_angle) * reach
@@ -878,17 +892,24 @@ class CombatManager:
         hitbox = pygame.Rect(int(hx - 18), int(hy - 18), 36, 36)
 
         # RPG Damage Formula: Scaled by player ATK and Critical Rolls
-        base_dmg = player.stats.total_atk
-        has_crit_overdrive = player.has_effect("critical overdrive") if hasattr(player, "has_effect") else False
-        crit_mult = 2.0 if has_crit_overdrive else 1.8
-        is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-        final_dmg = int(base_dmg * (crit_mult if is_crit else random.uniform(0.9, 1.15)))
+        if is_tool:
+            # Tools deal minimal combat damage and do not leverage full weapon attack power
+            lvl_bonus = max(0, (player.stats.level - 1)) * 0.2
+            base_dmg = max(1, int(tool_dmg + lvl_bonus))
+            is_crit = False
+            final_dmg = base_dmg
+        else:
+            base_dmg = player.stats.total_atk
+            has_crit_overdrive = player.has_effect("critical overdrive") if hasattr(player, "has_effect") else False
+            crit_mult = 2.0 if has_crit_overdrive else 1.8
+            is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
+            final_dmg = int(base_dmg * (crit_mult if is_crit else random.uniform(0.9, 1.15)))
 
-        if hasattr(player, "has_effect"):
-            if player.has_effect("molten blaze"):
-                final_dmg += 12
-            if player.has_effect("armor penetration"):
-                final_dmg += 15
+            if hasattr(player, "has_effect"):
+                if player.has_effect("molten blaze"):
+                    final_dmg += 12
+                if player.has_effect("armor penetration"):
+                    final_dmg += 15
 
         if self.boss and not self.boss.is_dead and self.boss.hurt_timer <= 0:
             if "boss" not in getattr(player, "swing_hit_targets", set()) and hitbox.colliderect(self.boss.rect):
@@ -928,7 +949,9 @@ class CombatManager:
                 getattr(player, "swing_hit_targets", set()).add(mob)
                 knock_x = math.cos(player.aim_angle) * 5.0
                 knock_y = min(-2.5, math.sin(player.aim_angle) * 4.0)
-                mob.take_damage(final_dmg, knockback_vx=knock_x, knockback_vy=knock_y)
+                actual_dmg = mob.take_damage(final_dmg, knockback_vx=knock_x, knockback_vy=knock_y)
+                if not actual_dmg or isinstance(actual_dmg, bool):
+                    actual_dmg = final_dmg
                 if is_crit:
                     self.sound_manager.play("crit_hit")
                     self.particle_system.spawn_sparks(hx, hy, (255, 235, 50), count=18)
@@ -938,7 +961,7 @@ class CombatManager:
                     self.sound_manager.play("hit_mob")
                     self.particle_system.spawn_sparks(hx, hy, (255, 230, 100), count=8)
                     self.camera.add_shake(3.0, 0.15)
-                self.spawn_damage_number(mob.center_x, mob.y - 12, final_dmg, color=(255, 230, 40) if is_crit else (255, 210, 50), is_crit=is_crit)
+                self.spawn_damage_number(mob.center_x, mob.y - 12, actual_dmg, color=(255, 230, 40) if is_crit else (255, 210, 50), is_crit=is_crit)
 
                 if hasattr(player, "has_effect"):
                     if player.has_effect("glacial chill") and hasattr(mob, "speed"):
@@ -1190,7 +1213,7 @@ class CombatManager:
                 mob_cls = random.choice([Mummy, DesertScorpion, SandSlime, RockZombie, DiggerMob])
             else:
                 mob_cls = SandSlime
-            self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory))
+            self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome == BIOME_SNOW:
             if is_night or ground_ty > 110:
@@ -1198,38 +1221,38 @@ class CombatManager:
             else:
                 mob_cls = FrostSlime
             if mob_cls == IceBat:
-                self.spawn_mob(IceBat(spawn_x, spawn_y - 80, self.asset_factory))
+                self.spawn_mob(IceBat(spawn_x, spawn_y - 80, self.asset_factory), player=player)
             else:
-                self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory))
+                self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome == BIOME_CORRUPTION:
             mob_cls = random.choice([CorruptSlime, ShadowCrawler, ShieldWeaver])
-            self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory))
+            self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome in (BIOME_CAVERN, BIOME_MUSHROOM):
             mob_cls = random.choice([CaveBat, Skeleton, PurpleSlime, DiggerMob, ShieldWeaver, RockZombie])
             if mob_cls == CaveBat:
-                self.spawn_mob(CaveBat(spawn_x, spawn_y - 80, self.asset_factory))
+                self.spawn_mob(CaveBat(spawn_x, spawn_y - 80, self.asset_factory), player=player)
             else:
-                self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory))
+                self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome == BIOME_DUNGEON:
             mob_cls = random.choice([Skeleton, ShadowCrawler, ShieldWeaver])
-            self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory))
+            self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         else: # BIOME_FOREST
             if is_night:
                 r = random.random()
                 if r < 0.35:
-                    self.spawn_mob(Zombie(spawn_x, spawn_y, self.asset_factory))
+                    self.spawn_mob(Zombie(spawn_x, spawn_y, self.asset_factory), player=player)
                 elif r < 0.60:
-                    self.spawn_mob(DemonEye(spawn_x, player.center_y - 140, self.asset_factory))
+                    self.spawn_mob(DemonEye(spawn_x, player.center_y - 140, self.asset_factory), player=player)
                 elif r < 0.80:
-                    self.spawn_mob(RockZombie(spawn_x, spawn_y, self.asset_factory))
+                    self.spawn_mob(RockZombie(spawn_x, spawn_y, self.asset_factory), player=player)
                 else:
-                    self.spawn_mob(PurpleSlime(spawn_x, spawn_y, self.asset_factory))
+                    self.spawn_mob(PurpleSlime(spawn_x, spawn_y, self.asset_factory), player=player)
             else:
-                self.spawn_mob(GreenSlime(spawn_x, spawn_y, self.asset_factory))
+                self.spawn_mob(GreenSlime(spawn_x, spawn_y, self.asset_factory), player=player)
 
     def render(self, target_surf, camera):
         for item in self.dropped_items:

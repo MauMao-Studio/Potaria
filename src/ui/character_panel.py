@@ -468,8 +468,10 @@ class CharacterPanel:
         lines.append((f"Slot: {slot_name}", (255, 215, 100), self.font_sm))
 
         # Weapon damage / power
-        if reg.get("cat") == CAT_WEAPON or reg.get("damage", 0) > 0:
+        if reg.get("cat") == CAT_WEAPON or (reg.get("damage", 0) > 0 and reg.get("cat") != CAT_TOOL):
             lines.append((f"+{reg.get('damage', 0)} Base Attack Power", (255, 180, 80), self.font_sm))
+        elif reg.get("cat") == CAT_TOOL:
+            lines.append((f"+{reg.get('damage', 0)} Tool Damage", (190, 205, 225), self.font_sm))
 
         # Armor and accessory stats
         if armor.get("def", 0) > 0:
@@ -490,21 +492,6 @@ class CharacterPanel:
             reg_val = armor.get("mp_regen", reg.get("mp_regen", 0))
             lines.append((f"+{reg_val:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
 
-        # Tool power (Axe Power, Pickaxe Power, Shovel Power, Hammer Power)
-        if reg.get("power", 0) > 0:
-            iid = item_id.lower()
-            if "axe" in iid and "pickaxe" not in iid:
-                p_label = "Axe Power"
-            elif "pickaxe" in iid or "drill" in iid:
-                p_label = "Pickaxe Power"
-            elif "shovel" in iid or "spade" in iid:
-                p_label = "Shovel Power"
-            elif "hammer" in iid:
-                p_label = "Hammer Power"
-            else:
-                p_label = "Tool Power"
-            lines.append((f"{p_label}: {reg['power']}%", (120, 210, 255), self.font_sm))
-
         # Effects & Special Perks (Only Epic, Mythic, Legendary, Ancient; suppressed for wooden and low-tier)
         effects = reg.get("effects") or armor.get("effects", [])
         iid = item_id.lower()
@@ -520,8 +507,9 @@ class CharacterPanel:
                     lines.append((f"Special: {special}", (100, 220, 255), self.font_sm))
 
         desc = reg.get("desc")
-        if desc:
-            lines.append((desc, (200, 215, 235), self.font_sm))
+        if not desc or str(desc).strip() == "":
+            desc = f"A fine {rarity.title()} equipment piece radiating elemental potency."
+        lines.append((desc, (200, 215, 235), self.font_sm))
 
         lore = reg.get("lore")
         rarity_str = str(rarity).lower()

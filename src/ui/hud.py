@@ -10,7 +10,8 @@ import pygame
 from src.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, SLOT_SIZE, SLOT_PADDING,
     HOTBAR_SLOTS, INV_COLS, INV_ROWS, SCALED_TILE, COLOR_GOLD,
-    RARITY_COLORS, RARITY_COMMON, RARITY_EPIC, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT
+    RARITY_COLORS, RARITY_COMMON, RARITY_EPIC, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT,
+    CAT_TOOL
 )
 from src.ui.inventory import ITEM_REGISTRY
 from src.rpg.skills import SKILL_DEFINITIONS
@@ -463,8 +464,11 @@ class HUD:
 
         # 3. Numeric Combat & Mining Stats
         if data.get("damage", 0) > 0:
-            lines.append((f"Weapon Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
-        if data.get("cat") == "weapon" or data.get("damage", 0) > 0:
+            if data.get("cat") == CAT_TOOL or data.get("cat") == "tool":
+                lines.append((f"Tool Damage: {data['damage']}", (190, 205, 225), self.font_sm))
+            else:
+                lines.append((f"Weapon Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+        if data.get("cat") == "weapon" or (data.get("damage", 0) > 0 and data.get("cat") != CAT_TOOL):
             iid = item.item_id.lower()
             if any(w in iid for w in ("dagger", "shortsword", "knife", "stiletto")):
                 speed_str = "Very Fast Speed (0.22s)"
@@ -480,19 +484,6 @@ class HUD:
                 speed_str = "Fast Speed (0.32s)"
             lines.append((f"Use Speed: {speed_str}", (240, 230, 160), self.font_sm))
 
-        if data.get("power", 0) > 0:
-            iid = item.item_id.lower()
-            if "axe" in iid and "pickaxe" not in iid:
-                power_label = "Axe Power"
-            elif "pickaxe" in iid or "drill" in iid:
-                power_label = "Pickaxe Power"
-            elif "shovel" in iid or "spade" in iid:
-                power_label = "Shovel Power"
-            elif "hammer" in iid:
-                power_label = "Hammer Power"
-            else:
-                power_label = "Tool Power"
-            lines.append((f"{power_label}: {data['power']}%", (120, 210, 255), self.font_sm))
         if data.get("def", 0) > 0:
             lines.append((f"+{data['def']} Defense", (140, 230, 140), self.font_sm))
         if data.get("atk", 0) > 0:
@@ -526,8 +517,10 @@ class HUD:
                 lines.append((f"Special: {data['special']}", (100, 240, 240), self.font_sm))
 
         # 5. Usage / Description
-        if data.get("desc"):
-            lines.append((data["desc"], (215, 225, 240), self.font_sm))
+        desc = data.get("desc")
+        if not desc or str(desc).strip() == "":
+            desc = f"A fine {rarity.title()} {cat.lower()} radiating elemental potency."
+        lines.append((desc, (215, 225, 240), self.font_sm))
 
         # 6. Lore Quote (Diablo / Torchlight style) - Only Legendary, Mythic, Ancient
         rarity_str = str(rarity).lower()

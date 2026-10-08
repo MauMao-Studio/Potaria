@@ -44,14 +44,19 @@ class RockProjectile:
 
 class Mob:
     """Base class for all Terraria monsters."""
-    def __init__(self, x, y, width, height, max_hp, damage, name):
+    def __init__(self, x, y, width, height, max_hp, damage, name, defense=0):
         self.x = float(x)
         self.y = float(y)
         self.width = width
         self.height = height
+        self.base_max_hp = max_hp
         self.max_hp = max_hp
         self.hp = max_hp
+        self.base_damage = damage
         self.damage = damage
+        self.base_defense = defense
+        self.defense = defense
+        self.level = 1
         self.name = name
         self.frect = pygame.FRect(self.x, self.y, self.width, self.height)
         
@@ -125,11 +130,40 @@ class Mob:
     def alive(self):
         return not self.is_dead and self.hp > 0
 
-    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=-3.0):
-        """Applies damage and knockback."""
+    def scale_to_player(self, player_level, player_power=0):
+        """Dynamically scales mob health, damage, and defense based on player progression."""
+        target_lvl = max(1, int(player_level))
+        self.level = target_lvl
+        lvl_diff = target_lvl - 1
+        if lvl_diff <= 0 and player_power <= 0:
+            self.max_hp = self.base_max_hp
+            self.hp = min(self.hp, self.max_hp)
+            self.damage = self.base_damage
+            self.defense = self.base_defense
+            return
+
+        hp_mult = 1.0 + (lvl_diff * 0.22) + (max(0, player_power) * 0.01)
+        dmg_mult = 1.0 + (lvl_diff * 0.12) + (max(0, player_power) * 0.005)
+        def_bonus = int(lvl_diff * 0.6 + max(0, player_power) * 0.03)
+
+        new_max_hp = max(self.base_max_hp, int(self.base_max_hp * hp_mult))
+        hp_ratio = self.hp / max(1, self.max_hp) if self.max_hp > 0 else 1.0
+        self.max_hp = new_max_hp
+        self.hp = max(1, int(new_max_hp * hp_ratio))
+        self.damage = max(1, int(self.base_damage * dmg_mult))
+        self.defense = max(0, self.base_defense + def_bonus)
+
+    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=-3.0, ignore_defense=False):
+        """Applies damage and knockback, accounting for mob defense."""
         if self.is_dead:
-            return False
-        self.hp -= amount
+            return 0
+        
+        if not ignore_defense and getattr(self, "defense", 0) > 0:
+            effective_dmg = max(1, int(amount - self.defense))
+        else:
+            effective_dmg = max(1, int(amount))
+
+        self.hp -= effective_dmg
         self.hurt_timer = 0.2
         self.hp_bar_timer = 3.0
         self.vx = knockback_vx
@@ -139,7 +173,7 @@ class Mob:
         if self.hp <= 0:
             self.hp = 0
             self.is_dead = True
-        return True
+        return effective_dmg
 
     def render_health_bar(self, target_surf, camera):
         """Draws miniature health bar above mob when recently damaged."""
