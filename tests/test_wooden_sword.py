@@ -27,7 +27,8 @@ pygame.init()
 pygame.display.set_mode((1280, 720))
 
 from src.constants import (
-    RARITY_COMMON, CAT_WEAPON, SCALED_TILE, TILE_WORK_BENCH
+    RARITY_COMMON, CAT_WEAPON, SCALED_TILE, TILE_WORK_BENCH,
+    TILE_WOOD, TILE_WOOD_TRUNK, TILE_DIRT, TILE_GRASS
 )
 from src.assets.asset_factory import AssetFactory
 from src.audio.sound_effects import SoundManager
@@ -37,7 +38,7 @@ from src.entities.mob import SlimeMob
 from src.combat.combat_system import CombatManager
 from src.rpg.stats import PlayerStats
 from src.rpg.equipment import Equipment, ARMOR_DATA
-from src.ui.inventory import Inventory, ItemStack, ITEM_REGISTRY, ITEM_ALIASES
+from src.ui.inventory import Inventory, ItemStack, ITEM_REGISTRY, ITEM_ALIASES, get_mining_damage
 from src.ui.crafting import CraftingSystem, RECIPES
 from src.ui.hud import HUD
 from src.ui.character_panel import CharacterPanel
@@ -65,9 +66,9 @@ class TestWoodenSword(unittest.TestCase):
         self.assertEqual(data["max_stack"], 1)
         self.assertIn("desc", data)
         self.assertGreater(len(data["desc"]), 0)
-        self.assertIn("lore", data)
-        self.assertGreater(len(data["lore"]), 0)
-        self.assertEqual(data.get("special"), "Slashing Strike")
+        self.assertEqual(data.get("lore", ""), "")
+        self.assertEqual(data.get("special", ""), "")
+        self.assertEqual(data.get("effects", []), [])
 
     def test_02_alias_resolution(self):
         """Verifies wood_sword alias maps to wooden_sword seamlessly."""
@@ -243,6 +244,87 @@ class TestWoodenSword(unittest.TestCase):
         self.assertIsNotNone(held_icon)
         player.render(game_surf, game.camera, held_item_icon=held_icon, held_item=active)
 
+    def test_08_low_tier_lore_and_special_suppression_and_axe_stats_and_bare_hand_harvesting(self):
+        """Verifies:
+        1. Low-tier & wooden items have no lore or special effects in ITEM_REGISTRY.
+        2. Wooden Axe displays Axe Power (not Pickaxe Power or Special).
+        3. Lore is only rendered on Legendary, Mythic, Ancient items.
+        4. Bare hands damage and harvest wood and dirt blocks without softlocking, even if weapon is equipped.
+        """
+        # 1. ITEM_REGISTRY checks
+        wood_axe_data = ITEM_REGISTRY["wood_axe"]
+        self.assertEqual(wood_axe_data.get("power"), 10)
+        self.assertEqual(wood_axe_data.get("lore", ""), "")
+        self.assertEqual(wood_axe_data.get("special", ""), "")
+        self.assertEqual(wood_axe_data.get("effects", []), [])
+
+        wood_pick_data = ITEM_REGISTRY["wood_pickaxe"]
+        self.assertEqual(wood_pick_data.get("power"), 8)
+        self.assertEqual(wood_pick_data.get("lore", ""), "")
+        self.assertEqual(wood_pick_data.get("special", ""), "")
+
+        # 2. Tooltip rendering checks
+        target_surf = pygame.Surface((1280, 720))
+        hud = HUD(self.factory)
+
+        # 2a. Wood Axe tooltip: Axe Power: 10%, no Pickaxe Power, no Special, no Lore
+        axe_stack = ItemStack("wood_axe", 1)
+        hud._render_tooltip(target_surf, 100, 100, axe_stack)
+
+        # 2b. Wooden Sword tooltip: Weapon Power, no Special, no Lore
+        sword_stack = ItemStack("wooden_sword", 1)
+        hud._render_tooltip(target_surf, 100, 100, sword_stack)
+
+        # 2c. Character panel tooltip
+        char_panel = CharacterPanel(self.factory)
+        char_panel._render_equipped_tooltip(target_surf, 150, 150, "wood_axe")
+        char_panel._render_equipped_tooltip(target_surf, 150, 150, "wooden_sword")
+
+        # 3. Bare Hand Harvesting (Anti-Softlock)
+        self.assertEqual(get_mining_damage(None, TILE_WOOD), 1.2)
+        self.assertEqual(get_mining_damage(None, TILE_WOOD_TRUNK), 1.2)
+        self.assertEqual(get_mining_damage(None, TILE_DIRT), 1.2)
+        self.assertEqual(get_mining_damage(None, TILE_GRASS), 1.2)
+
+        # 4. In-game Bare Hand Mining Integration
+        game = PotariaGame()
+        player = game.player
+        ptx = int(player.center_x // SCALED_TILE)
+        pty = int(player.center_y // SCALED_TILE)
+
+        # Equip a weapon in paperdoll equipment (to verify paperdoll weapon does NOT hijack bare-hand mining)
+        player.equipment.slots["weapon"] = "wooden_sword"
+        # Select empty slot on hotbar
+        game.inventory.slots[0] = None
+        game.inventory.selected_slot = 0
+        self.assertIsNone(game.inventory.get_active_item())
+
+        # Place wood block within reach
+        target_tx, target_ty = ptx + 1, pty
+        game.world.set_tile(target_tx, target_ty, TILE_WOOD)
+        game.world.tile_damage.clear()
+
+        # Calculate screen coordinates for the placed block
+        screen_x, screen_y = game.camera.world_to_screen(target_tx * SCALED_TILE + 16, target_ty * SCALED_TILE + 16)
+
+        # Hit block with bare hands via handle_primary_action
+        action_result = game.handle_primary_action(screen_x, screen_y)
+        self.assertTrue(action_result)
+
+        # Verify wood tile took 1.2 damage
+        damage_dealt = game.world.tile_damage.get((target_tx, target_ty), 0.0)
+        self.assertAlmostEqual(damage_dealt, 1.2, places=2)
+
+        # Repeated hits to break wood block
+        broken = False
+        for _ in range(25):
+            broken, drop, tid = game.world.damage_tile_at(target_tx, target_ty, 1.2)
+            if broken:
+                break
+        self.assertTrue(broken)
+        self.assertEqual(drop, "wood")
+
 
 if __name__ == "__main__":
     unittest.main()
+

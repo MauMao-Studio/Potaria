@@ -10,7 +10,7 @@ import pygame
 from src.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_GOLD,
     RARITY_COMMON, RARITY_UNCOMMON, RARITY_RARE, RARITY_EPIC,
-    RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_COLORS, CAT_WEAPON, CAT_TOOL
+    RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, RARITY_COLORS, CAT_WEAPON, CAT_TOOL
 )
 from src.rpg.equipment import (
     SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_WEAPON, SLOT_ACCESSORY, ARMOR_DATA
@@ -492,20 +492,23 @@ class CharacterPanel:
 
         # Effects & Special Perks
         effects = reg.get("effects") or armor.get("effects", [])
-        if effects:
-            for eff in effects:
-                lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
-        else:
-            special = reg.get("special") or armor.get("special")
-            if special:
-                lines.append((f"Special: {special}", (100, 220, 255), self.font_sm))
+        iid = item_id.lower()
+        if "wood" not in iid:
+            if effects:
+                for eff in effects:
+                    lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
+            else:
+                special = reg.get("special") or armor.get("special")
+                if special:
+                    lines.append((f"Special: {special}", (100, 220, 255), self.font_sm))
 
         desc = reg.get("desc")
         if desc:
             lines.append((desc, (200, 215, 235), self.font_sm))
 
         lore = reg.get("lore")
-        if lore:
+        rarity_str = str(rarity).lower()
+        if lore and rarity_str in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "legendary", "mythic", "ancient"):
             lines.append((lore, (235, 200, 110), self.font_sm))
 
         if is_held:

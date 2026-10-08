@@ -13,9 +13,9 @@
     "mp": 0,
     "mp_regen": 0.0,
     "effects": [],
-    "lore": "'A humble blade carved from sturdy timber, trusted by fledgling adventurers.'",
+    "lore": "",
     "desc": "A basic wooden sword carved from raw timber. Ideal for fending off early surface beasts.",
-    "special": "Slashing Strike"
+    "special": ""
   },
   {
     "id": "astral_wrath",

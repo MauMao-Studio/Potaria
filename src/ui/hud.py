@@ -10,7 +10,7 @@ import pygame
 from src.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, SLOT_SIZE, SLOT_PADDING,
     HOTBAR_SLOTS, INV_COLS, INV_ROWS, SCALED_TILE, COLOR_GOLD,
-    RARITY_COLORS, RARITY_COMMON
+    RARITY_COLORS, RARITY_COMMON, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT
 )
 from src.ui.inventory import ITEM_REGISTRY
 from src.rpg.skills import SKILL_DEFINITIONS
@@ -481,7 +481,18 @@ class HUD:
             lines.append((f"Use Speed: {speed_str}", (240, 230, 160), self.font_sm))
 
         if data.get("power", 0) > 0:
-            lines.append((f"Pickaxe Power: {data['power']}%", (120, 210, 255), self.font_sm))
+            iid = item.item_id.lower()
+            if "axe" in iid and "pickaxe" not in iid:
+                power_label = "Axe Power"
+            elif "pickaxe" in iid or "drill" in iid:
+                power_label = "Pickaxe Power"
+            elif "shovel" in iid or "spade" in iid:
+                power_label = "Shovel Power"
+            elif "hammer" in iid:
+                power_label = "Hammer Power"
+            else:
+                power_label = "Tool Power"
+            lines.append((f"{power_label}: {data['power']}%", (120, 210, 255), self.font_sm))
         if data.get("def", 0) > 0:
             lines.append((f"+{data['def']} Defense", (140, 230, 140), self.font_sm))
         if data.get("atk", 0) > 0:
@@ -502,20 +513,23 @@ class HUD:
         if data.get("heal", 0) > 0:
             lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
 
-        # 4. Special Effects (Bulleted for upper rarities)
+        # 4. Special Effects (Bulleted for upper rarities; suppressed for basic wooden items)
         effects = data.get("effects", [])
-        if effects:
-            for eff in effects:
-                lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
-        elif data.get("special"):
-            lines.append((f"Special: {data['special']}", (100, 240, 240), self.font_sm))
+        iid = item.item_id.lower()
+        if "wood" not in iid:
+            if effects:
+                for eff in effects:
+                    lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
+            elif data.get("special"):
+                lines.append((f"Special: {data['special']}", (100, 240, 240), self.font_sm))
 
         # 5. Usage / Description
         if data.get("desc"):
             lines.append((data["desc"], (215, 225, 240), self.font_sm))
 
-        # 6. Lore Quote (Diablo / Torchlight style)
-        if data.get("lore"):
+        # 6. Lore Quote (Diablo / Torchlight style) - Only Legendary, Mythic, Ancient
+        rarity_str = str(rarity).lower()
+        if data.get("lore") and rarity_str in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "legendary", "mythic", "ancient"):
             lines.append((data["lore"], (240, 205, 120), self.font_lore))
 
         # Calculate bounding dimensions

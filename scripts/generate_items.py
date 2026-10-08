@@ -168,7 +168,7 @@ def make_effects(rarity, cat):
     return []
 
 def make_lore(rarity):
-    if rarity in (RARITY_LEGENDARY, RARITY_ANCIENT):
+    if rarity in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT):
         return random.choice(LORE_POOLS)
     return ""
 
@@ -193,9 +193,9 @@ def generate_weapons(count=600):
             "mp": 0,
             "mp_regen": 0.0,
             "effects": [],
-            "lore": "'A humble blade carved from sturdy timber, trusted by fledgling adventurers.'",
+            "lore": "",
             "desc": "A basic wooden sword carved from raw timber. Ideal for fending off early surface beasts.",
-            "special": "Slashing Strike"
+            "special": ""
         },
         {
             "id": "astral_wrath",

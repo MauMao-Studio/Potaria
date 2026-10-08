@@ -37,6 +37,7 @@ from src.constants import (
     TILE_CORRUPT_GRASS, TILE_EBONSTONE, TILE_MUSHROOM_GRASS,
     TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_BARRIER,
     TILE_BED, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE, TILE_PROPS,
+    TILE_BEDROCK, TILE_WATER,
     CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL
 )
 from src.world.save_manager import save_world, load_world, delete_world, list_saved_worlds
@@ -1528,7 +1529,19 @@ class PotariaGame:
         active = self.inventory.get_active_item()
         equipped_weapon = getattr(self.player.equipment, "slots", {}).get(SLOT_WEAPON) if hasattr(self.player, "equipment") else None
         is_held_weapon = (active and active.data.get("cat") == CAT_WEAPON)
-        is_bare_hands_weapon = (active is None and equipped_weapon is not None)
+
+        # Check if mouse is targeting an in-reach breakable tile
+        tx, ty = self.camera.screen_to_tile(mouse_x, mouse_y)
+        tile_world_x = tx * SCALED_TILE
+        tile_world_y = ty * SCALED_TILE
+        reach = math.hypot(self.player.center_x - (tile_world_x + SCALED_TILE / 2),
+                           self.player.center_y - (tile_world_y + SCALED_TILE / 2))
+        tile_id = self.world.get_tile(tx, ty)
+        is_target_mineable = (reach <= SCALED_TILE * 5.5 and tile_id not in (TILE_AIR, TILE_BEDROCK, TILE_WATER, TILE_LEAVES))
+
+        # Bare hands can mine wood, dirt, and blocks if targeting an in-reach block.
+        # If targeting air/empty space, bare hands with an equipped paperdoll weapon performs combat attack.
+        is_bare_hands_weapon = (active is None and equipped_weapon is not None and not is_target_mineable)
         is_combat_attack = is_held_weapon or is_bare_hands_weapon
 
         if is_combat_attack:

@@ -67,57 +67,57 @@ ITEM_REGISTRY = {
         "name": "Copper Pickaxe", "cat": CAT_TOOL, "power": 12, "damage": 4, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Starter mining tool. Digs through dirt, clay, and soft copper veins.",
-        "lore": "'Every grand cavern begins with a humble chip into the dark.'",
-        "special": "12% Pickaxe Power"
+        "lore": "",
+        "special": ""
     },
     "iron_pickaxe": {
         "name": "Iron Pickaxe", "cat": CAT_TOOL, "power": 18, "damage": 6, "max_stack": 1, "tile": None,
         "rarity": RARITY_UNCOMMON,
         "desc": "Tempered iron head that swiftly breaks through dense stone and minerals.",
-        "lore": "'Heavier strike, cleaner break.'",
-        "special": "18% Pickaxe Power"
+        "lore": "",
+        "special": ""
     },
     "gold_pickaxe": {
         "name": "Gold Pickaxe", "cat": CAT_TOOL, "power": 28, "damage": 9, "max_stack": 1, "tile": None,
         "rarity": RARITY_RARE,
         "desc": "Lustrous gilded pickaxe boasting exceptional digging speed.",
-        "lore": "'Forged for royals who demand elegance even when excavating deep stone.'",
-        "special": "28% Pickaxe Power • Swift Swing"
+        "lore": "",
+        "special": ""
     },
     "wood_pickaxe": {
         "name": "Wooden Pickaxe", "cat": CAT_TOOL, "power": 8, "damage": 3, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Crude wooden pick. Slowly chips through soft earth and stone.",
-        "lore": "'Makeshift pick for desperate prospectors.'",
-        "special": "8% Pickaxe Power"
+        "lore": "",
+        "special": ""
     },
     "wood_axe": {
         "name": "Wooden Axe", "cat": CAT_TOOL, "power": 10, "damage": 5, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "A basic axe carved from raw timber. Chops down trees.",
-        "lore": "'Humble beginning for every lumberjack.'",
-        "special": "10% Axe Power"
+        "lore": "",
+        "special": ""
     },
     "copper_axe": {
         "name": "Copper Axe", "cat": CAT_TOOL, "power": 18, "damage": 8, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Sturdy forged copper axe head. Efficient woodcutter.",
-        "lore": "'Sharp enough to fell ancient trunks with ease.'",
-        "special": "18% Axe Power"
+        "lore": "",
+        "special": ""
     },
     "iron_axe": {
         "name": "Iron Axe", "cat": CAT_TOOL, "power": 26, "damage": 11, "max_stack": 1, "tile": None,
         "rarity": RARITY_UNCOMMON,
         "desc": "Hardened iron lumber axe. Swiftly fells towering trees and dense trunks.",
-        "lore": "'Honed iron that bites deep into ancient bark.'",
-        "special": "26% Axe Power • Swift Felling"
+        "lore": "",
+        "special": ""
     },
     "gold_axe": {
         "name": "Gold Axe", "cat": CAT_TOOL, "power": 38, "damage": 15, "max_stack": 1, "tile": None,
         "rarity": RARITY_RARE,
         "desc": "Lustrous gold axe with unmatched cutting velocity. Cleaves wood in seconds.",
-        "lore": "'Glides through dense timber like warm butter.'",
-        "special": "38% Axe Power • Rapid Cleave"
+        "lore": "",
+        "special": ""
     },
     "celestial_axe": {
         "name": "Celestial Axe", "cat": CAT_TOOL, "power": 65, "damage": 28, "max_stack": 1, "tile": None,
@@ -137,23 +137,24 @@ ITEM_REGISTRY = {
         "name": "Wooden Shovel", "cat": CAT_TOOL, "power": 10, "damage": 3, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Wooden scoop tool for swiftly excavating soft dirt and sand.",
-        "lore": "'Simple shovel for clearing the homestead.'",
-        "special": "10% Digging Power"
+        "lore": "",
+        "special": ""
     },
     "iron_shovel": {
         "name": "Iron Shovel", "cat": CAT_TOOL, "power": 22, "damage": 6, "max_stack": 1, "tile": None,
         "rarity": RARITY_UNCOMMON,
         "desc": "Tempered iron spade for rapid trench excavation and gravel clearing.",
-        "lore": "'Digs twice as deep in half the time.'",
-        "special": "22% Digging Power"
+        "lore": "",
+        "special": ""
     },
     "wooden_sword": {
         "name": "Wooden Sword", "cat": CAT_WEAPON, "power": 0, "damage": 7, "atk": 7, "def": 0,
         "crit": 2.0, "speed": 0.0, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "A basic wooden sword carved from raw timber. Ideal for fending off early surface beasts.",
-        "lore": "'A humble blade carved from sturdy timber, trusted by fledgling adventurers.'",
-        "special": "Slashing Strike"
+        "lore": "",
+        "effects": [],
+        "special": ""
     },
     "copper_shortsword": {
         "name": "Spud Shortsword", "cat": CAT_WEAPON, "power": 0, "damage": 9, "max_stack": 1, "tile": None,
@@ -259,8 +260,8 @@ ITEM_REGISTRY = {
         "name": "Wood Bow", "cat": CAT_WEAPON, "power": 0, "damage": 8, "max_stack": 1, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Simple wooden bow. Consumes arrows from your backpack when fired.",
-        "lore": "'Supple willow branch strung with tough twine.'",
-        "special": "Fires Wooden & Frostburn Arrows"
+        "lore": "",
+        "special": ""
     },
     "bone_bow": {
         "name": "Bone Recurve Bow", "cat": CAT_WEAPON, "power": 0, "damage": 16, "max_stack": 1, "tile": None,
@@ -352,8 +353,8 @@ ITEM_REGISTRY = {
         "name": "Wooden Arrow", "cat": CAT_MATERIAL, "power": 0, "damage": 5, "max_stack": 999, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Standard bow ammunition crafted from wood and stone.",
-        "lore": "'Flies true when aimed with steady potato hands.'",
-        "special": "Ranged Ammunition"
+        "lore": "",
+        "special": ""
     },
     "frostburn_arrow": {
         "name": "Frostburn Arrow", "cat": CAT_MATERIAL, "power": 0, "damage": 10, "max_stack": 999, "tile": None,
@@ -1323,6 +1324,13 @@ def load_custom_items():
                     effs = w.get("effects", [])
                     special_str = " • ".join(effs) if effs else w.get("special", "")
                     rarity = w.get("rarity", RARITY_COMMON)
+                    lore = w.get("lore", "")
+                    if rarity not in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT):
+                        lore = ""
+                    if "wood" in item_id:
+                        effs = []
+                        special_str = ""
+                        lore = ""
                     ITEM_REGISTRY[item_id] = {
                         "name": w["name"],
                         "cat": CAT_WEAPON,
@@ -1340,7 +1348,7 @@ def load_custom_items():
                         "rarity": rarity,
                         "color": w.get("color", RARITY_HEX_COLORS.get(rarity, "#9E9E9E")),
                         "desc": w.get("desc", f"A {rarity.title()} weapon forged in Potaria."),
-                        "lore": w.get("lore", ""),
+                        "lore": lore,
                         "effects": effs,
                         "special": special_str,
                     }
@@ -1362,6 +1370,13 @@ def load_custom_items():
                     effs = eq.get("effects", [])
                     special_str = " • ".join(effs) if effs else eq.get("special", "")
                     rarity = eq.get("rarity", RARITY_COMMON)
+                    lore = eq.get("lore", "")
+                    if rarity not in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT):
+                        lore = ""
+                    if "wood" in item_id:
+                        effs = []
+                        special_str = ""
+                        lore = ""
                     ITEM_REGISTRY[item_id] = {
                         "name": eq["name"],
                         "cat": cat_str,
@@ -1379,7 +1394,7 @@ def load_custom_items():
                         "rarity": rarity,
                         "color": eq.get("color", RARITY_HEX_COLORS.get(rarity, "#9E9E9E")),
                         "desc": eq.get("desc", f"A {rarity.title()} {c} piece."),
-                        "lore": eq.get("lore", ""),
+                        "lore": lore,
                         "effects": effs,
                         "special": special_str,
                     }
