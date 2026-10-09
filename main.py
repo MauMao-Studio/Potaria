@@ -1323,21 +1323,56 @@ class PotariaGame:
                     self.camera.add_shake(8.0, 0.5)
                 return
 
-            # 0d. Wooden Bed: Set Respawn Point & Rest Healing
+            # 0d. Wooden Bed: Set Respawn Point & Sleep / Rest Healing
             if t_id == TILE_BED:
                 bed_spawn_x = tile_world_x
                 bed_spawn_y = tile_world_y - SCALED_TILE
                 self.player.spawn_point = (bed_spawn_x, bed_spawn_y)
                 self.world.spawn_point = (bed_spawn_x, bed_spawn_y)
-                self.player.is_resting = not self.player.is_resting
-                if self.player.is_resting:
-                    self.player.resting_bed_pos = (tx, ty)
-                    self.sound_manager.play("place")
-                    self.particle_system.spawn_sparks(tile_world_x + 16, tile_world_y + 8, (120, 200, 255), count=25)
-                    self.inventory.notify("Spawn point set! Resting in bed... (+HP)")
-                else:
+
+                # If already resting, toggle wake up
+                if getattr(self.player, "is_resting", False):
+                    self.player.is_resting = False
                     self.player.resting_bed_pos = None
                     self.inventory.notify("Woke up from bed.")
+                    return
+
+                # Check daytime / nighttime restriction
+                if not getattr(self.sky, "is_night", False):
+                    self.inventory.notify("You can only sleep at night")
+                    return
+
+                # Check monsters within 6 blocks radius (6 * SCALED_TILE)
+                radius = 6 * SCALED_TILE
+                nearby_enemy = False
+                bed_center_x = tile_world_x + SCALED_TILE / 2
+                bed_center_y = tile_world_y + SCALED_TILE / 2
+
+                for mob in getattr(self.combat, "mobs", []):
+                    if getattr(mob, "is_alive", True) and not getattr(mob, "is_dead", False):
+                        dist_player = math.hypot(mob.center_x - self.player.center_x, mob.center_y - self.player.center_y)
+                        dist_bed = math.hypot(mob.center_x - bed_center_x, mob.center_y - bed_center_y)
+                        if dist_player <= radius or dist_bed <= radius:
+                            nearby_enemy = True
+                            break
+
+                if not nearby_enemy and getattr(self.combat, "boss", None):
+                    boss = self.combat.boss
+                    if getattr(boss, "is_alive", True) and not getattr(boss, "is_dead", False):
+                        dist_player = math.hypot(boss.center_x - self.player.center_x, boss.center_y - self.player.center_y)
+                        dist_bed = math.hypot(boss.center_x - bed_center_x, boss.center_y - bed_center_y)
+                        if dist_player <= radius or dist_bed <= radius:
+                            nearby_enemy = True
+
+                if nearby_enemy:
+                    self.inventory.notify("You cannot sleep now, monsters are nearby within 6 blocks!")
+                    return
+
+                self.player.is_resting = True
+                self.player.resting_bed_pos = (tx, ty)
+                self.sound_manager.play("place")
+                self.particle_system.spawn_sparks(tile_world_x + 16, tile_world_y + 8, (120, 200, 255), count=25)
+                self.inventory.notify("Spawn point set! Resting in bed... (+HP)")
                 return
 
             # 0e. Grandfather Clock: Display Time
@@ -2114,6 +2149,19 @@ class PotariaGame:
         # 6. Day/Night Environment
         self.profiler.start_section("update_other")
         self.sky.update(dt)
+
+        # Sleeping fast-forwards through night until morning
+        if getattr(self.player, "is_resting", False):
+            if getattr(self.sky, "is_night", False):
+                self.sky.update(dt * 6.0)
+            if not getattr(self.sky, "is_night", False):
+                self.player.is_resting = False
+                self.player.resting_bed_pos = None
+                self.player.health = self.player.max_health
+                if hasattr(self.player, "stats"):
+                    self.player.stats.hp = self.player.stats.max_hp
+                    self.player.stats.mp = getattr(self.player.stats, "max_mp", 100)
+                self.inventory.notify("Morning has broken! Woke up refreshed.")
 
         self.profiler.end_section("update_other")
         # 7. Combat, Mobs & Boss

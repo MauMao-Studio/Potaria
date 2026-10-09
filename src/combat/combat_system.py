@@ -104,6 +104,7 @@ class CombatManager:
         
         self.mob_spawn_timer = 0.0
         self.max_mobs = 12
+        self.nightly_elite_spawned = False
         self.ancient_drop_banner = None
 
         self.arrow_sprite = self.asset_factory.projectiles.get("wooden_arrow", self.asset_factory.items.get("wooden_arrow"))
@@ -874,6 +875,14 @@ class CombatManager:
                 if len(self.mobs) < effective_max_mobs:
                     self._spawn_natural_mob(world, player, is_night, tod)
 
+            # Nightly Elite Enemy ("Champion of the Night") - spawns once per night on the surface
+            if not is_night:
+                self.nightly_elite_spawned = False
+            elif is_night and not self.nightly_elite_spawned and not self.is_client:
+                player_ty = int(player.y // SCALED_TILE)
+                if player_ty < 115:  # Overworld surface
+                    self._spawn_nightly_elite(world, player)
+
     def trigger_weapon_swing_effects(self, player, mouse_wx, mouse_wy, active_item=None):
         """Spawns projectiles and shockwaves for weapon swing effects."""
         effects = []
@@ -1223,6 +1232,40 @@ class CombatManager:
         self.particle_system.spawn_sparks(mx, my, (255, 215, 60), count=80)
         self.particle_system.spawn_debris(mx, my, (245, 60, 75), count=40)
 
+    def _spawn_nightly_elite(self, world, player):
+        """Spawns exactly one slightly bigger Champion of the Night with boosted stats & special skill once per night."""
+        if self.nightly_elite_spawned:
+            return
+
+        # Determine surface ground position within 350-500px from player
+        side = random.choice([-1, 1])
+        spawn_px = player.center_x + side * random.randint(350, 500)
+        spawn_tx = int(spawn_px // SCALED_TILE)
+
+        # Scan for surface ground level
+        ground_ty = None
+        for ty in range(25, 110):
+            if hasattr(world, "is_tile_solid") and world.is_tile_solid(spawn_tx, ty):
+                ground_ty = ty
+                break
+
+        if ground_ty is None:
+            ground_ty = max(30, int(player.y // SCALED_TILE))
+
+        spawn_x = spawn_tx * SCALED_TILE
+        spawn_y = (ground_ty - 2) * SCALED_TILE
+
+        from src.entities.mob import NightEliteMob
+        elite = NightEliteMob(spawn_x, spawn_y, self.asset_factory)
+        if hasattr(player, "stats"):
+            elite.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0))
+
+        self.spawn_mob(elite, player=player)
+        self.nightly_elite_spawned = True
+        print(f"[Combat] A Champion of the Night has arisen: {elite.name}!")
+        if self.sound_manager:
+            self.sound_manager.play("hurt")
+
     def _spawn_natural_mob(self, world, player, is_night, time_of_day=None):
         if time_of_day is None:
             time_of_day = getattr(world, "time_of_day", 0.75 if is_night else 0.25)
@@ -1288,10 +1331,9 @@ class CombatManager:
         spawn_y = (ground_ty - 1) * SCALED_TILE
         biome = world.get_biome_at(spawn_tx, ground_ty)
 
-        # Rare roaming mini-boss encounter in deep caverns or surface biomes at night (1 in 40 chance)
-        is_subterranean = (ground_ty > 130)
-        is_surface_night = (is_night and ground_ty < 85 and biome in (BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION))
-        if not self.boss and not self.grand_boss_defeated and (is_subterranean or is_surface_night) and random.random() < 0.025:
+        # Rare roaming mini-boss encounter strictly underground in subterranean dungeons or deep caverns (never on surface)
+        is_subterranean = (ground_ty >= 115 and (ground_ty > 130 or biome == BIOME_DUNGEON))
+        if not self.boss and not self.grand_boss_defeated and is_subterranean and random.random() < 0.025:
             from src.entities.boss import IgnisColossus, CryoSpud, NecroTuber, LordMalus
             if biome == BIOME_DESERT:
                 self.boss = IgnisColossus(spawn_x, spawn_y, self.asset_factory, self.sound_manager)
@@ -1302,7 +1344,7 @@ class CombatManager:
             else:
                 self.boss = LordMalus(spawn_x, spawn_y, self.asset_factory, self.sound_manager)
             self.sound_manager.play("craft")
-            print(f"[Combat] A roaming mini-boss has emerged in {biome.title()}: {self.boss.name}!")
+            print(f"[Combat] A subterranean mini-boss has emerged in {biome.title()}: {self.boss.name}!")
             return
 
         # Biome-appropriate enemy spawns

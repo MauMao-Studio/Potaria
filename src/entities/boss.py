@@ -78,7 +78,7 @@ class BossProjectile:
 # ==============================================================================
 class DungeonMiniBoss:
     """Base class for subterranean dungeon mini-boss encounters."""
-    def __init__(self, x, y, asset_factory, sound_manager, name, max_hp, damage, sprite_key, proj_key):
+    def __init__(self, x, y, asset_factory, sound_manager, name, max_hp, damage, sprite_key, proj_key, defense=16):
         self.x = float(x)
         self.y = float(y)
         self.width = 96
@@ -87,6 +87,8 @@ class DungeonMiniBoss:
         self.hp = max_hp
         self.display_hp = float(max_hp)
         self.damage = damage
+        self.defense = defense
+        self.base_defense = defense
         self.name = name
         self.is_mini_boss = True
         self.boss_type = "dungeon_mini_boss"
@@ -102,14 +104,14 @@ class DungeonMiniBoss:
         self.frame_idx = 0
         self.anim_timer = 0.0
         self.state = "hover"
-        self.state_timer = 2.5
+        self.state_timer = 2.0
         self.vx = 0.0
         self.vy = 0.0
         self.is_dead = False
         self.hurt_timer = 0.0
         self.phase = 1
         self.projectiles = []
-        self.attack_cooldown = 1.6
+        self.attack_cooldown = 1.1
 
         # Status Effects (Burn & Bleed DoT)
         self.burn_timer = 0.0
@@ -143,7 +145,7 @@ class DungeonMiniBoss:
                 self.dot_tick_timer = 0.0
                 total_dot = (self.burn_dps if self.burn_dps > 0 else 0) + (self.bleed_dps if self.bleed_dps > 0 else 0)
                 if total_dot > 0:
-                    self.take_damage(total_dot)
+                    self.take_damage(total_dot, ignore_defense=True)
 
     @property
     def rect(self):
@@ -167,17 +169,21 @@ class DungeonMiniBoss:
     def alive(self):
         return not self.is_dead and self.hp > 0
 
-    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=0.0):
+    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=0.0, ignore_defense=False):
         if self.is_dead:
             return False
-        self.hp -= amount
+        if not ignore_defense and getattr(self, "defense", 0) > 0:
+            effective_dmg = max(1, int(amount - self.defense))
+        else:
+            effective_dmg = max(1, int(amount))
+        self.hp -= effective_dmg
         self.hurt_timer = 0.15
         self.vx += knockback_vx * 0.15
         self.vy += knockback_vy * 0.15
 
         if self.hp <= self.max_hp * 0.5 and self.phase == 1:
             self.phase = 2
-            self.attack_cooldown = 0.95
+            self.attack_cooldown = 0.70
 
         if self.hp <= 0:
             self.hp = 0
@@ -211,17 +217,17 @@ class DungeonMiniBoss:
             self.vy *= 0.92
 
             if self.attack_cooldown <= 0:
-                self.attack_cooldown = 1.6 if self.phase == 1 else 0.95
+                self.attack_cooldown = 1.1 if self.phase == 1 else 0.70
                 self._cast_attack(player, particle_system)
 
             if self.state_timer <= 0:
                 self.state = "charge"
                 self.state_timer = 1.3
-                charge_speed = 6.8 if self.phase == 1 else 8.8
+                charge_speed = 8.5 if self.phase == 1 else 11.0
                 angle = math.atan2(dist_y, dist_x)
                 self.vx = math.cos(angle) * charge_speed
                 self.vy = math.sin(angle) * charge_speed
-                camera.add_shake(4.0, 0.3)
+                camera.add_shake(5.0, 0.35)
 
         elif self.state == "charge":
             self.vx *= 0.98
@@ -357,8 +363,9 @@ class LordMalus(DungeonMiniBoss):
     def __init__(self, x, y, asset_factory, sound_manager):
         super().__init__(x, y, asset_factory, sound_manager,
                          name="Lord Malus - The Blight-Bringer",
-                         max_hp=450, damage=22,
-                         sprite_key="lord_malus", proj_key="fireball")
+                         max_hp=900, damage=38,
+                         sprite_key="lord_malus", proj_key="fireball",
+                         defense=16)
         self.boss_type = "lord_malus"
 
     def _trail_color(self):
@@ -369,8 +376,9 @@ class IgnisColossus(DungeonMiniBoss):
     def __init__(self, x, y, asset_factory, sound_manager):
         super().__init__(x, y, asset_factory, sound_manager,
                          name="Ignis Colossus - The Magma Golem",
-                         max_hp=500, damage=26,
-                         sprite_key="ignis_colossus", proj_key="magma_bomb")
+                         max_hp=1100, damage=44,
+                         sprite_key="ignis_colossus", proj_key="magma_bomb",
+                         defense=22)
         self.boss_type = "ignis_colossus"
 
     def _trail_color(self):
@@ -381,8 +389,9 @@ class CryoSpud(DungeonMiniBoss):
     def __init__(self, x, y, asset_factory, sound_manager):
         super().__init__(x, y, asset_factory, sound_manager,
                          name="Cryo-Spud - The Glacial Terror",
-                         max_hp=460, damage=20,
-                         sprite_key="cryo_spud", proj_key="frost_shard")
+                         max_hp=950, damage=36,
+                         sprite_key="cryo_spud", proj_key="frost_shard",
+                         defense=18)
         self.boss_type = "cryo_spud"
 
     def _trail_color(self):
@@ -393,8 +402,9 @@ class NecroTuber(DungeonMiniBoss):
     def __init__(self, x, y, asset_factory, sound_manager):
         super().__init__(x, y, asset_factory, sound_manager,
                          name="Necro-Tuber - Lord of Bones",
-                         max_hp=440, damage=24,
-                         sprite_key="necro_tuber", proj_key="ghost_skull")
+                         max_hp=880, damage=40,
+                         sprite_key="necro_tuber", proj_key="ghost_skull",
+                         defense=15)
         self.boss_type = "necro_tuber"
 
     def _trail_color(self):
@@ -429,7 +439,9 @@ class GrandBossSolRho:
         self.max_hp = self.p1_max_hp
         self.hp = self.max_hp
         self.display_hp = float(self.max_hp)
-        self.damage = 30 + int((self.party_size - 1) * 4)
+        self.damage = 52 + int((self.party_size - 1) * 6)
+        self.defense = 28
+        self.base_defense = 28
 
         self.name = "Sol-Rho - The Celestial Titan"
         self.frect = pygame.FRect(self.x, self.y, self.width, self.height)
@@ -455,8 +467,8 @@ class GrandBossSolRho:
         self.is_transforming = False
         self.transform_timer = 0.0
         self.state = "float"  # float, solar_beam, meteor_rain, singularity_cast, blitz
-        self.state_timer = 3.0
-        self.attack_cooldown = 1.4
+        self.state_timer = 2.4
+        self.attack_cooldown = 1.1
 
         self.vx = 0.0
         self.vy = 0.0
@@ -497,7 +509,7 @@ class GrandBossSolRho:
                 self.dot_tick_timer = 0.0
                 total_dot = (self.burn_dps if self.burn_dps > 0 else 0) + (self.bleed_dps if self.bleed_dps > 0 else 0)
                 if total_dot > 0:
-                    self.take_damage(total_dot)
+                    self.take_damage(total_dot, ignore_defense=True)
 
     @property
     def rect(self):
@@ -521,11 +533,16 @@ class GrandBossSolRho:
     def alive(self):
         return not self.is_dead and not self.grand_boss_defeated
 
-    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=0.0):
+    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=0.0, ignore_defense=False):
         if self.is_dead or self.is_transforming:
             return False
 
-        self.hp -= amount
+        if not ignore_defense and getattr(self, "defense", 0) > 0:
+            effective_dmg = max(1, int(amount - self.defense))
+        else:
+            effective_dmg = max(1, int(amount))
+
+        self.hp -= effective_dmg
         self.hurt_timer = 0.15
         self.vx += knockback_vx * 0.08
         self.vy += knockback_vy * 0.08
@@ -573,10 +590,11 @@ class GrandBossSolRho:
                 self.max_hp = self.p2_max_hp
                 self.hp = self.p2_max_hp
                 self.display_hp = float(self.p2_max_hp)
-                self.damage += 8
+                self.damage = 72 + int((self.party_size - 1) * 8)
+                self.defense = 40
                 self.state = "float"
-                self.state_timer = 2.5
-                self.attack_cooldown = 1.0
+                self.state_timer = 2.0
+                self.attack_cooldown = 0.85
                 camera.add_shake(18.0, 0.8)
                 self.sound_manager.play("hurt")
             return
@@ -607,16 +625,16 @@ class GrandBossSolRho:
                 self.vy *= 0.92
 
                 if self.attack_cooldown <= 0:
-                    self.attack_cooldown = 1.5 / (1.0 + (self.party_size - 1) * 0.2)
+                    self.attack_cooldown = 1.0 / (1.0 + (self.party_size - 1) * 0.2)
                     self._cast_solar_orbs(player, particle_system)
 
                 if self.state_timer <= 0:
                     self.state = "dive"
                     self.state_timer = 1.4
                     ang = math.atan2(dist_y, dist_x)
-                    self.vx = math.cos(ang) * 9.5
-                    self.vy = math.sin(ang) * 9.5
-                    camera.add_shake(6.0, 0.3)
+                    self.vx = math.cos(ang) * 13.0
+                    self.vy = math.sin(ang) * 13.0
+                    camera.add_shake(7.0, 0.35)
 
             elif self.state == "dive":
                 self.vx *= 0.98
@@ -624,7 +642,7 @@ class GrandBossSolRho:
                 particle_system.spawn_debris(self.center_x, self.center_y, (255, 215, 0), count=3)
                 if self.state_timer <= 0:
                     self.state = "float"
-                    self.state_timer = random.uniform(2.5, 3.8)
+                    self.state_timer = random.uniform(2.0, 3.2)
 
         # ==========================================
         # PHASE 2 AI: AWAKENED VOID GOD
@@ -639,7 +657,7 @@ class GrandBossSolRho:
                 self.vy *= 0.93
 
                 if self.attack_cooldown <= 0:
-                    self.attack_cooldown = 1.1 / (1.0 + (self.party_size - 1) * 0.25)
+                    self.attack_cooldown = 0.8 / (1.0 + (self.party_size - 1) * 0.25)
                     r_atk = random.random()
                     if r_atk < 0.45:
                         self._cast_void_meteors(player, particle_system, camera)

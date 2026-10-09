@@ -106,7 +106,7 @@ class Mob:
                 self.dot_tick_timer = 0.0
                 total_dot = (self.burn_dps if self.burn_dps > 0 else 0) + (self.bleed_dps if self.bleed_dps > 0 else 0)
                 if total_dot > 0:
-                    self.take_damage(total_dot)
+                    self.take_damage(total_dot, ignore_defense=True)
 
     @property
     def rect(self):
@@ -1025,6 +1025,224 @@ class DiggerMob(Mob):
         self.render_health_bar(target_surf, camera)
 
 
+# =============================================================================
+# 11. NIGHTLY ELITE: CHAMPION OF THE NIGHT
+# =============================================================================
+class NightEliteMob(Mob):
+    """
+    Champion of the Night - Formidable nightly elite mob spawning once per night.
+    Features:
+    - 1.4x scaled sprite size.
+    - Boosted stats: ~160-220 HP, 22 damage, 8 defense (well below boss tiers).
+    - Signature special skills: Leap Slam shockwave & Shadow Bolt void projectile.
+    - Distinctive pulsating violet aura and Champion crown emblem.
+    """
+    def __init__(self, x, y, asset_factory, archetype=None):
+        self.asset_factory = asset_factory
+        archetypes = ["zombie", "skeleton", "purple_slime", "demon_eye", "shadow_crawler"]
+        if archetype is None or archetype not in archetypes:
+            archetype = random.choice(archetypes)
+        self.archetype = archetype
+
+        if archetype == "zombie":
+            base_w, base_h = 28, 44
+            sprite_key = "zombie"
+            title = "Dread Walker"
+            base_hp = 180
+            dmg = 22
+            def_stat = 7
+        elif archetype == "skeleton":
+            base_w, base_h = 28, 44
+            sprite_key = "skeleton"
+            title = "Bone Warden"
+            base_hp = 160
+            dmg = 24
+            def_stat = 6
+        elif archetype == "demon_eye":
+            base_w, base_h = 32, 32
+            sprite_key = "demon_eye"
+            title = "Abyssal Gazer"
+            base_hp = 150
+            dmg = 20
+            def_stat = 5
+        elif archetype == "shadow_crawler":
+            base_w, base_h = 34, 24
+            sprite_key = "shadow_crawler"
+            title = "Void Stalker"
+            base_hp = 170
+            dmg = 23
+            def_stat = 8
+        else: # purple_slime
+            base_w, base_h = 30, 24
+            sprite_key = "purple_slime"
+            title = "Colossal Amethyst Slime"
+            base_hp = 200
+            dmg = 19
+            def_stat = 6
+
+        scale = 1.4
+        width = int(base_w * scale)
+        height = int(base_h * scale)
+        name = f"Champion of the Night - {title}"
+
+        super().__init__(x, y, width=width, height=height, max_hp=base_hp, damage=dmg, name=name, defense=def_stat)
+        self.mob_type = "night_elite"
+        self.is_night_elite = True
+
+        raw_frames = asset_factory.mobs.get(sprite_key, asset_factory.mobs.get("zombie", []))
+        if not raw_frames:
+            raw_frames = [pygame.Surface((base_w, base_h))]
+            raw_frames[0].fill((150, 40, 220))
+        self.frames = [pygame.transform.scale(f, (self.width, self.height)) for f in raw_frames]
+        self.frame_idx = 0
+        self.anim_timer = 0.0
+
+        # Special Skills & Aura
+        self.skill_cooldown = 3.5
+        self.leap_slam_active = False
+        self.aura_phase = 0.0
+
+    def update(self, dt, world, player):
+        if self.is_dead:
+            return
+
+        if self.hurt_timer > 0:
+            self.hurt_timer -= dt
+        if self.hp_bar_timer > 0:
+            self.hp_bar_timer -= dt
+
+        self.update_dots(dt)
+        if self.is_dead:
+            return
+
+        self.aura_phase = (self.aura_phase + dt * 4.5) % 6.28
+        self.skill_cooldown -= dt
+
+        dist_x = player.center_x - self.center_x
+        dist_y = player.center_y - self.center_y
+        dist = math.hypot(dist_x, dist_y)
+
+        # AI & Special Skill execution
+        if self.archetype == "demon_eye":
+            # Flying swooping movement
+            self.vy = min(4.0, max(-4.0, self.vy + (0.15 if dist_y > 0 else -0.15)))
+            self.vx = min(4.5, max(-4.5, self.vx + (0.2 if dist_x > 0 else -0.2)))
+            self.x += self.vx
+            self.y += self.vy
+            self.facing_right = (self.vx >= 0)
+        else:
+            # Ground humanoid / slime movement
+            self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
+            move_dir = 1.0 if dist_x > 0 else -1.0
+            self.facing_right = (dist_x >= 0)
+
+            if not self.leap_slam_active:
+                self.vx = move_dir * 2.2
+
+            # Obstacle hopping
+            front_tile_x = int((self.center_x + move_dir * (self.width / 2 + 8)) // SCALED_TILE)
+            front_tile_y = int((self.y + self.height - 4) // SCALED_TILE)
+            if hasattr(world, "is_tile_solid") and world.is_tile_solid(front_tile_x, front_tile_y) and self.on_ground:
+                self.vy = -6.5
+                self.on_ground = False
+
+        # Skill 1: Leap Slam (when grounded and within 260px)
+        if self.skill_cooldown <= 0 and self.archetype != "demon_eye" and self.on_ground and dist < 260.0:
+            self.vy = -7.8
+            self.vx = (1.0 if dist_x > 0 else -1.0) * 5.5
+            self.on_ground = False
+            self.leap_slam_active = True
+            self.skill_cooldown = 4.5
+
+        # Skill 2: Shadow Bolt (arcing void projectile when in range 120-460px)
+        elif self.skill_cooldown <= 0 and 120.0 <= dist <= 460.0:
+            from src.entities.projectile import MobSpitProjectile
+            spit_vx = (1.0 if dist_x > 0 else -1.0) * min(7.5, max(3.5, abs(dist_x) * 0.024))
+            spit_vy = -6.0 + min(1.5, dist_y * 0.02)
+            self.pending_projectiles.append(
+                MobSpitProjectile(self.center_x, self.center_y - 8, spit_vx, spit_vy,
+                                  damage=int(self.damage * 0.85), color=(175, 45, 235), radius=7)
+            )
+            self.skill_cooldown = 4.0
+
+        # Resolve Leap Slam impact shockwave upon landing
+        was_in_air = self.leap_slam_active
+        if self.archetype != "demon_eye":
+            self.y += self.vy
+            solids_y = world.get_solid_rects_in_bounds(self.rect)
+            self.on_ground = False
+            for tile_rect, is_platform in solids_y:
+                if self.rect.colliderect(tile_rect):
+                    if self.vy > 0 and self.y + self.height - self.vy <= tile_rect.top + 8:
+                        self.y = tile_rect.top - self.height
+                        self.vy = 0
+                        self.on_ground = True
+                        if was_in_air:
+                            self.leap_slam_active = False
+                            # Shockwave impact on player if nearby
+                            if dist < 70.0:
+                                player.take_damage(self.damage, knockback_vx=(3.5 if dist_x > 0 else -3.5), knockback_vy=-3.5)
+                        break
+                    elif not is_platform and self.vy < 0:
+                        self.y = tile_rect.bottom
+                        self.vy = 0
+                        break
+
+            self.x += self.vx
+            solids_x = world.get_solid_rects_in_bounds(self.rect)
+            for tile_rect, is_platform in solids_x:
+                if not is_platform and self.rect.colliderect(tile_rect):
+                    if self.vx > 0:
+                        self.x = tile_rect.left - self.width
+                    elif self.vx < 0:
+                        self.x = tile_rect.right
+                    self.vx = 0
+                    break
+
+        self.anim_timer += dt
+        if self.anim_timer >= 0.16:
+            self.anim_timer = 0.0
+            self.frame_idx = (self.frame_idx + 1) % len(self.frames)
+
+    def render(self, target_surf, camera):
+        if self.is_dead:
+            return
+        sx, sy = camera.world_to_screen(self.x, self.y)
+        cx, cy = sx + self.width // 2, sy + self.height // 2
+
+        # Pulsing Void Violet Aura
+        pulse_r = int(self.width * 0.65 + math.sin(self.aura_phase) * 5)
+        aura_surf = pygame.Surface((pulse_r * 2, pulse_r * 2), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (150, 40, 220, 60), (pulse_r, pulse_r), pulse_r)
+        pygame.draw.circle(aura_surf, (220, 80, 255, 110), (pulse_r, pulse_r), max(2, pulse_r - 6), 2)
+        target_surf.blit(aura_surf, (cx - pulse_r, cy - pulse_r))
+
+        cur_surf = self.frames[self.frame_idx]
+        if not self.facing_right:
+            cur_surf = pygame.transform.flip(cur_surf, True, False)
+        if self.hurt_timer > 0:
+            tinted = cur_surf.copy()
+            tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
+            cur_surf = tinted
+        target_surf.blit(cur_surf, (sx, sy))
+
+        # Elite Champion health bar & banner
+        bar_w = self.width + 12
+        bar_h = 5
+        bar_x = cx - bar_w // 2
+        bar_y = sy - 14
+        pct = max(0.0, min(1.0, self.hp / self.max_hp))
+        pygame.draw.rect(target_surf, (30, 20, 45), (bar_x, bar_y, bar_w, bar_h))
+        pygame.draw.rect(target_surf, (180, 50, 240), (bar_x, bar_y, int(bar_w * pct), bar_h))
+        pygame.draw.rect(target_surf, (255, 215, 0), (bar_x, bar_y, bar_w, bar_h), 1)
+
+        # Miniature crown / elite crest
+        pygame.draw.polygon(target_surf, (255, 215, 0), [
+            (cx - 5, bar_y - 2), (cx - 7, bar_y - 6), (cx - 3, bar_y - 4),
+            (cx, bar_y - 8), (cx + 3, bar_y - 4), (cx + 7, bar_y - 6), (cx + 5, bar_y - 2)
+        ])
+
+
 MOB_TYPE_REGISTRY = {
     "green_slime": GreenSlime,
     "purple_slime": PurpleSlime,
@@ -1044,14 +1262,18 @@ MOB_TYPE_REGISTRY = {
     "rock_zombie": RockZombie,
     "shield_weaver": ShieldWeaver,
     "digger": DiggerMob,
+    "night_elite": NightEliteMob,
+    "night_champion": NightEliteMob,
 }
 
 CLASS_TO_MOB_TYPE = {cls: k for k, cls in MOB_TYPE_REGISTRY.items()}
 CLASS_TO_MOB_TYPE[DemonEye] = "demon_eye"
+CLASS_TO_MOB_TYPE[NightEliteMob] = "night_elite"
 NightGazer = DemonEye
 
 def create_mob_by_type(mob_type, x, y, asset_factory):
     """Factory creating an authoritative or synced mob instance by its string identifier."""
     cls = MOB_TYPE_REGISTRY.get(mob_type, GreenSlime)
     return cls(x, y, asset_factory)
+
 
