@@ -14,6 +14,7 @@ from src.constants import (
     WORLD_TYPE_INFINITE, WORLD_TYPE_FINITE
 )
 from src.rpg.equipment import SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_WEAPON, SLOT_ACCESSORY
+from src.ui.inventory import ItemStack
 
 SAVES_DIR = "saves"
 
@@ -95,7 +96,25 @@ def save_world(world_name, game):
             })
 
     # 2. Equipment serialization
-    equip_data = dict(getattr(game.player.equipment, "slots", {}))
+    raw_equip = dict(getattr(game.player.equipment, "slots", {}))
+    equip_data = {}
+    for slot_k, item in raw_equip.items():
+        if item is None:
+            equip_data[slot_k] = None
+        elif isinstance(item, str):
+            equip_data[slot_k] = item
+        elif hasattr(item, "item_id"):
+            equip_data[slot_k] = {
+                "item_id": item.item_id,
+                "count": item.count,
+                "enhancement_level": getattr(item, "enhancement_level", 0),
+                "is_broken": getattr(item, "is_broken", False),
+                "affix_slots": getattr(item, "affix_slots", 0),
+                "affixes": getattr(item, "affixes", []),
+                "removed_stats": getattr(item, "removed_stats", []),
+            }
+        else:
+            equip_data[slot_k] = None
 
     # 3. Skills serialization
     learned_skills = []
@@ -341,7 +360,17 @@ def load_world(world_name, game):
     # 5. Restore Equipment (Guarantee all 5 slots exist)
     equip_data = p_data.get("equipment") or {}
     for slot_k in (SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_WEAPON, SLOT_ACCESSORY):
-        game.player.equipment.slots[slot_k] = equip_data.get(slot_k, None)
+        raw_val = equip_data.get(slot_k, None)
+        if isinstance(raw_val, dict) and "item_id" in raw_val:
+            item = ItemStack(raw_val["item_id"], raw_val.get("count", 1))
+            item.enhancement_level = raw_val.get("enhancement_level", 0)
+            item.is_broken = raw_val.get("is_broken", False)
+            item.affix_slots = raw_val.get("affix_slots", 0)
+            item.affixes = list(raw_val.get("affixes", []))
+            item.removed_stats = list(raw_val.get("removed_stats", []))
+            game.player.equipment.slots[slot_k] = item
+        else:
+            game.player.equipment.slots[slot_k] = raw_val
     game.player.equipment.recalculate_stats(game.player.stats)
 
     # 6. Restore Skills

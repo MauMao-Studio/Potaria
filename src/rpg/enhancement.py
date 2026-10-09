@@ -284,11 +284,15 @@ def apply_affix_stone(item, inventory, sound_manager=None):
     if len(current_affixes) >= total_slots:
         return False, f"No open Affix Slots available! (Affixes: {len(current_affixes)}/{total_slots}). Visit the Mystic Trader to carve a slot."
 
-    if inventory.count_item("affix_stone") < 1:
+    if getattr(inventory, "held_item", None) and inventory.held_item.item_id == "affix_stone":
+        inventory.held_item.count -= 1
+        if inventory.held_item.count <= 0:
+            inventory.held_item = None
+    elif inventory.count_item("affix_stone") < 1:
         return False, "You do not possess an Affix Stone! Craft one at a Work Bench."
-
-    # Deduct 1 Affix Stone
-    inventory.remove_item("affix_stone", 1)
+    else:
+        # Deduct 1 Affix Stone from inventory
+        inventory.remove_item("affix_stone", 1)
 
     # Pick an affix not already present on the item
     available = [a for a in GOD_TIER_AFFIXES.keys() if a not in current_affixes]

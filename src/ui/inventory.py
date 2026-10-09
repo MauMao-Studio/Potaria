@@ -1507,6 +1507,18 @@ class ItemStack:
         self.affixes = list(affixes) if affixes else []
         self.removed_stats = list(removed_stats) if removed_stats else []
 
+    def clone(self, count=None):
+        """Creates an independent clone of this ItemStack with all enhancement and affix metadata intact."""
+        return ItemStack(
+            self.item_id,
+            self.count if count is None else int(count),
+            enhancement_level=self.enhancement_level,
+            is_broken=self.is_broken,
+            affix_slots=self.affix_slots,
+            affixes=list(self.affixes),
+            removed_stats=list(self.removed_stats)
+        )
+
     @property
     def data(self):
         canon = ITEM_ALIASES.get(self.item_id, self.item_id)
@@ -1526,6 +1538,8 @@ class ItemStack:
                 d["def"] = int(round(d["def"] * mult))
             if "hp" in d and d["hp"] > 0:
                 d["hp"] = int(round(d["hp"] * mult))
+            if "mp" in d and d["mp"] > 0:
+                d["mp"] = int(round(d["mp"] * mult))
             if "crit" in d and d["crit"] > 0:
                 d["crit"] = round(d["crit"] * mult, 1)
             if "speed" in d and d["speed"] > 0:
@@ -1537,11 +1551,19 @@ class ItemStack:
             d["damage"] = 0
             d["atk"] = 0
             d["def"] = 0
+            d["hp"] = 0
+            d["mp"] = 0
+            d["crit"] = 0.0
+            d["speed"] = 0.0
 
         if self.removed_stats:
             for s in self.removed_stats:
                 if s in d:
                     d[s] = 0
+                if s == "damage" and "atk" in d:
+                    d["atk"] = 0
+                elif s == "atk" and "damage" in d:
+                    d["damage"] = 0
 
         if self.affixes:
             eff_list = list(d.get("effects", []))
@@ -1705,6 +1727,8 @@ class Inventory:
 
     def can_add_item(self, item_id, count=1):
         """Returns True if the inventory has sufficient slot or stack capacity to hold count items."""
+        if hasattr(item_id, "item_id"):
+            item_id = item_id.item_id
         if item_id in ("copper_coin", "silver_coin", "gold_coin"):
             return True
         canon = ITEM_ALIASES.get(item_id, item_id)
@@ -1817,33 +1841,48 @@ class Inventory:
         return self.slots[self.selected_slot]
 
     def add_item(self, item_id, count=1):
+        stack_source = None
+        if isinstance(item_id, ItemStack):
+            stack_source = item_id
+            target_id = item_id.item_id
+            count = item_id.count
+        else:
+            target_id = item_id
+
         # Coins deposit directly into the dedicated Coin Purse without occupying inventory slots
-        if item_id == "copper_coin":
+        if target_id == "copper_coin":
             self.add_coins(copper=count)
             return 0
-        elif item_id == "silver_coin":
+        elif target_id == "silver_coin":
             self.add_coins(silver=count)
             return 0
-        elif item_id == "gold_coin":
+        elif target_id == "gold_coin":
             self.add_coins(gold=count)
             return 0
 
-        data = ITEM_REGISTRY.get(item_id, {})
+        data = ITEM_REGISTRY.get(target_id, {})
         max_s = data.get("max_stack", 999)
 
-        for slot in self.slots:
-            if slot and slot.item_id == item_id and slot.count < max_s:
-                space = max_s - slot.count
-                transfer = min(space, count)
-                slot.count += transfer
-                count -= transfer
-                if count <= 0:
-                    return 0
+        # Non-modified stackable items can merge into existing slots
+        is_modified = stack_source and (stack_source.enhancement_level > 0 or stack_source.is_broken or stack_source.affixes or stack_source.removed_stats)
+        if max_s > 1 and not is_modified:
+            for slot in self.slots:
+                if slot and slot.item_id == target_id and slot.count < max_s:
+                    if not (slot.enhancement_level > 0 or slot.is_broken or slot.affixes or slot.removed_stats):
+                        space = max_s - slot.count
+                        transfer = min(space, count)
+                        slot.count += transfer
+                        count -= transfer
+                        if count <= 0:
+                            return 0
 
         for idx in range(len(self.slots)):
             if self.slots[idx] is None:
                 transfer = min(max_s, count)
-                self.slots[idx] = ItemStack(item_id, transfer)
+                if stack_source:
+                    self.slots[idx] = stack_source.clone(count=transfer)
+                else:
+                    self.slots[idx] = ItemStack(target_id, transfer)
                 count -= transfer
                 if count <= 0:
                     return 0
@@ -1947,27 +1986,56 @@ class Inventory:
                                     self.last_learned_timer = 3.0
                                     return True
 
+                        # If Affix Stone, embed into active weapon or first eligible item on right-click!
+                        if item_id == "affix_stone":
+                            from src.rpg.enhancement import can_apply_affix_stone, apply_affix_stone
+                            target = self.get_active_item()
+                            if not target or not can_apply_affix_stone(target)[0]:
+                                target = None
+                                for s in self.slots:
+                                    if s and can_apply_affix_stone(s)[0]:
+                                        target = s
+                                        break
+                            if target:
+                                ok, msg = apply_affix_stone(target, self, player.sound_manager if player else None)
+                                self.notify(msg)
+                            else:
+                                self.notify("No eligible Legendary or Ancient gear with an open affix slot found!")
+                            return True
+
                         # If Armor piece or Accessory, equip into paperdoll!
                         if cat.startswith("armor_") or cat == CAT_ACCESSORY:
-                            success, prev_item = player.equipment.equip(item_id, player.stats)
+                            success, prev_item = player.equipment.equip(current, player.stats)
                             if success:
                                 player.sound_manager.play("place")
-                                self.slots[slot_idx] = ItemStack(prev_item, 1) if prev_item else None
+                                self.slots[slot_idx] = prev_item if isinstance(prev_item, ItemStack) else (ItemStack(prev_item, 1) if prev_item else None)
                                 return True
 
                     if not self.held_item:
                         if current:
                             if is_right_click and current.count > 1:
                                 half = current.count // 2
-                                self.held_item = ItemStack(current.item_id, half)
+                                self.held_item = current.clone(count=half)
                                 current.count -= half
                             else:
                                 self.held_item = current
                                 self.slots[slot_idx] = None
                     else:
+                        # If cursor holds an Affix Stone, click on eligible gear embeds it directly!
+                        if self.held_item.item_id == "affix_stone" and current and not is_right_click:
+                            from src.rpg.enhancement import can_apply_affix_stone, apply_affix_stone
+                            can_app, reason = can_apply_affix_stone(current)
+                            if can_app:
+                                ok, msg = apply_affix_stone(current, self, player.sound_manager if player else None)
+                                self.notify(msg)
+                                return True
+                            else:
+                                self.notify(reason)
+                                return True
+
                         if current is None:
                             if is_right_click and self.held_item.count > 1:
-                                self.slots[slot_idx] = ItemStack(self.held_item.item_id, 1)
+                                self.slots[slot_idx] = self.held_item.clone(count=1)
                                 self.held_item.count -= 1
                             else:
                                 self.slots[slot_idx] = self.held_item
@@ -2004,14 +2072,65 @@ class Inventory:
             self.notify("Cannot equip broken item! Repair it at the Mystic Trader first.")
             return False
         cat = current.data.get("cat", "")
-        if cat.startswith("armor_") or cat == CAT_ACCESSORY:
-            success, prev_item = player.equipment.equip(current.item_id, player.stats)
+        if cat.startswith("armor_") or cat in (CAT_ACCESSORY, CAT_WEAPON):
+            success, prev_item = player.equipment.equip(current, player.stats)
             if success:
                 if hasattr(player, "sound_manager") and player.sound_manager:
                     player.sound_manager.play("place")
-                self.slots[slot_idx] = ItemStack(prev_item, 1) if prev_item else None
+                self.slots[slot_idx] = prev_item if isinstance(prev_item, ItemStack) else (ItemStack(prev_item, 1) if prev_item else None)
                 return True
         return False
+
+    def render_tooltip(self, target_surf, item, mx, my):
+        """Renders rich RPG tooltip for an item or ItemStack."""
+        if not item:
+            return
+        data = item.data if hasattr(item, "data") else {}
+        name = data.get("name", getattr(item, "item_id", "Item"))
+        rarity = str(data.get("rarity", "common")).lower()
+        r_color = RARITY_COLORS.get(rarity, (220, 220, 220))
+        lines = [(name, r_color, self.font_bold)]
+        cat = data.get("cat", "item").replace("_", " ").title()
+        lines.append((f"[{rarity.upper()} {cat.upper()}]", r_color, self.font_sm))
+        if data.get("damage", 0) > 0:
+            lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+        if data.get("atk", 0) > 0 and data.get("damage", 0) == 0:
+            lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
+        if data.get("def", 0) > 0:
+            lines.append((f"Defense: +{data['def']}", (160, 230, 160), self.font_sm))
+        if data.get("hp", 0) > 0:
+            lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
+        if getattr(item, "enhancement_level", 0) > 0:
+            lines.append((f"Enhanced: +{item.enhancement_level} (Double Stats at +7)", (80, 240, 255), self.font_sm))
+        if getattr(item, "is_broken", False):
+            lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
+        if getattr(item, "affix_slots", 0) > 0:
+            aff_cnt = len(getattr(item, "affixes", []))
+            lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
+        for aff in getattr(item, "affixes", []):
+            from src.rpg.enhancement import GOD_TIER_AFFIXES
+            desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
+            lines.append((f"★ {aff}: {desc}", (255, 230, 90), self.font_sm))
+        desc = data.get("desc")
+        if desc:
+            lines.append((desc, (200, 210, 225), self.font_sm))
+
+        tw = max(self.font_sm.size(text)[0] for text, _, _ in lines) + 24
+        th = sum(16 for _ in lines) + 12
+        tx = min(SCREEN_WIDTH - tw - 10, max(10, mx + 14))
+        ty = min(SCREEN_HEIGHT - th - 10, max(10, my + 14))
+
+        bg_rect = pygame.Rect(tx, ty, tw, th)
+        t_surf = pygame.Surface((tw, th), pygame.SRCALPHA)
+        t_surf.fill((16, 20, 32, 240))
+        target_surf.blit(t_surf, (tx, ty))
+        pygame.draw.rect(target_surf, (75, 95, 135), bg_rect, 1, border_radius=4)
+
+        cur_y = ty + 6
+        for text, col, font in lines:
+            rendered = font.render(text, True, col)
+            target_surf.blit(rendered, (tx + 10, cur_y))
+            cur_y += rendered.get_height() + 2
 
 
 

@@ -467,6 +467,13 @@ class PotariaGame:
         """Drops an item into the world as a physical DroppedItem entity with throw physics."""
         if not item_id or count <= 0:
             return
+        item_obj = None
+        if hasattr(item_id, "item_id"):
+            item_obj = item_id
+            count = item_obj.count
+            actual_id = item_obj.item_id
+        else:
+            actual_id = item_id
         if world_pos is not None:
             wx, wy = world_pos
         else:
@@ -476,7 +483,9 @@ class PotariaGame:
         facing = 1.0 if self.player.facing_right else -1.0
         vx = facing * 4.5 + random.uniform(-1.0, 1.0)
         vy = -3.5 + random.uniform(-1.0, 1.0)
-        dropped = DroppedItem(item_id, count, wx, wy, self.asset_factory)
+        dropped = DroppedItem(actual_id, count, wx, wy, self.asset_factory)
+        if item_obj is not None:
+            dropped.item_stack = item_obj
         dropped.vx = vx
         dropped.vy = vy
         dropped.pickup_delay = 1.2
@@ -2035,10 +2044,18 @@ class PotariaGame:
 
         # Synchronize active hotbar weapon stats to Spud dynamically
         active_item = self.inventory.get_active_item()
-        active_id = active_item.item_id if (active_item and not getattr(active_item, "is_broken", False)) else None
-        if getattr(self.player, "_last_active_weapon", object()) != active_id:
-            self.player._last_active_weapon = active_id
-            self.player.equipment.recalculate_stats(self.player.stats, active_id)
+        active_state = None
+        if active_item and not getattr(active_item, "is_broken", False):
+            active_state = (
+                active_item.item_id,
+                getattr(active_item, "enhancement_level", 0),
+                getattr(active_item, "is_broken", False),
+                tuple(getattr(active_item, "affixes", [])),
+                tuple(getattr(active_item, "removed_stats", [])),
+            )
+        if getattr(self.player, "_last_active_weapon", object()) != active_state:
+            self.player._last_active_weapon = active_state
+            self.player.equipment.recalculate_stats(self.player.stats, active_item=active_item if (active_item and not getattr(active_item, "is_broken", False)) else None)
 
         # 2. Player Input & Physics
         aim_target_wx, aim_target_wy = mouse_wx, mouse_wy
@@ -2384,7 +2401,8 @@ class PotariaGame:
         # Collect dropped items (Full Inventory Bug Fix: leftover items stay floating on ground and never delete)
         for item in self.combat.dropped_items:
             if getattr(item, "picked_up", False):
-                leftover = self.inventory.add_item(item.item_id, item.count)
+                item_to_add = getattr(item, "item_stack", None) or item.item_id
+                leftover = self.inventory.add_item(item_to_add, item.count)
                 if leftover < item.count:
                     if item.item_id == "fallen_star":
                         self.achievement_manager.unlock("star_catcher")

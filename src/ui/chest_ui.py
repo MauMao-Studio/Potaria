@@ -116,7 +116,7 @@ class ChestStorageWindow:
                         if current:
                             if is_right_click and current.count > 1:
                                 half = current.count // 2
-                                inventory.held_item = ItemStack(current.item_id, half)
+                                inventory.held_item = current.clone(count=half)
                                 current.count -= half
                             else:
                                 inventory.held_item = current
@@ -126,7 +126,7 @@ class ChestStorageWindow:
                     else:
                         if current is None:
                             if is_right_click and held.count > 1:
-                                chest.slots[slot_idx] = ItemStack(held.item_id, 1)
+                                chest.slots[slot_idx] = held.clone(count=1)
                                 held.count -= 1
                             else:
                                 chest.slots[slot_idx] = held
@@ -266,5 +266,56 @@ class ChestStorageWindow:
             target_surf.blit(b_txt, (btn_r.centerx - b_txt.get_width() // 2, btn_r.centery - b_txt.get_height() // 2))
 
         # Tooltip for hovered item
-        if hovered_item and hasattr(inventory, "render_tooltip"):
-            inventory.render_tooltip(target_surf, hovered_item, mouse_x, mouse_y)
+        if hovered_item:
+            self.render_tooltip(target_surf, hovered_item, mouse_x, mouse_y)
+
+    def render_tooltip(self, target_surf, item, mx, my):
+        """Renders rich item tooltip for chest slots."""
+        if not item:
+            return
+        data = item.data if hasattr(item, "data") else {}
+        name = data.get("name", getattr(item, "item_id", "Item"))
+        rarity = str(data.get("rarity", "common")).lower()
+        r_color = RARITY_COLORS.get(rarity, (220, 220, 220))
+        lines = [(name, r_color, self.font_title)]
+        cat = data.get("cat", "item").replace("_", " ").title()
+        lines.append((f"[{rarity.upper()} {cat.upper()}]", r_color, self.font_sm))
+        if data.get("damage", 0) > 0:
+            lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+        if data.get("atk", 0) > 0 and data.get("damage", 0) == 0:
+            lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
+        if data.get("def", 0) > 0:
+            lines.append((f"Defense: +{data['def']}", (160, 230, 160), self.font_sm))
+        if data.get("hp", 0) > 0:
+            lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
+        if getattr(item, "enhancement_level", 0) > 0:
+            lines.append((f"Enhanced: +{item.enhancement_level} (Double Stats at +7)", (80, 240, 255), self.font_sm))
+        if getattr(item, "is_broken", False):
+            lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
+        if getattr(item, "affix_slots", 0) > 0:
+            aff_cnt = len(getattr(item, "affixes", []))
+            lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
+        for aff in getattr(item, "affixes", []):
+            from src.rpg.enhancement import GOD_TIER_AFFIXES
+            desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
+            lines.append((f"★ {aff}: {desc}", (255, 230, 90), self.font_sm))
+        desc = data.get("desc")
+        if desc:
+            lines.append((desc, (200, 210, 225), self.font_sm))
+
+        tw = max(self.font_sm.size(text)[0] for text, _, _ in lines) + 24
+        th = sum(16 for _ in lines) + 12
+        tx = min(SCREEN_WIDTH - tw - 10, max(10, mx + 14))
+        ty = min(SCREEN_HEIGHT - th - 10, max(10, my + 14))
+
+        bg_rect = pygame.Rect(tx, ty, tw, th)
+        t_surf = pygame.Surface((tw, th), pygame.SRCALPHA)
+        t_surf.fill((16, 20, 32, 240))
+        target_surf.blit(t_surf, (tx, ty))
+        pygame.draw.rect(target_surf, (75, 95, 135), bg_rect, 1, border_radius=4)
+
+        cur_y = ty + 6
+        for text, col, font in lines:
+            rendered = font.render(text, True, col)
+            target_surf.blit(rendered, (tx + 10, cur_y))
+            cur_y += rendered.get_height() + 2

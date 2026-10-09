@@ -41,6 +41,11 @@ class NPCDialogueWindow:
         self.font_sm = pygame.font.SysFont("Arial", 11)
 
     def open(self, npc, player, world=None, combat=None):
+        if combat and hasattr(npc, "check_hostile_enemies"):
+            npc.check_hostile_enemies(combat)
+        if getattr(npc, "shield_active", False) or getattr(npc, "is_despawned", False):
+            return
+
         self.is_open = True
         self.active_npc = npc
         self.active_npc.is_talking = True
@@ -78,6 +83,10 @@ class NPCDialogueWindow:
     def update(self, dt):
         if not self.is_open:
             return
+        if self.active_npc:
+            if getattr(self.active_npc, "shield_active", False) or getattr(self.active_npc, "is_despawned", False):
+                self.close()
+                return
         if self.typewriter_chars < len(self.dialogue_text):
             self.typewriter_timer += dt
             char_interval = 0.018
@@ -113,6 +122,13 @@ class NPCDialogueWindow:
     def handle_click(self, mouse_x, mouse_y, player, inventory, world=None, combat=None):
         if not self.is_open or not self.active_npc:
             return False
+
+        if combat and hasattr(self.active_npc, "check_hostile_enemies"):
+            self.active_npc.check_hostile_enemies(combat)
+
+        if getattr(self.active_npc, "shield_active", False) or getattr(self.active_npc, "is_despawned", False):
+            self.close()
+            return True
 
         panel_rect = pygame.Rect(self.x, self.y, self.width, self.height)
         if not panel_rect.collidepoint(mouse_x, mouse_y):
@@ -228,9 +244,10 @@ class NPCDialogueWindow:
                     return True
 
             elif npc.npc_type == "mystic_trader":
+                has_affix_service = any(e.get("is_affix_service") for e in getattr(npc, "shop_catalog", []))
                 b1 = pygame.Rect(self.x + 20, start_y, 110, btn_h)
                 b2 = pygame.Rect(self.x + 135, start_y, 115, btn_h)
-                b3 = pygame.Rect(self.x + 255, start_y, 125, btn_h)
+                b3 = pygame.Rect(self.x + 255, start_y, 125, btn_h) if has_affix_service else None
                 b_close = pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h)
 
                 if b1.collidepoint(mouse_x, mouse_y):
@@ -258,7 +275,7 @@ class NPCDialogueWindow:
                         self.dialogue_text = msg
                         self.typewriter_chars = 0
                     return True
-                elif b3.collidepoint(mouse_x, mouse_y):
+                elif b3 and b3.collidepoint(mouse_x, mouse_y):
                     active = inventory.get_active_item()
                     from src.rpg.enhancement import can_add_affix_slot, add_affix_slot_to_item
                     can_add, reason = can_add_affix_slot(active)
@@ -449,9 +466,11 @@ class NPCDialogueWindow:
                 draw_btn(pygame.Rect(self.x + 210, start_y, 115, btn_h), "Enhance (+1..7)")
                 draw_btn(pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h), "Close")
             elif npc.npc_type == "mystic_trader":
+                has_affix_service = any(e.get("is_affix_service") for e in getattr(npc, "shop_catalog", []))
                 draw_btn(pygame.Rect(self.x + 20, start_y, 110, btn_h), "Browse Wares", is_accent=True)
                 draw_btn(pygame.Rect(self.x + 135, start_y, 115, btn_h), "Repair (1 Gold)")
-                draw_btn(pygame.Rect(self.x + 255, start_y, 125, btn_h), "Carve Affix Slot")
+                if has_affix_service:
+                    draw_btn(pygame.Rect(self.x + 255, start_y, 125, btn_h), "Carve Affix Slot")
                 draw_btn(pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h), "Close")
 
         # Mode: Shop View

@@ -55,7 +55,14 @@
   - Accumulates total playtime (`playtime += dt`) and tracks `last_played` timestamps in ISO format.
   - Displays formatted `Playtime: Xh Ym` and `Last Played: YYYY-MM-DD HH:MM` on all world selection cards.
 - **Dedicated Test Suite**:
-  - Created [`tests/test_random_trader_and_features.py`](file:///C:/Users/Kurados/.gemini/antigravity/scratch/Potaria/tests/test_random_trader_and_features.py) with 10 comprehensive tests verifying trader spawn/despawn, wares cap, turtle shield deflection, repair cost, affix carving, affix stone crafting & embedding, enhancement scaling, broken item blocking, storage chests, and world save persistence. All 250 tests in the project pass 100% green!
+  - Created [`tests/test_random_trader_and_features.py`](file:///C:/Users/Kurados/.gemini/antigravity/scratch/Potaria/tests/test_random_trader_and_features.py) with 15 comprehensive tests verifying trader spawn/despawn, wares cap, turtle shield deflection, repair cost, affix carving, affix stone crafting & embedding, enhancement scaling, broken item blocking, storage chests, and world save persistence. All 255 tests in the project pass 100% green!
+
+#### Changed & Fixed
+- **Equipment & Stat Scaling Architecture**: Upgraded paperdoll `Equipment.slots` to preserve `ItemStack` objects intact; active combat calculations and stat caching dynamically incorporate +1..+7 multipliers (up to 2.0x) and god-tier affix attributes into player attack, defense, HP, and crit.
+- **Affix Stone Direct Inventory Application**: Implemented right-click usage and cursor drag-and-drop embedding for Affix Stones directly inside inventory UI.
+- **Turtle Shield Dialogue Security**: Wired dynamic hostile enemy detection into `NPCDialogueWindow` to auto-close dialogue and prevent trade exploitation when enemies enter the 224px Turtle Shield perimeter.
+- **Chest Tooltip & Metadata Preservation**: Added rich tooltips to hovered storage chest slots and preserved enhancement/affix attributes during chest stack splitting.
+- **Equipment Save/Load Serialization**: Serialized equipped paperdoll `ItemStack` enhancement levels and affixes into world save files.
 
 ---
 

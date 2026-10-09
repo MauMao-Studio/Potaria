@@ -280,25 +280,34 @@ class Equipment:
             SLOT_ACCESSORY: None,
         }
 
-    def equip(self, item_id, stats):
-        """Equips an item into its designated paperdoll slot."""
+    def equip(self, item_or_id, stats=None):
+        """Equips an item or ItemStack into its designated paperdoll slot."""
+        if hasattr(item_or_id, "item_id"):
+            item_id = item_or_id.item_id
+            store_item = item_or_id
+        else:
+            item_id = str(item_or_id)
+            store_item = item_id
+
         data = ARMOR_DATA.get(item_id)
         if not data:
             return False, None
 
         slot_name = data["slot"]
         prev_item = self.slots[slot_name]
-        self.slots[slot_name] = item_id
+        self.slots[slot_name] = store_item
 
-        self.recalculate_stats(stats)
+        if stats is not None:
+            self.recalculate_stats(stats)
         return True, prev_item
 
-    def unequip(self, slot_name, stats):
-        """Unequips item from given slot."""
+    def unequip(self, slot_name, stats=None):
+        """Unequips item from given slot, returning the ItemStack or item_id intact."""
         if slot_name in self.slots and self.slots[slot_name]:
             item = self.slots[slot_name]
             self.slots[slot_name] = None
-            self.recalculate_stats(stats)
+            if stats is not None:
+                self.recalculate_stats(stats)
             return item
         return None
 
@@ -306,7 +315,8 @@ class Equipment:
         """Checks if equipped headpiece emits light (e.g. Miner Helmet) or any gear has radiance effects."""
         head_item = self.slots.get(SLOT_HEAD)
         if head_item:
-            data = ARMOR_DATA.get(head_item, {})
+            head_id = head_item.item_id if hasattr(head_item, "item_id") else head_item
+            data = ARMOR_DATA.get(head_id, {})
             if data.get("light", False):
                 return True
         for eff in self.get_all_active_effects():
@@ -319,14 +329,25 @@ class Equipment:
         """Returns a list of all active effect strings from equipped gear and active weapon."""
         effects = []
         from src.ui.inventory import ITEM_REGISTRY
-        for slot_name, item_id in self.slots.items():
-            if item_id:
-                data = ARMOR_DATA.get(item_id) or ITEM_REGISTRY.get(item_id, {})
+        for slot_name, slot_val in self.slots.items():
+            if slot_val:
+                item_id = slot_val.item_id if hasattr(slot_val, "item_id") else slot_val
+                if hasattr(slot_val, "data"):
+                    effects.extend(slot_val.data.get("effects", []))
+                else:
+                    data = ARMOR_DATA.get(item_id) or ITEM_REGISTRY.get(item_id, {})
+                    effects.extend(data.get("effects", []))
+
+        held_obj = getattr(self, "active_weapon_item", None)
+        held_id = held_obj.item_id if (held_obj and hasattr(held_obj, "item_id")) else getattr(self, "active_weapon_id", None)
+        equipped_weapon = self.slots.get(SLOT_WEAPON)
+        eq_id = equipped_weapon.item_id if hasattr(equipped_weapon, "item_id") else equipped_weapon
+        if held_id and held_id != eq_id:
+            if held_obj and hasattr(held_obj, "data"):
+                effects.extend(held_obj.data.get("effects", []))
+            else:
+                data = ARMOR_DATA.get(held_id) or ITEM_REGISTRY.get(held_id, {})
                 effects.extend(data.get("effects", []))
-        held_id = getattr(self, "active_weapon_id", None)
-        if held_id and held_id != self.slots.get(SLOT_WEAPON):
-            data = ARMOR_DATA.get(held_id) or ITEM_REGISTRY.get(held_id, {})
-            effects.extend(data.get("effects", []))
         return effects
 
     def has_effect(self, effect_keyword):
@@ -339,9 +360,14 @@ class Equipment:
 
     def get_active_set(self):
         """Returns (set_key, set_info) if all head, chest, and legs pieces form an active equipment set."""
-        h = self.slots.get(SLOT_HEAD)
-        c = self.slots.get(SLOT_CHEST)
-        l = self.slots.get(SLOT_LEGS)
+        def _get_id(s):
+            if not s:
+                return None
+            return s.item_id if hasattr(s, "item_id") else str(s)
+
+        h = _get_id(self.slots.get(SLOT_HEAD))
+        c = _get_id(self.slots.get(SLOT_CHEST))
+        l = _get_id(self.slots.get(SLOT_LEGS))
         if not h or not c or not l:
             return None, None
 
@@ -375,10 +401,18 @@ class Equipment:
                 return "titan"
         return None
 
-    def recalculate_stats(self, stats, active_item_id=_NO_UPDATE):
+    def recalculate_stats(self, stats, active_item_id=_NO_UPDATE, active_item=_NO_UPDATE):
         """Recalculates all player bonus stats based on equipped gear and held weapon."""
+        if active_item is not _NO_UPDATE:
+            self.active_weapon_item = active_item
+            if active_item and hasattr(active_item, "item_id"):
+                self.active_weapon_id = active_item.item_id
+            elif active_item is None:
+                self.active_weapon_id = None
         if active_item_id is not _NO_UPDATE:
             self.active_weapon_id = active_item_id
+            if active_item_id is None:
+                self.active_weapon_item = None
 
         bonus_def = 0
         bonus_hp = 0
@@ -387,13 +421,23 @@ class Equipment:
         bonus_speed = 0.0
         bonus_atk_speed = 0.0
         bonus_mp_regen = 0.0
+        atk_mult_total = 0.0
 
-        for slot_name, item_id in self.slots.items():
-            if item_id:
-                data = ARMOR_DATA.get(item_id, {})
+        from src.rpg.enhancement import GOD_TIER_AFFIXES
+
+        for slot_name, slot_val in self.slots.items():
+            if slot_val:
+                item_id = slot_val.item_id if hasattr(slot_val, "item_id") else slot_val
+                if hasattr(slot_val, "data"):
+                    data = dict(slot_val.data)
+                    affixes = getattr(slot_val, "affixes", [])
+                else:
+                    data = dict(ARMOR_DATA.get(item_id, {}))
+                    affixes = []
+
                 bonus_def += data.get("def", 0)
                 bonus_hp += data.get("hp", 0)
-                bonus_atk += data.get("atk", 0)
+                bonus_atk += data.get("atk", data.get("damage", 0) if slot_name == SLOT_WEAPON else 0)
                 bonus_crit += data.get("crit", 0.0)
                 if slot_name == SLOT_WEAPON:
                     bonus_atk_speed += data.get("speed", data.get("atk_speed", 0.0))
@@ -402,28 +446,58 @@ class Equipment:
                     bonus_atk_speed += data.get("atk_speed", data.get("attack_speed", 0.0))
                 bonus_mp_regen += data.get("mp_regen", 0.0)
 
+                for aff in affixes:
+                    aff_data = GOD_TIER_AFFIXES.get(aff, {})
+                    bonus_atk += aff_data.get("bonus_atk", 0)
+                    bonus_def += aff_data.get("bonus_def", 0)
+                    bonus_hp += aff_data.get("bonus_hp", 0)
+                    bonus_crit += aff_data.get("bonus_crit", 0.0)
+                    bonus_speed += aff_data.get("bonus_speed", 0.0)
+                    bonus_atk_speed += aff_data.get("bonus_atk_speed", 0.0)
+                    atk_mult_total += aff_data.get("atk_mult", 0.0)
+
         # Apply held weapon stats if selected in hand / hotbar
-        held_id = getattr(self, "active_weapon_id", None)
-        if held_id and held_id != self.slots.get(SLOT_WEAPON):
-            w_data = ARMOR_DATA.get(held_id)
+        held_obj = getattr(self, "active_weapon_item", None)
+        held_id = held_obj.item_id if (held_obj and hasattr(held_obj, "item_id")) else getattr(self, "active_weapon_id", None)
+        equipped_weapon = self.slots.get(SLOT_WEAPON)
+        eq_id = equipped_weapon.item_id if hasattr(equipped_weapon, "item_id") else equipped_weapon
+
+        if held_id and held_id != eq_id:
+            if held_obj and hasattr(held_obj, "data"):
+                w_data = dict(held_obj.data)
+                w_affixes = getattr(held_obj, "affixes", [])
+            else:
+                w_data = dict(ARMOR_DATA.get(held_id) or {})
+                w_affixes = []
+
             if w_data and w_data.get("slot") == SLOT_WEAPON:
                 bonus_def += w_data.get("def", 0)
                 bonus_hp += w_data.get("hp", 0)
-                bonus_atk += w_data.get("atk", 0)
+                bonus_atk += w_data.get("atk", w_data.get("damage", 0))
                 bonus_crit += w_data.get("crit", 0.0)
                 bonus_atk_speed += w_data.get("speed", w_data.get("atk_speed", 0.0))
                 bonus_mp_regen += w_data.get("mp_regen", 0.0)
             else:
                 from src.ui.inventory import ITEM_REGISTRY, CAT_WEAPON, CAT_TOOL
-                reg = ITEM_REGISTRY.get(held_id, {})
+                reg = w_data if w_data else ITEM_REGISTRY.get(held_id, {})
                 cat = reg.get("cat")
                 is_tool = (cat == CAT_TOOL or cat == "tool" or any(w in held_id.lower() for w in ("axe", "pickaxe", "shovel", "drill", "hammer")))
-                if cat == CAT_WEAPON or (reg.get("damage", 0) > 0 and not is_tool):
-                    bonus_atk += reg.get("damage", 0)
+                if cat == CAT_WEAPON or (reg.get("damage", 0) > 0 and not is_tool) or (reg.get("atk", 0) > 0 and not is_tool):
+                    bonus_atk += reg.get("damage", reg.get("atk", 0))
                     bonus_crit += reg.get("crit", 0.0)
                     bonus_atk_speed += reg.get("speed", reg.get("atk_speed", 0.0))
                     bonus_def += reg.get("def", 0)
                     bonus_mp_regen += reg.get("mp_regen", 0.0)
+
+            for aff in w_affixes:
+                aff_data = GOD_TIER_AFFIXES.get(aff, {})
+                bonus_atk += aff_data.get("bonus_atk", 0)
+                bonus_def += aff_data.get("bonus_def", 0)
+                bonus_hp += aff_data.get("bonus_hp", 0)
+                bonus_crit += aff_data.get("bonus_crit", 0.0)
+                bonus_speed += aff_data.get("bonus_speed", 0.0)
+                bonus_atk_speed += aff_data.get("bonus_atk_speed", 0.0)
+                atk_mult_total += aff_data.get("atk_mult", 0.0)
 
         # Apply Equipment Set Bonuses
         active_set_key, active_set = self.get_active_set()
@@ -434,6 +508,10 @@ class Equipment:
             bonus_crit += active_set.get("bonus_crit", 0.0)
             bonus_speed += active_set.get("bonus_speed", 0.0)
             bonus_mp_regen += active_set.get("bonus_mp_regen", 0.0)
+
+        # Apply Affix Percentage Multipliers (e.g. Titan's Might +25% Damage)
+        if atk_mult_total > 0:
+            bonus_atk += int((stats.base_atk + bonus_atk) * atk_mult_total)
 
         # Apply Catalog Passive Gear Effects
         active_effs = self.get_all_active_effects()

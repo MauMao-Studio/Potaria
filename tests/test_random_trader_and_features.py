@@ -407,6 +407,205 @@ class TestRandomTraderAndFeatures(unittest.TestCase):
         # Cleanup
         delete_world(world_name)
 
+    def test_11_equipment_enhancement_and_affix_recalculation_and_preservation(self):
+        """Equipping enhanced and affixed gear applies scaled stats, preserves metadata on unequip, and persists across save/load."""
+        from src.rpg.equipment import SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_WEAPON, SLOT_ACCESSORY
+        from main import PotariaGame
+        from src.camera import Camera
+
+        # 1. Base unequipped stats
+        self.player.equipment.slots = {k: None for k in self.player.equipment.slots}
+        self.player.equipment.recalculate_stats(self.player.stats)
+        base_def = self.player.stats.total_def
+        base_atk = self.player.stats.total_atk
+
+        # 2. Equip +7 enhanced armor and +7 enhanced weapon with affixes
+        helm = ItemStack("iron_helmet", 1, enhancement_level=7, affix_slots=1, affixes=["Titan's Might"])
+        sword = ItemStack("iron_broadsword", 1, enhancement_level=7, affix_slots=2, affixes=["Berserker's Blood", "Godslayer Edge"])
+        
+        self.inventory.slots[0] = helm
+        self.inventory.slots[1] = sword
+        self.inventory.equip_item(0, self.player)
+        self.inventory.equip_item(1, self.player)
+
+        # Equipped slots should be ItemStacks
+        self.assertIsInstance(self.player.equipment.slots[SLOT_HEAD], ItemStack)
+        self.assertIsInstance(self.player.equipment.slots[SLOT_WEAPON], ItemStack)
+
+        # Recalculated stats should include double base item stats (+7 = 2.0x) + affixes
+        self.player.equipment.recalculate_stats(self.player.stats, active_item=self.player.equipment.slots[SLOT_WEAPON])
+        self.assertGreater(self.player.stats.total_def, base_def)
+        self.assertGreater(self.player.stats.total_atk, base_atk * 2)
+
+        # 3. Unequip items back to inventory and ensure ItemStack metadata is retained
+        unequipped_helm = self.player.equipment.unequip(SLOT_HEAD)
+        self.assertIsInstance(unequipped_helm, ItemStack)
+        self.assertEqual(unequipped_helm.enhancement_level, 7)
+        self.assertEqual(unequipped_helm.affixes, ["Titan's Might"])
+
+        # Re-equip helm
+        self.player.equipment.equip(unequipped_helm, self.player.stats)
+
+        # 4. Save and Load to confirm equipped ItemStacks persist with enhancement levels and affixes
+        world_name = "Test_Equip_Save"
+        game = PotariaGame.__new__(PotariaGame)
+        game.active_world_name = world_name
+        game.world = self.world
+        game.player = self.player
+        game.inventory = self.inventory
+        game.combat = self.combat
+        game.sound_manager = self.sound_manager
+        game.asset_factory = self.asset_factory
+        game.client = None
+        game.block_deltas = {}
+        game.wall_deltas = {}
+        game.difficulty = DIFFICULTY_NORMAL
+        game.game_mode = "adventure"
+        game.world_type = "infinite"
+        game.playtime = 100.0
+        game.camera = Camera(800, 600)
+
+        save_world(world_name, game)
+
+        # Load into fresh game
+        loaded_game = PotariaGame.__new__(PotariaGame)
+        loaded_game.asset_factory = self.asset_factory
+        loaded_game.camera = Camera(800, 600)
+        loaded_game.world = World(self.asset_factory, seed=123)
+        loaded_game.player = Player(0, 0, self.asset_factory, self.sound_manager)
+        loaded_game.inventory = Inventory(self.asset_factory)
+        loaded_game.combat = CombatManager(self.asset_factory, self.sound_manager, None, None)
+        loaded_game.sound_manager = self.sound_manager
+        loaded_game.client = None
+        loaded_game.block_deltas = {}
+        loaded_game.wall_deltas = {}
+
+        load_world(world_name, loaded_game)
+
+        loaded_helm = loaded_game.player.equipment.slots[SLOT_HEAD]
+        loaded_weapon = loaded_game.player.equipment.slots[SLOT_WEAPON]
+        self.assertIsInstance(loaded_helm, ItemStack)
+        self.assertIsInstance(loaded_weapon, ItemStack)
+        self.assertEqual(loaded_helm.enhancement_level, 7)
+        self.assertEqual(loaded_helm.affixes, ["Titan's Might"])
+        self.assertEqual(loaded_weapon.enhancement_level, 7)
+        self.assertEqual(loaded_weapon.affixes, ["Berserker's Blood", "Godslayer Edge"])
+
+        delete_world(world_name)
+
+    def test_12_inventory_affix_stone_usage_via_right_click_and_cursor(self):
+        """Affix Stone can be applied via right-click in inventory or by picking it up and clicking target item."""
+        # 1. Target item: ancient bow with 2 open slots
+        bow = ItemStack("ancient_eternal_shortbow", 1, affix_slots=2, affixes=[])
+        stone_stack = ItemStack("affix_stone", 3)
+        self.inventory.slots[0] = bow
+        self.inventory.slots[1] = stone_stack
+        self.inventory.selected_slot = 0
+        self.inventory.is_open = True
+
+        # Right-click slot 1 (affix_stone) with no item on cursor
+        from src.ui.inventory import SLOT_SIZE, SLOT_PADDING
+        start_x, start_y = 20, 20
+        slot_1_x = start_x + (1 % 10) * (SLOT_SIZE + SLOT_PADDING) + 10
+        slot_1_y = start_y + (1 // 10) * (SLOT_SIZE + SLOT_PADDING) + 10
+
+        handled = self.inventory.handle_click(slot_1_x, slot_1_y, is_right_click=True, player=self.player)
+        self.assertTrue(handled)
+        self.assertEqual(len(bow.affixes), 1, "Affix stone right-click must embed affix onto held bow")
+        self.assertEqual(stone_stack.count, 2, "One affix stone should be consumed")
+
+        # 2. Pick up stone on cursor and left-click onto target slot
+        slot_0_x = start_x + (0 % 10) * (SLOT_SIZE + SLOT_PADDING) + 10
+        slot_0_y = start_y + (0 // 10) * (SLOT_SIZE + SLOT_PADDING) + 10
+
+        self.inventory.held_item = ItemStack("affix_stone", 1)
+        handled = self.inventory.handle_click(slot_0_x, slot_0_y, is_right_click=False, player=self.player)
+        self.assertTrue(handled)
+        self.assertEqual(len(bow.affixes), 2, "Cursor affix stone click must embed second affix onto bow")
+        self.assertIsNone(self.inventory.held_item, "Held affix stone should be consumed")
+
+    def test_13_mystic_trader_turtle_shield_auto_closes_dialogue(self):
+        """Hostile enemies entering Turtle Shield radius auto-closes dialogue window and blocks trading."""
+        from src.ui.npc_dialogue import NPCDialogueWindow
+        trader = MysticTraderNPC("Zephyrion", "mystic_trader", 300, 300, self.asset_factory, self.sound_manager)
+        dialogue = NPCDialogueWindow(self.asset_factory, self.sound_manager)
+
+        # Open dialogue normally
+        dialogue.open(trader, self.player, self.world, self.combat)
+        self.assertTrue(dialogue.is_open)
+
+        # Spawn hostile mob within 224px radius
+        enemy = Mob(350, 300, 24, 24, 50, 10, "Crawler")
+        self.combat.mobs.append(enemy)
+
+        # Update dialogue -> should detect shield and auto-close
+        trader.update(0.1, self.world, self.combat)
+        dialogue.update(0.1)
+        self.assertFalse(dialogue.is_open, "Dialogue must auto-close when Turtle Shield activates")
+
+        # Trying to open while mob is nearby must be rejected
+        dialogue.open(trader, self.player, self.world, self.combat)
+        self.assertFalse(dialogue.is_open, "Dialogue must refuse to open while Turtle Shield is active")
+
+    def test_14_chest_stack_splitting_and_tooltips(self):
+        """Splitting stacks in chests preserves enhancement/affix metadata, and ChestStorageWindow renders tooltips."""
+        from src.ui.chest_ui import ChestStorageWindow
+        chest = StorageChest(10, 20)
+        chest_ui = ChestStorageWindow(self.asset_factory, self.sound_manager)
+        chest_ui.open(chest, self.player, self.inventory)
+
+        # Add enhanced stack of items
+        item_stack = ItemStack("iron_broadsword", 4, enhancement_level=3, affix_slots=1, affixes=["Titan's Might"])
+        chest.slots[0] = item_stack
+
+        # Right click to split stack
+        c_slot_x = chest_ui.x + 20
+        c_slot_y = chest_ui.y + 40
+        handled = chest_ui.handle_click(c_slot_x, c_slot_y, is_right_click=True, player=self.player, inventory=self.inventory)
+        self.assertTrue(handled)
+        self.assertIsNotNone(self.inventory.held_item)
+        self.assertEqual(self.inventory.held_item.count, 2)
+        self.assertEqual(self.inventory.held_item.enhancement_level, 3)
+        self.assertEqual(self.inventory.held_item.affixes, ["Titan's Might"])
+
+        # Tooltip rendering
+        surf = pygame.Surface((800, 600))
+        chest_ui.render_tooltip(surf, self.inventory.held_item, 100, 100)
+        chest_ui.render(surf, self.inventory, mouse_x=c_slot_x, mouse_y=c_slot_y)
+
+    def test_15_trader_affix_service_dialogue_visibility(self):
+        """Carve Affix Slot button in dialogue appears only when trader rolled affix slot service."""
+        from src.ui.npc_dialogue import NPCDialogueWindow
+        dialogue = NPCDialogueWindow(self.asset_factory, self.sound_manager)
+
+        # 1. Trader without affix service
+        trader_no_service = MysticTraderNPC("Zephyrion", "mystic_trader", 300, 300, self.asset_factory, self.sound_manager,
+                                            shop_catalog=[{"item_id": "wooden_sword", "name": "Wooden Sword", "price": 10, "currency": "copper_coin"}])
+        dialogue.open(trader_no_service, self.player, self.world, self.combat)
+        self.assertTrue(dialogue.is_open)
+
+        # Carve affix slot button (x=255, y=start_y, w=125, h=28)
+        start_y = dialogue.y + dialogue.height - 44
+        b3_x = dialogue.x + 260
+        b3_y = start_y + 10
+        # Clicking b3 coordinates when service is not offered should NOT trigger carving
+        self.inventory.slots[0] = ItemStack("astral_wrath", 1)
+        self.inventory.selected_slot = 0
+        handled = dialogue.handle_click(b3_x, b3_y, self.player, self.inventory, self.world, self.combat)
+        self.assertEqual(self.inventory.slots[0].affix_slots, 0, "No carving should happen when trader did not roll service")
+
+        # 2. Trader WITH affix service
+        trader_with_service = MysticTraderNPC("Zephyrion", "mystic_trader", 300, 300, self.asset_factory, self.sound_manager,
+                                              shop_catalog=[{"item_id": "affix_slot_service", "name": "Affix Carving", "price": 50, "currency": "silver_coin", "is_affix_service": True}])
+        dialogue.open(trader_with_service, self.player, self.world, self.combat)
+        self.player.stats.copper_coins = 10000
+        self.player.stats.silver_coins = 0
+        self.player.stats.gold_coins = 0
+
+        handled = dialogue.handle_click(b3_x, b3_y, self.player, self.inventory, self.world, self.combat)
+        self.assertTrue(handled)
+        self.assertEqual(self.inventory.slots[0].affix_slots, 1, "Carving should succeed when trader offers service")
+
 
 if __name__ == "__main__":
     unittest.main()
