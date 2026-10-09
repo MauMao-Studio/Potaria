@@ -1258,6 +1258,21 @@ class PotariaGame:
         else:
             self.combat.dropped_items.append(DroppedItem(random.choice(rare_chest_items), 1, world_x + 8, world_y - 12, self.asset_factory))
 
+        # 2.2. Epic Gear Roll in Chests (15% chance to find Epic Catalog Gear!)
+        if hasattr(self.combat, "_catalog_rarity_pools") and self.combat._catalog_rarity_pools.get("epic") and random.random() < 0.15:
+            epic_drop = random.choice(self.combat._catalog_rarity_pools["epic"])
+            print(f"[CHEST] EPIC DISCOVERY! {epic_drop} found in Treasure Chest!")
+            self.combat.dropped_items.append(DroppedItem(epic_drop, 1, world_x + 12, world_y - 14, self.asset_factory))
+            self.particle_system.spawn_sparks(world_x + 16, world_y + 16, (180, 80, 255), count=25)
+
+        # 2.3. Mythic Relic Roll in Chests (3% chance to find Mythic Relic!)
+        if hasattr(self.combat, "_catalog_rarity_pools") and self.combat._catalog_rarity_pools.get("mythic") and random.random() < 0.03:
+            mythic_drop = random.choice(self.combat._catalog_rarity_pools["mythic"])
+            print(f"[CHEST] MYTHIC DISCOVERY! {mythic_drop} found in Treasure Chest!")
+            self.combat.dropped_items.append(DroppedItem(mythic_drop, 1, world_x + 14, world_y - 16, self.asset_factory))
+            self.particle_system.spawn_sparks(world_x + 16, world_y + 16, (255, 152, 0), count=35)
+            self.camera.add_shake(4.0, 0.25)
+
         # 2.5. Celestial Portal Shard in Chests (35% chance to find portal shards!)
         if random.random() < 0.35:
             print("[CHEST] MYSTICAL DISCOVERY! Celestial Portal Shard found in Treasure Chest!")

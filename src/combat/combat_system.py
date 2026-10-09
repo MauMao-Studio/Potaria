@@ -121,6 +121,19 @@ class CombatManager:
         self.font = pygame.font.SysFont("Arial", 14, bold=True)
         self.font_crit = pygame.font.SysFont("Arial", 18, bold=True)
 
+        self._catalog_rarity_pools = {
+            "common": [], "uncommon": [], "rare": [], "epic": [],
+            "mythic": [], "legendary": [], "ancient": []
+        }
+        try:
+            from src.ui.inventory import ITEM_REGISTRY
+            for iid, idata in ITEM_REGISTRY.items():
+                r = idata.get("rarity")
+                if r in self._catalog_rarity_pools and idata.get("cat") in ("weapon", "armor_head", "armor_chest", "armor_legs", "accessory"):
+                    self._catalog_rarity_pools[r].append(iid)
+        except Exception:
+            pass
+
     def spawn_projectile(self, proj):
         """Spawns an active ballistic arrow or celestial star projectile."""
         self.projectiles.append(proj)
@@ -1143,13 +1156,13 @@ class CombatManager:
         elif roll < 0.40:
             self.dropped_items.append(DroppedItem("healing_potion", 1, mx, my, self.asset_factory))
 
-        # 3. Uncommon Equipment Roll (1.0% chance):
-        if random.random() < 0.010 and self._catalog_rarity_pools.get("uncommon"):
+        # 3. Uncommon Equipment Roll (3.5% chance - 1 in ~28):
+        if random.random() < 0.035 and self._catalog_rarity_pools.get("uncommon"):
             unc_item = random.choice(self._catalog_rarity_pools["uncommon"])
             self.dropped_items.append(DroppedItem(unc_item, 1, mx, my, self.asset_factory))
 
-        # 4. Rare Roll (0.25% chance): Skill Books, Accessories, Biome Weapons, Rare Gear
-        if random.random() < 0.0025:
+        # 4. Rare Roll (1.5% chance - 1 in ~67): Skill Books, Accessories, Biome Weapons, Rare Gear
+        if random.random() < 0.015:
             rare_pool = [
                 "skillbook_power_slash", "skillbook_whirlwind", "skillbook_dash", "skillbook_fireball",
                 "skillbook_meteor", "skillbook_frost_nova", "skillbook_celestial_shield", "skillbook_void_singularity",
@@ -1162,8 +1175,8 @@ class CombatManager:
                 drop_id = random.choice(rare_pool)
             self.dropped_items.append(DroppedItem(drop_id, 1, mx, my, self.asset_factory))
 
-        # 5. Epic Roll (0.05% chance):
-        if random.random() < 0.0005:
+        # 5. Epic Roll (0.50% chance - 1 in 200):
+        if random.random() < 0.005:
             epic_pool = ["golden_fry", "zephyr_striders", "starch_blade", "shadow_cleaver", "talisman_of_vigor", "lucky_clover", "arcane_orchid"]
             if random.random() < 0.5 and self._catalog_rarity_pools.get("epic"):
                 drop_id = random.choice(self._catalog_rarity_pools["epic"])
@@ -1171,15 +1184,15 @@ class CombatManager:
                 drop_id = random.choice(epic_pool)
             self.dropped_items.append(DroppedItem(drop_id, 1, mx, my, self.asset_factory))
 
-        # 6. MYTHIC ROLL (0.008% chance):
-        if random.random() < 0.00008 and self._catalog_rarity_pools.get("mythic"):
+        # 6. MYTHIC ROLL (0.15% chance - 1 in ~667):
+        if random.random() < 0.0015 and self._catalog_rarity_pools.get("mythic"):
             m_item = random.choice(self._catalog_rarity_pools["mythic"])
             print(f"[LOOT] MYTHIC DROP! {m_item} has dropped from a defeated monster!")
             self.dropped_items.append(DroppedItem(m_item, 1, mx, my, self.asset_factory))
             self.particle_system.spawn_sparks(mx, my, (255, 152, 0), count=30)
 
-        # 7. LEGENDARY ROLL (0.002% chance):
-        if random.random() < 0.00002:
+        # 7. LEGENDARY ROLL (0.05% chance - 1 in 2,000):
+        if random.random() < 0.0005:
             if random.random() < 0.5 or not self._catalog_rarity_pools.get("legendary"):
                 leg_item = "astral_wrath"
             else:
@@ -1188,8 +1201,8 @@ class CombatManager:
             self.dropped_items.append(DroppedItem(leg_item, 1, mx, my, self.asset_factory))
             self.particle_system.spawn_sparks(mx, my, (255, 215, 0), count=45)
 
-        # 8. ANCIENT ROLL (0.0004% chance from regular mobs - 1 in 250,000):
-        if random.random() < 0.000004 and self._catalog_rarity_pools.get("ancient"):
+        # 8. ANCIENT ROLL (0.01% chance from regular mobs - 1 in 10,000):
+        if random.random() < 0.0001 and self._catalog_rarity_pools.get("ancient"):
             anc_item = random.choice(self._catalog_rarity_pools["ancient"])
             self._trigger_ancient_drop(anc_item, mx, my)
 
@@ -1197,7 +1210,7 @@ class CombatManager:
         """Triggers grand celebratory fanfare, screen shake, and celebratory toast when an Ancient relic drops."""
         from src.ui.inventory import ITEM_REGISTRY
         name = ITEM_REGISTRY.get(anc_item, {}).get("name", anc_item.replace("_", " ").title())
-        print(f"[LOOT] ★★★ ANCIENT RELIC DISCOVERED! {name} has fallen! ★★★")
+        print(f"[LOOT] *** ANCIENT RELIC DISCOVERED! {name} has fallen! ***")
         self.dropped_items.append(DroppedItem(anc_item, 1, mx, my, self.asset_factory))
         self.ancient_drop_banner = {
             "item_id": anc_item,
