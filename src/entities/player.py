@@ -530,10 +530,12 @@ class Player:
     def on_graze(self):
         """Called when a boss projectile grazes player perimeter without hitting core hitbox (Touhou style)."""
         self.graze_count += 1
-        self.graze_timer = 0.2
+        self.graze_timer = 0.22
         if hasattr(self, "stats"):
             if hasattr(self.stats, "mp") and hasattr(self.stats, "max_mp"):
                 self.stats.mp = min(self.stats.max_mp, self.stats.mp + 1)
+        if hasattr(self, "sound_manager") and self.sound_manager:
+            self.sound_manager.play("pickup", volume=0.45)
 
     def update(self, dt, world, active_item_id=None):
         if self.graze_timer > 0:
@@ -740,6 +742,16 @@ class Player:
             aura = self.equipment.get_active_aura()
         if aura:
             self._render_active_aura(target_surf, sx + self.width // 2, draw_sy + self.sprite_height // 2, aura)
+
+        # Render Touhou-style graze aura ring upon precision dodge
+        if self.graze_timer > 0:
+            graze_pad = 6
+            gw = self.width + graze_pad * 2
+            gh = self.height + graze_pad * 2
+            graze_surf = pygame.Surface((gw, gh), pygame.SRCALPHA)
+            alpha = max(40, min(180, int((self.graze_timer / 0.22) * 180)))
+            pygame.draw.ellipse(graze_surf, (140, 230, 255, alpha), (1, 1, gw - 2, gh - 2), 2)
+            target_surf.blit(graze_surf, (sx - graze_pad, draw_sy - graze_pad))
 
         # Select Spud Potato frame (12 FPS Animation state)
         if not self.on_ground:

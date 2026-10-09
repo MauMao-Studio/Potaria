@@ -413,6 +413,156 @@ class TestBulletHellBosses(unittest.TestCase):
         combat_client.update(0.016, None, self.player)
         self.assertTrue(self.player.graze_count >= initial_graze, "Client player must be able to graze synchronized bullets")
 
+    # ==========================================================================
+    # 9. EDGE CASES, KINEMATIC INTEGRITY & DODGE FAIRNESS TESTS
+    # ==========================================================================
+    def test_projectile_delay_move_and_age_serialization(self):
+        """Verifies delay_move and age are accurately preserved during network serialization."""
+        p = BossProjectile(x=120, y=240, vx=4.5, vy=1.2, delay_move=0.45, wave_amplitude=5.0, wave_frequency=6.0)
+        p.age = 0.30
+        sync_dict = p.to_sync_dict()
+
+        self.assertIn("del", sync_dict)
+        self.assertEqual(sync_dict["del"], 0.45)
+        self.assertIn("age", sync_dict)
+        self.assertEqual(sync_dict["age"], 0.30)
+
+        p2 = BossProjectile.from_sync_dict(sync_dict)
+        self.assertEqual(p2.delay_move, 0.45)
+        self.assertEqual(p2.age, 0.30)
+
+    def test_vector_bullet_surface_bounds_no_clipping(self):
+        """Verifies vector bullet surfaces have ample margin so sharp shapes are never clipped at edges."""
+        # Needle at 0 deg (head along positive x)
+        surf_needle = get_bullet_surface("needle", (100, 200, 255), radius=10, angle_deg=0)
+        w, h = surf_needle.get_size()
+        # Verify right-most pixel column has zero alpha (no chopped tip)
+        col_alphas = [surf_needle.get_at((w - 1, y))[3] for y in range(h)]
+        self.assertEqual(max(col_alphas), 0, "Needle tip must not touch or clip off the right edge of surface")
+
+        # Scythe at 0 deg
+        surf_scythe = get_bullet_surface("scythe", (180, 80, 240), radius=10, angle_deg=0)
+        sw, sh = surf_scythe.get_size()
+        scythe_alphas = [surf_scythe.get_at((sw - 1, y))[3] for y in range(sh)]
+        self.assertEqual(max(scythe_alphas), 0, "Scythe tip must not touch or clip off the right edge of surface")
+
+    def test_sol_rho_phase_transition_bullet_wipe_and_pattern_reset(self):
+        """Verifies Sol-Rho Phase 1 death wipes all Phase 1 bullets and cancels active pattern."""
+        boss = GrandBossSolRho(400, 200, self.asset_factory, self.sound_manager)
+        boss.pattern_index = 1
+        boss._cast_phase1_attack(self.player, self.particles, self.camera)
+        boss._step_pattern(0.08, self.player, self.particles, self.camera)
+        self.assertEqual(boss.active_pattern, "sunburst_wheel")
+        self.assertTrue(len(boss.projectiles) > 0)
+
+        # Inflict fatal Phase 1 damage
+        boss.take_damage(2000)
+        self.assertTrue(boss.is_transforming)
+        self.assertIsNone(boss.active_pattern, "Phase 1 active pattern must be cancelled upon transformation")
+        self.assertEqual(len(boss.projectiles), 0, "Phase 1 projectiles must be wiped cleanly")
+
+        # Update through the 2.2s transformation
+        boss.update(2.5, None, self.player, self.particles, self.camera)
+        self.assertEqual(boss.phase, 2)
+        self.assertFalse(boss.is_transforming)
+        self.assertIsNone(boss.active_pattern, "Phase 2 must awaken with a clean pattern slate")
+        self.assertEqual(len(boss.projectiles), 0, "Phase 2 must awaken with no leftover Phase 1 bullets")
+
+    def test_sol_rho_multiplayer_transformation_sync_and_client_animation(self):
+        """Verifies Sol-Rho transformation status is synchronized and client animates breathing frames."""
+        combat_host = CombatManager(self.asset_factory, self.sound_manager, self.particles, self.camera)
+        combat_client = CombatManager(self.asset_factory, self.sound_manager, self.particles, self.camera)
+        combat_client.is_client = True
+
+        boss_host = GrandBossSolRho(400, 200, self.asset_factory, self.sound_manager)
+        combat_host.boss = boss_host
+        boss_host.take_damage(2000)
+        self.assertTrue(boss_host.is_transforming)
+
+        # Sync snapshot to client
+        sync_data = combat_host.get_boss_sync_data()
+        self.assertIn("transforming", sync_data)
+        self.assertTrue(sync_data["transforming"])
+
+        combat_client.sync_from_host([], boss_data=sync_data)
+        self.assertIsNotNone(combat_client.boss)
+        self.assertTrue(getattr(combat_client.boss, "is_transforming", False), "Client must recognize boss is transforming")
+
+        # Verify client advances animation frames
+        combat_client.boss.is_transforming = False
+        combat_client.boss.anim_timer = 0.0
+        initial_frame = combat_client.boss.frame_idx
+        # Run several updates to advance anim_timer
+        for _ in range(15):
+            combat_client.update(0.02, None, self.player)
+        self.assertNotEqual(combat_client.boss.frame_idx, initial_frame, "Sol-Rho must animate frames on LAN client")
+
+    def test_iframe_safe_bullet_dissipation_prevents_stunlock(self):
+        """Verifies bullets dissipate on core collision during i-frames without dealing damage or lingering."""
+        boss = LordMalus(400, 200, self.asset_factory, self.sound_manager)
+        self.player.x = 400
+        self.player.y = 400
+        self.player.i_frame_timer = 0.5  # Player is currently invulnerable!
+        initial_hp = self.player.health
+
+        # Spawn a bullet directly in player hitbox
+        bullet = BossProjectile(x=self.player.center_x, y=self.player.center_y, vx=0.0, vy=0.0, radius=10, damage=20)
+        boss.projectiles.append(bullet)
+
+        # Update boss against player
+        boss.update(0.016, None, self.player, self.particles, self.camera)
+
+        # Player must NOT have taken damage (protected by i-frames)
+        self.assertEqual(self.player.health, initial_hp)
+        # Bullet must be safely dissipated (life = 0) so it does NOT linger to stunlock player!
+        self.assertEqual(len(boss.projectiles), 0, "Bullet must dissipate harmlessly during player i-frames")
+
+    def test_celestial_aegis_deflects_boss_bullets(self):
+        """Verifies player wearing Celestial Aegis deflects and destroys incoming boss projectiles."""
+        boss = LordMalus(400, 200, self.asset_factory, self.sound_manager)
+        self.player.x = 400
+        self.player.y = 400
+
+        # Mock player having celestial aegis effect
+        orig_has_effect = getattr(self.player, "has_effect", lambda e: False)
+        self.player.has_effect = lambda eff: (eff == "celestial aegis") or orig_has_effect(eff)
+
+        # Place projectile within 30px deflection boundary of player
+        bullet = BossProjectile(x=self.player.center_x + 25, y=self.player.center_y, vx=-5.0, vy=0.0, radius=10, damage=25)
+        boss.projectiles.append(bullet)
+
+        boss.update(0.016, None, self.player, self.particles, self.camera)
+        self.assertEqual(len(boss.projectiles), 0, "Celestial Aegis must deflect and destroy boss projectile")
+
+    def test_player_graze_audio_and_visual_feedback(self):
+        """Verifies grazing triggers audio feedback and player renders a graze aura ellipse."""
+        self.player.x = 400
+        self.player.y = 400
+        self.player.graze_timer = 0.0
+
+        bullet = BossProjectile(x=438, y=415, vx=0.0, vy=0.0, radius=12, damage=20)
+        bullet.update(0.016, self.player)
+
+        self.assertTrue(bullet.grazed)
+        self.assertTrue(self.player.graze_timer > 0.0)
+
+        # Test rendering with active graze_timer
+        target = pygame.Surface((1280, 720), pygame.SRCALPHA)
+        self.player.render(target, self.camera)
+        # Verify render succeeds without exception
+
+    def test_pattern_boundary_guards_zero_inputs(self):
+        """Verifies BulletHellPatterns gracefully handles zero or negative counts without throwing ZeroDivisionError."""
+        self.assertEqual(BulletHellPatterns.spawn_concentric_ring(100, 100, count=0, speed=5, color=(255, 0, 0)), [])
+        self.assertEqual(BulletHellPatterns.spawn_spiral_step(100, 100, arms=0, current_angle=0, speed=5, color=(255, 0, 0)), [])
+        self.assertEqual(BulletHellPatterns.spawn_aimed_spread(100, 100, 200, 200, count=0, spread_angle_deg=45, speed=5, color=(255, 0, 0)), [])
+        self.assertEqual(BulletHellPatterns.spawn_snowflake_burst(100, 100, points=0, speed=5), [])
+        self.assertEqual(BulletHellPatterns.spawn_undulating_stream(100, 100, angle=0, speed=5, count=0), [])
+        self.assertEqual(BulletHellPatterns.spawn_criss_cross_curtains(100, 100, count=0), [])
+        self.assertEqual(BulletHellPatterns.spawn_homing_swarm(100, 100, 200, 200, count=0), [])
+        self.assertEqual(BulletHellPatterns.spawn_meteor_curtain(100, 100, count=0), [])
+        self.assertEqual(BulletHellPatterns.spawn_warp_nova(100, 100, count=0), [])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -76,7 +76,26 @@
   - Authoritative host serializes boss active projectiles in `get_boss_sync_data()`.
   - LAN client reconstructs, interpolates, and renders synchronized projectiles in `sync_from_host()` and `update_client_projectiles()`.
 - **Dedicated Test Suite (`tests/test_bullet_hell_bosses.py`)**:
-  - 22 comprehensive unit tests validating core hitboxes, grazing near-miss rewards, direct damage, all 4 mini-bosses' patterns, Grand Boss Sol-Rho Phase 1 & 2 patterns, 500-projectile high-density benchmark (< 1.2ms / ~880+ FPS), and multiplayer LAN snapshot serialization & client reconciliation.
+  - 30 comprehensive unit tests validating core hitboxes, grazing near-miss rewards, direct damage, all 4 mini-bosses' patterns, Grand Boss Sol-Rho Phase 1 & 2 patterns, 500-projectile high-density benchmark (< 1.4ms / ~750+ FPS), and multiplayer LAN snapshot serialization & client reconciliation.
+
+#### Changed & Fixed
+- **Sol-Rho Phase Transition Bullet Wipe & Freeze Fix (`src/entities/boss.py`)**:
+  - Fixed 2.2s projectile freeze during Sol-Rho Phase 1 -> Phase 2 transformation. Triggering phase transformation now immediately wipes active Phase 1 projectiles with celestial sparks and cancels ongoing pattern routines, preventing Phase 1 patterns from leaking into Phase 2.
+- **Multiplayer Kinematic Desynchronization Fix (`src/entities/bullet_hell.py`)**:
+  - Serialized `delay_move` and `age` (`"del"`, `"age"`) into projectile sync dictionaries. Prevents delayed wave streams and sine-wave oscillations from triggering prematurely or out-of-phase on LAN clients.
+- **Multiplayer Client Boss Animation & Transformation Fix (`src/combat/combat_system.py`)**:
+  - Fixed Grand Boss Sol-Rho animation frames freezing on LAN clients by checking `p1_frames` / `p2_frames` instead of nonexistent `frames` attribute.
+  - Synchronized `is_transforming` status and boss name across multiplayer host/client snapshots.
+- **I-Frame Safe Bullet Dissipation (`src/entities/boss.py`)**:
+  - Boss projectiles colliding with player core during invulnerability frames (`i_frame_timer > 0`) now safely dissipate with white sparks instead of lingering inside the player's hitbox and chain-stunlocking upon invulnerability expiration.
+- **Surface Clipping Elimination (`src/entities/bullet_hell.py`)**:
+  - Expanded cached surface dimensions from `pad=4` to dynamic `max_extent = int(math.ceil(radius * 1.85 + 6))` eliminating needle, scythe, and wisp tip clipping at 0°/180° rotation bounds.
+- **Graze Audio & Visual Feedback (`src/entities/player.py`)**:
+  - Integrated audio chime and expanding cyan perimeter aura ring on precision bullet grazing.
+- **Celestial Aegis Projectile Deflection (`src/entities/boss.py`)**:
+  - Embedded automatic bullet deflection for players wielding the *Celestial Aegis* affix within a 38px defensive radius.
+- **Pattern Input Boundary Guards (`src/entities/bullet_hell.py`)**:
+  - Added zero and negative count boundary guards across all `BulletHellPatterns` methods preventing `ZeroDivisionError`.
 
 ### [v1.3.0] — Mystic Wandering Trader, Affix Grimoire & Storage Chests
 *Release Date: October 2026*

@@ -26,10 +26,10 @@ def get_bullet_surface(shape, color, core_color=(255, 255, 255), radius=10, angl
     if cache_key in _BULLET_SURF_CACHE:
         return _BULLET_SURF_CACHE[cache_key]
 
-    pad = 4
-    size = int(radius * 2 + pad * 2)
+    max_extent = int(math.ceil(radius * 1.85 + 6))
+    size = max_extent * 2
     surf = pygame.Surface((size, size), pygame.SRCALPHA)
-    cx, cy = size // 2, size // 2
+    cx, cy = max_extent, max_extent
     r = int(radius)
     c_rgb = color[:3]
     core_rgb = core_color[:3]
@@ -364,12 +364,14 @@ class BossProjectile:
             "w_f": round(self.wave_frequency, 1),
             "curv": round(self.curve_rate, 2),
             "acc": round(self.accel, 3),
+            "del": round(self.delay_move, 2),
+            "age": round(self.age, 2),
         }
 
     @classmethod
     def from_sync_dict(cls, d, sprite=None):
         """Reconstructs projectile from authoritative host sync packet."""
-        return cls(
+        proj = cls(
             x=d.get("x", 0.0),
             y=d.get("y", 0.0),
             vx=d.get("vx", 0.0),
@@ -388,8 +390,11 @@ class BossProjectile:
             wave_frequency=d.get("w_f", 0.0),
             curve_rate=d.get("curv", 0.0),
             accel=d.get("acc", 1.0),
+            delay_move=d.get("del", 0.0),
             p_id=d.get("id")
         )
+        proj.age = float(d.get("age", 0.0))
+        return proj
 
 
 # ==============================================================================
@@ -407,6 +412,8 @@ class BulletHellPatterns:
         Expanding concentric ring with designated dodge gaps.
         gaps: list of (start_angle_rad, end_angle_rad) tuples defining safe passage lanes.
         """
+        if count <= 0:
+            return []
         projs = []
         angle_step = (2.0 * math.pi) / count
         gaps = gaps or []
@@ -449,6 +456,8 @@ class BulletHellPatterns:
         radius=10, damage=18, shape="orb", curve_rate=0.0, accel=1.0
     ):
         """Single time-step of a rotating multi-arm spiral barrage."""
+        if arms <= 0:
+            return []
         projs = []
         arm_step = (2.0 * math.pi) / arms
         for a in range(arms):
@@ -470,6 +479,8 @@ class BulletHellPatterns:
         color, core_color=(255, 255, 255), radius=10, damage=18, shape="shard"
     ):
         """Aimed fan of projectiles centered on the player's vector."""
+        if count <= 0:
+            return []
         projs = []
         base_angle = math.atan2(target_y - cy, target_x - cx)
         spread_rad = math.radians(spread_angle_deg)
@@ -498,6 +509,8 @@ class BulletHellPatterns:
         core_color=(255, 255, 255), radius=11, damage=18, offset_angle=0.0
     ):
         """Symmetrical 16-point geometric crystalline snowflake burst."""
+        if points <= 0:
+            return []
         projs = []
         step = (2.0 * math.pi) / points
         for i in range(points):
@@ -518,6 +531,8 @@ class BulletHellPatterns:
         color=(140, 235, 255), core_color=(255, 255, 255), radius=9, damage=16
     ):
         """High-velocity serpentine sine-wave stream."""
+        if count <= 0:
+            return []
         projs = []
         for i in range(count):
             delay = i * 0.06
@@ -540,10 +555,13 @@ class BulletHellPatterns:
         color=(210, 210, 225), core_color=(255, 255, 255), damage=18
     ):
         """Perpendicular criss-crossing bullet grids forming moving dodge corridors."""
+        if count <= 0:
+            return []
         projs = []
+        c = max(2, count)
         # Horizontal streams from left and right
-        for i in range(count // 2):
-            y_offset = (i - (count // 4)) * 70.0
+        for i in range(c // 2):
+            y_offset = (i - (c // 4)) * 70.0
             py = target_y + y_offset
             # Left to right
             projs.append(BossProjectile(
@@ -567,6 +585,8 @@ class BulletHellPatterns:
         color=(160, 40, 220), core_color=(240, 180, 255), radius=10, damage=18
     ):
         """Cluster of tracking shadow wisps."""
+        if count <= 0:
+            return []
         projs = []
         base_ang = math.atan2(target_y - cy, target_x - cx)
         for i in range(count):
@@ -589,6 +609,8 @@ class BulletHellPatterns:
         color=(255, 75, 25), damage=24
     ):
         """Cascading angled meteor curtain falling across the battlefield."""
+        if count <= 0:
+            return []
         projs = []
         step = spread_w / count
         start_x = target_x - spread_w / 2.0
@@ -611,6 +633,8 @@ class BulletHellPatterns:
         core_color=(255, 255, 255), radius=10, damage=22
     ):
         """Omni-directional 360-degree starburst nova following a warp/blitz."""
+        if count <= 0:
+            return []
         projs = []
         step = (2.0 * math.pi) / count
         for i in range(count):

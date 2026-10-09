@@ -240,8 +240,11 @@ class CombatManager:
                     self.boss.anim_timer += dt
                     if self.boss.anim_timer >= 0.18:
                         self.boss.anim_timer = 0.0
-                        if hasattr(self.boss, "frames") and len(self.boss.frames) > 0:
-                            self.boss.frame_idx = (self.boss.frame_idx + 1) % len(self.boss.frames)
+                        frames_list = getattr(self.boss, "frames", None)
+                        if not frames_list:
+                            frames_list = getattr(self.boss, "p1_frames" if getattr(self.boss, "phase", 1) == 1 else "p2_frames", [])
+                        if frames_list and len(frames_list) > 0:
+                            self.boss.frame_idx = (self.boss.frame_idx + 1) % len(frames_list)
                 if hasattr(self.boss, "target_x") and hasattr(self.boss, "target_y"):
                     dist_b = math.hypot(self.boss.x - self.boss.target_x, self.boss.y - self.boss.target_y)
                     if dist_b > 120.0:
@@ -255,9 +258,9 @@ class CombatManager:
                     self.boss.y += self.boss.vy * dt * 60
 
                 if hasattr(self.boss, "update_client_projectiles"):
-                    self.boss.update_client_projectiles(dt, player, self.particle_system, self.camera)
+                    self.boss.update_client_projectiles(dt, player, self.particle_system, self.camera, combat=self)
             else:
-                self.boss.update(dt, world, player, self.particle_system, self.camera)
+                self.boss.update(dt, world, player, self.particle_system, self.camera, combat=self)
             
             if not self.boss.is_dead and self.boss.rect.colliderect(player.rect):
                 knock_dir = 1.0 if player.center_x > self.boss.center_x else -1.0
@@ -1508,6 +1511,7 @@ class CombatManager:
             "max_hp": int(self.boss.max_hp),
             "phase": int(getattr(self.boss, "phase", 1)),
             "hurt": getattr(self.boss, "hurt_timer", 0.0) > 0,
+            "transforming": bool(getattr(self.boss, "is_transforming", False)),
         }
         if hasattr(self.boss, "get_projectiles_sync_data"):
             b_dict["projectiles"] = self.boss.get_projectiles_sync_data()
@@ -1579,6 +1583,7 @@ class CombatManager:
                 from src.entities.boss import create_boss_by_type
                 self.boss = create_boss_by_type(b_type, b_x, b_y, self.asset_factory, self.sound_manager)
                 self.boss.boss_type = b_type
+            self.boss.name = str(boss_data.get("name", getattr(self.boss, "name", "Boss")))
             self.boss.target_x = b_x
             self.boss.target_y = b_y
             if not hasattr(self.boss, "target_x"):
@@ -1589,6 +1594,7 @@ class CombatManager:
             self.boss.hp = int(boss_data.get("hp", self.boss.hp))
             self.boss.max_hp = int(boss_data.get("max_hp", self.boss.max_hp))
             self.boss.phase = int(boss_data.get("phase", 1))
+            self.boss.is_transforming = bool(boss_data.get("transforming", False))
             if boss_data.get("hurt"):
                 self.boss.hurt_timer = 0.2
             if "projectiles" in boss_data and hasattr(self.boss, "sync_projectiles"):

@@ -142,7 +142,7 @@ class DungeonMiniBoss:
             self.is_dead = True
         return True
 
-    def update(self, dt, world, player, particle_system, camera):
+    def update(self, dt, world, player, particle_system, camera, combat=None):
         if self.is_dead:
             return
 
@@ -199,16 +199,31 @@ class DungeonMiniBoss:
         # Update Projectiles & Graze / Damage Detection
         for p in self.projectiles:
             p.update(dt, player)
-            if p.rect.colliderect(player.rect):
+
+            # Celestial Aegis: Deflects / destroys enemy projectiles near player
+            if p.life > 0 and getattr(player, "has_effect", None) and player.has_effect("celestial aegis"):
+                if math.hypot(p.x - player.center_x, p.y - player.center_y) < 38.0:
+                    p.life = 0
+                    if self.sound_manager:
+                        self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
+                    particle_system.spawn_sparks(p.x, p.y, (100, 220, 255), count=10)
+                    continue
+
+            if p.life > 0 and p.rect.colliderect(player.rect):
                 damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-3.5)
+                # Dissipate non-singularity projectile upon core collision (prevents lingering stunlock during i-frames)
+                if getattr(p, "p_type", "linear") != "singularity":
+                    p.life = 0
                 if damaged:
-                    if getattr(p, "p_type", "linear") != "singularity":
-                        p.life = 0
                     particle_system.spawn_sparks(player.center_x, player.center_y, self._trail_color(), 8)
                     camera.add_shake(4.0, 0.2)
+                    if combat and hasattr(combat, "spawn_damage_number"):
+                        combat.spawn_damage_number(player.center_x, player.y - 10, p.damage, color=(255, 50, 50))
+                else:
+                    particle_system.spawn_sparks(p.x, p.y, (255, 255, 255), count=4)
             elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
                 p._graze_sparked = True
-                particle_system.spawn_sparks(p.x, p.y, (180, 240, 255), count=1)
+                particle_system.spawn_sparks(p.x, p.y, (180, 240, 255), count=2)
 
         self.projectiles = [p for p in self.projectiles if p.life > 0]
 
@@ -230,13 +245,17 @@ class DungeonMiniBoss:
                 self.projectiles.append(BossProjectile(self.center_x, self.center_y, svx, svy, self.proj_sprite, damage=self.damage - 4))
         particle_system.spawn_sparks(self.center_x, self.center_y, self._trail_color(), count=10)
 
-    def get_projectiles_sync_data(self):
+    def get_projectiles_sync_data(self, player=None):
         """Serializes active projectiles on host for network broadcast."""
         data = []
-        projs = self.projectiles[-200:] if len(self.projectiles) > 200 else self.projectiles
-        for p in projs:
-            if p.life > 0:
-                data.append(p.to_sync_dict())
+        alive = [p for p in self.projectiles if p.life > 0]
+        if len(alive) > 350 and player:
+            alive.sort(key=lambda p: math.hypot(p.x - player.center_x, p.y - player.center_y))
+            alive = alive[:350]
+        elif len(alive) > 350:
+            alive = alive[:350]
+        for p in alive:
+            data.append(p.to_sync_dict())
         return data
 
     def sync_projectiles(self, proj_data_list):
@@ -249,34 +268,57 @@ class DungeonMiniBoss:
             pid = pd.get("id")
             if pid is not None and pid in existing_by_id:
                 p = existing_by_id[pid]
-                p.x = p.x * 0.70 + float(pd.get("x", p.x)) * 0.30
-                p.y = p.y * 0.70 + float(pd.get("y", p.y)) * 0.30
+                dist = math.hypot(p.x - float(pd.get("x", p.x)), p.y - float(pd.get("y", p.y)))
+                if dist > 120.0:
+                    p.x = float(pd.get("x", p.x))
+                    p.y = float(pd.get("y", p.y))
+                else:
+                    p.x = p.x * 0.70 + float(pd.get("x", p.x)) * 0.30
+                    p.y = p.y * 0.70 + float(pd.get("y", p.y)) * 0.30
                 p.vx = float(pd.get("vx", p.vx))
                 p.vy = float(pd.get("vy", p.vy))
                 p.life = float(pd.get("l", p.life))
+                p.delay_move = float(pd.get("del", p.delay_move))
                 new_list.append(p)
             else:
                 new_p = BossProjectile.from_sync_dict(pd, sprite=self.proj_sprite)
                 new_list.append(new_p)
         self.projectiles = new_list
 
-    def update_client_projectiles(self, dt, player, particle_system, camera):
+    def update_client_projectiles(self, dt, player, particle_system, camera, combat=None):
         """Updates and handles projectile dodging/grazing on LAN client."""
         for p in self.projectiles:
             p.update(dt, player)
-            if p.rect.colliderect(player.rect):
+
+            # Celestial Aegis: Deflects / destroys enemy projectiles near player
+            if p.life > 0 and getattr(player, "has_effect", None) and player.has_effect("celestial aegis"):
+                if math.hypot(p.x - player.center_x, p.y - player.center_y) < 38.0:
+                    p.life = 0
+                    if self.sound_manager:
+                        self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
+                    if particle_system:
+                        particle_system.spawn_sparks(p.x, p.y, (100, 220, 255), count=10)
+                    continue
+
+            if p.life > 0 and p.rect.colliderect(player.rect):
                 damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-3.5)
+                # Dissipate non-singularity projectile upon core collision (prevents lingering stunlock during i-frames)
+                if getattr(p, "p_type", "linear") != "singularity":
+                    p.life = 0
                 if damaged:
-                    if getattr(p, "p_type", "linear") != "singularity":
-                        p.life = 0
                     if particle_system:
                         particle_system.spawn_sparks(player.center_x, player.center_y, self._trail_color(), 8)
                     if camera:
                         camera.add_shake(4.0, 0.2)
+                    if combat and hasattr(combat, "spawn_damage_number"):
+                        combat.spawn_damage_number(player.center_x, player.y - 10, p.damage, color=(255, 50, 50))
+                else:
+                    if particle_system:
+                        particle_system.spawn_sparks(p.x, p.y, (255, 255, 255), count=4)
             elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
                 p._graze_sparked = True
                 if particle_system:
-                    particle_system.spawn_sparks(p.x, p.y, (180, 240, 255), count=1)
+                    particle_system.spawn_sparks(p.x, p.y, (180, 240, 255), count=2)
         self.projectiles = [p for p in self.projectiles if p.life > 0]
 
     def _trail_color(self):
@@ -954,6 +996,9 @@ class GrandBossSolRho:
             self.hp = 0
             self.is_transforming = True
             self.transform_timer = 2.2
+            self.active_pattern = None
+            if hasattr(self, "projectiles"):
+                self.projectiles.clear()
             self.sound_manager.play("craft")
             return True
 
@@ -966,7 +1011,7 @@ class GrandBossSolRho:
 
         return True
 
-    def update(self, dt, world, player, particle_system, camera):
+    def update(self, dt, world, player, particle_system, camera, combat=None):
         if self.is_dead:
             return
 
@@ -978,6 +1023,11 @@ class GrandBossSolRho:
             self.transform_timer -= dt
             self.vx = 0.0
             self.vy = 0.0
+            self.active_pattern = None
+            if hasattr(self, "projectiles") and self.projectiles:
+                for p in self.projectiles:
+                    particle_system.spawn_sparks(p.x, p.y, (255, 230, 100), count=3)
+                self.projectiles.clear()
             camera.add_shake(12.0, 0.4)
             # Explode in cosmic void sparks
             particle_system.spawn_sparks(self.center_x + random.uniform(-40, 40),
@@ -997,6 +1047,8 @@ class GrandBossSolRho:
                 self.state = "float"
                 self.state_timer = 2.0
                 self.attack_cooldown = 0.85
+                self.active_pattern = None
+                self.projectiles.clear()
                 camera.add_shake(18.0, 0.8)
                 self.sound_manager.play("hurt")
             return
@@ -1095,16 +1147,31 @@ class GrandBossSolRho:
         # Update Projectiles & Graze / Damage Detection
         for p in self.projectiles:
             p.update(dt, player)
-            if p.rect.colliderect(player.rect):
+
+            # Celestial Aegis: Deflects / destroys enemy projectiles near player
+            if p.life > 0 and getattr(player, "has_effect", None) and player.has_effect("celestial aegis"):
+                if math.hypot(p.x - player.center_x, p.y - player.center_y) < 38.0:
+                    p.life = 0
+                    if self.sound_manager:
+                        self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
+                    particle_system.spawn_sparks(p.x, p.y, (100, 220, 255), count=10)
+                    continue
+
+            if p.life > 0 and p.rect.colliderect(player.rect):
                 damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-4.0)
+                # Dissipate non-singularity projectile upon core collision (prevents lingering stunlock during i-frames)
+                if getattr(p, "p_type", "linear") != "singularity":
+                    p.life = 0
                 if damaged:
-                    if p.p_type != "singularity":
-                        p.life = 0
                     particle_system.spawn_sparks(player.center_x, player.center_y, (255, 60, 160), 10)
                     camera.add_shake(5.0, 0.25)
+                    if combat and hasattr(combat, "spawn_damage_number"):
+                        combat.spawn_damage_number(player.center_x, player.y - 10, p.damage, color=(255, 50, 50))
+                else:
+                    particle_system.spawn_sparks(p.x, p.y, (255, 255, 255), count=4)
             elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
                 p._graze_sparked = True
-                particle_system.spawn_sparks(p.x, p.y, (200, 240, 255), count=1)
+                particle_system.spawn_sparks(p.x, p.y, (200, 240, 255), count=2)
 
         self.projectiles = [p for p in self.projectiles if p.life > 0]
 
@@ -1327,13 +1394,17 @@ class GrandBossSolRho:
         ))
         particle_system.spawn_sparks(sx, sy, (140, 30, 240), count=25)
 
-    def get_projectiles_sync_data(self):
+    def get_projectiles_sync_data(self, player=None):
         """Serializes active projectiles on host for network broadcast."""
         data = []
-        projs = self.projectiles[-200:] if len(self.projectiles) > 200 else self.projectiles
-        for p in projs:
-            if p.life > 0:
-                data.append(p.to_sync_dict())
+        alive = [p for p in self.projectiles if p.life > 0]
+        if len(alive) > 350 and player:
+            alive.sort(key=lambda p: math.hypot(p.x - player.center_x, p.y - player.center_y))
+            alive = alive[:350]
+        elif len(alive) > 350:
+            alive = alive[:350]
+        for p in alive:
+            data.append(p.to_sync_dict())
         return data
 
     def sync_projectiles(self, proj_data_list):
@@ -1346,35 +1417,64 @@ class GrandBossSolRho:
             pid = pd.get("id")
             if pid is not None and pid in existing_by_id:
                 p = existing_by_id[pid]
-                p.x = p.x * 0.70 + float(pd.get("x", p.x)) * 0.30
-                p.y = p.y * 0.70 + float(pd.get("y", p.y)) * 0.30
+                dist = math.hypot(p.x - float(pd.get("x", p.x)), p.y - float(pd.get("y", p.y)))
+                if dist > 120.0:
+                    p.x = float(pd.get("x", p.x))
+                    p.y = float(pd.get("y", p.y))
+                else:
+                    p.x = p.x * 0.70 + float(pd.get("x", p.x)) * 0.30
+                    p.y = p.y * 0.70 + float(pd.get("y", p.y)) * 0.30
                 p.vx = float(pd.get("vx", p.vx))
                 p.vy = float(pd.get("vy", p.vy))
                 p.life = float(pd.get("l", p.life))
+                p.delay_move = float(pd.get("del", p.delay_move))
                 new_list.append(p)
             else:
-                sprite = self.solar_orb_sprite if self.phase == 1 else self.void_meteor_sprite
+                s_shape = pd.get("s", "orb")
+                if s_shape == "singularity":
+                    sprite = self.singularity_sprite
+                elif self.phase == 1:
+                    sprite = self.solar_orb_sprite
+                else:
+                    sprite = self.void_meteor_sprite
                 new_p = BossProjectile.from_sync_dict(pd, sprite=sprite)
                 new_list.append(new_p)
         self.projectiles = new_list
 
-    def update_client_projectiles(self, dt, player, particle_system, camera):
+    def update_client_projectiles(self, dt, player, particle_system, camera, combat=None):
         """Updates and handles projectile dodging/grazing on LAN client."""
         for p in self.projectiles:
             p.update(dt, player)
-            if p.rect.colliderect(player.rect):
+
+            # Celestial Aegis: Deflects / destroys enemy projectiles near player
+            if p.life > 0 and getattr(player, "has_effect", None) and player.has_effect("celestial aegis"):
+                if math.hypot(p.x - player.center_x, p.y - player.center_y) < 38.0:
+                    p.life = 0
+                    if self.sound_manager:
+                        self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
+                    if particle_system:
+                        particle_system.spawn_sparks(p.x, p.y, (100, 220, 255), count=10)
+                    continue
+
+            if p.life > 0 and p.rect.colliderect(player.rect):
                 damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-4.0)
+                # Dissipate non-singularity projectile upon core collision (prevents lingering stunlock during i-frames)
+                if getattr(p, "p_type", "linear") != "singularity":
+                    p.life = 0
                 if damaged:
-                    if p.p_type != "singularity":
-                        p.life = 0
                     if particle_system:
                         particle_system.spawn_sparks(player.center_x, player.center_y, (255, 60, 160), 10)
                     if camera:
                         camera.add_shake(5.0, 0.25)
+                    if combat and hasattr(combat, "spawn_damage_number"):
+                        combat.spawn_damage_number(player.center_x, player.y - 10, p.damage, color=(255, 50, 50))
+                else:
+                    if particle_system:
+                        particle_system.spawn_sparks(p.x, p.y, (255, 255, 255), count=4)
             elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
                 p._graze_sparked = True
                 if particle_system:
-                    particle_system.spawn_sparks(p.x, p.y, (200, 240, 255), count=1)
+                    particle_system.spawn_sparks(p.x, p.y, (200, 240, 255), count=2)
         self.projectiles = [p for p in self.projectiles if p.life > 0]
 
     def render(self, target_surf, camera):
