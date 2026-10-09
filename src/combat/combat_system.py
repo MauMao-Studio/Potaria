@@ -209,7 +209,7 @@ class CombatManager:
             self.particle_system.spawn_sparks(player.center_x, player.center_y, (255, 240, 100), count=25)
         self._drop_mob_loot(mob)
 
-    def update(self, dt, world, player, is_night, time_of_day=None):
+    def update(self, dt, world, player, is_night=False, time_of_day=None):
         if time_of_day is None:
             if isinstance(is_night, (int, float)) and not isinstance(is_night, bool):
                 time_of_day = float(is_night)
@@ -253,6 +253,9 @@ class CombatManager:
                 else:
                     self.boss.x += self.boss.vx * dt * 60
                     self.boss.y += self.boss.vy * dt * 60
+
+                if hasattr(self.boss, "update_client_projectiles"):
+                    self.boss.update_client_projectiles(dt, player, self.particle_system, self.camera)
             else:
                 self.boss.update(dt, world, player, self.particle_system, self.camera)
             
@@ -1493,7 +1496,7 @@ class CombatManager:
         if not self.boss or self.boss.is_dead:
             return None
         b_type = getattr(self.boss, "boss_type", "lord_malus")
-        return {
+        b_dict = {
             "type": b_type,
             "boss_type": b_type,
             "name": getattr(self.boss, "name", "Boss"),
@@ -1506,6 +1509,9 @@ class CombatManager:
             "phase": int(getattr(self.boss, "phase", 1)),
             "hurt": getattr(self.boss, "hurt_timer", 0.0) > 0,
         }
+        if hasattr(self.boss, "get_projectiles_sync_data"):
+            b_dict["projectiles"] = self.boss.get_projectiles_sync_data()
+        return b_dict
 
     def sync_from_host(self, mobs_data, boss_data=None, enemy_projectiles=None, dropped_items=None):
         """Updates and reconciles client mob entities from authoritative host snapshot."""
@@ -1585,6 +1591,8 @@ class CombatManager:
             self.boss.phase = int(boss_data.get("phase", 1))
             if boss_data.get("hurt"):
                 self.boss.hurt_timer = 0.2
+            if "projectiles" in boss_data and hasattr(self.boss, "sync_projectiles"):
+                self.boss.sync_projectiles(boss_data["projectiles"])
         else:
             if self.boss:
                 if isinstance(self.boss, GrandBossSolRho):

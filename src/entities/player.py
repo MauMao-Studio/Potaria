@@ -110,6 +110,10 @@ class Player:
         self.eternal_bloom_cd = 0.0
         self.life_surge_timer = 0.0
 
+        # Bullet-Hell Grazing Mechanics (Touhou / Enter the Gungeon style)
+        self.graze_count = 0
+        self.graze_timer = 0.0
+
         # Furniture & Bed Resting System
         self.spawn_point = None
         self.is_resting = False
@@ -523,7 +527,18 @@ class Player:
 
         return True
 
+    def on_graze(self):
+        """Called when a boss projectile grazes player perimeter without hitting core hitbox (Touhou style)."""
+        self.graze_count += 1
+        self.graze_timer = 0.2
+        if hasattr(self, "stats"):
+            if hasattr(self.stats, "mp") and hasattr(self.stats, "max_mp"):
+                self.stats.mp = min(self.stats.max_mp, self.stats.mp + 1)
+
     def update(self, dt, world, active_item_id=None):
+        if self.graze_timer > 0:
+            self.graze_timer -= dt
+
         if active_item_id is not None and active_item_id != getattr(self, "_current_held_id", None):
             self._current_held_id = active_item_id
             self.equipment.recalculate_stats(self.stats, active_item_id)

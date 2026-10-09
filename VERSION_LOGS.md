@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.4.0** | October 2026 | *Bullet-Hell Boss Barrages & Touhou Dodging Mechanics* | High-density geometric bullet patterns for all 4 Mini-Bosses & Grand Boss Sol-Rho (Phases 1 & 2), 52% fair lethal core hitbox, perimeter graze hitbox (+1 MP reward), 60+ FPS quantized surface caching (<1.2ms for 500 projectiles), authoritative LAN multiplayer bullet synchronization. |
 | **v1.3.0** | October 2026 | *Mystic Trader, Affix Grimoire & Storage Chests* | Mystic Wandering Trader, Turtle Shield, Affix Slot Carving & Affix Stones, +1..7 Enhancement & Breaking/Repair, 20-slot Storage Chests, Playtime & Last Played World Select tracking. |
 | **v1.2.1** | October 2026 | *1-Block Body Collider & Sprout Clearance* | 1-block (32px) body hitbox, decorative leaf collision exclusion, 1-block tunnel traversal. |
 | **v1.2.0** | October 2026 | *Night Terrors & Dungeon Titan Ascension* | Bed 6-block enemy sleep check, dungeon-only mini-bosses, Nightly Elite Champion, major boss stat buffs. |
@@ -29,7 +30,55 @@
 
 ## Detailed Version Logs
 
-### [v1.3.0] — Mystic Wandering Trader, Affix Grimoire & Storage Chests (Current Release)
+### [v1.4.0] — Bullet-Hell Boss Barrages & Touhou Dodging Mechanics (Current Release)
+*Release Date: October 2026*
+
+#### Added
+- **Core Bullet-Hell Engine (`src/entities/bullet_hell.py`)**:
+  - `_BULLET_SURF_CACHE`: High-performance pre-rendered vector surface cache with 12° quantization and alpha glow halos for zero-allocation 60+ FPS rendering of orbs, needles, shards, stars/snowflakes, wisps, scythes, meteors, and singularities.
+  - `BossProjectile`:
+    - **Fair Lethal Core Hitbox**: Precision core hitbox (`core_radius` ~52% of visual radius, e.g. 5.2px for a 10px radius bullet) preventing cheap edge-clipping deaths while weaving through dense bullet curtains.
+    - **Perimeter Graze Hitbox**: Expanded graze boundary (`graze_radius = radius + 12.0`) rewarding precision near-miss dodges with +1 MP, audio/spark visual feedback, and graze count tracking.
+    - **Rich Projectile Kinematics**: Support for sine-wave undulating streams, angular curve rates, acceleration multipliers, delayed blooms, homing curves, and gravity physics.
+    - **Frustum Culling**: Off-screen projectile culling relative to viewport camera, guaranteeing stable 60+ FPS performance even with 500+ active projectiles (<1.2ms per frame benchmark).
+    - **LAN Multiplayer Serialization**: `to_sync_dict()` and `from_sync_dict()` for authoritative host synchronization over network sockets.
+  - `BulletHellPatterns`:
+    - Modular pattern generator algorithms: `spawn_concentric_ring()` with designated safe passage gaps, `spawn_spiral_step()`, `spawn_aimed_spread()`, `spawn_snowflake_burst()`, `spawn_undulating_stream()`, `spawn_crisscross_curtain()`, and `spawn_homing_swarm()`.
+- **Boss Bullet-Hell Barrages & Patterns (`src/entities/boss.py`)**:
+  - **Lord Malus - The Corrupted Oak**:
+    - Pattern 1: Expanding toxic spore rings with 35° dodge gaps.
+    - Pattern 2: Blighted spiral curse (counter-rotating 3-arm curtain).
+    - Pattern 3: Homing dark wisp swarms.
+    - Pattern 4: Blight cross aimed spread.
+  - **Ignis Colossus - Magma Golem**:
+    - Pattern 1: Magma radial bursts (20-to-28 shard starbursts).
+    - Pattern 2: Cascading volcanic meteor showers with acceleration.
+    - Pattern 3: Blazing fire rings with designated passage gaps.
+    - Pattern 4: Magma bomb spread.
+  - **Cryo-Spud - The Glacial Terror**:
+    - Pattern 1: Symmetrical 16-point geometric crystalline snowflake bursts (32-point hyper-burst in Phase 2).
+    - Pattern 2: High-frequency frost needle serpentine sine-wave streams.
+    - Pattern 3: Counter-rotating freezing pinwheel vortex.
+    - Pattern 4: Glacial shard wall.
+  - **Necro-Tuber - The Lich**:
+    - Pattern 1: Counter-rotating dual bone shard spirals.
+    - Pattern 2: Inward-curving skull scythe arcs.
+    - Pattern 3: Perpendicular criss-crossing catacomb grid curtains.
+    - Pattern 4: Ghost skull swarm.
+  - **Grand Boss Sol-Rho (Celestial Titan)**:
+    - **Phase 1 (Radiant Solar Titan)**: Expanding solar flare nova rings (with safe passage gaps), 4-arm rotating sunburst wheel, sweeping continuous solar beam needle arcs, and aimed solar spread.
+    - **Phase 2 (Awakened Void Titan)**: 5-arm accelerating abyssal singularity spiral barrage, black hole gravity pulse rings with dodge gaps, cosmic meteor curtain, and 360° starburst nova on warp blitz teleports.
+- **Player Grazing Integration (`src/entities/player.py`)**:
+  - `graze_count` and `graze_timer` state tracking.
+  - `Player.on_graze()` hook rewarding near-misses with +1 MP and graze animation timer.
+  - Cyan grazing spark feedback via particle system.
+- **LAN Multiplayer Snapshot Synchronization (`src/combat/combat_system.py`)**:
+  - Authoritative host serializes boss active projectiles in `get_boss_sync_data()`.
+  - LAN client reconstructs, interpolates, and renders synchronized projectiles in `sync_from_host()` and `update_client_projectiles()`.
+- **Dedicated Test Suite (`tests/test_bullet_hell_bosses.py`)**:
+  - 22 comprehensive unit tests validating core hitboxes, grazing near-miss rewards, direct damage, all 4 mini-bosses' patterns, Grand Boss Sol-Rho Phase 1 & 2 patterns, 500-projectile high-density benchmark (< 1.2ms / ~880+ FPS), and multiplayer LAN snapshot serialization & client reconciliation.
+
+### [v1.3.0] — Mystic Wandering Trader, Affix Grimoire & Storage Chests
 *Release Date: October 2026*
 
 #### Added

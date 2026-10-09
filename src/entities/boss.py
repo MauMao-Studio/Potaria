@@ -12,65 +12,9 @@ import random
 import pygame
 from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALED_TILE
 
-class BossProjectile:
-    """Universal ballistic or homing boss projectile."""
-    def __init__(self, x, y, vx, vy, sprite, damage=18, radius=12, life=4.0, p_type="linear", gravity=0.0):
-        self.x = float(x)
-        self.y = float(y)
-        self.vx = float(vx)
-        self.vy = float(vy)
-        self.sprite = sprite
-        self.damage = damage
-        self.radius = radius
-        self.life = float(life)
-        self.max_life = float(life)
-        self.p_type = p_type  # "linear", "homing", "gravity", "singularity", "meteor"
-        self.gravity = gravity
-        self.frect = pygame.FRect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
-
-    @property
-    def rect(self):
-        self.frect.x = self.x - self.radius
-        self.frect.y = self.y - self.radius
-        return self.frect
-
-    def update(self, dt, player=None):
-        self.life -= dt
-        
-        if self.p_type == "gravity":
-            self.vy += self.gravity * dt
-            self.x += self.vx
-            self.y += self.vy
-
-        elif self.p_type == "homing" and player and not player.is_dead:
-            # Gentle steering towards player
-            angle_to_player = math.atan2(player.center_y - self.y, player.center_x - self.x)
-            cur_speed = math.hypot(self.vx, self.vy)
-            self.vx = self.vx * 0.94 + math.cos(angle_to_player) * cur_speed * 0.06
-            self.vy = self.vy * 0.94 + math.sin(angle_to_player) * cur_speed * 0.06
-            self.x += self.vx
-            self.y += self.vy
-
-        elif self.p_type == "singularity" and player and not player.is_dead:
-            # Gravitational vortex pull on player!
-            dist = math.hypot(player.center_x - self.x, player.center_y - self.y)
-            if dist < 320.0 and dist > 10.0:
-                pull = (1.0 - (dist / 320.0)) * 4.5
-                angle = math.atan2(self.y - player.center_y, self.x - player.center_x)
-                player.vx += math.cos(angle) * pull * 0.5
-                player.vy += math.sin(angle) * pull * 0.5
-            self.x += self.vx
-            self.y += self.vy
-
-        else: # "linear" or "meteor"
-            self.x += self.vx
-            self.y += self.vy
-
-    def render(self, target_surf, camera):
-        sw = self.sprite.get_width()
-        sh = self.sprite.get_height()
-        sx, sy = camera.world_to_screen(self.x - sw // 2, self.y - sh // 2)
-        target_surf.blit(self.sprite, (sx, sy))
+from src.entities.bullet_hell import (
+    BossProjectile, BulletHellPatterns, get_bullet_surface
+)
 
 
 # ==============================================================================
@@ -112,6 +56,14 @@ class DungeonMiniBoss:
         self.phase = 1
         self.projectiles = []
         self.attack_cooldown = 1.1
+
+        # Bullet-Hell Pattern State Machine
+        self.pattern_index = 0
+        self.active_pattern = None
+        self.pattern_duration = 0.0
+        self.pattern_step_timer = 0.0
+        self.pattern_angle = 0.0
+        self.pattern_state = {}
 
         # Status Effects (Burn & Bleed DoT)
         self.burn_timer = 0.0
@@ -208,6 +160,10 @@ class DungeonMiniBoss:
         self.state_timer -= dt
         self.attack_cooldown -= dt
 
+        # Step active streaming bullet-hell pattern
+        if self.active_pattern:
+            self._step_pattern(dt, player, particle_system, camera)
+
         if self.state == "hover":
             target_x = player.center_x + math.sin(pygame.time.get_ticks() * 0.002) * 160
             target_y = player.center_y - 130 + math.cos(pygame.time.get_ticks() * 0.003) * 50
@@ -216,9 +172,9 @@ class DungeonMiniBoss:
             self.vx *= 0.92
             self.vy *= 0.92
 
-            if self.attack_cooldown <= 0:
+            if self.attack_cooldown <= 0 and not self.active_pattern:
                 self.attack_cooldown = 1.1 if self.phase == 1 else 0.70
-                self._cast_attack(player, particle_system)
+                self._cast_attack(player, particle_system, camera)
 
             if self.state_timer <= 0:
                 self.state = "charge"
@@ -240,19 +196,27 @@ class DungeonMiniBoss:
         self.x += self.vx
         self.y += self.vy
 
-        # Update Projectiles
+        # Update Projectiles & Graze / Damage Detection
         for p in self.projectiles:
             p.update(dt, player)
             if p.rect.colliderect(player.rect):
                 damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-3.5)
                 if damaged:
-                    p.life = 0
+                    if getattr(p, "p_type", "linear") != "singularity":
+                        p.life = 0
                     particle_system.spawn_sparks(player.center_x, player.center_y, self._trail_color(), 8)
                     camera.add_shake(4.0, 0.2)
+            elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
+                p._graze_sparked = True
+                particle_system.spawn_sparks(p.x, p.y, (180, 240, 255), count=1)
 
         self.projectiles = [p for p in self.projectiles if p.life > 0]
 
-    def _cast_attack(self, player, particle_system):
+    def _step_pattern(self, dt, player, particle_system, camera=None):
+        """Steps multi-wave bullet-hell streams (subclasses implement unique behaviors)."""
+        pass
+
+    def _cast_attack(self, player, particle_system, camera=None):
         angle = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
         speed = 5.4
         vx = math.cos(angle) * speed
@@ -265,6 +229,55 @@ class DungeonMiniBoss:
                 svy = math.sin(angle + offset) * speed
                 self.projectiles.append(BossProjectile(self.center_x, self.center_y, svx, svy, self.proj_sprite, damage=self.damage - 4))
         particle_system.spawn_sparks(self.center_x, self.center_y, self._trail_color(), count=10)
+
+    def get_projectiles_sync_data(self):
+        """Serializes active projectiles on host for network broadcast."""
+        data = []
+        projs = self.projectiles[-200:] if len(self.projectiles) > 200 else self.projectiles
+        for p in projs:
+            if p.life > 0:
+                data.append(p.to_sync_dict())
+        return data
+
+    def sync_projectiles(self, proj_data_list):
+        """Reconciles client projectiles from authoritative host snapshot."""
+        if not proj_data_list and not self.projectiles:
+            return
+        existing_by_id = {p.p_id: p for p in self.projectiles if hasattr(p, "p_id")}
+        new_list = []
+        for pd in proj_data_list:
+            pid = pd.get("id")
+            if pid is not None and pid in existing_by_id:
+                p = existing_by_id[pid]
+                p.x = p.x * 0.70 + float(pd.get("x", p.x)) * 0.30
+                p.y = p.y * 0.70 + float(pd.get("y", p.y)) * 0.30
+                p.vx = float(pd.get("vx", p.vx))
+                p.vy = float(pd.get("vy", p.vy))
+                p.life = float(pd.get("l", p.life))
+                new_list.append(p)
+            else:
+                new_p = BossProjectile.from_sync_dict(pd, sprite=self.proj_sprite)
+                new_list.append(new_p)
+        self.projectiles = new_list
+
+    def update_client_projectiles(self, dt, player, particle_system, camera):
+        """Updates and handles projectile dodging/grazing on LAN client."""
+        for p in self.projectiles:
+            p.update(dt, player)
+            if p.rect.colliderect(player.rect):
+                damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-3.5)
+                if damaged:
+                    if getattr(p, "p_type", "linear") != "singularity":
+                        p.life = 0
+                    if particle_system:
+                        particle_system.spawn_sparks(player.center_x, player.center_y, self._trail_color(), 8)
+                    if camera:
+                        camera.add_shake(4.0, 0.2)
+            elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
+                p._graze_sparked = True
+                if particle_system:
+                    particle_system.spawn_sparks(p.x, p.y, (180, 240, 255), count=1)
+        self.projectiles = [p for p in self.projectiles if p.life > 0]
 
     def _trail_color(self):
         return (160, 50, 180)
@@ -357,7 +370,7 @@ class DungeonMiniBoss:
         target_surf.blit(num_txt, (cx - num_txt.get_width() // 2, bar_y + 2))
 
 
-# Specific Mini-Boss Classes
+# Specific Mini-Boss Classes with Signature Bullet-Hell Patterns
 class LordMalus(DungeonMiniBoss):
     boss_type = "lord_malus"
     def __init__(self, x, y, asset_factory, sound_manager):
@@ -370,6 +383,104 @@ class LordMalus(DungeonMiniBoss):
 
     def _trail_color(self):
         return (140, 40, 180)
+
+    def _step_pattern(self, dt, player, particle_system, camera=None):
+        if not self.active_pattern:
+            return
+        self.pattern_step_timer -= dt
+        self.pattern_duration -= dt
+
+        if self.active_pattern == "blighted_spiral":
+            if self.pattern_step_timer <= 0:
+                self.pattern_step_timer = 0.08
+                arms = self.pattern_state.get("arms", 3)
+                projs = BulletHellPatterns.spawn_spiral_step(
+                    self.center_x, self.center_y, arms=arms,
+                    current_angle=self.pattern_angle, speed=4.8,
+                    color=(170, 40, 230), core_color=(255, 200, 255),
+                    radius=9, damage=self.damage - 5, shape="orb"
+                )
+                self.projectiles.extend(projs)
+                self.pattern_angle += 0.22
+
+        elif self.active_pattern == "toxic_spore_ring2":
+            if self.pattern_step_timer <= 0:
+                self.active_pattern = None
+                ang = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+                # Second wave with alternating dodge gap
+                gaps = [(ang - 0.4, ang + 0.4), (ang + math.pi - 0.4, ang + math.pi + 0.4)]
+                ring = BulletHellPatterns.spawn_concentric_ring(
+                    self.center_x, self.center_y, count=22, speed=4.8,
+                    color=(70, 230, 90), core_color=(240, 255, 240),
+                    radius=10, damage=self.damage - 6, base_angle=ang + 0.15,
+                    gaps=gaps, shape="orb"
+                )
+                self.projectiles.extend(ring)
+                if particle_system:
+                    particle_system.spawn_sparks(self.center_x, self.center_y, (50, 220, 80), count=15)
+
+        if self.pattern_duration <= 0 and self.active_pattern != "toxic_spore_ring2":
+            self.active_pattern = None
+
+    def _cast_attack(self, player, particle_system, camera=None):
+        ang_to_player = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+        p_idx = self.pattern_index % 4
+        self.pattern_index += 1
+
+        if p_idx == 0:
+            # Pattern 1: Toxic Spore Rings (with fair dodge gaps)
+            gaps = [(ang_to_player + 0.65, ang_to_player + 1.25), (ang_to_player - 1.25, ang_to_player - 0.65)]
+            count = 18 if self.phase == 1 else 22
+            spd = 4.3 if self.phase == 1 else 5.0
+            ring = BulletHellPatterns.spawn_concentric_ring(
+                self.center_x, self.center_y, count=count, speed=spd,
+                color=(50, 220, 80), core_color=(230, 255, 230),
+                radius=10, damage=self.damage - 6, base_angle=ang_to_player,
+                gaps=gaps, shape="orb"
+            )
+            self.projectiles.extend(ring)
+            if self.phase == 2:
+                self.active_pattern = "toxic_spore_ring2"
+                self.pattern_step_timer = 0.28
+                self.pattern_duration = 0.35
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (60, 220, 90), count=16)
+
+        elif p_idx == 1:
+            # Pattern 2: Blighted Spiral Curses (multi-arm rotating curtain)
+            self.active_pattern = "blighted_spiral"
+            self.pattern_duration = 1.35 if self.phase == 1 else 1.80
+            self.pattern_step_timer = 0.08
+            self.pattern_angle = ang_to_player
+            self.pattern_state = {"arms": 3 if self.phase == 1 else 4}
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (170, 40, 230), count=20)
+
+        elif p_idx == 2:
+            # Pattern 3: Homing Dark Wisps (undulating tracking cluster)
+            cnt = 5 if self.phase == 1 else 8
+            wisps = BulletHellPatterns.spawn_homing_swarm(
+                self.center_x, self.center_y, player.center_x, player.center_y,
+                count=cnt, speed=4.6, color=(140, 30, 190),
+                core_color=(240, 180, 255), radius=10, damage=self.damage - 5
+            )
+            self.projectiles.extend(wisps)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (140, 30, 190), count=18)
+
+        else:
+            # Pattern 4: Blight Cross Spread
+            cnt = 5 if self.phase == 1 else 7
+            spread = BulletHellPatterns.spawn_aimed_spread(
+                self.center_x, self.center_y, player.center_x, player.center_y,
+                count=cnt, spread_angle_deg=50, speed=5.8,
+                color=(80, 235, 100), core_color=(245, 255, 245),
+                radius=9, damage=self.damage - 4, shape="needle"
+            )
+            self.projectiles.extend(spread)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (80, 235, 100), count=12)
+
 
 class IgnisColossus(DungeonMiniBoss):
     boss_type = "ignis_colossus"
@@ -384,6 +495,95 @@ class IgnisColossus(DungeonMiniBoss):
     def _trail_color(self):
         return (255, 80, 20)
 
+    def _step_pattern(self, dt, player, particle_system, camera=None):
+        if not self.active_pattern:
+            return
+        self.pattern_step_timer -= dt
+        self.pattern_duration -= dt
+
+        if self.active_pattern == "magma_radial_burst2":
+            if self.pattern_step_timer <= 0:
+                self.active_pattern = None
+                ring = BulletHellPatterns.spawn_concentric_ring(
+                    self.center_x, self.center_y, count=24, speed=6.0,
+                    color=(255, 120, 20), core_color=(255, 245, 180),
+                    radius=10, damage=self.damage - 5, base_angle=math.pi / 24.0,
+                    shape="shard"
+                )
+                self.projectiles.extend(ring)
+                if camera:
+                    camera.add_shake(4.0, 0.2)
+                if particle_system:
+                    particle_system.spawn_sparks(self.center_x, self.center_y, (255, 100, 20), count=20)
+
+        if self.pattern_duration <= 0 and self.active_pattern != "magma_radial_burst2":
+            self.active_pattern = None
+
+    def _cast_attack(self, player, particle_system, camera=None):
+        ang_to_player = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+        p_idx = self.pattern_index % 4
+        self.pattern_index += 1
+
+        if p_idx == 0:
+            # Pattern 1: Magma Radial Bursts (explosive starburst)
+            cnt = 20 if self.phase == 1 else 26
+            spd = 5.2 if self.phase == 1 else 6.0
+            shards = BulletHellPatterns.spawn_concentric_ring(
+                self.center_x, self.center_y, count=cnt, speed=spd,
+                color=(255, 70, 20), core_color=(255, 240, 140),
+                radius=10, damage=self.damage - 4, shape="shard"
+            )
+            self.projectiles.extend(shards)
+            if self.phase == 2:
+                self.active_pattern = "magma_radial_burst2"
+                self.pattern_step_timer = 0.24
+                self.pattern_duration = 0.30
+            if camera:
+                camera.add_shake(5.0, 0.25)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (255, 70, 20), count=25)
+
+        elif p_idx == 1:
+            # Pattern 2: Falling Meteor Showers (cascading columns)
+            cnt = 10 if self.phase == 1 else 14
+            meteors = BulletHellPatterns.spawn_meteor_curtain(
+                player.center_x, player.center_y, count=cnt,
+                spread_w=640, speed_y=7.8, color=(255, 80, 20), damage=self.damage - 2
+            )
+            self.projectiles.extend(meteors)
+            if camera:
+                camera.add_shake(6.5, 0.35)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (255, 140, 30), count=20)
+
+        elif p_idx == 2:
+            # Pattern 3: Blazing Fire Rings with Gap Openings
+            gaps = [(ang_to_player - 0.45, ang_to_player + 0.45)]
+            cnt = 18 if self.phase == 1 else 24
+            ring = BulletHellPatterns.spawn_concentric_ring(
+                self.center_x, self.center_y, count=cnt, speed=4.6,
+                color=(255, 140, 30), core_color=(255, 255, 200),
+                radius=11, damage=self.damage - 5, base_angle=ang_to_player,
+                gaps=gaps, shape="orb"
+            )
+            self.projectiles.extend(ring)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (255, 140, 30), count=16)
+
+        else:
+            # Pattern 4: Magma Bomb Spread
+            cnt = 5 if self.phase == 1 else 7
+            spread = BulletHellPatterns.spawn_aimed_spread(
+                self.center_x, self.center_y, player.center_x, player.center_y,
+                count=cnt, spread_angle_deg=45, speed=6.0,
+                color=(255, 90, 30), core_color=(255, 255, 180),
+                radius=11, damage=self.damage - 4, shape="meteor"
+            )
+            self.projectiles.extend(spread)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (255, 90, 30), count=14)
+
+
 class CryoSpud(DungeonMiniBoss):
     boss_type = "cryo_spud"
     def __init__(self, x, y, asset_factory, sound_manager):
@@ -397,6 +597,113 @@ class CryoSpud(DungeonMiniBoss):
     def _trail_color(self):
         return (120, 220, 255)
 
+    def _step_pattern(self, dt, player, particle_system, camera=None):
+        if not self.active_pattern:
+            return
+        self.pattern_step_timer -= dt
+        self.pattern_duration -= dt
+
+        if self.active_pattern == "snowflake_burst2":
+            if self.pattern_step_timer <= 0:
+                self.active_pattern = None
+                burst = BulletHellPatterns.spawn_snowflake_burst(
+                    self.center_x, self.center_y, points=16, speed=5.4,
+                    color=(140, 240, 255), core_color=(255, 255, 255),
+                    radius=11, damage=self.damage - 6, offset_angle=math.pi / 16.0
+                )
+                self.projectiles.extend(burst)
+                if particle_system:
+                    particle_system.spawn_sparks(self.center_x, self.center_y, (120, 220, 255), count=16)
+
+        elif self.active_pattern == "frost_needle_waves":
+            if self.pattern_step_timer <= 0:
+                self.pattern_step_timer = 0.08
+                ang = self.pattern_angle + random.uniform(-0.15, 0.15)
+                stream = BulletHellPatterns.spawn_undulating_stream(
+                    self.center_x, self.center_y, angle=ang, speed=6.2, count=2,
+                    wave_amp=4.5, wave_freq=9.0,
+                    color=(140, 235, 255), core_color=(255, 255, 255),
+                    radius=9, damage=self.damage - 5
+                )
+                self.projectiles.extend(stream)
+
+        elif self.active_pattern == "pinwheel_vortex":
+            if self.pattern_step_timer <= 0:
+                self.pattern_step_timer = 0.09
+                # Clockwise pinwheel arms
+                cw_projs = BulletHellPatterns.spawn_spiral_step(
+                    self.center_x, self.center_y, arms=2,
+                    current_angle=self.pattern_angle, speed=4.8,
+                    color=(80, 210, 255), core_color=(240, 255, 255),
+                    radius=9, damage=self.damage - 5, shape="needle"
+                )
+                # Counter-clockwise pinwheel arms
+                ccw_projs = BulletHellPatterns.spawn_spiral_step(
+                    self.center_x, self.center_y, arms=2,
+                    current_angle=-self.pattern_angle, speed=4.8,
+                    color=(160, 245, 255), core_color=(255, 255, 255),
+                    radius=9, damage=self.damage - 5, shape="needle"
+                )
+                self.projectiles.extend(cw_projs)
+                self.projectiles.extend(ccw_projs)
+                self.pattern_angle += 0.20
+
+        if self.pattern_duration <= 0 and self.active_pattern != "snowflake_burst2":
+            self.active_pattern = None
+
+    def _cast_attack(self, player, particle_system, camera=None):
+        ang_to_player = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+        p_idx = self.pattern_index % 4
+        self.pattern_index += 1
+
+        if p_idx == 0:
+            # Pattern 1: 16-point Snowflake Bursts
+            spd = 4.6 if self.phase == 1 else 5.4
+            burst = BulletHellPatterns.spawn_snowflake_burst(
+                self.center_x, self.center_y, points=16, speed=spd,
+                color=(80, 210, 255), core_color=(255, 255, 255),
+                radius=11, damage=self.damage - 6
+            )
+            self.projectiles.extend(burst)
+            if self.phase == 2:
+                self.active_pattern = "snowflake_burst2"
+                self.pattern_step_timer = 0.22
+                self.pattern_duration = 0.28
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (80, 210, 255), count=24)
+
+        elif p_idx == 1:
+            # Pattern 2: Frost Needle Waves (undulating serpentine stream)
+            self.active_pattern = "frost_needle_waves"
+            self.pattern_duration = 1.0 if self.phase == 1 else 1.4
+            self.pattern_step_timer = 0.08
+            self.pattern_angle = ang_to_player
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (140, 235, 255), count=16)
+
+        elif p_idx == 2:
+            # Pattern 3: Freezing Pinwheel Vortex (counter-rotating spirals)
+            self.active_pattern = "pinwheel_vortex"
+            self.pattern_duration = 1.4 if self.phase == 1 else 1.8
+            self.pattern_step_timer = 0.09
+            self.pattern_angle = 0.0
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (80, 210, 255), count=20)
+
+        else:
+            # Pattern 4: Glacial Shard Wall
+            cnt = 7 if self.phase == 1 else 9
+            spread = BulletHellPatterns.spawn_aimed_spread(
+                self.center_x, self.center_y, player.center_x, player.center_y,
+                count=cnt, spread_angle_deg=55, speed=5.8,
+                color=(140, 235, 255), core_color=(255, 255, 255),
+                radius=10, damage=self.damage - 5, shape="needle"
+            )
+            self.projectiles.extend(spread)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (140, 235, 255), count=14)
+
+
 class NecroTuber(DungeonMiniBoss):
     boss_type = "necro_tuber"
     def __init__(self, x, y, asset_factory, sound_manager):
@@ -409,6 +716,93 @@ class NecroTuber(DungeonMiniBoss):
 
     def _trail_color(self):
         return (200, 200, 210)
+
+    def _step_pattern(self, dt, player, particle_system, camera=None):
+        if not self.active_pattern:
+            return
+        self.pattern_step_timer -= dt
+        self.pattern_duration -= dt
+
+        if self.active_pattern == "bone_shard_spirals":
+            if self.pattern_step_timer <= 0:
+                self.pattern_step_timer = 0.09
+                arms = self.pattern_state.get("arms", 2)
+                cw_projs = BulletHellPatterns.spawn_spiral_step(
+                    self.center_x, self.center_y, arms=arms,
+                    current_angle=self.pattern_angle, speed=4.8,
+                    color=(230, 230, 235), core_color=(255, 255, 255),
+                    radius=9, damage=self.damage - 5, shape="shard"
+                )
+                ccw_projs = BulletHellPatterns.spawn_spiral_step(
+                    self.center_x, self.center_y, arms=arms,
+                    current_angle=-self.pattern_angle + math.pi / arms, speed=4.8,
+                    color=(190, 190, 215), core_color=(255, 255, 255),
+                    radius=9, damage=self.damage - 5, shape="shard"
+                )
+                self.projectiles.extend(cw_projs)
+                self.projectiles.extend(ccw_projs)
+                self.pattern_angle += 0.22
+
+        if self.pattern_duration <= 0:
+            self.active_pattern = None
+
+    def _cast_attack(self, player, particle_system, camera=None):
+        ang_to_player = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+        p_idx = self.pattern_index % 4
+        self.pattern_index += 1
+
+        if p_idx == 0:
+            # Pattern 1: Bone Shard Spirals (counter-rotating dual spiral)
+            self.active_pattern = "bone_shard_spirals"
+            self.pattern_duration = 1.35 if self.phase == 1 else 1.80
+            self.pattern_step_timer = 0.09
+            self.pattern_angle = ang_to_player
+            self.pattern_state = {"arms": 2 if self.phase == 1 else 3}
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (230, 230, 235), count=18)
+
+        elif p_idx == 1:
+            # Pattern 2: Skull Scythe Arcs (inward-curving spectral scythes)
+            cnt = 7 if self.phase == 1 else 9
+            spread_rad = math.radians(65.0)
+            step = spread_rad / (cnt - 1)
+            start = ang_to_player - spread_rad / 2.0
+            for i in range(cnt):
+                ang = start + i * step
+                curve = 0.45 if (i < cnt // 2) else (-0.45 if i > cnt // 2 else 0.0)
+                vx = math.cos(ang) * 5.2
+                vy = math.sin(ang) * 5.2
+                self.projectiles.append(BossProjectile(
+                    self.center_x, self.center_y, vx, vy,
+                    damage=self.damage - 5, radius=11,
+                    color=(160, 70, 240), core_color=(240, 210, 255),
+                    shape="scythe", curve_rate=curve, p_type="linear"
+                ))
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (160, 70, 240), count=18)
+
+        elif p_idx == 2:
+            # Pattern 3: Catacomb Cross-Curtains (perpendicular grid curtains)
+            cnt = 12 if self.phase == 1 else 16
+            curtain = BulletHellPatterns.spawn_criss_cross_curtains(
+                player.center_x, player.center_y, count=cnt, speed=4.4,
+                color=(190, 190, 215), core_color=(255, 255, 255), damage=self.damage - 5
+            )
+            self.projectiles.extend(curtain)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (190, 190, 215), count=20)
+
+        else:
+            # Pattern 4: Ghost Skull Swarm
+            cnt = 6 if self.phase == 1 else 8
+            skulls = BulletHellPatterns.spawn_homing_swarm(
+                self.center_x, self.center_y, player.center_x, player.center_y,
+                count=cnt, speed=4.5, color=(180, 80, 230),
+                core_color=(235, 220, 245), radius=10, damage=self.damage - 4
+            )
+            self.projectiles.extend(skulls)
+            if particle_system:
+                particle_system.spawn_sparks(self.center_x, self.center_y, (180, 80, 230), count=15)
 
 
 # ==============================================================================
@@ -476,6 +870,14 @@ class GrandBossSolRho:
         self.grand_boss_defeated = False
         self.hurt_timer = 0.0
         self.projectiles = []
+
+        # Bullet-Hell Pattern State Machine
+        self.pattern_index = 0
+        self.active_pattern = None
+        self.pattern_duration = 0.0
+        self.pattern_step_timer = 0.0
+        self.pattern_angle = 0.0
+        self.pattern_state = {}
 
         # Status Effects (Burn & Bleed DoT)
         self.burn_timer = 0.0
@@ -609,6 +1011,10 @@ class GrandBossSolRho:
         self.state_timer -= dt
         self.attack_cooldown -= dt
 
+        # Step active streaming bullet-hell pattern
+        if self.active_pattern:
+            self._step_pattern(dt, player, particle_system, camera)
+
         dist_x = player.center_x - self.center_x
         dist_y = player.center_y - self.center_y
 
@@ -624,9 +1030,9 @@ class GrandBossSolRho:
                 self.vx *= 0.92
                 self.vy *= 0.92
 
-                if self.attack_cooldown <= 0:
+                if self.attack_cooldown <= 0 and not self.active_pattern:
                     self.attack_cooldown = 1.0 / (1.0 + (self.party_size - 1) * 0.2)
-                    self._cast_solar_orbs(player, particle_system)
+                    self._cast_phase1_attack(player, particle_system, camera)
 
                 if self.state_timer <= 0:
                     self.state = "dive"
@@ -656,15 +1062,9 @@ class GrandBossSolRho:
                 self.vx *= 0.93
                 self.vy *= 0.93
 
-                if self.attack_cooldown <= 0:
+                if self.attack_cooldown <= 0 and not self.active_pattern:
                     self.attack_cooldown = 0.8 / (1.0 + (self.party_size - 1) * 0.25)
-                    r_atk = random.random()
-                    if r_atk < 0.45:
-                        self._cast_void_meteors(player, particle_system, camera)
-                    elif r_atk < 0.75:
-                        self._cast_singularity(player, particle_system, camera)
-                    else:
-                        self._cast_solar_orbs(player, particle_system)
+                    self._cast_phase2_attack(player, particle_system, camera)
 
                 if self.state_timer <= 0:
                     # Switch to Abyssal Warp Blitz
@@ -678,6 +1078,8 @@ class GrandBossSolRho:
                     self.vy = math.sin(ang) * 12.0
                     camera.add_shake(8.0, 0.4)
                     particle_system.spawn_sparks(self.center_x, self.center_y, (200, 40, 255), count=25)
+                    # Warp Blitz Bullet Storm!
+                    self._cast_warp_blitz_bullet_storm(player, particle_system, camera)
 
             elif self.state == "blitz":
                 self.vx *= 0.97
@@ -690,7 +1092,7 @@ class GrandBossSolRho:
         self.x += self.vx
         self.y += self.vy
 
-        # Update Projectiles
+        # Update Projectiles & Graze / Damage Detection
         for p in self.projectiles:
             p.update(dt, player)
             if p.rect.colliderect(player.rect):
@@ -700,8 +1102,185 @@ class GrandBossSolRho:
                         p.life = 0
                     particle_system.spawn_sparks(player.center_x, player.center_y, (255, 60, 160), 10)
                     camera.add_shake(5.0, 0.25)
+            elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
+                p._graze_sparked = True
+                particle_system.spawn_sparks(p.x, p.y, (200, 240, 255), count=1)
 
         self.projectiles = [p for p in self.projectiles if p.life > 0]
+
+    def _step_pattern(self, dt, player, particle_system, camera=None):
+        if not self.active_pattern:
+            return
+        self.pattern_step_timer -= dt
+        self.pattern_duration -= dt
+
+        if self.active_pattern == "sunburst_wheel":
+            if self.pattern_step_timer <= 0:
+                self.pattern_step_timer = 0.08
+                arms = 4
+                step_projs = BulletHellPatterns.spawn_spiral_step(
+                    self.center_x, self.center_y, arms=arms,
+                    current_angle=self.pattern_angle, speed=5.5,
+                    color=(255, 140, 20), core_color=(255, 245, 160),
+                    radius=10, damage=self.damage - 7, shape="orb"
+                )
+                self.projectiles.extend(step_projs)
+                self.pattern_angle += 0.24
+
+        elif self.active_pattern == "sweeping_beam":
+            if self.pattern_step_timer <= 0:
+                self.pattern_step_timer = 0.07
+                target_ang = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+                sweep_ang = self.pattern_angle
+                self.pattern_angle += 0.12
+                projs = [
+                    BossProjectile(
+                        self.center_x, self.center_y,
+                        math.cos(sweep_ang) * 6.6, math.sin(sweep_ang) * 6.6,
+                        damage=self.damage - 6, radius=10,
+                        color=(255, 215, 60), core_color=(255, 255, 255),
+                        shape="needle", p_type="linear"
+                    ),
+                    BossProjectile(
+                        self.center_x, self.center_y,
+                        math.cos(sweep_ang + 0.08) * 5.8, math.sin(sweep_ang + 0.08) * 5.8,
+                        damage=self.damage - 6, radius=9,
+                        color=(255, 180, 40), core_color=(255, 250, 200),
+                        shape="needle", p_type="linear"
+                    )
+                ]
+                self.projectiles.extend(projs)
+
+        elif self.active_pattern == "solar_nova_ring2":
+            if self.pattern_step_timer <= 0:
+                self.active_pattern = None
+                ang = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+                gaps = [(ang - 0.45, ang + 0.45), (ang + math.pi - 0.45, ang + math.pi + 0.45)]
+                ring = BulletHellPatterns.spawn_concentric_ring(
+                    self.center_x, self.center_y, count=24, speed=5.2,
+                    color=(255, 220, 50), core_color=(255, 255, 255),
+                    radius=11, damage=self.damage - 8, base_angle=ang + 0.13,
+                    gaps=gaps, shape="orb"
+                )
+                self.projectiles.extend(ring)
+
+        elif self.active_pattern == "void_spiral":
+            if self.pattern_step_timer <= 0:
+                self.pattern_step_timer = 0.08
+                arms = 5
+                step_projs = BulletHellPatterns.spawn_spiral_step(
+                    self.center_x, self.center_y, arms=arms,
+                    current_angle=self.pattern_angle, speed=5.2,
+                    color=(150, 30, 230), core_color=(240, 160, 255),
+                    radius=10, damage=self.damage - 6, shape="orb",
+                    accel=1.012
+                )
+                self.projectiles.extend(step_projs)
+                self.pattern_angle += 0.22
+
+        elif self.active_pattern == "gravity_pulse_rings":
+            if self.pattern_step_timer <= 0:
+                self.pattern_step_timer = 0.38
+                ang = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+                gaps = [(ang - 0.50, ang + 0.50), (ang + math.pi - 0.50, ang + math.pi + 0.50)]
+                ring = BulletHellPatterns.spawn_concentric_ring(
+                    self.center_x, self.center_y, count=22, speed=4.6,
+                    color=(160, 30, 220), core_color=(255, 180, 255),
+                    radius=11, damage=self.damage - 6, base_angle=ang,
+                    gaps=gaps, shape="orb"
+                )
+                self.projectiles.extend(ring)
+
+        if self.pattern_duration <= 0 and self.active_pattern != "solar_nova_ring2":
+            self.active_pattern = None
+
+    def _cast_phase1_attack(self, player, particle_system, camera):
+        p_idx = self.pattern_index % 4
+        self.pattern_index += 1
+        ang_to_player = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+
+        if p_idx == 0:
+            # Pattern 1: Solar Flare Nova Rings (with dodge gaps)
+            count = 28 if self.party_size == 1 else 34
+            gaps = [(ang_to_player + 0.70, ang_to_player + 1.35), (ang_to_player - 1.35, ang_to_player - 0.70)]
+            ring = BulletHellPatterns.spawn_concentric_ring(
+                self.center_x, self.center_y, count=count, speed=4.6,
+                color=(255, 190, 30), core_color=(255, 255, 220),
+                radius=11, damage=self.damage - 8, base_angle=ang_to_player,
+                gaps=gaps, shape="orb"
+            )
+            self.projectiles.extend(ring)
+            self.active_pattern = "solar_nova_ring2"
+            self.pattern_step_timer = 0.28
+            self.pattern_duration = 0.35
+            camera.add_shake(5.0, 0.3)
+            particle_system.spawn_sparks(self.center_x, self.center_y, (255, 215, 60), count=25)
+
+        elif p_idx == 1:
+            # Pattern 2: 4-Arm Rotating Sunburst Wheel
+            self.active_pattern = "sunburst_wheel"
+            self.pattern_duration = 2.0
+            self.pattern_step_timer = 0.08
+            self.pattern_angle = ang_to_player
+            particle_system.spawn_sparks(self.center_x, self.center_y, (255, 140, 20), count=20)
+
+        elif p_idx == 2:
+            # Pattern 3: Sweeping Solar Beam Arcs
+            self.active_pattern = "sweeping_beam"
+            self.pattern_duration = 1.2
+            self.pattern_step_timer = 0.07
+            self.pattern_angle = ang_to_player - 0.95
+            particle_system.spawn_sparks(self.center_x, self.center_y, (255, 220, 80), count=18)
+
+        else:
+            # Pattern 4: Aimed Solar Spread
+            self._cast_solar_orbs(player, particle_system)
+
+    def _cast_phase2_attack(self, player, particle_system, camera):
+        p_idx = self.pattern_index % 4
+        self.pattern_index += 1
+
+        if p_idx == 0:
+            # Pattern 1: Void Singularity Spiral Barrage (accelerating abyssal spiral)
+            self.active_pattern = "void_spiral"
+            self.pattern_duration = 2.2
+            self.pattern_step_timer = 0.08
+            self.pattern_angle = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
+            camera.add_shake(6.0, 0.4)
+            particle_system.spawn_sparks(self.center_x, self.center_y, (150, 30, 230), count=25)
+
+        elif p_idx == 1:
+            # Pattern 2: Black Hole Gravity Pulse
+            self._cast_singularity(player, particle_system, camera)
+            self.active_pattern = "gravity_pulse_rings"
+            self.pattern_duration = 1.8
+            self.pattern_step_timer = 0.38
+
+        elif p_idx == 2:
+            # Pattern 3: Cosmic Meteor Curtain
+            self._cast_void_meteors(player, particle_system, camera)
+
+        else:
+            # Pattern 4: Homing Void Orbs
+            self._cast_solar_orbs(player, particle_system)
+
+    def _cast_warp_blitz_bullet_storm(self, player, particle_system, camera):
+        """Detonates a 360-degree starburst nova + aimed homing swarm following warp blitz."""
+        # 1. 360-degree starburst nova
+        nova = BulletHellPatterns.spawn_warp_nova(
+            self.center_x, self.center_y, count=32, speed=6.8,
+            color=(180, 50, 255), core_color=(255, 255, 255),
+            radius=10, damage=self.damage - 6
+        )
+        self.projectiles.extend(nova)
+
+        # 2. Aimed homing swarm
+        wisps = BulletHellPatterns.spawn_homing_swarm(
+            self.center_x, self.center_y, player.center_x, player.center_y,
+            count=4, speed=5.2, color=(220, 40, 180),
+            core_color=(255, 200, 255), radius=11, damage=self.damage - 5
+        )
+        self.projectiles.extend(wisps)
 
     def _cast_solar_orbs(self, player, particle_system):
         angle = math.atan2(player.center_y - self.center_y, player.center_x - self.center_x)
@@ -714,19 +1293,25 @@ class GrandBossSolRho:
             svy = math.sin(angle + off) * speed
             sprite = self.solar_orb_sprite if self.phase == 1 else self.void_meteor_sprite
             p_type = "homing" if self.phase == 2 else "linear"
-            self.projectiles.append(BossProjectile(self.center_x, self.center_y, svx, svy, sprite, damage=self.damage - 5, p_type=p_type))
+            self.projectiles.append(BossProjectile(
+                self.center_x, self.center_y, svx, svy, sprite,
+                damage=self.damage - 5, p_type=p_type,
+                color=(255, 215, 60) if self.phase == 1 else (190, 40, 240),
+                shape="orb"
+            ))
 
         col = (255, 230, 80) if self.phase == 1 else (200, 50, 255)
         particle_system.spawn_sparks(self.center_x, self.center_y, col, count=16)
 
     def _cast_void_meteors(self, player, particle_system, camera):
         camera.add_shake(7.0, 0.4)
-        for i in range(5):
-            mx = player.center_x + random.uniform(-350, 350)
-            my = player.center_y - random.uniform(400, 550)
-            self.projectiles.append(BossProjectile(mx, my, vx=random.uniform(-1.5, 1.5), vy=8.5,
-                                                   sprite=self.void_meteor_sprite, damage=self.damage + 2,
-                                                   radius=14, p_type="meteor"))
+        count = 12 if self.party_size == 1 else 16
+        meteors = BulletHellPatterns.spawn_meteor_curtain(
+            player.center_x, player.center_y, count=count,
+            spread_w=680, speed_y=8.0, color=(220, 30, 110),
+            damage=self.damage - 2
+        )
+        self.projectiles.extend(meteors)
         particle_system.spawn_sparks(self.center_x, self.center_y, (255, 60, 120), count=15)
 
     def _cast_singularity(self, player, particle_system, camera):
@@ -734,10 +1319,63 @@ class GrandBossSolRho:
         # Spawn black hole near player
         sx = player.center_x + random.uniform(-140, 140)
         sy = player.center_y - 80
-        self.projectiles.append(BossProjectile(sx, sy, vx=0.0, vy=0.0,
-                                               sprite=self.singularity_sprite, damage=14,
-                                               radius=28, life=4.5, p_type="singularity"))
+        self.projectiles.append(BossProjectile(
+            sx, sy, vx=0.0, vy=0.0,
+            sprite=self.singularity_sprite, damage=14,
+            radius=28, life=5.0, p_type="singularity",
+            color=(140, 40, 220), shape="singularity"
+        ))
         particle_system.spawn_sparks(sx, sy, (140, 30, 240), count=25)
+
+    def get_projectiles_sync_data(self):
+        """Serializes active projectiles on host for network broadcast."""
+        data = []
+        projs = self.projectiles[-200:] if len(self.projectiles) > 200 else self.projectiles
+        for p in projs:
+            if p.life > 0:
+                data.append(p.to_sync_dict())
+        return data
+
+    def sync_projectiles(self, proj_data_list):
+        """Reconciles client projectiles from authoritative host snapshot."""
+        if not proj_data_list and not self.projectiles:
+            return
+        existing_by_id = {p.p_id: p for p in self.projectiles if hasattr(p, "p_id")}
+        new_list = []
+        for pd in proj_data_list:
+            pid = pd.get("id")
+            if pid is not None and pid in existing_by_id:
+                p = existing_by_id[pid]
+                p.x = p.x * 0.70 + float(pd.get("x", p.x)) * 0.30
+                p.y = p.y * 0.70 + float(pd.get("y", p.y)) * 0.30
+                p.vx = float(pd.get("vx", p.vx))
+                p.vy = float(pd.get("vy", p.vy))
+                p.life = float(pd.get("l", p.life))
+                new_list.append(p)
+            else:
+                sprite = self.solar_orb_sprite if self.phase == 1 else self.void_meteor_sprite
+                new_p = BossProjectile.from_sync_dict(pd, sprite=sprite)
+                new_list.append(new_p)
+        self.projectiles = new_list
+
+    def update_client_projectiles(self, dt, player, particle_system, camera):
+        """Updates and handles projectile dodging/grazing on LAN client."""
+        for p in self.projectiles:
+            p.update(dt, player)
+            if p.rect.colliderect(player.rect):
+                damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-4.0)
+                if damaged:
+                    if p.p_type != "singularity":
+                        p.life = 0
+                    if particle_system:
+                        particle_system.spawn_sparks(player.center_x, player.center_y, (255, 60, 160), 10)
+                    if camera:
+                        camera.add_shake(5.0, 0.25)
+            elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
+                p._graze_sparked = True
+                if particle_system:
+                    particle_system.spawn_sparks(p.x, p.y, (200, 240, 255), count=1)
+        self.projectiles = [p for p in self.projectiles if p.life > 0]
 
     def render(self, target_surf, camera):
         if self.is_dead:

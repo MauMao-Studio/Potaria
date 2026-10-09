@@ -90,9 +90,18 @@ class PlayerStats:
             return 20
         return self.base_max_hp + self.bonus_max_hp
 
+    @max_hp.setter
+    def max_hp(self, val):
+        if not getattr(self, "locked_one_heart", False):
+            self.base_max_hp = max(1, int(val) - self.bonus_max_hp)
+
     @property
     def max_mp(self):
         return self.base_max_mp + self.bonus_max_mp
+
+    @max_mp.setter
+    def max_mp(self, val):
+        self.base_max_mp = max(0, int(val) - self.bonus_max_mp)
 
     @property
     def total_atk(self):
