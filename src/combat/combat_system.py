@@ -11,7 +11,8 @@ import pygame
 from src.constants import (
     SCALED_TILE, BIOME_FOREST, BIOME_DESERT, BIOME_SNOW,
     BIOME_CORRUPTION, BIOME_MUSHROOM, BIOME_DUNGEON, BIOME_CAVERN,
-    WALL_WOOD, WALL_STONE_BRICK, WALL_GLASS, TILE_TORCH
+    WALL_WOOD, WALL_STONE_BRICK, WALL_GLASS, TILE_TORCH,
+    PLAYER_WIDTH, PLAYER_HEIGHT
 )
 from src.world.chunk_manager import CHUNK_WIDTH
 from src.entities.mob import (
@@ -415,7 +416,7 @@ class CombatManager:
                                 def __init__(self, tx, ty):
                                     self.center_x = tx
                                     self.center_y = ty
-                                    self.rect = pygame.Rect(int(tx - 14), int(ty - 18), 28, 36)
+                                    self.rect = pygame.Rect(int(tx - PLAYER_WIDTH / 2), int(ty - PLAYER_HEIGHT / 2), PLAYER_WIDTH, PLAYER_HEIGHT)
                             best_target = _TargetProxy(px, py)
                     target_p = best_target
 

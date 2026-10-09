@@ -30,6 +30,12 @@ PLAYER_FRICTION = 0.22
 PLAYER_JUMP_FORCE = -8.0
 PLAYER_DROP_THROUGH_TIME = 15
 
+# Player Dimensions & Collider
+PLAYER_WIDTH = 28
+PLAYER_HEIGHT = 32            # 1 block tall (SCALED_TILE) body collider, excludes decorative head sprout leaf
+PLAYER_SPRITE_WIDTH = 28
+PLAYER_SPRITE_HEIGHT = 36     # Full visual sprite dimensions including sprout leaf
+
 # Block IDs
 TILE_AIR = 0
 TILE_DIRT = 1

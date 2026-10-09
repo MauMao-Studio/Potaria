@@ -10,7 +10,8 @@ import random
 import pygame
 from src.constants import (
     SCALED_TILE, GRAVITY, TERMINAL_VELOCITY, PLAYER_SPEED,
-    PLAYER_ACCEL, PLAYER_FRICTION, PLAYER_JUMP_FORCE, PLAYER_DROP_THROUGH_TIME
+    PLAYER_ACCEL, PLAYER_FRICTION, PLAYER_JUMP_FORCE, PLAYER_DROP_THROUGH_TIME,
+    PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT
 )
 from src.rpg.stats import PlayerStats
 from src.rpg.equipment import Equipment, ARMOR_DATA
@@ -71,9 +72,12 @@ class Player:
         self.vx = 0.0
         self.vy = 0.0
         
-        # Spud potato dimensions: 28 px wide x 36 px high (scaled)
-        self.width = 28
-        self.height = 36
+        # Spud potato dimensions: 28 px wide x 32 px high (1 block body collider; head sprout leaf is decorative)
+        self.width = PLAYER_WIDTH
+        self.height = PLAYER_HEIGHT
+        self.sprite_width = PLAYER_SPRITE_WIDTH
+        self.sprite_height = PLAYER_SPRITE_HEIGHT
+        self.sprout_offset_y = self.sprite_height - self.height
         self.frect = pygame.FRect(self.x, self.y, self.width, self.height)
         
         self.asset_factory = asset_factory
@@ -139,12 +143,12 @@ class Player:
 
         # Scale Spud Potato Sprites (12 FPS 6-frame idle, 8-frame walk, jump, fall)
         idle_raw = asset_factory.player_sprites.get("idle_frames", [asset_factory.player_sprites["idle"]])
-        self.idle_sprites = [pygame.transform.scale(f, (self.width, self.height)) for f in idle_raw]
+        self.idle_sprites = [pygame.transform.scale(f, (self.sprite_width, self.sprite_height)) for f in idle_raw]
         self.idle_sprite = self.idle_sprites[0]
-        self.jump_sprite = pygame.transform.scale(asset_factory.player_sprites["jump"], (self.width, self.height))
-        self.fall_sprite = pygame.transform.scale(asset_factory.player_sprites.get("fall", asset_factory.player_sprites["jump"]), (self.width, self.height))
+        self.jump_sprite = pygame.transform.scale(asset_factory.player_sprites["jump"], (self.sprite_width, self.sprite_height))
+        self.fall_sprite = pygame.transform.scale(asset_factory.player_sprites.get("fall", asset_factory.player_sprites["jump"]), (self.sprite_width, self.sprite_height))
         self.walk_sprites = [
-            pygame.transform.scale(f, (self.width, self.height))
+            pygame.transform.scale(f, (self.sprite_width, self.sprite_height))
             for f in asset_factory.player_sprites["walk"]
         ]
         self.arm_sprite = pygame.transform.scale(asset_factory.player_sprites["arm"], (12, 18))
@@ -153,6 +157,8 @@ class Player:
     def rect(self):
         self.frect.x = self.x
         self.frect.y = self.y
+        self.frect.width = self.width
+        self.frect.height = self.height
         return self.frect
 
     @property
@@ -709,13 +715,16 @@ class Player:
             return
 
         sx, sy = camera.world_to_screen(self.x, self.y)
+        # Vertical draw offset ensures player's body and boots align with collider bottom,
+        # while decorative sprout leaf on top of head extends above collider without collision
+        draw_sy = sy - self.sprout_offset_y
 
         # Render radiant pulsing set aura (Ancient, Titan, Magma, etc.)
         aura = None
         if hasattr(self, "equipment") and self.equipment:
             aura = self.equipment.get_active_aura()
         if aura:
-            self._render_active_aura(target_surf, sx + 14, sy + 18, aura)
+            self._render_active_aura(target_surf, sx + self.width // 2, draw_sy + self.sprite_height // 2, aura)
 
         # Select Spud Potato frame (12 FPS Animation state)
         if not self.on_ground:
@@ -731,10 +740,10 @@ class Player:
         if not self.facing_right:
             base_sprite = pygame.transform.flip(base_sprite, True, False)
 
-        target_surf.blit(base_sprite, (sx, sy))
+        target_surf.blit(base_sprite, (sx, draw_sy))
 
         # Render Spud's Swinging Potato Arm and Held Tool with fixed anchor pivot
-        self._render_arm_and_tool(target_surf, camera, sx, sy, held_item_icon, held_item)
+        self._render_arm_and_tool(target_surf, camera, sx, draw_sy, held_item_icon, held_item)
 
     def _render_arm_and_tool(self, target_surf, camera, player_sx, player_sy, held_item_icon, held_item=None):
         if not held_item_icon:

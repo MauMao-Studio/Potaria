@@ -2286,8 +2286,8 @@ class PotariaGame:
                 for pid, rp in list(self.client.remote_players.items()):
                     rpx = float(rp.get("x", 0.0) if isinstance(rp, dict) else getattr(rp, "x", 0.0))
                     rpy = float(rp.get("y", 0.0) if isinstance(rp, dict) else getattr(rp, "y", 0.0))
-                    rp_rect = pygame.Rect(rpx, rpy, 28, 36)
-                    dist = math.hypot(rpx + 14 - self.player.center_x, rpy + 18 - self.player.center_y)
+                    rp_rect = pygame.Rect(rpx, rpy, self.player.width, self.player.height)
+                    dist = math.hypot(rpx + self.player.width / 2.0 - self.player.center_x, rpy + self.player.height / 2.0 - self.player.center_y)
                     if dist <= reach or atk_rect.colliderect(rp_rect):
                         hit_tracker = getattr(self.player, "_pvp_hit_players", set())
                         if pid not in hit_tracker:

@@ -8,6 +8,9 @@ Developer: Kurados
 import socket
 import threading
 import pygame
+from src.constants import (
+    PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT
+)
 from src.network.protocol import (
     PKT_JOIN, PKT_WELCOME, PKT_PLAYER_UPDATE, PKT_SYNC_PLAYERS,
     PKT_BLOCK_DELTA, PKT_COMBAT_EVENT, PKT_CHAT, PKT_DISCONNECT,
@@ -211,6 +214,8 @@ class LANClient:
             vx = p.get("vx", 0.0)
 
             sx, sy = camera.world_to_screen(px, py)
+            sprout_offset_y = PLAYER_SPRITE_HEIGHT - PLAYER_HEIGHT
+            draw_sy = sy - sprout_offset_y
             
             # 12 FPS Animation selection (8-frame walk vs 6-frame idle)
             ticks = pygame.time.get_ticks()
@@ -223,17 +228,17 @@ class LANClient:
                 frame_idx = int(ticks / 83.33) % len(idle_frames)
                 sprite = idle_frames[frame_idx]
 
-            scaled_sprite = pygame.transform.scale(sprite, (28, 36))
+            scaled_sprite = pygame.transform.scale(sprite, (PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT))
             if not facing:
                 scaled_sprite = pygame.transform.flip(scaled_sprite, True, False)
-            target_surf.blit(scaled_sprite, (sx, sy))
+            target_surf.blit(scaled_sprite, (sx, draw_sy))
 
             # Draw Remote Player Name Tag & Level
             tag_text = f"{name} (Lv.{level})"
             tag_surf = self.name_font.render(tag_text, True, (255, 230, 100))
-            bg_rect = pygame.Rect(sx + 14 - tag_surf.get_width() // 2 - 2, sy - 14, tag_surf.get_width() + 4, 13)
+            bg_rect = pygame.Rect(sx + PLAYER_WIDTH // 2 - tag_surf.get_width() // 2 - 2, draw_sy - 14, tag_surf.get_width() + 4, 13)
             pygame.draw.rect(target_surf, (0, 0, 0, 180), bg_rect, border_radius=3)
-            target_surf.blit(tag_surf, (sx + 14 - tag_surf.get_width() // 2, sy - 14))
+            target_surf.blit(tag_surf, (sx + PLAYER_WIDTH // 2 - tag_surf.get_width() // 2, draw_sy - 14))
 
     def disconnect(self):
         self.connected = False
