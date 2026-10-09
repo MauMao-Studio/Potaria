@@ -62,6 +62,8 @@ class NPCDialogueWindow:
                 self.dialogue_text = "Your vitality is blooming, hero! Take care out there in the underground caverns."
         elif npc.npc_type == "blacksmith":
             self.dialogue_text = "The forge burns hot today! Bring me a weapon to hone its cutting edge, or browse my smelted metal ingots."
+        elif npc.npc_type == "mystic_trader":
+            self.dialogue_text = npc.get_quote() if hasattr(npc, "get_quote") else "The cosmic currents brought me here for a fleeting moment. Browse my rare armaments, repair your shattered blades, or carve an Affix Slot!"
         else:
             self.dialogue_text = f"Greetings, traveler! I'm glad to call this shelter my home."
 
@@ -198,9 +200,10 @@ class NPCDialogueWindow:
                     return True
 
             elif npc.npc_type == "blacksmith":
-                b1 = pygame.Rect(self.x + 20, start_y, btn_w, btn_h)
-                b2 = pygame.Rect(self.x + 20 + btn_w + gap, start_y, btn_w + 30, btn_h)
-                b_close = pygame.Rect(self.x + self.width - 90, start_y, 70, btn_h)
+                b1 = pygame.Rect(self.x + 20, start_y, 95, btn_h)
+                b2 = pygame.Rect(self.x + 120, start_y, 85, btn_h)
+                b3 = pygame.Rect(self.x + 210, start_y, 115, btn_h)
+                b_close = pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h)
 
                 if b1.collidepoint(mouse_x, mouse_y):
                     self.current_view = "shop"
@@ -212,11 +215,68 @@ class NPCDialogueWindow:
                     self.dialogue_text = msg
                     self.typewriter_chars = 0
                     return True
+                elif b3.collidepoint(mouse_x, mouse_y):
+                    active = inventory.get_active_item()
+                    from src.rpg.enhancement import enhance_item
+                    status, msg = enhance_item(active, inventory, self.sound_manager)
+                    self.status_message = msg
+                    self.dialogue_text = msg
+                    self.typewriter_chars = 0
+                    return True
                 elif b_close.collidepoint(mouse_x, mouse_y):
                     self.close()
                     return True
 
-        # View: Shop Mode (Merchant or Blacksmith)
+            elif npc.npc_type == "mystic_trader":
+                b1 = pygame.Rect(self.x + 20, start_y, 110, btn_h)
+                b2 = pygame.Rect(self.x + 135, start_y, 115, btn_h)
+                b3 = pygame.Rect(self.x + 255, start_y, 125, btn_h)
+                b_close = pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h)
+
+                if b1.collidepoint(mouse_x, mouse_y):
+                    self.current_view = "shop"
+                    self.sound_manager.play("dialogue_chime")
+                    return True
+                elif b2.collidepoint(mouse_x, mouse_y):
+                    active = inventory.get_active_item()
+                    target_item = None
+                    if active and getattr(active, "is_broken", False):
+                        target_item = active
+                    else:
+                        for s in inventory.slots:
+                            if s and getattr(s, "is_broken", False):
+                                target_item = s
+                                break
+                    if not target_item:
+                        self.status_message = "No broken items in your hands or backpack!"
+                        self.dialogue_text = "All of your equipment is intact and ready for battle!"
+                        self.typewriter_chars = 0
+                    else:
+                        from src.rpg.enhancement import repair_item
+                        ok, msg = repair_item(target_item, inventory, self.sound_manager)
+                        self.status_message = msg
+                        self.dialogue_text = msg
+                        self.typewriter_chars = 0
+                    return True
+                elif b3.collidepoint(mouse_x, mouse_y):
+                    active = inventory.get_active_item()
+                    from src.rpg.enhancement import can_add_affix_slot, add_affix_slot_to_item
+                    can_add, reason = can_add_affix_slot(active)
+                    if not can_add:
+                        self.status_message = reason
+                        self.dialogue_text = f"I cannot carve this: {reason}"
+                        self.typewriter_chars = 0
+                    else:
+                        ok, msg = add_affix_slot_to_item(active, inventory, cost_copper=5000, sound_manager=self.sound_manager)
+                        self.status_message = msg
+                        self.dialogue_text = msg
+                        self.typewriter_chars = 0
+                    return True
+                elif b_close.collidepoint(mouse_x, mouse_y):
+                    self.close()
+                    return True
+
+        # View: Shop Mode (Merchant or Blacksmith or Mystic Trader)
         elif self.current_view == "shop":
             back_btn = pygame.Rect(self.x + 20, self.y + self.height - 40, 80, 26)
             if back_btn.collidepoint(mouse_x, mouse_y):
@@ -259,6 +319,21 @@ class NPCDialogueWindow:
                     currency = entry.get("currency", "copper_coin")
                     count_to_give = entry.get("count", 1)
 
+                    if entry.get("is_affix_service"):
+                        active = inventory.get_active_item()
+                        from src.rpg.enhancement import can_add_affix_slot, add_affix_slot_to_item
+                        can_add, reason = can_add_affix_slot(active)
+                        if not can_add:
+                            self.status_message = f"Hold Legendary/Ancient item: {reason}"
+                        elif inventory.count_item(currency) < price:
+                            curr_label = "Gold" if currency == "gold_coin" else ("Silver" if currency == "silver_coin" else "Copper")
+                            self.status_message = f"Requires {price} {curr_label} Coins!"
+                        else:
+                            inventory.remove_item(currency, price)
+                            ok, msg = add_affix_slot_to_item(active, inventory=None, cost_copper=0, sound_manager=self.sound_manager)
+                            self.status_message = msg
+                        return True
+
                     if inventory.count_item(currency) >= price:
                         if inventory.can_add_item(entry["item_id"], count_to_give):
                             inventory.remove_item(currency, price)
@@ -268,7 +343,8 @@ class NPCDialogueWindow:
                         else:
                             self.status_message = "Inventory is full!"
                     else:
-                        self.status_message = f"Not enough {currency.replace('_', ' ').title()}s!"
+                        curr_label = "Gold" if currency == "gold_coin" else ("Silver" if currency == "silver_coin" else "Copper")
+                        self.status_message = f"Not enough {curr_label} Coins!"
                     return True
 
         return True
@@ -368,9 +444,15 @@ class NPCDialogueWindow:
                 draw_btn(pygame.Rect(self.x + 20 + btn_w + 50, start_y, btn_w, btn_h), "Health Tips")
                 draw_btn(pygame.Rect(self.x + self.width - 90, start_y, 70, btn_h), "Close")
             elif npc.npc_type == "blacksmith":
-                draw_btn(pygame.Rect(self.x + 20, start_y, btn_w, btn_h), "Smithy Shop", is_accent=True)
-                draw_btn(pygame.Rect(self.x + 20 + btn_w + gap, start_y, btn_w + 30, btn_h), "Hone Weapon (35c)")
-                draw_btn(pygame.Rect(self.x + self.width - 90, start_y, 70, btn_h), "Close")
+                draw_btn(pygame.Rect(self.x + 20, start_y, 95, btn_h), "Smithy Shop", is_accent=True)
+                draw_btn(pygame.Rect(self.x + 120, start_y, 85, btn_h), "Hone (35c)")
+                draw_btn(pygame.Rect(self.x + 210, start_y, 115, btn_h), "Enhance (+1..7)")
+                draw_btn(pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h), "Close")
+            elif npc.npc_type == "mystic_trader":
+                draw_btn(pygame.Rect(self.x + 20, start_y, 110, btn_h), "Browse Wares", is_accent=True)
+                draw_btn(pygame.Rect(self.x + 135, start_y, 115, btn_h), "Repair (1 Gold)")
+                draw_btn(pygame.Rect(self.x + 255, start_y, 125, btn_h), "Carve Affix Slot")
+                draw_btn(pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h), "Close")
 
         # Mode: Shop View
         elif self.current_view == "shop":
@@ -380,7 +462,7 @@ class NPCDialogueWindow:
                 col = idx % 2
                 row = idx // 2
                 bx = self.x + 20 + col * 250
-                by = self.y + 60 + row * 44
+                by = self.y + 70 + row * 46
 
                 slot_rect = pygame.Rect(bx, by, 240, 38)
                 is_slot_hover = slot_rect.collidepoint(mouse_x, mouse_y)
@@ -388,7 +470,9 @@ class NPCDialogueWindow:
                 pygame.draw.rect(target_surf, (65, 80, 115), slot_rect, 1, border_radius=4)
 
                 # Item Icon
-                icon = self.asset_factory.items.get(entry["item_id"])
+                icon = self.asset_factory.items.get(entry["item_id"]) if hasattr(self.asset_factory, "items") else None
+                if not icon and entry.get("is_affix_service") and hasattr(self.asset_factory, "items"):
+                    icon = self.asset_factory.items.get("affix_stone") or self.asset_factory.items.get("portal_shard")
                 if icon:
                     target_surf.blit(icon, (bx + 6, by + 7))
 
@@ -399,12 +483,18 @@ class NPCDialogueWindow:
                 target_surf.blit(i_surf, (bx + 36, by + 5))
 
                 # Price Tag
-                price_str = f"{entry['price']} Copper"
+                currency = entry.get("currency", "copper_coin")
+                curr_name = "Copper"
+                if currency == "gold_coin":
+                    curr_name = "Gold"
+                elif currency == "silver_coin":
+                    curr_name = "Silver"
+                price_str = f"{entry['price']} {curr_name}"
                 p_surf = self.font_sm.render(price_str, True, (255, 215, 100))
                 target_surf.blit(p_surf, (bx + 36, by + 20))
 
                 # Buy Button
-                buy_rect = pygame.Rect(bx + 175, by + 6, 58, 26)
+                buy_rect = pygame.Rect(bx + 180, by + 4, 55, 24)
                 is_buy_hover = buy_rect.collidepoint(mouse_x, mouse_y)
                 pygame.draw.rect(target_surf, (60, 120, 60) if is_buy_hover else (35, 75, 35), buy_rect, border_radius=4)
                 pygame.draw.rect(target_surf, (120, 220, 120) if is_buy_hover else (60, 140, 60), buy_rect, 1, border_radius=4)

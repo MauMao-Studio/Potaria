@@ -251,7 +251,15 @@ RECIPES = [
     },
     {
         "result": "chest", "count": 1, "station": "work_bench",
+        "ingredients": [("wood", 10)]
+    },
+    {
+        "result": "iron_chest", "count": 1, "station": "work_bench",
         "ingredients": [("wood", 8), ("iron_bar", 2)]
+    },
+    {
+        "result": "affix_stone", "count": 1, "station": "work_bench",
+        "ingredients": [("portal_shard", 3), ("gold_bar", 5), ("blightstone", 5)]
     },
     {
         "result": "greater_healing_potion", "count": 1, "station": "work_bench",

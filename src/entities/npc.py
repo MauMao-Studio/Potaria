@@ -15,13 +15,14 @@ from src.constants import (
 )
 from src.ui.inventory import ItemStack, ITEM_REGISTRY
 
-NPC_TYPES = ("guide", "merchant", "nurse", "blacksmith")
+NPC_TYPES = ("guide", "merchant", "nurse", "blacksmith", "mystic_trader")
 
 NPC_TITLES = {
     "guide": ("Pip", "Town Guide", (120, 215, 100)),
     "merchant": ("Barnaby", "Town Merchant", (255, 215, 80)),
     "nurse": ("Florencia", "Field Nurse", (255, 140, 170)),
     "blacksmith": ("Russet", "Master Blacksmith", (245, 150, 60)),
+    "mystic_trader": ("Zephyrion", "Mystic Trader", (180, 100, 255)),
 }
 
 
@@ -211,9 +212,17 @@ class TownNPC:
             "guide": GuideNPC,
             "merchant": MerchantNPC,
             "nurse": NurseNPC,
-            "blacksmith": BlacksmithNPC
+            "blacksmith": BlacksmithNPC,
+            "mystic_trader": MysticTraderNPC
         }
         target_cls = cls_map.get(t_type, TownNPC)
+        if target_cls == MysticTraderNPC:
+            dur = data.get("duration", 240.0)
+            tl = data.get("time_left", dur)
+            sc = data.get("shop_catalog")
+            npc_obj = MysticTraderNPC(name, t_type, x, y, asset_factory, sound_manager, home_tile=ht, duration=dur, shop_catalog=sc)
+            npc_obj.time_left = tl
+            return npc_obj
         return target_cls(name, t_type, x, y, asset_factory, sound_manager, home_tile=ht)
 
 
@@ -345,3 +354,260 @@ class BlacksmithNPC(TownNPC):
         player.equipment.recalculate_stats(player.stats, active.item_id)
         self.sound_manager.play("craft")
         return True, f"Forged and sharpened! {active.data['name']} now strikes with greater power!"
+
+
+# ==============================================================================
+# 5. Mystic Wandering Trader Spud (Zephyrion - Wandering Merchant)
+# ==============================================================================
+class MysticTraderNPC(TownNPC):
+    def __init__(self, name="Zephyrion", npc_type="mystic_trader", x=200.0, y=200.0, asset_factory=None, sound_manager=None, home_tile=None, duration=240.0, shop_catalog=None):
+        super().__init__(name, npc_type, x, y, asset_factory, sound_manager, home_tile)
+        self.duration = float(duration)
+        self.time_left = float(duration)
+        self.is_despawned = False
+        self.shield_active = False
+        self.shield_radius = 7 * SCALED_TILE # 224 px
+        self.shield_anim_time = 0.0
+
+        if shop_catalog is not None:
+            self.shop_catalog = shop_catalog
+        else:
+            self.shop_catalog = self.roll_wares()
+
+    def roll_wares(self):
+        """
+        Rolls 5 weapons/equipment items.
+        Show rate is the same as the drop rate:
+        - Common: 40.0
+        - Uncommon: 3.5
+        - Rare: 1.5
+        - Epic: 0.5
+        Capped strictly at Epic (no skill books, no mythic, legendary, ancient).
+        Also randomly offers an Affix Carving chance in store.
+        """
+        from src.ui.inventory import ITEM_REGISTRY, CAT_WEAPON, CAT_TOOL
+
+        pools = {"common": [], "uncommon": [], "rare": [], "epic": []}
+        for iid, idata in ITEM_REGISTRY.items():
+            r = idata.get("rarity", "common")
+            cat = idata.get("cat", "")
+            # Only weapons and equipment, strictly NO skill books and NO tools
+            if cat in ("weapon", "armor_head", "armor_chest", "armor_legs", "accessory") and not any(k in iid for k in ("skillbook", "pickaxe", "axe", "shovel")):
+                if r in pools:
+                    pools[r].append(iid)
+
+        # Fallbacks if any pool empty
+        if not pools["common"]:
+            pools["common"] = ["wooden_sword", "copper_broadsword", "potato_cap", "potato_tunic"]
+        if not pools["uncommon"]:
+            pools["uncommon"] = ["cactus_sword", "frost_hood", "iron_helmet", "iron_chestplate"]
+        if not pools["rare"]:
+            pools["rare"] = ["gold_broadsword", "frost_blade", "shadow_cleaver", "sandstorm_spear"]
+        if not pools["epic"]:
+            pools["epic"] = ["magma_greatsword", "bone_scythe", "starch_blade", "zephyr_striders", "talisman_of_vigor"]
+
+        weights = {"common": 40.0, "uncommon": 3.5, "rare": 1.5, "epic": 0.5}
+        rarity_choices = list(weights.keys())
+        rarity_weights = list(weights.values())
+
+        catalog = []
+        # Roll 5 items
+        for _ in range(5):
+            r = random.choices(rarity_choices, weights=rarity_weights, k=1)[0]
+            item_pool = pools[r]
+            iid = random.choice(item_pool)
+            idata = ITEM_REGISTRY.get(iid, {})
+            name = idata.get("name", iid.replace("_", " ").title())
+
+            # Prices appropriate to ARPG rarity
+            if r == "common":
+                price = random.randint(25, 60)
+                curr = "copper_coin"
+            elif r == "uncommon":
+                price = random.randint(120, 250)
+                curr = "copper_coin"
+            elif r == "rare":
+                price = random.randint(4, 9)
+                curr = "silver_coin"
+            else:
+                price = random.randint(18, 35)
+                curr = "silver_coin"
+
+            catalog.append({
+                "item_id": iid,
+                "name": name,
+                "price": price,
+                "currency": curr,
+                "count": 1,
+                "rarity": r
+            })
+
+        # Random chance to replace one slot with an Affix Slot Carving Voucher
+        if random.random() < 0.40 and len(catalog) > 0:
+            replace_idx = random.randint(0, len(catalog) - 1)
+            catalog[replace_idx] = {
+                "item_id": "affix_slot_service",
+                "name": "Affix Slot Carving",
+                "price": 50,
+                "currency": "silver_coin",
+                "count": 1,
+                "is_affix_service": True,
+                "rarity": "legendary"
+            }
+
+        return catalog
+
+    def check_hostile_enemies(self, combat):
+        """Checks for hostile enemies within 7 blocks (224px). Activates/deactivates Turtle Shield."""
+        if not combat:
+            self.shield_active = False
+            return False
+
+        radius = self.shield_radius
+        cx = self.center_x
+        cy = self.center_y
+
+        for mob in getattr(combat, "mobs", []):
+            if getattr(mob, "is_alive", True) and not getattr(mob, "is_dead", False) and getattr(mob, "hp", 1) > 0:
+                dist = math.hypot(mob.center_x - cx, mob.center_y - cy)
+                if dist <= radius:
+                    self.shield_active = True
+                    return True
+
+        boss = getattr(combat, "boss", None)
+        if boss and getattr(boss, "is_alive", True) and not getattr(boss, "is_dead", False) and getattr(boss, "hp", 1) > 0:
+            dist = math.hypot(boss.center_x - cx, boss.center_y - cy)
+            if dist <= radius:
+                self.shield_active = True
+                return True
+
+        self.shield_active = False
+        return False
+
+    def can_interact(self, player):
+        """Cannot interact/trade while Turtle Shield is active or when player is too far."""
+        if self.shield_active:
+            return False
+        return super().can_interact(player)
+
+    def on_hit(self, damage=0):
+        """When attacked or impacted, the Turtle Shield deflects attacks with zero damage."""
+        if self.shield_active:
+            if self.sound_manager:
+                self.sound_manager.play("hit")
+            return 0  # 100% deflected
+        return damage
+
+    def update(self, dt, world, combat=None):
+        if self.is_despawned:
+            return
+
+        self.time_left -= dt
+        self.shield_anim_time += dt
+
+        if combat:
+            self.check_hostile_enemies(combat)
+
+        # When shielded: Turtle retracts into its shell, completely stationary
+        if self.shield_active:
+            self.vx = 0.0
+            self.target_vx = 0.0
+            if self.is_talking:
+                self.is_talking = False
+            self.vy = min(10.0, self.vy + 0.44)
+            self.y += self.vy
+            self.frect.y = self.y
+            self.on_ground = False
+            solids = world.get_solid_rects_in_bounds(self.rect)
+            for tile_rect, is_platform in solids:
+                if is_platform:
+                    if self.vy > 0 and self.frect.bottom >= tile_rect.top and (self.frect.bottom - self.vy) <= tile_rect.top + 6:
+                        self.frect.bottom = tile_rect.top
+                        self.y = self.frect.y
+                        self.vy = 0.0
+                        self.on_ground = True
+                else:
+                    if self.frect.colliderect(tile_rect):
+                        if self.vy > 0:
+                            self.frect.bottom = tile_rect.top
+                            self.y = self.frect.y
+                            self.vy = 0.0
+                            self.on_ground = True
+            return
+
+        if self.time_left <= 0.0:
+            self.despawn(world)
+            return
+
+        super().update(dt, world)
+
+    def despawn(self, world=None):
+        """Teleports away regardless of being caged or enclosed in blocks."""
+        self.is_despawned = True
+        self.is_talking = False
+        if world and hasattr(world, "town_npcs") and self in world.town_npcs:
+            world.town_npcs.remove(self)
+
+    def get_quote(self):
+        quotes = [
+            "The cosmic winds whisper of great battles. I have traveled across dimensions to bring you these rare armaments!",
+            "Need a broken blade forged anew? For a single gold coin, I can mend even the most shattered relics.",
+            "Bring me Legendary or Ancient arms, and I will hollow out an Affix Slot to channel the gods!",
+            "I shall depart soon—my dimensional tether only lasts a few moments. Peruse my wares while you may!"
+        ]
+        return random.choice(quotes)
+
+    def render(self, target_surf, camera, player=None):
+        if self.is_despawned:
+            return
+
+        sx, sy = camera.world_to_screen(self.x, self.y)
+
+        # 1. Turtle / Energy Shield VFX
+        if self.shield_active:
+            pulse = math.sin(self.shield_anim_time * 5.0) * 2.0
+            shield_w = self.width + 24 + int(pulse)
+            shield_h = self.height + 16 + int(pulse)
+            shield_x = sx + self.width // 2 - shield_w // 2
+            shield_y = sy + self.height // 2 - shield_h // 2
+
+            shield_surf = pygame.Surface((shield_w, shield_h), pygame.SRCALPHA)
+            pygame.draw.ellipse(shield_surf, (80, 220, 255, 75), (0, 0, shield_w, shield_h))
+            pygame.draw.ellipse(shield_surf, (140, 255, 200, 140), (2, 2, shield_w - 4, shield_h - 4), 2)
+            pygame.draw.ellipse(shield_surf, (255, 230, 80, 180), (0, 0, shield_w, shield_h), 2)
+            pygame.draw.line(shield_surf, (100, 235, 255, 120), (shield_w // 2, 4), (shield_w // 2, shield_h - 4), 1)
+            pygame.draw.line(shield_surf, (100, 235, 255, 120), (4, shield_h // 2), (shield_w - 4, shield_h // 2), 1)
+            target_surf.blit(shield_surf, (shield_x, shield_y))
+
+        # 2. Character Sprite
+        super().render(target_surf, camera, player)
+
+        # 3. Floating Time Left Badge & Shield Warning
+        mins = int(max(0, self.time_left) // 60)
+        secs = int(max(0, self.time_left) % 60)
+        time_tag = f"Mystic Trader [{mins}:{secs:02d}]"
+        t_col = (255, 220, 100) if not self.shield_active else (100, 230, 255)
+        t_surf = self.font_hint.render(time_tag, True, t_col)
+        tx = sx + self.width // 2 - t_surf.get_width() // 2
+        ty = sy - 36
+        bg_r = pygame.Rect(tx - 4, ty - 1, t_surf.get_width() + 8, 14)
+        pygame.draw.rect(target_surf, (18, 14, 30, 220), bg_r, border_radius=3)
+        pygame.draw.rect(target_surf, (180, 100, 255), bg_r, 1, border_radius=3)
+        target_surf.blit(t_surf, (tx, ty))
+
+        if self.shield_active:
+            sh_txt = self.font_hint.render("[TURTLE SHIELD ACTIVE]", True, (255, 100, 100))
+            sx_pos = sx + self.width // 2 - sh_txt.get_width() // 2
+            sy_pos = ty - 16
+            sh_r = pygame.Rect(sx_pos - 4, sy_pos - 1, sh_txt.get_width() + 8, 14)
+            pygame.draw.rect(target_surf, (40, 12, 18, 220), sh_r, border_radius=3)
+            pygame.draw.rect(target_surf, (255, 70, 70), sh_r, 1, border_radius=3)
+            target_surf.blit(sh_txt, (sx_pos, sy_pos))
+
+    def to_dict(self):
+        d = super().to_dict()
+        d["duration"] = self.duration
+        d["time_left"] = self.time_left
+        d["shop_catalog"] = self.shop_catalog
+        return d
+

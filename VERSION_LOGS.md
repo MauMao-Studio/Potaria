@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.3.0** | October 2026 | *Mystic Trader, Affix Grimoire & Storage Chests* | Mystic Wandering Trader, Turtle Shield, Affix Slot Carving & Affix Stones, +1..7 Enhancement & Breaking/Repair, 20-slot Storage Chests, Playtime & Last Played World Select tracking. |
 | **v1.2.1** | October 2026 | *1-Block Body Collider & Sprout Clearance* | 1-block (32px) body hitbox, decorative leaf collision exclusion, 1-block tunnel traversal. |
 | **v1.2.0** | October 2026 | *Night Terrors & Dungeon Titan Ascension* | Bed 6-block enemy sleep check, dungeon-only mini-bosses, Nightly Elite Champion, major boss stat buffs. |
 | **v1.1.0** | October 2026 | *Loot Recalibration & Chest Overhaul* | Moderate ARPG drop rates, Epic/Mythic chest loot, Windows console encoding fixes. |
@@ -28,7 +29,37 @@
 
 ## Detailed Version Logs
 
-### [v1.2.1] — 1-Block Body Collider & Sprout Clearance (Current Release)
+### [v1.3.0] — Mystic Wandering Trader, Affix Grimoire & Storage Chests (Current Release)
+*Release Date: October 2026*
+
+#### Added
+- **Mystic Wandering Trader (`MysticTraderNPC`)**:
+  - Periodically spawns on a safe surface tile near the player every 3–5 minutes (180–300s).
+  - Teleports and despawns after duration expires, even if caged or fully enclosed in solid blocks.
+  - Sells 5 random weapons/equipments rolled according to weighted drop rates (Common: 40.0, Uncommon: 3.5, Rare: 1.5, Epic: 0.5), capped strictly at Epic (no skill books, no mythic/legendary/ancient items).
+  - Impenetrable **Turtle Shield** automatically activates when hostile enemy mobs or bosses are within 7 blocks (224px). Retracts into shell, deflects 100% of damage, and locks trade interactions until the area is cleared.
+  - Offers full weapon restoration for broken items for exactly **1 Gold Coin** (10,000 Copper).
+- **Affix Slot & Affix Stone System**:
+  - "Carve Affix Slot" service offered by Mystic Trader for Legendary and Ancient items: replaces a random basic stat (ATK, DEF, CRIT, SPEED, MP, HP, DAMAGE) with an open affix slot (up to 3 slots max).
+  - Craftable **Affix Stone** at Work Bench requiring rare endgame materials (3 Celestial Portal Shards, 5 Gold Bars, 5 Blightstone).
+  - Applying an Affix Stone embeds god-tier affixes (e.g. *Titan's Might*, *Celestial Aegis*, *Chronos Velocity*, *Vampiric Leech*, *Astral Executioner*, *Starch Fortress*, *Void Reaver*, *Solar Flare*).
+- **Item Enhancement System (+1 to +7) & Breaking Risk**:
+  - Weapons and equipment enhance up to +7 with scaling stats (multiplier = $1.0 + \text{level} / 7.0$, reaching exactly 2.0x base stats at +7).
+  - Levels +1 to +4 are 100% safe (0% break risk). Levels +5 (20%), +6 (25%), and +7 (30%) have a chance of breaking on failure!
+  - Broken items cannot be equipped or used for combat/mining attacks until repaired by the Mystic Trader for 1 Gold Coin.
+- **Craftable 20-Slot Storage Chests**:
+  - Craftable `chest` (10 Wood) and `iron_chest` (8 Wood, 2 Iron Bars) at Work Bench.
+  - 20-slot storage window (`ChestStorageWindow`) with Quick Stack, Deposit All, and Loot All buttons, enhancement badges (`+N`), broken alerts (`!`), and full tooltip inspection.
+  - Player-placed chests instantiate `StorageChest` at `world.chests[(tx, ty)]`, persist seamlessly across world saves/loads, and drop their contained loot and chest item when mined.
+- **World Selection Menu Playtime & Last Played Date Tracking**:
+  - Accumulates total playtime (`playtime += dt`) and tracks `last_played` timestamps in ISO format.
+  - Displays formatted `Playtime: Xh Ym` and `Last Played: YYYY-MM-DD HH:MM` on all world selection cards.
+- **Dedicated Test Suite**:
+  - Created [`tests/test_random_trader_and_features.py`](file:///C:/Users/Kurados/.gemini/antigravity/scratch/Potaria/tests/test_random_trader_and_features.py) with 10 comprehensive tests verifying trader spawn/despawn, wares cap, turtle shield deflection, repair cost, affix carving, affix stone crafting & embedding, enhancement scaling, broken item blocking, storage chests, and world save persistence. All 250 tests in the project pass 100% green!
+
+---
+
+### [v1.2.1] — 1-Block Body Collider & Sprout Clearance
 *Release Date: October 2026*
 
 #### Changed & Fixed

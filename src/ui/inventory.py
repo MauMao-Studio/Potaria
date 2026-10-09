@@ -66,6 +66,7 @@ ITEM_ALIASES = {
     "iron_sword": "iron_broadsword",
     "star": "fallen_star",
     "falling_star": "fallen_star",
+    "wooden_chest": "chest",
 }
 REVERSE_ITEM_ALIASES = {v: k for k, v in ITEM_ALIASES.items()}
 
@@ -957,6 +958,20 @@ ITEM_REGISTRY = {
         "lore": "'Holds the forgotten relics of past adventurers.'",
         "special": "Treasure Container"
     },
+    "iron_chest": {
+        "name": "Iron Storage Chest", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CHEST,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Heavy reinforced chest for storing 20 items safely. Right-click to open or manage items.",
+        "lore": "'Forged from iron bands to preserve keepsakes across expeditions.'",
+        "special": "20-Slot Storage Container"
+    },
+    "affix_stone": {
+        "name": "Affix Stone", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_MYTHIC,
+        "desc": "A primordial runic stone. Apply to Legendary or Ancient gear with an open affix slot to awaken god-tier affixes!",
+        "lore": "'Pulsating with forgotten cosmic inscriptions that alter the nature of arms.'",
+        "special": "Awakens God-Tier Affixes"
+    },
 
     # ----------------------------------------------------
     # New House & Decorative Building Blocks
@@ -1483,14 +1498,58 @@ def load_custom_items():
 load_custom_items()
 
 class ItemStack:
-    def __init__(self, item_id, count=1):
+    def __init__(self, item_id, count=1, enhancement_level=0, is_broken=False, affix_slots=0, affixes=None, removed_stats=None):
         self.item_id = item_id
         self.count = count
+        self.enhancement_level = int(enhancement_level)
+        self.is_broken = bool(is_broken)
+        self.affix_slots = int(affix_slots)
+        self.affixes = list(affixes) if affixes else []
+        self.removed_stats = list(removed_stats) if removed_stats else []
 
     @property
     def data(self):
         canon = ITEM_ALIASES.get(self.item_id, self.item_id)
-        return ITEM_REGISTRY.get(self.item_id) or ITEM_REGISTRY.get(canon, {})
+        base = ITEM_REGISTRY.get(self.item_id) or ITEM_REGISTRY.get(canon, {})
+        if not self.enhancement_level and not self.is_broken and not self.affixes and not self.removed_stats:
+            return base
+
+        # Clone and apply modifications
+        d = dict(base)
+        if self.enhancement_level > 0:
+            mult = 1.0 + (self.enhancement_level / 7.0)
+            if "damage" in d and d["damage"] > 0:
+                d["damage"] = int(round(d["damage"] * mult))
+            if "atk" in d and d["atk"] > 0:
+                d["atk"] = int(round(d["atk"] * mult))
+            if "def" in d and d["def"] > 0:
+                d["def"] = int(round(d["def"] * mult))
+            if "hp" in d and d["hp"] > 0:
+                d["hp"] = int(round(d["hp"] * mult))
+            if "crit" in d and d["crit"] > 0:
+                d["crit"] = round(d["crit"] * mult, 1)
+            if "speed" in d and d["speed"] > 0:
+                d["speed"] = round(d["speed"] * mult, 2)
+            d["name"] = f"{base.get('name', self.item_id)} +{self.enhancement_level}"
+
+        if self.is_broken:
+            d["name"] = f"[BROKEN] {d.get('name', self.item_id)}"
+            d["damage"] = 0
+            d["atk"] = 0
+            d["def"] = 0
+
+        if self.removed_stats:
+            for s in self.removed_stats:
+                if s in d:
+                    d[s] = 0
+
+        if self.affixes:
+            eff_list = list(d.get("effects", []))
+            for aff in self.affixes:
+                eff_list.append(f"★ {aff}")
+            d["effects"] = eff_list
+
+        return d
 
     @property
     def max_stack(self):
@@ -1859,6 +1918,10 @@ class Inventory:
 
                     # Quick Equip on Right-Click when Inventory is open!
                     if is_right_click and current and player and self.is_open:
+                        if getattr(current, "is_broken", False):
+                            self.notify("Cannot equip broken item! Repair it at the Mystic Trader first.")
+                            return True
+
                         item_id = current.item_id
                         cat = current.data.get("cat", "")
 
@@ -1929,6 +1992,27 @@ class Inventory:
                                 self.held_item = current
                     return True
         return False
+
+    def equip_item(self, slot_idx, player):
+        """Programmatically equips the item in slot_idx into the player's equipment. Prevents equipping broken items."""
+        if slot_idx < 0 or slot_idx >= len(self.slots):
+            return False
+        current = self.slots[slot_idx]
+        if not current or not player:
+            return False
+        if getattr(current, "is_broken", False):
+            self.notify("Cannot equip broken item! Repair it at the Mystic Trader first.")
+            return False
+        cat = current.data.get("cat", "")
+        if cat.startswith("armor_") or cat == CAT_ACCESSORY:
+            success, prev_item = player.equipment.equip(current.item_id, player.stats)
+            if success:
+                if hasattr(player, "sound_manager") and player.sound_manager:
+                    player.sound_manager.play("place")
+                self.slots[slot_idx] = ItemStack(prev_item, 1) if prev_item else None
+                return True
+        return False
+
 
 
 def get_mining_damage(active_item, tile_id):

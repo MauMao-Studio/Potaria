@@ -45,6 +45,15 @@ def list_saved_worlds():
                 try:
                     with open(json_file, "r", encoding="utf-8") as f:
                         data = json.load(f)
+                    pt = float(data.get("playtime", 0.0))
+                    hours = int(pt // 3600)
+                    minutes = int((pt % 3600) // 60)
+                    playtime_str = f"{hours}h {minutes}m"
+                    lp = data.get("last_played")
+                    if not lp:
+                        ts = data.get("timestamp", 0)
+                        lp = time.strftime("%Y-%m-%d %H:%M", time.localtime(ts)) if ts else "Never"
+
                     worlds.append({
                         "name": data.get("world_name", entry),
                         "folder": entry,
@@ -53,6 +62,9 @@ def list_saved_worlds():
                         "game_mode": data.get("game_mode", MODE_ADVENTURE),
                         "seed": data.get("seed", 0),
                         "timestamp": data.get("timestamp", 0),
+                        "playtime": pt,
+                        "playtime_str": playtime_str,
+                        "last_played": lp,
                     })
                 except Exception as e:
                     print(f"[SaveManager] Error reading {json_file}: {e}")
@@ -74,7 +86,12 @@ def save_world(world_name, game):
             inv_data.append({
                 "slot": idx,
                 "item_id": slot.item_id,
-                "count": slot.count
+                "count": slot.count,
+                "enhancement_level": getattr(slot, "enhancement_level", 0),
+                "is_broken": getattr(slot, "is_broken", False),
+                "affix_slots": getattr(slot, "affix_slots", 0),
+                "affixes": getattr(slot, "affixes", []),
+                "removed_stats": getattr(slot, "removed_stats", []),
             })
 
     # 2. Equipment serialization
@@ -166,9 +183,19 @@ def save_world(world_name, game):
                     "y": float(it.y),
                 })
 
+    chests_data = []
+    if hasattr(game, "world") and hasattr(game.world, "chests"):
+        for (ctx, cty), chest_obj in game.world.chests.items():
+            if hasattr(chest_obj, "to_dict"):
+                chests_data.append(chest_obj.to_dict())
+
     w_type = getattr(game, "world_type", getattr(game.world, "world_type", WORLD_TYPE_INFINITE))
     if hasattr(game, "world") and hasattr(game.world, "world_type") and hasattr(game, "world_type"):
         game.world.world_type = game.world_type
+
+    cur_time = time.time()
+    last_played_str = time.strftime("%Y-%m-%d %H:%M", time.localtime(cur_time))
+    total_playtime = float(getattr(game, "playtime", 0.0))
 
     payload = {
         "world_name": world_name,
@@ -176,7 +203,9 @@ def save_world(world_name, game):
         "world_type": w_type,
         "difficulty": getattr(game, "difficulty", DIFFICULTY_NORMAL),
         "game_mode": getattr(game, "game_mode", MODE_ADVENTURE),
-        "timestamp": time.time(),
+        "timestamp": cur_time,
+        "playtime": total_playtime,
+        "last_played": last_played_str,
         "sky_time": float(getattr(game.sky, "time", 0.0)) if hasattr(game, "sky") else 0.0,
         "player": {
             "x": game.player.x,
@@ -196,6 +225,7 @@ def save_world(world_name, game):
         "block_deltas": block_deltas,
         "wall_deltas": wall_deltas,
         "town_npcs": [npc.to_dict() for npc in getattr(game.world, "town_npcs", []) if hasattr(npc, "to_dict")],
+        "chests": chests_data,
     }
 
     with open(save_path, "w", encoding="utf-8") as f:
@@ -290,7 +320,16 @@ def load_world(world_name, game):
     for item in (p_data.get("inventory") or []):
         slot_idx = item.get("slot")
         if slot_idx is not None and 0 <= slot_idx < INV_TOTAL_SLOTS:
-            game.inventory.slots[slot_idx] = ItemStack(item["item_id"], item["count"])
+            st = ItemStack(
+                item["item_id"],
+                item["count"],
+                enhancement_level=item.get("enhancement_level", 0),
+                is_broken=item.get("is_broken", False),
+                affix_slots=item.get("affix_slots", 0),
+                affixes=item.get("affixes", []),
+                removed_stats=item.get("removed_stats", [])
+            )
+            game.inventory.slots[slot_idx] = st
 
     # Link player.inventory to game.inventory both ways
     game.player.inventory = game.inventory
@@ -402,6 +441,20 @@ def load_world(world_name, game):
                 game.world.town_npcs.append(npc)
             except Exception as e:
                 print(f"[SaveManager] Error restoring Town NPC: {e}")
+
+    # Restore Storage Chests
+    if hasattr(game, "world"):
+        game.world.chests = {}
+        from src.world.storage_chest import StorageChest
+        for cdata in data.get("chests", []):
+            try:
+                chest_obj = StorageChest.from_dict(cdata)
+                game.world.chests[(chest_obj.tx, chest_obj.ty)] = chest_obj
+            except Exception as e:
+                print(f"[SaveManager] Error restoring chest: {e}")
+
+    # Restore Playtime
+    game.playtime = float(data.get("playtime", 0.0))
 
     # Update crafting recipes if available
     if hasattr(game, "crafting"):

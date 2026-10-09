@@ -67,6 +67,7 @@ from src.ui.hud import HUD
 from src.ui.menu import MenuManager, Button
 from src.ui.character_panel import CharacterPanel
 from src.ui.npc_dialogue import NPCDialogueWindow
+from src.ui.chest_ui import ChestStorageWindow
 from src.ui.touch_controller import TouchController
 from src.entities.npc import TownNPC
 from src.network.server import LANServer
@@ -138,6 +139,8 @@ class PotariaGame:
         self.hud = HUD(self.asset_factory)
         self.character_panel = CharacterPanel(self.asset_factory)
         self.npc_dialogue = NPCDialogueWindow(self.asset_factory, self.sound_manager)
+        self.chest_ui = ChestStorageWindow(self.asset_factory, self.sound_manager)
+        self.playtime = 0.0
         self.achievement_manager = AchievementManager(sound_manager=self.sound_manager)
         self.menu = MenuManager(self.asset_factory, self.sound_manager, self.bgm, self.achievement_manager)
         if hasattr(self.menu, "settings"):
@@ -689,6 +692,7 @@ class PotariaGame:
         self.world = World(self.asset_factory, seed=seed, world_type=self.world_type)
         self.block_deltas = {}
         self.wall_deltas = {}
+        self.playtime = 0.0
 
         # Clear Equipment & Held Weapon
         for slot_k in list(self.player.equipment.slots.keys()):
@@ -1031,7 +1035,9 @@ class PotariaGame:
                 k_sr = self.menu.key_bindings.get("Skill R", pygame.K_r)
 
                 if event.key == pygame.K_ESCAPE:
-                    if hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
+                    if hasattr(self, "chest_ui") and self.chest_ui.is_open:
+                        self.chest_ui.close()
+                    elif hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
                         self.npc_dialogue.close()
                     elif self.character_panel.is_open:
                         self.character_panel.is_open = False
@@ -1047,14 +1053,15 @@ class PotariaGame:
                     self.character_panel.toggle()
 
                 elif event.key == k_inv:
-                    # Check if Spud is interacting with a nearby Town NPC (only if town mechanics enabled)
+                    if hasattr(self, "chest_ui") and self.chest_ui.is_open:
+                        self.chest_ui.close()
+                    # Check if Spud is interacting with a nearby Town NPC
                     nearby_npc = None
-                    if getattr(self.world, "town_housing_enabled", False):
-                        if not self.inventory.is_open and not (hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open):
-                            for npc in getattr(self.world, "town_npcs", []):
-                                if npc.can_interact(self.player):
-                                    nearby_npc = npc
-                                    break
+                    if not self.inventory.is_open and not (hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open):
+                        for npc in getattr(self.world, "town_npcs", []):
+                            if npc.can_interact(self.player):
+                                nearby_npc = npc
+                                break
                     if nearby_npc and hasattr(self, "npc_dialogue"):
                         self.npc_dialogue.open(nearby_npc, self.player, self.world, self.combat)
                     elif hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
@@ -1157,8 +1164,13 @@ class PotariaGame:
                         ui_consumed = True
                         continue
 
+                # 0.5. Storage Chest Window
+                if hasattr(self, "chest_ui") and self.chest_ui.is_open:
+                    if self.chest_ui.handle_click(mouse_x, mouse_y, is_right_click, self.player, self.inventory):
+                        ui_consumed = True
+
                 # 1. Character & Equipment Paperdoll Panel
-                if self.character_panel.is_open:
+                if not ui_consumed and self.character_panel.is_open:
                     if self.character_panel.handle_click(mouse_x, mouse_y, self.player, self.inventory, is_right_click=is_right_click):
                         ui_consumed = True
 
@@ -1214,7 +1226,7 @@ class PotariaGame:
                 # Gameplay World interaction
                 if not ui_consumed and not self.paused:
                     mouse_wx, mouse_wy = self.camera.screen_to_world(mouse_x, mouse_y)
-                    clicked_npc = self.world.get_npc_at(mouse_wx, mouse_wy, radius=32.0) if getattr(self.world, "town_housing_enabled", False) else None
+                    clicked_npc = self.world.get_npc_at(mouse_wx, mouse_wy, radius=48.0) if hasattr(self.world, "get_npc_at") else None
                     if clicked_npc and clicked_npc.can_interact(self.player):
                         self.npc_dialogue.open(clicked_npc, self.player, self.world, self.combat)
                         ui_consumed = True
@@ -1233,7 +1245,27 @@ class PotariaGame:
                     self.touch_controller.handle_mouse_up(event.pos[0], event.pos[1], event.button, self)
 
     def _open_or_break_chest(self, tx, ty, world_x, world_y):
-        """Rolls high-value loot for naturally discovered or placed treasure chests."""
+        """Rolls high-value loot for naturally discovered or drops stored items from placed chests."""
+        if hasattr(self.world, "chests") and (tx, ty) in self.world.chests:
+            chest = self.world.chests.pop((tx, ty))
+            self.world.set_tile(tx, ty, TILE_AIR)
+            self.block_deltas[(tx, ty)] = TILE_AIR
+            if self.client and self.client.connected:
+                self.client.send_block_delta(tx, ty, TILE_AIR)
+            if hasattr(self, "chest_ui") and self.chest_ui.active_chest == chest:
+                self.chest_ui.close()
+            self.sound_manager.play("craft")
+            self.particle_system.spawn_debris(world_x + 16, world_y + 16, (180, 130, 70), count=10)
+            # Drop all items stored in chest
+            for itm in chest.get_all_items():
+                self.combat.dropped_items.append(
+                    DroppedItem(itm.item_id, itm.count, world_x + random.randint(4, 12), world_y - random.randint(4, 16), self.asset_factory)
+                )
+            # Drop the chest container itself
+            drop_chest_id = chest.chest_type if getattr(chest, "chest_type", None) in ("iron_chest", "chest") else "chest"
+            self.combat.dropped_items.append(DroppedItem(drop_chest_id, 1, world_x + 8, world_y - 8, self.asset_factory))
+            return
+
         self.world.set_tile(tx, ty, TILE_AIR)
         self.block_deltas[(tx, ty)] = TILE_AIR
         if self.client and self.client.connected:
@@ -1311,6 +1343,9 @@ class PotariaGame:
 
             # 0b. Open / Break Treasure Chest
             if t_id == TILE_CHEST:
+                if hasattr(self.world, "chests") and (tx, ty) in self.world.chests:
+                    self.chest_ui.open(self.world.chests[(tx, ty)], self.player, self.inventory)
+                    return
                 self._open_or_break_chest(tx, ty, tile_world_x, tile_world_y)
                 return
 
@@ -1578,7 +1613,15 @@ class PotariaGame:
 
     def handle_primary_action(self, mouse_x, mouse_y):
         active = self.inventory.get_active_item()
+        if active and getattr(active, "is_broken", False):
+            if hasattr(self.inventory, "notify"):
+                self.inventory.notify("This weapon is broken! Repair it at the Mystic Trader.")
+            return False
         equipped_weapon = getattr(self.player.equipment, "slots", {}).get(SLOT_WEAPON) if hasattr(self.player, "equipment") else None
+        if equipped_weapon and getattr(equipped_weapon, "is_broken", False):
+            if hasattr(self.inventory, "notify"):
+                self.inventory.notify("This weapon is broken! Repair it at the Mystic Trader.")
+            return False
         is_held_weapon = (active and active.data.get("cat") == CAT_WEAPON)
 
         # Check if mouse is targeting an in-reach breakable tile
@@ -1923,7 +1966,8 @@ class PotariaGame:
         if is_solid and target_rect.colliderect(self.player.rect):
             return
 
-        placed = self.world.place_tile(tx, ty, tile_id_to_place)
+        chest_type = active.item_id if active and active.item_id in ("chest", "iron_chest") else "chest"
+        placed = self.world.place_tile(tx, ty, tile_id_to_place, chest_type=chest_type)
         if placed:
             self.block_deltas[(tx, ty)] = tile_id_to_place
             if self.client and self.client.connected:
@@ -1938,6 +1982,7 @@ class PotariaGame:
             self.hud.minimap.mark_dirty()
 
     def update_gameplay(self, dt):
+        self.playtime = getattr(self, "playtime", 0.0) + dt
         self.profiler.start_section("update_other")
         keys = pygame.key.get_pressed()
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -1990,7 +2035,7 @@ class PotariaGame:
 
         # Synchronize active hotbar weapon stats to Spud dynamically
         active_item = self.inventory.get_active_item()
-        active_id = active_item.item_id if active_item else None
+        active_id = active_item.item_id if (active_item and not getattr(active_item, "is_broken", False)) else None
         if getattr(self.player, "_last_active_weapon", object()) != active_id:
             self.player._last_active_weapon = active_id
             self.player.equipment.recalculate_stats(self.player.stats, active_id)
@@ -2137,7 +2182,7 @@ class PotariaGame:
         # 5. World, Town NPCs & Particles
         with self.profiler.section("update_world"):
             self.world.update(dt)
-            if getattr(self.world, "town_housing_enabled", False):
+            if hasattr(self.world, "update_town_npcs"):
                 self.world.update_town_npcs(dt, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
             if hasattr(self, "npc_dialogue"):
                 self.npc_dialogue.update(dt)
@@ -2447,7 +2492,7 @@ class PotariaGame:
             self.client.render_remote_players(self.screen, self.camera, self.asset_factory)
 
         # Layer 4.8: Friendly Town NPCs & Villagers
-        if getattr(self.world, "town_housing_enabled", False):
+        if hasattr(self.world, "render_town_npcs") and getattr(self.world, "town_npcs", None):
             self.world.render_town_npcs(self.screen, self.camera, player=self.player)
 
         # Layer 5: Spud the Potato Hero
@@ -2491,8 +2536,12 @@ class PotariaGame:
                 self.character_panel.render(self.screen, self.player, mouse_x, mouse_y)
     
             # Layer 9.6: Town NPC Dialogue & Shop Window
-            if getattr(self.world, "town_housing_enabled", False) and hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
+            if hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
                 self.npc_dialogue.render(self.screen, self.player, self.inventory, mouse_x, mouse_y)
+    
+            # Layer 9.7: Storage Chest Window
+            if hasattr(self, "chest_ui") and self.chest_ui.is_open:
+                self.chest_ui.render(self.screen, self.inventory, mouse_x, mouse_y)
     
             # Layer 9.8: PvP Last Man Standing Victory Banner
             if self.pvp_victor_banner:

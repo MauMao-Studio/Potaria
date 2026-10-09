@@ -393,8 +393,9 @@ class MenuManager:
         bx = SCREEN_WIDTH // 2 - 250
         start_y = 280
         for i, winfo in enumerate(self.saved_worlds[:4]):
-            load_b = Button(bx + 330, start_y + i * 52, 90, 36, "PLAY", f"load_{i}")
-            del_b = Button(bx + 430, start_y + i * 52, 60, 36, "DEL", f"del_{i}")
+            entry_y = start_y + i * 62
+            load_b = Button(bx + 330, entry_y + 10, 90, 36, "PLAY", f"load_{i}")
+            del_b = Button(bx + 430, entry_y + 10, 60, 36, "DEL", f"del_{i}")
             self.world_entry_buttons.append((load_b, del_b, winfo))
 
     def handle_click(self, mouse_pos, button=1):
@@ -1067,8 +1068,8 @@ class MenuManager:
         else:
             bx = SCREEN_WIDTH // 2 - 250
             for i, (load_b, del_b, winfo) in enumerate(self.world_entry_buttons):
-                entry_y = 280 + i * 52
-                entry_rect = pygame.Rect(bx, entry_y, 495, 42)
+                entry_y = 280 + i * 62
+                entry_rect = pygame.Rect(bx, entry_y, 495, 54)
                 pygame.draw.rect(target_surf, (36, 42, 65), entry_rect, border_radius=6)
                 pygame.draw.rect(target_surf, (70, 85, 125), entry_rect, 1, border_radius=6)
 
@@ -1076,13 +1077,19 @@ class MenuManager:
                 w_type = winfo.get("world_type", "infinite").upper()
                 w_diff = winfo.get("difficulty", "normal").upper()
                 w_mode = winfo.get("game_mode", "adventure").replace("_", " ").upper()
+                pt_str = winfo.get("playtime_str", "0h 0m")
+                lp_str = winfo.get("last_played", "Never")
 
                 name_surf = self.font_btn.render(w_name, True, (255, 235, 120))
-                target_surf.blit(name_surf, (bx + 12, entry_y + 4))
+                target_surf.blit(name_surf, (bx + 12, entry_y + 3))
 
                 detail_str = f"{w_type}  •  {w_diff}  •  {w_mode}"
                 detail_surf = self.font_sm.render(detail_str, True, (180, 195, 220))
-                target_surf.blit(detail_surf, (bx + 14, entry_y + 23))
+                target_surf.blit(detail_surf, (bx + 14, entry_y + 20))
+
+                time_str = f"Playtime: {pt_str}  •  Last Played: {lp_str}"
+                time_surf = self.font_sm.render(time_str, True, (130, 215, 240))
+                target_surf.blit(time_surf, (bx + 14, entry_y + 36))
 
                 load_b.render(target_surf, self.font_btn)
                 del_b.render(target_surf, self.font_btn)

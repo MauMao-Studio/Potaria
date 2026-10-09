@@ -158,6 +158,9 @@ class World:
         self.town_npcs = []
         self.housing_check_timer = 0.0
         self.town_housing_enabled = False  # Town checking disabled: Potaria does not have towns
+        self.mystic_trader_timer = 0.0
+        self.mystic_trader_interval = 240.0
+        self.chests = {}  # (tx, ty) -> StorageChest
 
     def get_biome_spawn(self, player_idx=1):
         """Returns surface spawn coordinates in different biomes for LMS / PvP mode."""
@@ -354,6 +357,10 @@ class World:
             is_player_placed = (tx, ty) in self.player_placed_tiles
             self.player_placed_tiles.discard((tx, ty))
             drop = prop.get("drop")
+            if t_id == TILE_CHEST and (tx, ty) in self.chests:
+                broken_chest = self.chests.pop((tx, ty))
+                if broken_chest and getattr(broken_chest, "chest_type", None):
+                    drop = broken_chest.chest_type
 
             # Felling only cascades for natural tree trunks or unplaced tree wood, NOT player-placed structures
             if (t_id in (TILE_WOOD_TRUNK, TILE_WOOD)) and not is_player_placed:
@@ -366,7 +373,7 @@ class World:
 
         return False, None, t_id
 
-    def place_tile(self, tx, ty, tile_id):
+    def place_tile(self, tx, ty, tile_id, chest_type="chest"):
         cur = self.get_tile(tx, ty)
         if cur != TILE_AIR and cur != TILE_WATER:
             return False
@@ -384,6 +391,9 @@ class World:
         placed = self.set_tile(tx, ty, tile_id)
         if placed:
             self.player_placed_tiles.add((tx, ty))
+            if tile_id == TILE_CHEST:
+                from src.world.storage_chest import StorageChest
+                self.chests[(tx, ty)] = StorageChest(tx, ty, chest_type=chest_type)
         return placed
 
     def toggle_door(self, tx, ty, player_rect=None):
@@ -641,31 +651,82 @@ class World:
                 inventory.notify(f"{name} the {role_title} has settled in!")
             sound_manager.play("craft")
 
+    def spawn_mystic_trader(self, player, asset_factory=None, sound_manager=None, duration=240.0):
+        """Spawns the Mystic Wandering Trader near the player on a safe surface tile."""
+        from src.entities.npc import MysticTraderNPC
+        from src.constants import SCALED_TILE, TILE_AIR
+
+        ptx = int(player.center_x // self.scaled_tile)
+        pty = int(player.center_y // self.scaled_tile)
+
+        found_pos = None
+        for dx in (4, -4, 6, -6, 3, -3, 8, -8):
+            tx = ptx + dx
+            for ty in range(max(10, pty - 10), min(self.height - 10, pty + 10)):
+                if self.is_tile_solid(tx, ty) and not self.is_tile_solid(tx, ty - 1) and not self.is_tile_solid(tx, ty - 2):
+                    found_pos = (tx * self.scaled_tile, (ty - 1) * self.scaled_tile)
+                    break
+            if found_pos:
+                break
+
+        if not found_pos:
+            found_pos = (player.center_x + 64, player.center_y)
+
+        af = asset_factory or self.asset_factory
+        sm = sound_manager or self.sound_manager
+        trader = MysticTraderNPC(
+            name="Zephyrion",
+            npc_type="mystic_trader",
+            x=found_pos[0],
+            y=found_pos[1],
+            asset_factory=af,
+            sound_manager=sm,
+            duration=duration
+        )
+        self.town_npcs.append(trader)
+        if sm:
+            sm.play("craft")
+        return trader
+
     def update_town_npcs(self, dt, player, inventory, asset_factory, sound_manager, combat=None):
-        """Updates AI for active Town NPCs. Housing & town checks are disabled in Potaria."""
-        if not getattr(self, "town_housing_enabled", False):
-            return
+        """Updates AI for active Town NPCs and Mystic Wandering Trader."""
+        # 1. Periodic Mystic Wandering Trader spawn
+        self.mystic_trader_timer += dt
+        if self.mystic_trader_timer >= self.mystic_trader_interval:
+            self.mystic_trader_timer = 0.0
+            from src.entities.npc import MysticTraderNPC
+            if not any(isinstance(n, MysticTraderNPC) or getattr(n, "npc_type", "") == "mystic_trader" for n in self.town_npcs):
+                self.spawn_mystic_trader(player, asset_factory, sound_manager, duration=random.uniform(180.0, 300.0))
 
-        self.housing_check_timer += dt
-        if self.housing_check_timer >= 3.5:
-            self.housing_check_timer = 0.0
-            self.check_and_spawn_town_npcs(player, inventory, asset_factory, sound_manager, combat)
+        # 2. Check town housing if enabled
+        if getattr(self, "town_housing_enabled", False):
+            self.housing_check_timer += dt
+            if self.housing_check_timer >= 3.5:
+                self.housing_check_timer = 0.0
+                self.check_and_spawn_town_npcs(player, inventory, asset_factory, sound_manager, combat)
 
-        for npc in self.town_npcs:
-            npc.update(dt, self)
+        # 3. Update all active NPCs in town_npcs (including MysticTraderNPC)
+        for npc in list(self.town_npcs):
+            if hasattr(npc, "update"):
+                try:
+                    npc.update(dt, self, combat)
+                except TypeError:
+                    npc.update(dt, self)
 
     def render_town_npcs(self, target_surf, camera, player=None):
         """Renders Town NPCs and their name badges."""
-        if not getattr(self, "town_housing_enabled", False):
-            return
+        housing_enabled = getattr(self, "town_housing_enabled", False)
         for npc in self.town_npcs:
+            if not housing_enabled and getattr(npc, "npc_type", "") != "mystic_trader":
+                continue
             npc.render(target_surf, camera, player=player)
 
     def get_npc_at(self, world_x, world_y, radius=45.0):
         """Returns the TownNPC closest to (world_x, world_y) within reach radius, if any."""
-        if not getattr(self, "town_housing_enabled", False):
-            return None
+        housing_enabled = getattr(self, "town_housing_enabled", False)
         for npc in self.town_npcs:
+            if not housing_enabled and getattr(npc, "npc_type", "") != "mystic_trader":
+                continue
             if math.hypot(npc.center_x - world_x, npc.center_y - world_y) <= radius:
                 return npc
         return None
