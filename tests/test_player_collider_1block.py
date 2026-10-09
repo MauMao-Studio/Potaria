@@ -209,5 +209,68 @@ class TestPlayerCollider1Block(unittest.TestCase):
         self.assertTrue(p.on_ground)
         self.assertEqual(p.y, 64 * SCALED_TILE - p.height)
 
+    def test_07_pvp_remote_player_hitbox_dimensions(self):
+        """Verifies PvP remote player hitbox dimensions match 1-block body collider (PLAYER_WIDTH x PLAYER_HEIGHT)."""
+        game = PotariaGame()
+        p = game.player
+        self.assertEqual(p.width, PLAYER_WIDTH)
+        self.assertEqual(p.height, PLAYER_HEIGHT)
+
+        # Emulate remote player dict at (100.0, 200.0)
+        rp = {"x": 100.0, "y": 200.0, "hp": 100}
+        rpx = float(rp.get("x", 0.0))
+        rpy = float(rp.get("y", 0.0))
+        rp_rect = pygame.Rect(rpx, rpy, p.width, p.height)
+
+        self.assertEqual(rp_rect.width, 28)
+        self.assertEqual(rp_rect.height, 32)
+        self.assertEqual(rp_rect.top, 200)
+        self.assertEqual(rp_rect.bottom, 232)
+
+    def test_08_decorative_head_leaf_projectile_passthrough(self):
+        """Verifies projectiles flying through decorative head leaf (above collider) pass through without collision."""
+        af = MagicMock()
+        af.player_sprites = {
+            "idle": pygame.Surface((20, 24)),
+            "walk": [pygame.Surface((20, 24))],
+            "jump": pygame.Surface((20, 24)),
+            "arm": pygame.Surface((8, 12))
+        }
+        af.boss = {"fireball": pygame.Surface((10, 10))}
+        sm = MagicMock()
+
+        player = Player(100, 200, af, sm) # Collider: (100, 200, 28, 32). Leaf rendered at y=196..200
+        
+        # Projectile 1: Flying across the sprout leaf at y=197 (height 2)
+        leaf_proj_rect = pygame.Rect(105, 197, 10, 2)
+        self.assertFalse(player.rect.colliderect(leaf_proj_rect), "Projectiles passing through head sprout leaf must NOT hit player collider")
+
+        # Projectile 2: Flying directly into potato body at y=210 (height 2)
+        body_proj_rect = pygame.Rect(105, 210, 10, 2)
+        self.assertTrue(player.rect.colliderect(body_proj_rect), "Projectiles hitting player body collider must register collision")
+
+    def test_09_walking_animation_timing_on_surface(self):
+        """Verifies grounded player advances walk frames at 12 FPS on terrain surface."""
+        game = PotariaGame()
+        world = game.world
+        p = game.player
+
+        # Surface at ty=70 (y = 70 * 32 = 2240)
+        for tx in range(-5, 5):
+            world.set_tile(tx, 70, TILE_STONE)
+            world.set_tile(tx, 69, TILE_AIR)
+
+        p.x = 0.0
+        p.y = 70 * SCALED_TILE - p.height
+        p.vx = 2.0
+        p.anim_timer = 0.0
+        start_frame = p.walk_frame_idx
+
+        # Advance by 1/12th second (0.084s)
+        p.update(0.084, world)
+        self.assertTrue(p.on_ground, "Player must be on ground when placed at surface tile - height")
+        self.assertEqual(p.walk_frame_idx, (start_frame + 1) % len(p.walk_sprites), "Walk frame must advance at 12 FPS")
+
 if __name__ == "__main__":
     unittest.main()
+

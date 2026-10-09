@@ -295,7 +295,7 @@ def test_all_potaria_systems():
 
     # 12 FPS Animation Frame Timing
     player.x = 0.0
-    player.y = 2204.0
+    player.y = 70 * SCALED_TILE - player.height
     player.vx = 2.0
     player.anim_timer = 0.0
     start_frame = player.walk_frame_idx

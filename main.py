@@ -38,7 +38,8 @@ from src.constants import (
     TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_BARRIER,
     TILE_BED, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE, TILE_PROPS,
     TILE_BEDROCK, TILE_WATER,
-    CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL
+    CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL,
+    PLAYER_WIDTH, PLAYER_HEIGHT
 )
 from src.world.save_manager import save_world, load_world, delete_world, list_saved_worlds
 from src.assets.asset_factory import AssetFactory
@@ -2083,11 +2084,11 @@ class PotariaGame:
             all_player_positions = [(self.player.center_x, self.player.center_y)]
             for rp in self.client.remote_players.values():
                 if isinstance(rp, dict):
-                    rpx = float(rp.get("x", 0.0)) + 14.0
-                    rpy = float(rp.get("y", 0.0)) + 18.0
+                    rpx = float(rp.get("x", 0.0)) + self.player.width / 2.0
+                    rpy = float(rp.get("y", 0.0)) + self.player.height / 2.0
                 else:
-                    rpx = getattr(rp, "center_x", getattr(rp, "x", 0.0) + 14.0)
-                    rpy = getattr(rp, "center_y", getattr(rp, "y", 0.0) + 18.0)
+                    rpx = getattr(rp, "center_x", getattr(rp, "x", 0.0) + self.player.width / 2.0)
+                    rpy = getattr(rp, "center_y", getattr(rp, "y", 0.0) + self.player.height / 2.0)
                 all_player_positions.append((rpx, rpy))
             self.combat.multiplayer_player_positions = all_player_positions
 
@@ -2263,13 +2264,13 @@ class PotariaGame:
                     for pid, rp in list(self.client.remote_players.items()):
                         rpx = float(rp.get("x", 0.0) if isinstance(rp, dict) else getattr(rp, "x", 0.0))
                         rpy = float(rp.get("y", 0.0) if isinstance(rp, dict) else getattr(rp, "y", 0.0))
-                        rp_rect = pygame.Rect(rpx, rpy, 28, 36)
+                        rp_rect = pygame.Rect(rpx, rpy, self.player.width, self.player.height)
                         p_rect = getattr(p, "frect", getattr(p, "rect", None))
                         if p_rect and p_rect.colliderect(rp_rect):
                             p.life = 0
                             dmg = getattr(p, "damage", 20)
-                            self.combat.spawn_damage_number(rpx + 14, rpy, dmg, color=(255, 60, 60))
-                            self.particle_system.spawn_debris(rpx + 14, rpy + 18, (220, 50, 50), count=6)
+                            self.combat.spawn_damage_number(rpx + self.player.width / 2.0, rpy, dmg, color=(255, 60, 60))
+                            self.particle_system.spawn_debris(rpx + self.player.width / 2.0, rpy + self.player.height / 2.0, (220, 50, 50), count=6)
                             self.sound_manager.play("hurt")
                             if isinstance(rp, dict) and "hp" in rp:
                                 rp["hp"] = max(0, rp["hp"] - dmg)
@@ -2294,8 +2295,8 @@ class PotariaGame:
                             hit_tracker.add(pid)
                             self.player._pvp_hit_players = hit_tracker
                             dmg = max(10, getattr(self.player.stats, "total_atk", getattr(self.player.stats, "attack", 10)))
-                            self.combat.spawn_damage_number(rpx + 14, rpy, dmg, color=(255, 60, 60))
-                            self.particle_system.spawn_debris(rpx + 14, rpy + 18, (220, 50, 50), count=6)
+                            self.combat.spawn_damage_number(rpx + self.player.width / 2.0, rpy, dmg, color=(255, 60, 60))
+                            self.particle_system.spawn_debris(rpx + self.player.width / 2.0, rpy + self.player.height / 2.0, (220, 50, 50), count=6)
                             self.sound_manager.play("hurt")
                             if isinstance(rp, dict) and "hp" in rp:
                                 rp["hp"] = max(0, rp["hp"] - dmg)
@@ -2309,12 +2310,12 @@ class PotariaGame:
                     for pid, rp in list(self.client.remote_players.items()):
                         rpx = float(rp.get("x", 0.0) if isinstance(rp, dict) else getattr(rp, "x", 0.0))
                         rpy = float(rp.get("y", 0.0) if isinstance(rp, dict) else getattr(rp, "y", 0.0))
-                        rp_rect = pygame.Rect(rpx, rpy, 28, 36)
+                        rp_rect = pygame.Rect(rpx, rpy, self.player.width, self.player.height)
                         if fb_rect.colliderect(rp_rect):
                             fb.life = 0
                             dmg = getattr(fb, "damage", 30)
-                            self.combat.spawn_damage_number(rpx + 14, rpy, dmg, color=(255, 100, 30))
-                            self.particle_system.spawn_debris(rpx + 14, rpy + 18, (255, 120, 40), count=8)
+                            self.combat.spawn_damage_number(rpx + self.player.width / 2.0, rpy, dmg, color=(255, 100, 30))
+                            self.particle_system.spawn_debris(rpx + self.player.width / 2.0, rpy + self.player.height / 2.0, (255, 120, 40), count=8)
                             self.sound_manager.play("explosion")
                             if isinstance(rp, dict) and "hp" in rp:
                                 rp["hp"] = max(0, rp["hp"] - dmg)

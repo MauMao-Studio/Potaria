@@ -749,7 +749,7 @@ class Player:
         if not held_item_icon:
             return
 
-        # Spud potato dimensions: 28 px wide x 36 px high.
+        # Spud potato dimensions: 28 px wide x 32 px high (collider), 28x36 visual sprite (4px sprout offset)
         # Anchor held item cleanly at front side of potato body:
         hand_x = player_sx + (22 if self.facing_right else 6)
         hand_y = player_sy + 20
