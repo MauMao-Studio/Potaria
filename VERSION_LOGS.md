@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.2.1** | October 2026 | *1-Block Body Collider & Sprout Clearance* | 1-block (32px) body hitbox, decorative leaf collision exclusion, 1-block tunnel traversal. |
 | **v1.2.0** | October 2026 | *Night Terrors & Dungeon Titan Ascension* | Bed 6-block enemy sleep check, dungeon-only mini-bosses, Nightly Elite Champion, major boss stat buffs. |
 | **v1.1.0** | October 2026 | *Loot Recalibration & Chest Overhaul* | Moderate ARPG drop rates, Epic/Mythic chest loot, Windows console encoding fixes. |
 | **v1.0.0** | October 2026 | *Combat Overhaul & Single-Target Balancing* | Single-target combat with Ancient cleave/pierce exceptions, Boss UI/UX, Tool Power removal, PDF catalog. |
@@ -27,7 +28,21 @@
 
 ## Detailed Version Logs
 
-### [v1.2.0] — Night Terrors & Dungeon Titan Ascension (Current Release)
+### [v1.2.1] — 1-Block Body Collider & Sprout Clearance (Current Release)
+*Release Date: October 2026*
+
+#### Changed & Fixed
+- **1-Block Player Body Hitbox (`PLAYER_HEIGHT = 32`)**:
+  - Re-scaled the player's physical collision bounding box from 36px to **32px** (precisely 1 tile / `SCALED_TILE`).
+  - Removed collision from the top decorative potato sprout leaf, allowing Spud to freely walk under 1-block high ceiling openings, overhangs, and passages without clipping.
+  - Adjusted rendering vertical offset (`draw_sy = sy - sprout_offset_y`) so the visual body and feet remain grounded on terrain while the decorative leaf renders smoothly above.
+- **Multiplayer & PvP Hitbox Synchronization**:
+  - Synchronized remote player hitboxes in multiplayer PvP (`rp_rect`) and projectile/fireball collisions to match the 28x32 body collider.
+- **Dedicated Test Suite**: Created [`tests/test_player_collider_1block.py`](file:///C:/Users/Kurados/.gemini/antigravity/scratch/Potaria/tests/test_player_collider_1block.py) with 9 unit tests verifying 1-block tunnel traversal, jump ceiling clearance, platform drop-through, and sprout leaf projectile passthrough.
+
+---
+
+### [v1.2.0] — Night Terrors & Dungeon Titan Ascension
 *Release Date: October 2026*
 
 #### Added
