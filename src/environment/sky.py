@@ -13,7 +13,7 @@ class DayNightCycle:
     def __init__(self, asset_factory, cycle_duration=360.0):
         self.asset_factory = asset_factory
         self.cycle_duration = cycle_duration  # seconds for full 24h cycle
-        self.time = 0.75 * cycle_duration     # default unstarted state at midnight
+        self.time = 0.25 * cycle_duration     # start at noon
         
         self.sun_surf = asset_factory.environment["sun"]
         self.moon_surf = asset_factory.environment["moon"]

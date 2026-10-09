@@ -842,46 +842,49 @@ class CombatManager:
         self.dropped_items = valid_items
 
         # 8. Natural Mob Spawner around player (Host / Singleplayer only)
-        if not self.is_client and not self.boss:
-            party_size = max(1, len(getattr(self, "multiplayer_player_positions", [])))
-            # Diurnal spawn curve based on time_of_day:
-            # Morning (0.00-0.22): Morning Peace on surface, slow subterranean interval
-            # Midday (0.22-0.50): Gradual daylight spawns
-            # Dusk (0.50-0.75): Twilight surge
-            # Night (0.75-0.95): Peak midnight invasion
-            # Dawn (0.95-1.00): Monsters subside
-            tod = float(time_of_day) if time_of_day is not None else (0.75 if is_night else 0.25)
-            if tod < 0.22:
-                base_cap = 4
-                base_interval = 8.0
-            elif tod < 0.50:
-                base_cap = 8
-                base_interval = 4.8
-            elif tod < 0.75:
-                base_cap = 14
-                base_interval = 3.0
-            elif tod < 0.95:
-                base_cap = 22
-                base_interval = 1.8
-            else:
-                base_cap = 6
-                base_interval = 5.5
-
-            effective_max_mobs = min(40, base_cap * party_size)
-            self.mob_spawn_timer += dt
-            spawn_interval = base_interval / min(3.0, party_size)
-            if self.mob_spawn_timer >= spawn_interval:
-                self.mob_spawn_timer = 0.0
-                if len(self.mobs) < effective_max_mobs:
-                    self._spawn_natural_mob(world, player, is_night, tod)
-
-            # Nightly Elite Enemy ("Champion of the Night") - spawns once per night on the surface
+        if not self.is_client:
+            # Nightly Elite Enemy ("Champion of the Night") - tracker resets at daytime
             if not is_night:
                 self.nightly_elite_spawned = False
-            elif is_night and not self.nightly_elite_spawned and not self.is_client:
-                player_ty = int(player.y // SCALED_TILE)
-                if player_ty < 115:  # Overworld surface
-                    self._spawn_nightly_elite(world, player)
+
+            if not self.boss:
+                party_size = max(1, len(getattr(self, "multiplayer_player_positions", [])))
+                # Diurnal spawn curve based on time_of_day:
+                # Morning (0.00-0.22): Morning Peace on surface, slow subterranean interval
+                # Midday (0.22-0.50): Gradual daylight spawns
+                # Dusk (0.50-0.75): Twilight surge
+                # Night (0.75-0.95): Peak midnight invasion
+                # Dawn (0.95-1.00): Monsters subside
+                tod = float(time_of_day) if time_of_day is not None else (0.75 if is_night else 0.25)
+                if tod < 0.22:
+                    base_cap = 4
+                    base_interval = 8.0
+                elif tod < 0.50:
+                    base_cap = 8
+                    base_interval = 4.8
+                elif tod < 0.75:
+                    base_cap = 14
+                    base_interval = 3.0
+                elif tod < 0.95:
+                    base_cap = 22
+                    base_interval = 1.8
+                else:
+                    base_cap = 6
+                    base_interval = 5.5
+
+                effective_max_mobs = min(40, base_cap * party_size)
+                self.mob_spawn_timer += dt
+                spawn_interval = base_interval / min(3.0, party_size)
+                if self.mob_spawn_timer >= spawn_interval:
+                    self.mob_spawn_timer = 0.0
+                    if len(self.mobs) < effective_max_mobs:
+                        self._spawn_natural_mob(world, player, is_night, tod)
+
+                # Nightly Elite Enemy ("Champion of the Night") - spawns once per night on the surface
+                if is_night and not self.nightly_elite_spawned:
+                    player_ty = int(player.y // SCALED_TILE)
+                    if player_ty < 115:  # Overworld surface
+                        self._spawn_nightly_elite(world, player)
 
     def trigger_weapon_swing_effects(self, player, mouse_wx, mouse_wy, active_item=None):
         """Spawns projectiles and shockwaves for weapon swing effects."""
@@ -1236,6 +1239,9 @@ class CombatManager:
         """Spawns exactly one slightly bigger Champion of the Night with boosted stats & special skill once per night."""
         if self.nightly_elite_spawned:
             return
+        # Ensure no other alive Night Elite is roaming before spawning another
+        if any(getattr(m, "is_night_elite", False) and not getattr(m, "is_dead", False) and getattr(m, "hp", 0) > 0 for m in self.mobs):
+            return
 
         # Determine surface ground position within 350-500px from player
         side = random.choice([-1, 1])
@@ -1257,8 +1263,6 @@ class CombatManager:
 
         from src.entities.mob import NightEliteMob
         elite = NightEliteMob(spawn_x, spawn_y, self.asset_factory)
-        if hasattr(player, "stats"):
-            elite.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0))
 
         self.spawn_mob(elite, player=player)
         self.nightly_elite_spawned = True

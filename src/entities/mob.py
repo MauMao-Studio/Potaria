@@ -1033,11 +1033,15 @@ class NightEliteMob(Mob):
     Champion of the Night - Formidable nightly elite mob spawning once per night.
     Features:
     - 1.4x scaled sprite size.
-    - Boosted stats: ~160-220 HP, 22 damage, 8 defense (well below boss tiers).
-    - Signature special skills: Leap Slam shockwave & Shadow Bolt void projectile.
+    - Boosted stats: ~150-200 HP, 19-24 damage, 5-8 defense (well below boss tiers).
+    - Exactly one dedicated special skill per champion:
+      'leap_slam' (Leap Slam with ground impact shockwave)
+      'shadow_bolt' (Shadow Bolt void spit projectile)
+      'frenzy_charge' (Frenzy Charge surging speed rush)
+      'ground_fissure' (Ground Fissure tremor shockwave)
     - Distinctive pulsating violet aura and Champion crown emblem.
     """
-    def __init__(self, x, y, asset_factory, archetype=None):
+    def __init__(self, x, y, asset_factory, archetype=None, skill=None):
         self.asset_factory = asset_factory
         archetypes = ["zombie", "skeleton", "purple_slime", "demon_eye", "shadow_crawler"]
         if archetype is None or archetype not in archetypes:
@@ -1051,6 +1055,7 @@ class NightEliteMob(Mob):
             base_hp = 180
             dmg = 22
             def_stat = 7
+            default_skill = "leap_slam"
         elif archetype == "skeleton":
             base_w, base_h = 28, 44
             sprite_key = "skeleton"
@@ -1058,6 +1063,7 @@ class NightEliteMob(Mob):
             base_hp = 160
             dmg = 24
             def_stat = 6
+            default_skill = "shadow_bolt"
         elif archetype == "demon_eye":
             base_w, base_h = 32, 32
             sprite_key = "demon_eye"
@@ -1065,6 +1071,7 @@ class NightEliteMob(Mob):
             base_hp = 150
             dmg = 20
             def_stat = 5
+            default_skill = "frenzy_charge"
         elif archetype == "shadow_crawler":
             base_w, base_h = 34, 24
             sprite_key = "shadow_crawler"
@@ -1072,6 +1079,7 @@ class NightEliteMob(Mob):
             base_hp = 170
             dmg = 23
             def_stat = 8
+            default_skill = "ground_fissure"
         else: # purple_slime
             base_w, base_h = 30, 24
             sprite_key = "purple_slime"
@@ -1079,6 +1087,9 @@ class NightEliteMob(Mob):
             base_hp = 200
             dmg = 19
             def_stat = 6
+            default_skill = "leap_slam"
+
+        self.skill = skill if skill in ("leap_slam", "shadow_bolt", "frenzy_charge", "ground_fissure") else default_skill
 
         scale = 1.4
         width = int(base_w * scale)
@@ -1086,7 +1097,7 @@ class NightEliteMob(Mob):
         name = f"Champion of the Night - {title}"
 
         super().__init__(x, y, width=width, height=height, max_hp=base_hp, damage=dmg, name=name, defense=def_stat)
-        self.mob_type = "night_elite"
+        self.mob_type = f"night_elite_{self.archetype}"
         self.is_night_elite = True
 
         raw_frames = asset_factory.mobs.get(sprite_key, asset_factory.mobs.get("zombie", []))
@@ -1100,6 +1111,7 @@ class NightEliteMob(Mob):
         # Special Skills & Aura
         self.skill_cooldown = 3.5
         self.leap_slam_active = False
+        self.frenzy_timer = 0.0
         self.aura_phase = 0.0
 
     def update(self, dt, world, player):
@@ -1117,16 +1129,19 @@ class NightEliteMob(Mob):
 
         self.aura_phase = (self.aura_phase + dt * 4.5) % 6.28
         self.skill_cooldown -= dt
+        if self.frenzy_timer > 0:
+            self.frenzy_timer -= dt
 
         dist_x = player.center_x - self.center_x
         dist_y = player.center_y - self.center_y
         dist = math.hypot(dist_x, dist_y)
 
-        # AI & Special Skill execution
+        # AI & Movement
         if self.archetype == "demon_eye":
             # Flying swooping movement
-            self.vy = min(4.0, max(-4.0, self.vy + (0.15 if dist_y > 0 else -0.15)))
-            self.vx = min(4.5, max(-4.5, self.vx + (0.2 if dist_x > 0 else -0.2)))
+            fly_speed = 7.0 if self.frenzy_timer > 0 else 4.5
+            self.vy = min(fly_speed, max(-fly_speed, self.vy + (0.22 if dist_y > 0 else -0.22)))
+            self.vx = min(fly_speed, max(-fly_speed, self.vx + (0.25 if dist_x > 0 else -0.25)))
             self.x += self.vx
             self.y += self.vy
             self.facing_right = (self.vx >= 0)
@@ -1136,8 +1151,9 @@ class NightEliteMob(Mob):
             move_dir = 1.0 if dist_x > 0 else -1.0
             self.facing_right = (dist_x >= 0)
 
+            base_speed = 4.8 if self.frenzy_timer > 0 else 2.2
             if not self.leap_slam_active:
-                self.vx = move_dir * 2.2
+                self.vx = move_dir * base_speed
 
             # Obstacle hopping
             front_tile_x = int((self.center_x + move_dir * (self.width / 2 + 8)) // SCALED_TILE)
@@ -1146,48 +1162,40 @@ class NightEliteMob(Mob):
                 self.vy = -6.5
                 self.on_ground = False
 
-        # Skill 1: Leap Slam (when grounded and within 260px)
-        if self.skill_cooldown <= 0 and self.archetype != "demon_eye" and self.on_ground and dist < 260.0:
-            self.vy = -7.8
-            self.vx = (1.0 if dist_x > 0 else -1.0) * 5.5
-            self.on_ground = False
-            self.leap_slam_active = True
-            self.skill_cooldown = 4.5
+        # One Signature Special Skill Trigger
+        if self.skill_cooldown <= 0:
+            if self.skill == "leap_slam" and self.archetype != "demon_eye" and self.on_ground and dist < 260.0:
+                self.vy = -7.8
+                self.vx = (1.0 if dist_x > 0 else -1.0) * 5.5
+                self.on_ground = False
+                self.leap_slam_active = True
+                self.skill_cooldown = 4.5
+            elif self.skill == "shadow_bolt" and 100.0 <= dist <= 460.0:
+                from src.entities.projectile import MobSpitProjectile
+                spit_vx = (1.0 if dist_x > 0 else -1.0) * min(7.5, max(3.5, abs(dist_x) * 0.024))
+                spit_vy = -6.0 + min(1.5, dist_y * 0.02)
+                self.pending_projectiles.append(
+                    MobSpitProjectile(self.center_x, self.center_y - 8, spit_vx, spit_vy,
+                                      damage=int(self.damage * 0.85), color=(175, 45, 235), radius=7)
+                )
+                self.skill_cooldown = 4.0
+            elif self.skill == "frenzy_charge" and dist < 380.0:
+                self.frenzy_timer = 1.8
+                self.skill_cooldown = 5.0
+            elif self.skill == "ground_fissure" and dist < 320.0:
+                from src.entities.projectile import MobSpitProjectile
+                fissure_dir = 1.0 if dist_x > 0 else -1.0
+                self.pending_projectiles.append(
+                    MobSpitProjectile(self.center_x + fissure_dir * 16, self.y + self.height - 12,
+                                      fissure_dir * 5.5, 0.0,
+                                      damage=int(self.damage * 0.9), color=(200, 60, 240), radius=9)
+                )
+                self.skill_cooldown = 4.2
 
-        # Skill 2: Shadow Bolt (arcing void projectile when in range 120-460px)
-        elif self.skill_cooldown <= 0 and 120.0 <= dist <= 460.0:
-            from src.entities.projectile import MobSpitProjectile
-            spit_vx = (1.0 if dist_x > 0 else -1.0) * min(7.5, max(3.5, abs(dist_x) * 0.024))
-            spit_vy = -6.0 + min(1.5, dist_y * 0.02)
-            self.pending_projectiles.append(
-                MobSpitProjectile(self.center_x, self.center_y - 8, spit_vx, spit_vy,
-                                  damage=int(self.damage * 0.85), color=(175, 45, 235), radius=7)
-            )
-            self.skill_cooldown = 4.0
-
-        # Resolve Leap Slam impact shockwave upon landing
+        # Physics & Collision Resolution for ground mobs
         was_in_air = self.leap_slam_active
         if self.archetype != "demon_eye":
-            self.y += self.vy
-            solids_y = world.get_solid_rects_in_bounds(self.rect)
-            self.on_ground = False
-            for tile_rect, is_platform in solids_y:
-                if self.rect.colliderect(tile_rect):
-                    if self.vy > 0 and self.y + self.height - self.vy <= tile_rect.top + 8:
-                        self.y = tile_rect.top - self.height
-                        self.vy = 0
-                        self.on_ground = True
-                        if was_in_air:
-                            self.leap_slam_active = False
-                            # Shockwave impact on player if nearby
-                            if dist < 70.0:
-                                player.take_damage(self.damage, knockback_vx=(3.5 if dist_x > 0 else -3.5), knockback_vy=-3.5)
-                        break
-                    elif not is_platform and self.vy < 0:
-                        self.y = tile_rect.bottom
-                        self.vy = 0
-                        break
-
+            # 1. Resolve X movement & solid tile collisions
             self.x += self.vx
             solids_x = world.get_solid_rects_in_bounds(self.rect)
             for tile_rect, is_platform in solids_x:
@@ -1196,8 +1204,38 @@ class NightEliteMob(Mob):
                         self.x = tile_rect.left - self.width
                     elif self.vx < 0:
                         self.x = tile_rect.right
-                    self.vx = 0
+                    self.vx = 0.0
                     break
+
+            # 2. Resolve Y movement & solid / platform collisions
+            self.y += self.vy
+            self.on_ground = False
+            solids_y = world.get_solid_rects_in_bounds(self.rect)
+            for tile_rect, is_platform in solids_y:
+                if self.rect.colliderect(tile_rect):
+                    if not is_platform:
+                        if self.vy > 0:
+                            self.y = tile_rect.top - self.height
+                            self.vy = 0.0
+                            self.on_ground = True
+                            if was_in_air:
+                                self.leap_slam_active = False
+                                if dist < 70.0:
+                                    player.take_damage(self.damage, knockback_vx=(3.5 if dist_x > 0 else -3.5), knockback_vy=-3.5)
+                        elif self.vy < 0:
+                            self.y = tile_rect.bottom
+                            self.vy = 0.0
+                        break
+                    elif is_platform and self.vy > 0:
+                        if self.y + self.height - self.vy <= tile_rect.top + 8:
+                            self.y = tile_rect.top - self.height
+                            self.vy = 0.0
+                            self.on_ground = True
+                            if was_in_air:
+                                self.leap_slam_active = False
+                                if dist < 70.0:
+                                    player.take_damage(self.damage, knockback_vx=(3.5 if dist_x > 0 else -3.5), knockback_vy=-3.5)
+                            break
 
         self.anim_timer += dt
         if self.anim_timer >= 0.16:
@@ -1264,6 +1302,11 @@ MOB_TYPE_REGISTRY = {
     "digger": DiggerMob,
     "night_elite": NightEliteMob,
     "night_champion": NightEliteMob,
+    "night_elite_zombie": lambda x, y, af: NightEliteMob(x, y, af, archetype="zombie"),
+    "night_elite_skeleton": lambda x, y, af: NightEliteMob(x, y, af, archetype="skeleton"),
+    "night_elite_demon_eye": lambda x, y, af: NightEliteMob(x, y, af, archetype="demon_eye"),
+    "night_elite_shadow_crawler": lambda x, y, af: NightEliteMob(x, y, af, archetype="shadow_crawler"),
+    "night_elite_purple_slime": lambda x, y, af: NightEliteMob(x, y, af, archetype="purple_slime"),
 }
 
 CLASS_TO_MOB_TYPE = {cls: k for k, cls in MOB_TYPE_REGISTRY.items()}

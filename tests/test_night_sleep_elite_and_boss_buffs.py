@@ -318,5 +318,119 @@ class TestNightSleepEliteAndBossBuffs(unittest.TestCase):
         self.assertEqual(sol.hp, p2_hp - (80 - sol.defense))
 
 
+    def test_sleeping_interrupted_when_monster_wanders_within_6_blocks(self):
+        """Sleeping in bed is immediately interrupted if a monster wanders within 6 blocks."""
+        tx, ty = 20, 30
+        self.game.world.set_tile(tx, ty, TILE_BED)
+        tile_wx = tx * SCALED_TILE
+        tile_wy = ty * SCALED_TILE
+
+        self.game.player.x = tile_wx
+        self.game.player.y = tile_wy - SCALED_TILE
+
+        self.game.sky.time = 0.75 * self.game.sky.cycle_duration
+        screen_x, screen_y = self.game.camera.world_to_screen(tile_wx + 16, tile_wy + 16)
+        self.game.handle_right_click(screen_x, screen_y)
+        self.assertTrue(self.game.player.is_resting)
+
+        # A monster appears within 4 blocks (128px <= 192px)
+        zombie = Zombie(tile_wx + 4 * SCALED_TILE, tile_wy, self.game.asset_factory)
+        self.game.combat.spawn_mob(zombie)
+
+        # Call gameplay update
+        self.game.update_gameplay(0.016)
+
+        # Player is immediately awakened
+        self.assertFalse(self.game.player.is_resting)
+        self.assertIn("Monsters are nearby within 6 blocks", self.game.inventory.last_learned_message)
+
+    def test_night_elite_solid_ground_collision_no_void_clip(self):
+        """Verifies falling NightEliteMob lands safely on solid ground without clipping into void."""
+        ground_tx, ground_ty = 10, 40
+        self.game.world.set_tile(ground_tx, ground_ty, TILE_DIRT)
+        tile_top_y = ground_ty * SCALED_TILE
+
+        elite = NightEliteMob(ground_tx * SCALED_TILE, tile_top_y - 80, self.asset_factory, archetype="zombie")
+        elite.vy = 12.0  # Falling at terminal velocity
+        elite.on_ground = False
+
+        # Run multiple physics frames until landing
+        for _ in range(10):
+            elite.update(0.016, self.game.world, self.game.player)
+            if elite.on_ground:
+                break
+
+        self.assertTrue(elite.on_ground, "Elite mob must land on top of solid dirt block!")
+        self.assertEqual(elite.vy, 0.0)
+        self.assertAlmostEqual(elite.y + elite.height, tile_top_y, delta=1.0)
+
+    def test_night_elite_dedicated_skills_per_archetype(self):
+        """Verifies each elite receives and executes its dedicated special skill."""
+        # Demon Eye archetype -> Frenzy Charge
+        eye = NightEliteMob(100, 100, self.asset_factory, archetype="demon_eye")
+        self.assertEqual(eye.skill, "frenzy_charge")
+        eye.skill_cooldown = 0.0
+        self.game.player.x, self.game.player.y = 200, 100
+        eye.update(0.016, self.game.world, self.game.player)
+        self.assertGreater(eye.frenzy_timer, 0.0, "Demon Eye elite should activate Frenzy Charge!")
+
+        # Shadow Crawler archetype -> Ground Fissure
+        crawler = NightEliteMob(100, 100, self.asset_factory, archetype="shadow_crawler")
+        self.assertEqual(crawler.skill, "ground_fissure")
+        crawler.skill_cooldown = 0.0
+        self.game.player.x, self.game.player.y = 250, 100
+        crawler.update(0.016, self.game.world, self.game.player)
+        self.assertGreaterEqual(len(crawler.pending_projectiles), 1)
+        fissure_proj = crawler.pending_projectiles[0]
+        self.assertEqual(fissure_proj.color, (200, 60, 240))
+
+    def test_night_elite_multiplayer_archetype_sync_preservation(self):
+        """Verifies NightEliteMob preserves its exact archetype when synchronized across multiplayer."""
+        elite = NightEliteMob(150, 150, self.asset_factory, archetype="demon_eye")
+        self.assertEqual(elite.mob_type, "night_elite_demon_eye")
+
+        # Spawn mob to assign unique mob_id
+        self.game.combat.mobs.clear()
+        self.game.combat.spawn_mob(elite)
+        sync_data = self.game.combat.get_mobs_sync_data()
+        self.assertEqual(len(sync_data), 1)
+        self.assertEqual(sync_data[0]["mob_type"], "night_elite_demon_eye")
+
+        # Client reconciles without desync
+        from src.combat.combat_system import CombatManager
+        client_combat = CombatManager(self.asset_factory, self.sound_manager, self.game.particle_system, self.game.camera)
+        client_combat.is_client = True
+        client_combat.sync_from_host(sync_data)
+
+        self.assertEqual(len(client_combat.mobs), 1)
+        client_mob = client_combat.mobs[0]
+        self.assertIsInstance(client_mob, NightEliteMob)
+        self.assertEqual(client_mob.archetype, "demon_eye")
+
+    def test_nightly_elite_daytime_reset_during_active_boss(self):
+        """Daybreak resets nightly elite tracker even if a boss battle is currently ongoing."""
+        self.game.combat.nightly_elite_spawned = True
+        self.game.combat.boss = LordMalus(0, 0, self.asset_factory, self.sound_manager)
+
+        # Update combat during daytime (is_night=False)
+        self.game.combat.update(0.016, self.game.world, self.game.player, is_night=False, time_of_day=0.25)
+        self.assertFalse(self.game.combat.nightly_elite_spawned, "Tracker must reset at daytime regardless of boss")
+
+    def test_nightly_elite_no_duplicate_when_one_alive(self):
+        """Refuses to spawn a second nightly elite while one is already alive in the world."""
+        self.game.combat.mobs.clear()
+        self.game.combat.nightly_elite_spawned = False
+        self.game.player.y = 50 * SCALED_TILE
+
+        # Spawn first
+        self.game.combat._spawn_nightly_elite(self.game.world, self.game.player)
+        self.assertEqual(len(self.game.combat.mobs), 1)
+
+        # Force reset flag (simulating next night with previous elite still alive)
+        self.game.combat.nightly_elite_spawned = False
+        self.game.combat._spawn_nightly_elite(self.game.world, self.game.player)
+        self.assertEqual(len(self.game.combat.mobs), 1, "Duplicate elite must not spawn while one is already roaming!")
+
+
 if __name__ == "__main__":
     unittest.main()

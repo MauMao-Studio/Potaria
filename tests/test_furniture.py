@@ -259,6 +259,7 @@ class TestFurnitureSystem(unittest.TestCase):
         # Move player close to bed
         game.player.x = tile_wx
         game.player.y = tile_wy - SCALED_TILE
+        game.sky.time = 0.75 * game.sky.cycle_duration  # Bed sleep requires night
 
         # Right-click bed
         screen_x, screen_y = game.camera.world_to_screen(tile_wx + 16, tile_wy + 16)
@@ -422,6 +423,7 @@ class TestFurnitureSystem(unittest.TestCase):
         # Player adjacent
         game.player.x = tile_wx
         game.player.y = tile_wy - SCALED_TILE
+        game.sky.time = 0.75 * game.sky.cycle_duration  # Bed sleep requires night
         screen_x, screen_y = game.camera.world_to_screen(tile_wx + 16, tile_wy + 16)
 
         # Right-click to rest
