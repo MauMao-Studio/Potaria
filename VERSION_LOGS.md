@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.2.0** | October 2026 | *Night Terrors & Dungeon Titan Ascension* | Bed 6-block enemy sleep check, dungeon-only mini-bosses, Nightly Elite Champion, major boss stat buffs. |
 | **v1.1.0** | October 2026 | *Loot Recalibration & Chest Overhaul* | Moderate ARPG drop rates, Epic/Mythic chest loot, Windows console encoding fixes. |
 | **v1.0.0** | October 2026 | *Combat Overhaul & Single-Target Balancing* | Single-target combat with Ancient cleave/pierce exceptions, Boss UI/UX, Tool Power removal, PDF catalog. |
 | **v0.9.0** | October 2026 | *Performance Engine & 120 FPS Benchmark* | Async chunk streaming, baked chunk surfaces, BFS lighting optimization, F3 profiler. |
@@ -26,7 +27,39 @@
 
 ## Detailed Version Logs
 
-### [v1.1.0] — Loot Recalibration & Chest Overhaul (Current Release)
+### [v1.2.0] — Night Terrors & Dungeon Titan Ascension (Current Release)
+*Release Date: October 2026*
+
+#### Added
+- **Bed Sleep 6-Block Monster Safety Proximity Check**:
+  - Restrained bed sleeping so the player can strictly only sleep during the night when no hostile monsters or bosses are within a **6-block radius** (6 tiles / 192px).
+  - Clear user notification feedback: *"You can only sleep at night"* during the day, and *"You cannot sleep now, monsters are nearby within 6 blocks!"* when hostile entities are near.
+  - Active sleep interruption: If a monster wanders within 6 blocks during bed fast-forwarding, sleep immediately terminates with the alert: *"You were awakened! Monsters are nearby within 6 blocks!"*.
+- **Nightly Elite Enemy ("Champion of the Night")**:
+  - Exactly one formidable elite monster spawns on the surface once per night cycle.
+  - 1.4x enlarged sprite scale with pulsating violet aura and champion crown badge.
+  - Dedicated signature combat skill per champion: **Leap Slam** (gravity leap with ground shockwave), **Shadow Bolt** (void spit projectile), **Frenzy Charge** (speed surge), or **Ground Fissure** (linear tremor).
+  - Boosted stats (150–220 HP, 19–24 ATK, 5–8 DEF) tuned to offer a night challenge without rivaling dungeon bosses.
+  - Network archetype synchronization across multiplayer parties.
+- **Dedicated Test Suite**: Added [`tests/test_night_sleep_elite_and_boss_buffs.py`](file:///C:/Users/Kurados/.gemini/antigravity/scratch/Potaria/tests/test_night_sleep_elite_and_boss_buffs.py) with 18 comprehensive unit tests.
+
+#### Changed & Balanced
+- **Dungeon-Exclusive Mini-Boss Placement**:
+  - Completely removed random wild mini-boss spawns at night on the overworld surface.
+  - Confined Lord Malus, Ignis Colossus, Cryo-Spud, and Necro-Tuber exclusively to deep subterranean dungeon chambers and dedicated pocket dimension arenas.
+- **Mini-Boss & Grand Boss Stat Buffs**:
+  - **Lord Malus (The Blight-Bringer)**: Max HP buffed from 520 to **900 HP** (+73%), damage buffed from 24 to **38** (+58%), defense increased to **16**.
+  - **Ignis Colossus (The Magma Golem)**: Max HP buffed from 650 to **1,100 HP** (+69%), damage buffed from 28 to **44** (+57%), defense increased to **22**.
+  - **Cryo-Spud (The Glacial Terror)**: Max HP buffed from 540 to **950 HP** (+76%), damage buffed from 22 to **36** (+64%), defense increased to **18**.
+  - **Necro-Tuber (Lord of Bones)**: Max HP buffed from 480 to **880 HP** (+83%), damage buffed from 26 to **40** (+54%), defense increased to **15**.
+  - **Grand Boss Sol-Rho (The Celestial Titan)**:
+    - Phase 1 (Radiant Golden Titan): Max HP buffed from 600 to **1,000 HP** (+67%).
+    - Phase 2 (Awakened Void Incarnate): Max HP buffed from 850 to **1,400 HP** (+65%).
+    - Base contact/ability damage buffed from 36 to **52** (+44%), defense buffed to **28**.
+
+---
+
+### [v1.1.0] — Loot Recalibration & Chest Overhaul
 *Release Date: October 2026*
 
 #### Added
