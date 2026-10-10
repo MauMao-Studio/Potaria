@@ -30,8 +30,10 @@ from src.constants import (
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
     TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
+    TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE, TILE_DUNGEON_GATE,
     WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_BLIGHTSTONE, WALL_MUSHROOM, WALL_GLASS,
+    WALL_DUNGEON_MAGMA, WALL_DUNGEON_ICE, WALL_DUNGEON_BONE,
     COLOR_POTATO_BODY, COLOR_POTATO_HIGHLIGHT, COLOR_POTATO_SHADOW, COLOR_SPROUT,
     RARITY_COMMON, RARITY_UNCOMMON, RARITY_RARE, RARITY_EPIC,
     RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, RARITY_COLORS
@@ -3702,10 +3704,72 @@ class AssetFactory:
         bedrock.set_at((11, 11), (145, 85, 205))
         self.tiles[TILE_BEDROCK] = bedrock
 
+        # 7b. Subterranean Biome Dungeons & Indestructible Otherworldly Masonry
+        # Forest / Blighted Dungeon Brick (Lord Malus domain)
         d_brick = pygame.Surface((16, 16), pygame.SRCALPHA)
-        d_brick.fill((65, 38, 80))
-        pygame.draw.line(d_brick, (35, 15, 45), (0, 7), (15, 7), 1)
+        d_brick.fill((52, 30, 68))
+        pygame.draw.line(d_brick, (28, 14, 40), (0, 7), (15, 7), 1)
+        pygame.draw.line(d_brick, (28, 14, 40), (7, 0), (7, 7), 1)
+        pygame.draw.line(d_brick, (28, 14, 40), (12, 7), (12, 15), 1)
+        # Runic chiseled violet veins and toxic moss flecks
+        d_brick.set_at((2, 2), (145, 65, 215))
+        d_brick.set_at((3, 2), (145, 65, 215))
+        d_brick.set_at((10, 10), (145, 65, 215))
+        d_brick.set_at((5, 6), (75, 190, 85))
+        d_brick.set_at((14, 13), (75, 190, 85))
         self.tiles[TILE_DUNGEON_BRICK] = d_brick
+
+        # Nether Magma Dungeon Brick (Ignis Colossus domain)
+        magma_brick = pygame.Surface((16, 16), pygame.SRCALPHA)
+        magma_brick.fill((48, 22, 22))
+        pygame.draw.line(magma_brick, (26, 8, 8), (0, 7), (15, 7), 1)
+        pygame.draw.line(magma_brick, (26, 8, 8), (7, 0), (7, 7), 1)
+        pygame.draw.line(magma_brick, (26, 8, 8), (12, 7), (12, 15), 1)
+        # Scorched molten magma fissures
+        for mx, my in [(3, 4), (4, 4), (9, 11), (10, 11), (11, 10)]:
+            magma_brick.set_at((mx, my), (255, 95, 25))
+        magma_brick.set_at((4, 4), (255, 235, 120))
+        magma_brick.set_at((10, 11), (255, 235, 120))
+        self.tiles[TILE_DUNGEON_MAGMA] = magma_brick
+
+        # Permafrost Crypt Dungeon Brick (Cryo-Spud domain)
+        ice_brick = pygame.Surface((16, 16), pygame.SRCALPHA)
+        ice_brick.fill((36, 58, 88))
+        pygame.draw.line(ice_brick, (18, 32, 54), (0, 7), (15, 7), 1)
+        pygame.draw.line(ice_brick, (18, 32, 54), (7, 0), (7, 7), 1)
+        pygame.draw.line(ice_brick, (18, 32, 54), (12, 7), (12, 15), 1)
+        # Glacial rime frost facets
+        for ix, iy in [(2, 2), (3, 2), (10, 9), (11, 9), (14, 3)]:
+            ice_brick.set_at((ix, iy), (160, 230, 255))
+        ice_brick.set_at((3, 2), (245, 252, 255))
+        ice_brick.set_at((11, 9), (245, 252, 255))
+        self.tiles[TILE_DUNGEON_ICE] = ice_brick
+
+        # Catacomb Ossuary Bone Brick (Necro-Tuber domain)
+        bone_brick = pygame.Surface((16, 16), pygame.SRCALPHA)
+        bone_brick.fill((68, 65, 58))
+        pygame.draw.line(bone_brick, (34, 32, 28), (0, 7), (15, 7), 1)
+        pygame.draw.line(bone_brick, (34, 32, 28), (7, 0), (7, 7), 1)
+        pygame.draw.line(bone_brick, (34, 32, 28), (12, 7), (12, 15), 1)
+        # Carved skull / ivory bone reliefs
+        for bx, by in [(3, 3), (4, 3), (5, 3), (9, 10), (10, 10), (11, 10)]:
+            bone_brick.set_at((bx, by), (210, 205, 185))
+        bone_brick.set_at((3, 4), (40, 36, 32)) # Eye socket
+        bone_brick.set_at((5, 4), (40, 36, 32)) # Eye socket
+        bone_brick.set_at((10, 11), (40, 36, 32))
+        self.tiles[TILE_DUNGEON_BONE] = bone_brick
+
+        # Indestructible Dungeon Gate Portcullis Arch
+        gate_tile = pygame.Surface((16, 16), pygame.SRCALPHA)
+        pygame.draw.rect(gate_tile, (20, 20, 28), (0, 0, 16, 16))
+        # Iron bars
+        for bx in (2, 6, 10, 14):
+            pygame.draw.line(gate_tile, (90, 95, 110), (bx, 0), (bx, 15), 1)
+            gate_tile.set_at((bx, 4), (180, 190, 210))
+            gate_tile.set_at((bx, 12), (180, 190, 210))
+        # Cross brace
+        pygame.draw.line(gate_tile, (110, 115, 130), (0, 8), (15, 8), 1)
+        self.tiles[TILE_DUNGEON_GATE] = gate_tile
 
         altar = pygame.Surface((16, 16), pygame.SRCALPHA)
         pygame.draw.rect(altar, (85, 45, 105), (1, 6, 14, 10), border_radius=1)
@@ -4213,6 +4277,9 @@ class AssetFactory:
             (TILE_WOOD, WALL_WOOD),
             (TILE_STONE_BRICK, WALL_STONE_BRICK),
             (TILE_DUNGEON_BRICK, WALL_DUNGEON),
+            (TILE_DUNGEON_MAGMA, WALL_DUNGEON_MAGMA),
+            (TILE_DUNGEON_ICE, WALL_DUNGEON_ICE),
+            (TILE_DUNGEON_BONE, WALL_DUNGEON_BONE),
             (TILE_SANDSTONE, WALL_SANDSTONE),
             (TILE_ICE, WALL_ICE),
             (TILE_EBONSTONE, WALL_EBONSTONE),

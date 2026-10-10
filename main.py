@@ -1440,11 +1440,20 @@ class PotariaGame:
                 self._open_or_break_chest(tx, ty, tile_world_x, tile_world_y)
                 return
 
-            # 0c. Nether Dungeon Altar (Summon / Awaken Lord Malus)
+            # 0c. Dungeon Altar (Summon / Awaken Biome Boss)
             if t_id == TILE_DUNGEON_ALTAR:
                 if not self.combat.boss:
-                    dung_x, dung_y = self.world.dungeon_spawn
-                    self.combat.spawn_boss(dung_x, dung_y, boss_cls="lord_malus")
+                    if ty <= 40 and abs(tx) <= 25:
+                        self.combat.spawn_grand_boss(tile_world_x, tile_world_y, player=self.player)
+                    elif abs(tx - 80) <= 20:
+                        self.combat.spawn_boss(tile_world_x, tile_world_y, boss_cls="ignis_colossus", player=self.player)
+                    elif abs(tx - (-80)) <= 20:
+                        self.combat.spawn_boss(tile_world_x, tile_world_y, boss_cls="cryo_spud", player=self.player)
+                    elif abs(tx - 140) <= 20:
+                        self.combat.spawn_boss(tile_world_x, tile_world_y, boss_cls="necro_tuber", player=self.player)
+                    else:
+                        dung_x, dung_y = getattr(self.world, "dungeon_spawn", (tile_world_x, tile_world_y))
+                        self.combat.spawn_boss(dung_x, dung_y, boss_cls="lord_malus", player=self.player)
                     self.sound_manager.play("craft")
                     self.particle_system.spawn_sparks(tile_world_x + 16, tile_world_y + 16, (140, 50, 200), count=40)
                     self.camera.add_shake(8.0, 0.5)
@@ -2293,12 +2302,11 @@ class PotariaGame:
             self.achievement_manager.unlock("potaria_hero")
             self.achievement_manager.unlock("slayer_of_titans")
 
-        # Check Nether Dungeon Chamber entry or Altar Proximity (Awaken Lord Malus)
+        # Check Biome Dungeon Entry or Altar Proximity (Awaken Biome Mini-Boss or Grand Boss)
         # Note: In multiplayer, only host awakens boss from altar to avoid desync
         if not self.combat.is_client:
             ptx = int(self.player.center_x // SCALED_TILE)
             pty = int(self.player.center_y // SCALED_TILE)
-            in_dungeon_room = (-22 <= ptx <= 22 and (DUNGEON_LEVEL - 4) <= pty <= (DUNGEON_LEVEL + 14))
             near_altar = False
             for dx in range(-2, 3):
                 for dy in range(-2, 3):
@@ -2307,9 +2315,32 @@ class PotariaGame:
                         break
                 if near_altar:
                     break
-            if (in_dungeon_room or near_altar) and not self.combat.boss and not getattr(self.combat, "dungeon_boss_slain", False):
-                dung_x, dung_y = self.world.dungeon_spawn
-                self.combat.spawn_boss(dung_x, dung_y, boss_cls="lord_malus")
+
+            if not self.combat.boss:
+                # 1. Forest Nether Dungeon (Lord Malus)
+                if (abs(ptx) <= 22 and 195 <= pty <= 218) or (near_altar and abs(ptx) <= 22 and pty >= 150):
+                    if not self.combat.defeated_mini_bosses.get("lord_malus", False):
+                        dung_x, dung_y = self.world.dungeon_spawn
+                        self.combat.spawn_boss(dung_x, dung_y, boss_cls="lord_malus", player=self.player)
+
+                # 2. Magma Underworld Dungeon (Ignis Colossus)
+                elif (abs(ptx - 80) <= 22 and 195 <= pty <= 218) or (near_altar and abs(ptx - 80) <= 22 and pty >= 150):
+                    if not self.combat.defeated_mini_bosses.get("ignis_colossus", False):
+                        self.combat.spawn_boss(80 * SCALED_TILE, 215 * SCALED_TILE, boss_cls="ignis_colossus", player=self.player)
+
+                # 3. Glacial Permafrost Crypt (Cryo-Spud)
+                elif (abs(ptx - (-80)) <= 22 and 195 <= pty <= 218) or (near_altar and abs(ptx - (-80)) <= 22 and pty >= 150):
+                    if not self.combat.defeated_mini_bosses.get("cryo_spud", False):
+                        self.combat.spawn_boss(-80 * SCALED_TILE, 215 * SCALED_TILE, boss_cls="cryo_spud", player=self.player)
+
+                # 4. Catacombs Blight Ossuary (Necro-Tuber)
+                elif (abs(ptx - 140) <= 22 and 195 <= pty <= 218) or (near_altar and abs(ptx - 140) <= 22 and pty >= 150):
+                    if not self.combat.defeated_mini_bosses.get("necro_tuber", False):
+                        self.combat.spawn_boss(140 * SCALED_TILE, 215 * SCALED_TILE, boss_cls="necro_tuber", player=self.player)
+
+                # 5. Sky Citadel (Grand Boss Sol-Rho)
+                elif (abs(ptx) <= 22 and 18 <= pty <= 38) and all(self.combat.defeated_mini_bosses.values()):
+                    self.combat.spawn_grand_boss(0.0, 24 * SCALED_TILE, player=self.player)
 
         # 3. LAN Multiplayer Synchronization
         if self.client and self.client.connected:
@@ -2763,6 +2794,8 @@ class PotariaGame:
         # Layer 8: Boss Health Bar (if active)
         if self.combat.boss:
             self.combat.boss.render_boss_bar(self.screen, self.boss_font, self.title_font)
+        if getattr(self.combat, "secondary_boss", None):
+            self.combat.secondary_boss.render_boss_bar(self.screen, self.boss_font, self.title_font, bar_y=142)
 
         # Layer 9: HUD, Hotbar, Inventory, Reticle, Party, Minimap & Chat
         with self.profiler.section("render_hud"):

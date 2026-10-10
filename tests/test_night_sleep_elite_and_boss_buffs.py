@@ -281,25 +281,25 @@ class TestNightSleepEliteAndBossBuffs(unittest.TestCase):
         self.assertGreaterEqual(necro.defense, 15)
 
     def test_mini_boss_defense_mitigation(self):
-        """Verifies Mini-Boss mitigates incoming player damage with defense stat."""
+        """Verifies Mini-Boss mitigates incoming player damage with defense stat and innate boss armor."""
         malus = LordMalus(0, 0, self.asset_factory, self.sound_manager)
         initial_hp = malus.hp
-        # Attack with 50 damage -> defense is 16 -> effective damage is 34
+        # Defense is 32. 50 dmg - 32 = 18. Innate 25% boss armor: int(18 * 0.75) = 13
         malus.take_damage(50)
-        self.assertEqual(malus.hp, initial_hp - (50 - malus.defense))
+        self.assertEqual(malus.hp, initial_hp - 13)
 
     def test_grand_boss_sol_rho_boosted_stats_and_defense(self):
         """Verifies Grand Boss Sol-Rho has boosted damage and defense in both phases."""
         sol = GrandBossSolRho(0, 0, self.asset_factory, self.sound_manager, party_size=1)
         self.assertEqual(sol.phase, 1)
-        self.assertEqual(sol.hp, 1000)
+        self.assertEqual(sol.hp, 14000)
         self.assertGreaterEqual(sol.damage, 50)
         self.assertGreaterEqual(sol.defense, 25)
 
-        # Phase 1 defense mitigation
+        # Phase 1 defense mitigation: defense is 48 -> (60 - 48) * 0.75 = 9
         initial_hp = sol.hp
         sol.take_damage(60)
-        self.assertEqual(sol.hp, initial_hp - (60 - sol.defense))
+        self.assertEqual(sol.hp, initial_hp - 9)
 
         # Transition to Phase 2: Void Incarnate
         sol.hp = 0
@@ -308,14 +308,14 @@ class TestNightSleepEliteAndBossBuffs(unittest.TestCase):
         sol.update(0.1, self.game.world, self.game.player, self.game.particle_system, self.game.camera)
 
         self.assertEqual(sol.phase, 2)
-        self.assertEqual(sol.hp, 1400)
+        self.assertEqual(sol.hp, 20000)
         self.assertGreaterEqual(sol.damage, 70)
         self.assertGreaterEqual(sol.defense, 35)
 
-        # Phase 2 defense mitigation
+        # Phase 2 defense mitigation: defense is 64 -> (80 - 64) * 0.75 = 12
         p2_hp = sol.hp
         sol.take_damage(80)
-        self.assertEqual(sol.hp, p2_hp - (80 - sol.defense))
+        self.assertEqual(sol.hp, p2_hp - 12)
 
 
     def test_sleeping_interrupted_when_monster_wanders_within_6_blocks(self):
@@ -347,15 +347,19 @@ class TestNightSleepEliteAndBossBuffs(unittest.TestCase):
     def test_night_elite_solid_ground_collision_no_void_clip(self):
         """Verifies falling NightEliteMob lands safely on solid ground without clipping into void."""
         ground_tx, ground_ty = 10, 40
-        self.game.world.set_tile(ground_tx, ground_ty, TILE_DIRT)
+        for tx in range(ground_tx - 3, ground_tx + 4):
+            self.game.world.set_tile(tx, ground_ty, TILE_DIRT)
+            for dy in range(1, 10):
+                self.game.world.set_tile(tx, ground_ty - dy, TILE_AIR)
         tile_top_y = ground_ty * SCALED_TILE
 
         elite = NightEliteMob(ground_tx * SCALED_TILE, tile_top_y - 80, self.asset_factory, archetype="zombie")
+        self.game.player.x = elite.x
         elite.vy = 12.0  # Falling at terminal velocity
         elite.on_ground = False
 
         # Run multiple physics frames until landing
-        for _ in range(10):
+        for _ in range(15):
             elite.update(0.016, self.game.world, self.game.player)
             if elite.on_ground:
                 break

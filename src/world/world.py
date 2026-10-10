@@ -21,8 +21,10 @@ from src.constants import (
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, LANTERN_TILES,
     TILE_SAND, TILE_SNOW, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS, TILE_BLIGHTSTONE, TILE_EBONSTONE,
     TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
+    TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE, TILE_DUNGEON_GATE,
     WALL_AIR, WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_MUSHROOM,
+    WALL_DUNGEON_MAGMA, WALL_DUNGEON_ICE, WALL_DUNGEON_BONE,
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT, BIOME_MUSHROOM, BIOME_DUNGEON,
     TILE_PROPS
 )
@@ -488,17 +490,30 @@ class World:
                     "max_timer": 1.5,
                 })
 
+    INDESTRUCTIBLE_TILES = {
+        TILE_BEDROCK, TILE_DUNGEON_BRICK, TILE_DUNGEON_ALTAR,
+        TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE,
+        TILE_DUNGEON_GATE
+    }
+
+    def can_mine_tile(self, tx, ty):
+        """Returns True if the block at (tx, ty) can be legally mined and broken."""
+        t_id = self.get_tile(tx, ty)
+        if t_id == TILE_AIR or t_id == TILE_WATER or t_id in self.INDESTRUCTIBLE_TILES:
+            return False
+        prop = TILE_PROPS.get(t_id, {})
+        if prop.get("indestructible", False):
+            return False
+        return True
+
     def damage_tile_at(self, tx, ty, power):
         t_id = self.get_tile(tx, ty)
-        if t_id == TILE_AIR or t_id == TILE_BEDROCK or t_id == TILE_WATER:
+        if t_id == TILE_AIR or t_id == TILE_WATER or t_id in self.INDESTRUCTIBLE_TILES:
             return False, None, t_id
 
-        # Foliage protection: Player can only destroy wood, never bush/leaves directly when tree_cascade_felling is True
-        if t_id == TILE_LEAVES:
-            if getattr(self, "tree_cascade_felling", True):
-                return False, None, t_id
-
         prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
+        if prop.get("indestructible", False):
+            return False, None, t_id
         max_health = prop.get("hardness", 20)
 
         coord = (tx, ty)

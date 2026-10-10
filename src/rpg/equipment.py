@@ -295,6 +295,13 @@ class Equipment:
             SLOT_ACCESSORY: None,
         }
 
+    def clear_all_items(self, stats=None):
+        """Clears all equipped armor, weapons, and accessories from slots."""
+        for slot in self.slots:
+            self.slots[slot] = None
+        if stats is not None:
+            self.recalculate_stats(stats)
+
     def equip(self, item_or_id, stats=None):
         """Equips an item or ItemStack into its designated paperdoll slot."""
         if hasattr(item_or_id, "item_id"):

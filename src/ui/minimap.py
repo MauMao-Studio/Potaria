@@ -16,16 +16,19 @@ from src.constants import (
     TILE_FURNACE, TILE_TORCH, TILE_STONE_BRICK, TILE_DUNGEON_BRICK,
     TILE_DUNGEON_ALTAR, TILE_SAND, TILE_SANDSTONE, TILE_CACTUS,
     TILE_SNOW, TILE_ICE, TILE_CORRUPT_GRASS, TILE_EBONSTONE,
-    TILE_MUSHROOM_GRASS, TILE_MUSHROOM_CAP, TILE_CHEST,
+    TILE_MUSHROOM_GRASS, TILE_MUSHROOM_CAP, TILE_CHEST, TILE_IRON_CHEST,
     TILE_ROOF_TILES, TILE_WOOD_PLANKS, TILE_GLASS, TILE_DOOR_CLOSED,
     TILE_DOOR_OPEN, TILE_TABLE, TILE_CHAIR, TILE_BEDROCK,
     TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
+    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
+    TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE, TILE_DUNGEON_GATE,
     WALL_AIR
 )
 
 TILE_MAP_COLORS = {
+    TILE_IRON_CHEST: (190, 195, 205),
     TILE_DIRT: (140, 95, 55),
     TILE_GRASS: (65, 175, 50),
     TILE_STONE: (115, 115, 115),
@@ -42,6 +45,10 @@ TILE_MAP_COLORS = {
     TILE_STONE_BRICK: (140, 140, 150),
     TILE_DUNGEON_BRICK: (95, 45, 140),
     TILE_DUNGEON_ALTAR: (160, 40, 180),
+    TILE_DUNGEON_MAGMA: (215, 75, 25),
+    TILE_DUNGEON_ICE: (140, 225, 255),
+    TILE_DUNGEON_BONE: (215, 215, 195),
+    TILE_DUNGEON_GATE: (75, 75, 95),
     TILE_SAND: (225, 200, 130),
     TILE_SANDSTONE: (190, 160, 95),
     TILE_CACTUS: (80, 160, 50),
@@ -134,8 +141,25 @@ class MiniMap:
             self._cached_chests = []
             self._dirty = False
 
+            # Identify all active local light emitters (torches, lanterns, fireplaces, altars)
+            LIGHT_TILES = {
+                TILE_TORCH, TILE_FURNACE, TILE_FIREPLACE, TILE_DUNGEON_ALTAR,
+                TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
+                TILE_CANDELABRA, TILE_CHANDELIER
+            }
+            local_emitters = []
+            for ex in range(min_tx - 11, min_tx + self.grid_w + 12):
+                for ey in range(min_ty - 11, min_ty + self.grid_h + 12):
+                    if 0 <= ey < world.height:
+                        if world.get_tile(ex, ey) in LIGHT_TILES:
+                            local_emitters.append((ex, ey))
+
+            p_holds_torch = getattr(player, "is_holding_torch", False) or getattr(player, "_current_held_id", None) == "torch"
+            p_reach_sq = 100 if p_holds_torch else 25
+
             for lx in range(self.grid_w):
                 tx = min_tx + lx
+                surf_y = world.get_surface_height(tx) if hasattr(world, "get_surface_height") else SURFACE_LEVEL
                 for ly in range(self.grid_h):
                     ty = min_ty + ly
                     if ty < 0:
@@ -145,10 +169,25 @@ class MiniMap:
                         self.map_surf.set_at((lx, ly), (20, 20, 20)) # Deep Bedrock
                         continue
 
+                    # Fog of War Light Check: Tile must be illuminated by sunlight, player light, or placed torches
+                    is_sunlit = (ty < surf_y)
+                    is_player_lit = ((tx - ptx) * (tx - ptx) + (ty - pty) * (ty - pty) <= p_reach_sq)
+                    is_emitter_lit = False
+                    if not is_sunlit and not is_player_lit and local_emitters:
+                        for ex, ey in local_emitters:
+                            if abs(tx - ex) <= 9 and abs(ty - ey) <= 9:
+                                if (tx - ex) * (tx - ex) + (ty - ey) * (ty - ey) <= 81:
+                                    is_emitter_lit = True
+                                    break
+
+                    if not (is_sunlit or is_player_lit or is_emitter_lit):
+                        # Pitch Black Fog of War - place torches to illuminate!
+                        self.map_surf.set_at((lx, ly), (0, 0, 0))
+                        continue
+
                     t_id = world.get_tile(tx, ty)
                     if t_id == TILE_AIR:
                         w_id = world.get_wall(tx, ty)
-                        surf_y = world.get_surface_height(tx) if hasattr(world, "get_surface_height") else SURFACE_LEVEL
                         if w_id != WALL_AIR:
                             self.map_surf.set_at((lx, ly), (45, 38, 32))
                         elif ty >= surf_y or ty >= SURFACE_LEVEL:
@@ -156,7 +195,7 @@ class MiniMap:
                         else:
                             self.map_surf.set_at((lx, ly), (110, 180, 245)) # Open sky
                     else:
-                        if t_id == TILE_CHEST:
+                        if t_id in (TILE_CHEST, TILE_IRON_CHEST):
                             self._cached_chests.append((tx, ty))
                         col = TILE_MAP_COLORS.get(t_id, (100, 100, 100))
                         self.map_surf.set_at((lx, ly), col)

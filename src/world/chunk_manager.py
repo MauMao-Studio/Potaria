@@ -22,8 +22,10 @@ from src.constants import (
     TILE_POTTED_PLANT, TILE_DRESSER, TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK,
     TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
+    TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE, TILE_DUNGEON_GATE,
     WALL_AIR, WALL_DIRT, WALL_STONE, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_MUSHROOM,
+    WALL_DUNGEON_MAGMA, WALL_DUNGEON_ICE, WALL_DUNGEON_BONE,
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT,
     BIOME_MUSHROOM, BIOME_DUNGEON, BIOME_CAVERN,
     TILE_PROPS
@@ -41,7 +43,8 @@ OPAQUE_EXCLUSIONS = (
     TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
-    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN
+    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
+    TILE_DUNGEON_GATE
 )
 
 class ChunkSection:
@@ -537,41 +540,25 @@ class Chunk:
                             chest_placed = True
                             break
 
-        # 6. Nether Dungeon Chamber (Constructed at origin chunk -1 to 1 deep cavern)
-        if -1 <= self.chunk_x <= 1:
-            dung_cy = DUNGEON_LEVEL + 5
-            dh = 18
-            for lx in range(self.width):
-                gx = self.chunk_x * self.width + lx
-                if -20 <= gx <= 20:
-                    for y in range(dung_cy - dh // 2, dung_cy + dh // 2 + 1):
-                        self.walls[lx][y] = WALL_DUNGEON
-                        if gx in (-20, 20) or y in (dung_cy - dh // 2, dung_cy + dh // 2):
-                            self.tiles[lx][y] = TILE_DUNGEON_BRICK
-                        else:
-                            self.tiles[lx][y] = TILE_AIR
-                    
-                    if gx == 0 and dung_cy + dh // 2 - 1 < self.height:
-                        self.tiles[lx][dung_cy + dh // 2 - 1] = TILE_DUNGEON_ALTAR
-                    if abs(gx) in (1, 8, 16):
-                        self.tiles[lx][dung_cy + dh // 2 - 2] = TILE_TORCH
+        # 6. Grand Biome Underground Dungeons & Sky Citadel
+        # 6a. Forest Nether Dungeon (Lord Malus - Center gx = 0)
+        if -2 <= self.chunk_x <= 2:
+            self._carve_grand_biome_dungeon(center_gx=0, brick_tile=TILE_DUNGEON_BRICK, wall_id=WALL_DUNGEON)
+            self._carve_sky_citadel()
 
-        # 6b. Sun Altar Desert Arena (Ignis Colossus arena around gx=80 and pocket dimension gx=5000)
-        if 4 <= self.chunk_x <= 6:
-            arena_cy = DUNGEON_LEVEL - 5
-            dh = 18
-            for lx in range(self.width):
-                gx = self.chunk_x * self.width + lx
-                if 68 <= gx <= 96:
-                    for y in range(arena_cy - dh // 2, arena_cy + dh // 2 + 1):
-                        self.walls[lx][y] = WALL_SANDSTONE
-                        if gx in (68, 96) or y in (arena_cy - dh // 2, arena_cy + dh // 2):
-                            self.tiles[lx][y] = TILE_SANDSTONE
-                        else:
-                            self.tiles[lx][y] = TILE_AIR
-                    if gx == 82 and arena_cy + dh // 2 - 2 < self.height:
-                        self.tiles[lx][arena_cy + dh // 2 - 2] = TILE_TORCH
+        # 6b. Magma / Underworld Dungeon (Ignis Colossus - Center gx = 80)
+        if 3 <= self.chunk_x <= 7:
+            self._carve_grand_biome_dungeon(center_gx=80, brick_tile=TILE_DUNGEON_MAGMA, wall_id=WALL_DUNGEON_MAGMA)
 
+        # 6c. Glacial / Permafrost Crypt (Cryo-Spud - Center gx = -80)
+        if -7 <= self.chunk_x <= -3:
+            self._carve_grand_biome_dungeon(center_gx=-80, brick_tile=TILE_DUNGEON_ICE, wall_id=WALL_DUNGEON_ICE)
+
+        # 6d. Catacombs / Blight Ossuary (Necro-Tuber - Center gx = 140)
+        if 7 <= self.chunk_x <= 11:
+            self._carve_grand_biome_dungeon(center_gx=140, brick_tile=TILE_DUNGEON_BONE, wall_id=WALL_DUNGEON_BONE)
+
+        # 6e. Biome Rune Pocket Arenas (Backwards compatibility for gx = 5000, -5000, 8000)
         if 310 <= self.chunk_x <= 314:
             arena_cy = 54
             dh = 18
@@ -587,22 +574,6 @@ class Chunk:
                     if gx in (4990, 5000, 5010) and arena_cy + dh // 2 - 2 < self.height:
                         self.tiles[lx][arena_cy + dh // 2 - 2] = TILE_TORCH
 
-        # 6c. Glacial Permafrost Arena (Cryo-Spud arena around gx=-80 and pocket dimension gx=-5000)
-        if -6 <= self.chunk_x <= -4:
-            arena_cy = DUNGEON_LEVEL - 5
-            dh = 18
-            for lx in range(self.width):
-                gx = self.chunk_x * self.width + lx
-                if -96 <= gx <= -68:
-                    for y in range(arena_cy - dh // 2, arena_cy + dh // 2 + 1):
-                        self.walls[lx][y] = WALL_ICE
-                        if gx in (-96, -68) or y in (arena_cy - dh // 2, arena_cy + dh // 2):
-                            self.tiles[lx][y] = TILE_ICE
-                        else:
-                            self.tiles[lx][y] = TILE_AIR
-                    if gx == -82 and arena_cy + dh // 2 - 2 < self.height:
-                        self.tiles[lx][arena_cy + dh // 2 - 2] = TILE_TORCH
-
         if -315 <= self.chunk_x <= -311:
             arena_cy = 54
             dh = 18
@@ -616,22 +587,6 @@ class Chunk:
                         else:
                             self.tiles[lx][y] = TILE_AIR
                     if gx in (-5010, -5000, -4990) and arena_cy + dh // 2 - 2 < self.height:
-                        self.tiles[lx][arena_cy + dh // 2 - 2] = TILE_TORCH
-
-        # 6d. Blight Shadow Crypt Arena (Necro-Tuber arena around gx=130 and pocket dimension gx=8000)
-        if 7 <= self.chunk_x <= 9:
-            arena_cy = DUNGEON_LEVEL - 5
-            dh = 18
-            for lx in range(self.width):
-                gx = self.chunk_x * self.width + lx
-                if 116 <= gx <= 144:
-                    for y in range(arena_cy - dh // 2, arena_cy + dh // 2 + 1):
-                        self.walls[lx][y] = WALL_EBONSTONE
-                        if gx in (116, 144) or y in (arena_cy - dh // 2, arena_cy + dh // 2):
-                            self.tiles[lx][y] = TILE_EBONSTONE
-                        else:
-                            self.tiles[lx][y] = TILE_AIR
-                    if gx == 130 and arena_cy + dh // 2 - 2 < self.height:
                         self.tiles[lx][arena_cy + dh // 2 - 2] = TILE_TORCH
 
         if 498 <= self.chunk_x <= 502:
@@ -653,6 +608,122 @@ class Chunk:
         for lx in range(self.width):
             for y in range(self.height - 3, self.height):
                 self.tiles[lx][y] = TILE_BEDROCK
+
+    def _carve_grand_biome_dungeon(self, center_gx, brick_tile, wall_id):
+        """Carves out a grand multi-tier biome underground dungeon with entrance gates, wings, bridges, and boss room."""
+        for lx in range(self.width):
+            gx = self.chunk_x * self.width + lx
+            dx = gx - center_gx
+            if abs(dx) > 22:
+                continue
+
+            # 1. Subtle Cavern Marker Signs (unbreakable indicator bricks embedded in upper cavern rock)
+            if abs(dx) in (6, 12, 18):
+                for my in (148, 149, 151, 152):
+                    self.tiles[lx][my] = brick_tile
+                    self.walls[lx][my] = wall_id
+
+            # 2. Main Dungeon Perimeter & Chambers (ty = 162..218)
+            for y in range(162, 219):
+                # Outer perimeter frame (indestructible boundary)
+                if abs(dx) == 22 or y in (162, 218):
+                    self.tiles[lx][y] = brick_tile
+                    self.walls[lx][y] = wall_id
+                else:
+                    self.walls[lx][y] = wall_id
+                    self.tiles[lx][y] = TILE_AIR
+
+            # Level 1: Entrance Vestibule (y = 163..172)
+            # Vestibule floor with left/right stairwells
+            if abs(dx) not in (17, 18):
+                self.tiles[lx][172] = brick_tile
+            # Grand Entrance Gate portcullises
+            if abs(dx) in (9, 10):
+                for gy in range(168, 172):
+                    self.tiles[lx][gy] = TILE_DUNGEON_GATE
+            # Gatehouse torches
+            if abs(dx) in (5, 12, 19):
+                self.tiles[lx][169] = TILE_TORCH
+
+            # Level 2: Middle Wings & Central Bridge (y = 173..194)
+            # Floor dividing Level 2 from Arena, with central descent chasm (-6 <= dx <= 6)
+            if abs(dx) > 6:
+                self.tiles[lx][194] = brick_tile
+
+            # Intermediate floor & central bridge across chasm at y = 183
+            if abs(dx) <= 7 or abs(dx) >= 9:
+                self.tiles[lx][183] = brick_tile
+
+            # Tactical platforms in wings for climbing and maneuvering
+            if (-18 <= dx <= -10) or (10 <= dx <= 18):
+                self.tiles[lx][177] = TILE_WOOD_PLATFORM
+            if (-19 <= dx <= -11) or (11 <= dx <= 19):
+                self.tiles[lx][188] = TILE_WOOD_PLATFORM
+
+            # Wing torches
+            if abs(dx) in (10, 16):
+                self.tiles[lx][176] = TILE_TORCH
+                self.tiles[lx][187] = TILE_TORCH
+
+            # Level 3: Grand Boss Arena (y = 195..217)
+            # High-tier jump-through platforms
+            if (-16 <= dx <= -6) or (6 <= dx <= 16):
+                self.tiles[lx][201] = TILE_WOOD_PLATFORM
+            # Mid-tier jump-through platforms (including central aerial platform)
+            if (-19 <= dx <= -11) or (-4 <= dx <= 4) or (11 <= dx <= 19):
+                self.tiles[lx][207] = TILE_WOOD_PLATFORM
+            # Low-tier jump-through platforms
+            if (-15 <= dx <= -7) or (7 <= dx <= 15):
+                self.tiles[lx][212] = TILE_WOOD_PLATFORM
+
+            # Arena perimeter torches
+            if abs(dx) in (2, 8, 14, 20):
+                self.tiles[lx][214] = TILE_TORCH
+                self.tiles[lx][200] = TILE_TORCH
+
+            # Boss Altar at arena floor center
+            if dx == 0:
+                self.tiles[lx][216] = TILE_DUNGEON_ALTAR
+
+    def _carve_sky_citadel(self):
+        """Carves out Sol-Rho's Celestial Sky Citadel floating in the clouds."""
+        for lx in range(self.width):
+            gx = self.chunk_x * self.width + lx
+            if abs(gx) > 22:
+                continue
+
+            # Sky Citadel background wall
+            for y in range(16, 38):
+                self.walls[lx][y] = WALL_DUNGEON
+                self.tiles[lx][y] = TILE_AIR
+
+            # Outer perimeter frame
+            for y in range(18, 38):
+                if abs(gx) == 22 or y in (18, 37):
+                    self.tiles[lx][y] = TILE_DUNGEON_BRICK
+
+            # Citadel Floor at y = 36 and 37
+            self.tiles[lx][36] = TILE_DUNGEON_BRICK
+            self.tiles[lx][37] = TILE_DUNGEON_BRICK
+
+            # Grand Dais / Altar at gx = 0
+            if gx == 0:
+                self.tiles[lx][35] = TILE_DUNGEON_ALTAR
+
+            # Celestial Pillars
+            if abs(gx) in (6, 12, 18):
+                for py in range(22, 36):
+                    self.tiles[lx][py] = TILE_DUNGEON_BRICK
+
+            # Aerial jump-through platforms for bullet hell dodging
+            if (-16 <= gx <= -8) or (8 <= gx <= 16):
+                self.tiles[lx][31] = TILE_WOOD_PLATFORM
+            if -10 <= gx <= 10:
+                self.tiles[lx][26] = TILE_WOOD_PLATFORM
+
+            # Spectral Lanterns hanging from celestial ceiling
+            if abs(gx) in (4, 10, 16):
+                self.tiles[lx][21] = TILE_SPECTRAL_LANTERN
 
 import threading
 import concurrent.futures

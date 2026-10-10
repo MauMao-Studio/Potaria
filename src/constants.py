@@ -98,6 +98,10 @@ TILE_SPECTRAL_LANTERN = 53     # Azure spectral lantern (can hang from North cei
 TILE_SAPLING = 54              # Young tree sapling that grows daily in sunlight
 TILE_IRON_CHEST = 55           # Fortified silver iron storage chest (distinct from golden treasure chest)
 TILE_ROPE_RUNGS = 56           # Vertical climbable knotted fiber rope rungs
+TILE_DUNGEON_MAGMA = 57        # Nether Magma Dungeon Brick (indestructible)
+TILE_DUNGEON_ICE = 58          # Permafrost Crypt Dungeon Brick (indestructible)
+TILE_DUNGEON_BONE = 59         # Ancient Catacomb Bone Brick (indestructible)
+TILE_DUNGEON_GATE = 60         # Indestructible Dungeon Gate / Portcullis Arch
 
 LANTERN_TILES = (
     TILE_CARVED_TUBER_LANTERN,
@@ -119,6 +123,9 @@ WALL_EBONSTONE = 8         # Legacy alias for Blightstone wall
 WALL_BLIGHTSTONE = 8       # Blightstone wall
 WALL_MUSHROOM = 9
 WALL_GLASS = 10
+WALL_DUNGEON_MAGMA = 11
+WALL_DUNGEON_ICE = 12
+WALL_DUNGEON_BONE = 13
 
 # Biome Definitions
 BIOME_FOREST = "forest"
@@ -162,8 +169,12 @@ TILE_PROPS = {
     TILE_TORCH: {"name": "Torch", "hardness": 5, "drop": "torch", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
     TILE_STONE_BRICK: {"name": "Stone Brick", "hardness": 38, "drop": "stone_brick", "solid": True, "platform": False, "light_emit": 0, "absorb": 4, "opaque": True},
     TILE_BEDROCK: {"name": "Bedrock", "hardness": 9999, "drop": None, "solid": True, "platform": False, "light_emit": 0, "absorb": 15, "opaque": True},
-    TILE_DUNGEON_BRICK: {"name": "Dungeon Brick", "hardness": 60, "drop": "dungeon_brick", "solid": True, "platform": False, "light_emit": 1, "absorb": 4, "opaque": True},
-    TILE_DUNGEON_ALTAR: {"name": "Dungeon Altar", "hardness": 9999, "drop": None, "solid": False, "platform": True, "light_emit": 6, "absorb": 0, "opaque": False},
+    TILE_DUNGEON_BRICK: {"name": "Dungeon Brick", "hardness": 9999, "drop": None, "solid": True, "platform": False, "light_emit": 1, "absorb": 15, "opaque": True, "indestructible": True},
+    TILE_DUNGEON_ALTAR: {"name": "Dungeon Altar", "hardness": 9999, "drop": None, "solid": False, "platform": True, "light_emit": 6, "absorb": 0, "opaque": False, "indestructible": True},
+    TILE_DUNGEON_MAGMA: {"name": "Nether Magma Dungeon Brick", "hardness": 9999, "drop": None, "solid": True, "platform": False, "light_emit": 2, "absorb": 15, "opaque": True, "indestructible": True},
+    TILE_DUNGEON_ICE: {"name": "Permafrost Crypt Dungeon Brick", "hardness": 9999, "drop": None, "solid": True, "platform": False, "light_emit": 1, "absorb": 15, "opaque": True, "indestructible": True},
+    TILE_DUNGEON_BONE: {"name": "Catacomb Bone Brick", "hardness": 9999, "drop": None, "solid": True, "platform": False, "light_emit": 1, "absorb": 15, "opaque": True, "indestructible": True},
+    TILE_DUNGEON_GATE: {"name": "Dungeon Gate Portcullis", "hardness": 9999, "drop": None, "solid": False, "platform": False, "light_emit": 1, "absorb": 0, "opaque": False, "indestructible": True},
     TILE_SAND: {"name": "Sand", "hardness": 12, "drop": "sand_block", "solid": True, "platform": False, "light_emit": 0, "absorb": 2, "opaque": True},
     TILE_SANDSTONE: {"name": "Sandstone", "hardness": 30, "drop": "sandstone_block", "solid": True, "platform": False, "light_emit": 0, "absorb": 4, "opaque": True},
     TILE_CACTUS: {"name": "Cactus", "hardness": 15, "drop": "cactus", "solid": False, "platform": False, "light_emit": 0, "absorb": 1, "opaque": False},

@@ -2434,6 +2434,11 @@ class Inventory:
             self.slots[7] = ItemStack("copper_greaves", 1)
             self.slots[8] = ItemStack("skillbook_whirlwind", 1)
 
+    def clear_all_items(self):
+        """Clears all carried items and held cursor item (used on boss defeat penalty)."""
+        self.slots = [None] * len(self.slots)
+        self.held_item = None
+
     def can_add_item(self, item_id, count=1):
         """Returns True if the inventory has sufficient slot or stack capacity to hold count items."""
         if hasattr(item_id, "item_id"):
@@ -2663,6 +2668,10 @@ class Inventory:
                 if slot.item_id == item_id or slot.item_id == canon or slot_canon == canon:
                     total += slot.count
         return total
+
+    def is_empty(self):
+        """Returns True if every inventory slot is currently empty."""
+        return all(slot is None for slot in self.slots)
 
     def has_miner_helmet(self):
         return self.count_item("miner_helmet") > 0

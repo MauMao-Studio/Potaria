@@ -27,12 +27,14 @@ class DungeonMiniBoss:
         self.y = float(y)
         self.width = 96
         self.height = 96
+        self.base_max_hp = max_hp
+        self.base_damage = damage
+        self.base_defense = defense
         self.max_hp = max_hp
         self.hp = max_hp
         self.display_hp = float(max_hp)
         self.damage = damage
         self.defense = defense
-        self.base_defense = defense
         self.name = name
         self.is_mini_boss = True
         self.boss_type = "dungeon_mini_boss"
@@ -71,6 +73,17 @@ class DungeonMiniBoss:
         self.bleed_timer = 0.0
         self.bleed_dps = 0
         self.dot_tick_timer = 0.0
+
+    def scale_to_player(self, player_level, player_atk, rematch_multiplier=1.0):
+        """Dynamically scales mini-boss HP, defense, and damage to player progression and rematch tier."""
+        lvl = max(1, player_level)
+        atk = max(0, player_atk)
+        scale = (1.0 + (lvl - 1) * 0.14 + max(0, (atk - 30) / 75.0) * 0.35) * rematch_multiplier
+        self.max_hp = int(self.base_max_hp * scale)
+        self.hp = self.max_hp
+        self.display_hp = float(self.max_hp)
+        self.defense = int(self.base_defense * (1.0 + (lvl - 1) * 0.08) * rematch_multiplier)
+        self.damage = int(self.base_damage * (1.0 + (lvl - 1) * 0.05) * min(2.5, rematch_multiplier))
 
     def apply_burn(self, dps=10, duration=4.0):
         self.burn_dps = max(self.burn_dps, dps)
@@ -128,6 +141,14 @@ class DungeonMiniBoss:
             effective_dmg = max(1, int(amount - self.defense))
         else:
             effective_dmg = max(1, int(amount))
+
+        # Innate Boss Armor: 25% damage mitigation against raw strikes
+        effective_dmg = max(1, int(effective_dmg * 0.75))
+
+        # Per-hit damage clamp: No single hit can exceed 4.5% of max HP (anti-burst cheese)
+        max_clamp = max(15, int(self.max_hp * 0.045))
+        effective_dmg = min(effective_dmg, max_clamp)
+
         self.hp -= effective_dmg
         self.hurt_timer = 0.15
         self.vx += knockback_vx * 0.15
@@ -344,13 +365,12 @@ class DungeonMiniBoss:
 
         target_surf.blit(cur_surf, (sx, sy))
 
-    def render_boss_bar(self, target_surf, font, font_title):
+    def render_boss_bar(self, target_surf, font, font_title, bar_y=86):
         if self.is_dead:
             return
         bar_w = 480
         bar_h = 20
         bar_x = (SCREEN_WIDTH - bar_w) // 2
-        bar_y = 86  # Positioned with clean clearance below hotbar (y=20..64) and player hearts (y=3..75)
 
         # Smooth ghost damage lag interpolation
         if not hasattr(self, "display_hp"):
@@ -421,9 +441,9 @@ class LordMalus(DungeonMiniBoss):
     def __init__(self, x, y, asset_factory, sound_manager):
         super().__init__(x, y, asset_factory, sound_manager,
                          name="Lord Malus - The Blight-Bringer",
-                         max_hp=900, damage=38,
+                         max_hp=5200, damage=42,
                          sprite_key="lord_malus", proj_key="fireball",
-                         defense=16)
+                         defense=32)
         self.boss_type = "lord_malus"
 
     def _trail_color(self):
@@ -532,9 +552,9 @@ class IgnisColossus(DungeonMiniBoss):
     def __init__(self, x, y, asset_factory, sound_manager):
         super().__init__(x, y, asset_factory, sound_manager,
                          name="Ignis Colossus - The Magma Golem",
-                         max_hp=1100, damage=44,
+                         max_hp=6800, damage=52,
                          sprite_key="ignis_colossus", proj_key="magma_bomb",
-                         defense=22)
+                         defense=44)
         self.boss_type = "ignis_colossus"
 
     def _trail_color(self):
@@ -634,9 +654,9 @@ class CryoSpud(DungeonMiniBoss):
     def __init__(self, x, y, asset_factory, sound_manager):
         super().__init__(x, y, asset_factory, sound_manager,
                          name="Cryo-Spud - The Glacial Terror",
-                         max_hp=950, damage=36,
+                         max_hp=5600, damage=44,
                          sprite_key="cryo_spud", proj_key="frost_shard",
-                         defense=18)
+                         defense=38)
         self.boss_type = "cryo_spud"
 
     def _trail_color(self):
@@ -754,9 +774,9 @@ class NecroTuber(DungeonMiniBoss):
     def __init__(self, x, y, asset_factory, sound_manager):
         super().__init__(x, y, asset_factory, sound_manager,
                          name="Necro-Tuber - Lord of Bones",
-                         max_hp=880, damage=40,
+                         max_hp=5000, damage=46,
                          sprite_key="necro_tuber", proj_key="ghost_skull",
-                         defense=15)
+                         defense=34)
         self.boss_type = "necro_tuber"
 
     def _trail_color(self):
@@ -873,14 +893,20 @@ class GrandBossSolRho:
 
         # Scaled Boss HP for multiplayer parties!
         scale_factor = 1.0 + (self.party_size - 1) * 0.6
-        self.p1_max_hp = int(1000 * scale_factor)
-        self.p2_max_hp = int(1400 * scale_factor)
+        self.base_p1_max_hp = 14000
+        self.base_p2_max_hp = 20000
+        self.p1_max_hp = int(self.base_p1_max_hp * scale_factor)
+        self.p2_max_hp = int(self.base_p2_max_hp * scale_factor)
         self.max_hp = self.p1_max_hp
         self.hp = self.max_hp
         self.display_hp = float(self.max_hp)
-        self.damage = 52 + int((self.party_size - 1) * 6)
-        self.defense = 28
-        self.base_defense = 28
+        self.base_damage_p1 = 68
+        self.base_damage_p2 = 92
+        self.damage = self.base_damage_p1 + int((self.party_size - 1) * 8)
+        self.base_defense_p1 = 48
+        self.base_defense_p2 = 64
+        self.defense = self.base_defense_p1
+        self.base_defense = self.base_defense_p1
 
         self.name = "Sol-Rho - The Celestial Titan"
         self.frect = pygame.FRect(self.x, self.y, self.width, self.height)
@@ -930,6 +956,21 @@ class GrandBossSolRho:
         self.bleed_timer = 0.0
         self.bleed_dps = 0
         self.dot_tick_timer = 0.0
+
+    def scale_to_player(self, player_level, player_atk, rematch_multiplier=1.0):
+        """Dynamically scales Grand Boss HP, defense, and damage to player progression and rematch tier."""
+        lvl = max(1, player_level)
+        atk = max(0, player_atk)
+        scale = (1.0 + (lvl - 1) * 0.15 + max(0, (atk - 30) / 75.0) * 0.35) * rematch_multiplier
+        self.p1_max_hp = int(self.base_p1_max_hp * scale)
+        self.p2_max_hp = int(self.base_p2_max_hp * scale)
+        self.max_hp = self.p1_max_hp if self.phase == 1 else self.p2_max_hp
+        self.hp = self.max_hp
+        self.display_hp = float(self.max_hp)
+        self.defense = int(self.base_defense_p1 * (1.0 + (lvl - 1) * 0.08) * rematch_multiplier)
+        self.damage = int(self.base_damage_p1 * (1.0 + (lvl - 1) * 0.05) * min(2.5, rematch_multiplier))
+        self.p2_defense = int(self.base_defense_p2 * (1.0 + (lvl - 1) * 0.08) * rematch_multiplier)
+        self.p2_damage = int(self.base_damage_p2 * (1.0 + (lvl - 1) * 0.05) * min(2.5, rematch_multiplier))
 
     def apply_burn(self, dps=12, duration=4.0):
         self.burn_dps = max(self.burn_dps, dps)
@@ -989,6 +1030,13 @@ class GrandBossSolRho:
         else:
             effective_dmg = max(1, int(amount))
 
+        # Innate Boss Armor: 25% damage mitigation against raw strikes
+        effective_dmg = max(1, int(effective_dmg * 0.75))
+
+        # Per-hit damage clamp: No single hit can exceed 4.5% of max HP (anti-burst cheese)
+        max_clamp = max(20, int(self.max_hp * 0.045))
+        effective_dmg = min(effective_dmg, max_clamp)
+
         self.hp -= effective_dmg
         self.hurt_timer = 0.15
         self.vx += knockback_vx * 0.08
@@ -1045,8 +1093,8 @@ class GrandBossSolRho:
                 self.max_hp = self.p2_max_hp
                 self.hp = self.p2_max_hp
                 self.display_hp = float(self.p2_max_hp)
-                self.damage = 72 + int((self.party_size - 1) * 8)
-                self.defense = 40
+                self.damage = getattr(self, "p2_damage", 92 + int((self.party_size - 1) * 8))
+                self.defense = getattr(self, "p2_defense", 64)
                 self.state = "float"
                 self.state_timer = 2.0
                 self.attack_cooldown = 0.85

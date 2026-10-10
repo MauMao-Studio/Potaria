@@ -97,11 +97,20 @@ class CombatManager:
         self.damage_numbers = []
         self.dropped_items = []
         self.boss = None
+        self.secondary_boss = None
         self.boss_defeated = False
         self.grand_boss_defeated = False
         self.dungeon_boss_slain = False
         self.mini_bosses_slain = 0
         self.last_slain_mob = None
+        self.defeated_mini_bosses = {
+            "lord_malus": False,
+            "ignis_colossus": False,
+            "cryo_spud": False,
+            "necro_tuber": False,
+        }
+        self.rematch_cycle = 0
+        self.rematch_multiplier = 1.0
         
         self.mob_spawn_timer = 0.0
         self.max_mobs = 12
@@ -140,8 +149,8 @@ class CombatManager:
         """Spawns an active ballistic arrow or celestial star projectile."""
         self.projectiles.append(proj)
 
-    def spawn_boss(self, dungeon_x, dungeon_y, boss_cls=None):
-        """Spawns an underground mini-boss (random or specified class/name)."""
+    def spawn_boss(self, dungeon_x, dungeon_y, boss_cls=None, player=None):
+        """Spawns an underground mini-boss (random or specified class/name) with power scaling."""
         if not self.boss or self.boss.is_dead:
             mapping = {
                 "lord_malus": LordMalus,
@@ -155,6 +164,8 @@ class CombatManager:
                 boss_cls = random.choice([LordMalus, IgnisColossus, CryoSpud, NecroTuber])
             self.boss = boss_cls(dungeon_x, dungeon_y - 120, self.asset_factory, self.sound_manager)
             self.boss.boss_type = getattr(self.boss, "boss_type", "lord_malus")
+            if player and hasattr(player, "stats") and hasattr(self.boss, "scale_to_player"):
+                self.boss.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0), rematch_multiplier=self.rematch_multiplier)
             print(f"[Combat] Subterranean Mini-Boss Awakened: {self.boss.name}!")
             self.sound_manager.play("hurt")
             if hasattr(self.sound_manager, "play_voice"):
@@ -162,12 +173,22 @@ class CombatManager:
             if self.camera:
                 self.camera.add_shake(8.0, 0.5)
 
-    def spawn_grand_boss(self, x, y, party_size=1):
-        """Summons the Grand Boss SOL-RHO THE CELESTIAL TITAN (Souls-like 2-phase battle!)."""
+    def spawn_grand_boss(self, x, y, party_size=1, player=None):
+        """Summons the Grand Boss SOL-RHO THE CELESTIAL TITAN (Souls-like 2-phase battle!) with scaling."""
         if not self.boss or self.boss.is_dead:
             print("[Combat] SOL-RHO THE CELESTIAL TITAN HAS DESCENDED FROM THE HEAVENS!")
             self.boss = GrandBossSolRho(x, y - 140, self.asset_factory, self.sound_manager, party_size=party_size)
             self.boss.boss_type = "grand_boss_sol_rho"
+            if player and hasattr(player, "stats") and hasattr(self.boss, "scale_to_player"):
+                self.boss.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0), rematch_multiplier=self.rematch_multiplier)
+            if self.rematch_cycle >= 1 and not self.secondary_boss:
+                from src.entities.boss import LordMalus, IgnisColossus, CryoSpud, NecroTuber
+                miniboss_choices = [LordMalus, IgnisColossus, CryoSpud, NecroTuber]
+                sub_cls = miniboss_choices[(self.rematch_cycle - 1) % len(miniboss_choices)]
+                self.secondary_boss = sub_cls(x - 180, y, self.asset_factory, self.sound_manager)
+                if player and hasattr(player, "stats") and hasattr(self.secondary_boss, "scale_to_player"):
+                    self.secondary_boss.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0), rematch_multiplier=self.rematch_multiplier)
+                print(f"[Combat] REMATCH CYCLE {self.rematch_cycle}: DUO-BOSS SUMMONED! {self.secondary_boss.name} aids Sol-Rho!")
             self.sound_manager.play("craft")
             if hasattr(self.sound_manager, "play_voice"):
                 self.sound_manager.play_voice("sol_rho", volume=0.95)
@@ -223,6 +244,13 @@ class CombatManager:
             self.ancient_drop_banner["timer"] -= dt
             if self.ancient_drop_banner["timer"] <= 0:
                 self.ancient_drop_banner = None
+
+        # Maintain player in_boss_fight state
+        player.in_boss_fight = bool(self.boss or self.secondary_boss)
+        if player.is_dead and (self.boss or self.secondary_boss):
+            player.killed_by_boss = True
+            self.boss = None
+            self.secondary_boss = None
 
         # 1. Update Boss
         if self.boss:
@@ -294,7 +322,22 @@ class CombatManager:
                     )
                     self.sound_manager.play("craft")
                     print("[Combat] TRUE VICTORY! Grand Boss Sol-Rho has been defeated!")
+
+                    # Victory return: Player retains all items, teleports back to home / bed!
+                    sp = getattr(player, "spawn_point", None) or getattr(world, "spawn_point", (0, 70 * SCALED_TILE))
+                    player.x, player.y = sp
+                    player.vx, player.vy = 0.0, 0.0
+                    if self.camera:
+                        self.camera.set_target(player.center_x, player.center_y, instant=True)
+
+                    # Rematch Cycle increments & mini-boss stats double!
+                    self.rematch_cycle += 1
+                    self.rematch_multiplier = 2.0 ** self.rematch_cycle
+                    for k in self.defeated_mini_bosses:
+                        self.defeated_mini_bosses[k] = False
+                    self.secondary_boss = None
                     self.boss = None
+                    print(f"[Combat] Rematch Cycle {self.rematch_cycle} activated! Mini-boss stats doubled (x{self.rematch_multiplier:.1f})!")
                 else:
                     # Slaying Dungeon Mini-Boss (Lord Malus, Ignis Colossus, Cryo-Spud, Necro-Tuber)
                     self.boss_defeated = True
@@ -302,6 +345,11 @@ class CombatManager:
                     self.particle_system.spawn_sparks(self.boss.center_x, self.boss.center_y, (255, 230, 80), count=45)
                     player.stats.add_exp(400)
                     
+                    # Mark mini-boss as slain in current cycle
+                    b_type = getattr(self.boss, "boss_type", "lord_malus")
+                    if b_type in self.defeated_mini_bosses:
+                        self.defeated_mini_bosses[b_type] = True
+
                     # Mini-boss guaranteed drops: 1-2 Portal Shards + Royal Treasure Coins!
                     shards_count = random.randint(1, 2)
                     self.dropped_items.append(
@@ -348,6 +396,50 @@ class CombatManager:
 
                     self.sound_manager.play("craft")
                     self.boss = None
+
+                    # Check if all 4 biome mini-bosses have fallen!
+                    all_mini_bosses_slain = all(self.defeated_mini_bosses.values())
+                    if all_mini_bosses_slain:
+                        print("[Combat] ALL 4 BIOME LORDS FALLEN! CELESTIAL PORTAL WARPS SPUD TO SKY CITADEL!")
+                        if hasattr(world, "chunk_manager"):
+                            world.chunk_manager.ensure_chunks_in_range(-3, 3)
+                        player.x = 0.0
+                        player.y = 28 * SCALED_TILE
+                        player.vx = 0.0
+                        player.vy = 0.0
+                        if self.camera:
+                            self.camera.set_target(player.center_x, player.center_y, instant=True)
+                        self.spawn_grand_boss(0.0, 24 * SCALED_TILE, player=player)
+
+                        # Rematch Duo Battle: If rematch cycle >= 1, summon one mini-boss alongside Sol-Rho!
+                        if self.rematch_cycle >= 1:
+                            from src.entities.boss import LordMalus, IgnisColossus, CryoSpud, NecroTuber
+                            miniboss_choices = [LordMalus, IgnisColossus, CryoSpud, NecroTuber]
+                            sub_cls = miniboss_choices[(self.rematch_cycle - 1) % len(miniboss_choices)]
+                            self.secondary_boss = sub_cls(-180, 24 * SCALED_TILE, self.asset_factory, self.sound_manager)
+                            if hasattr(self.secondary_boss, "scale_to_player"):
+                                self.secondary_boss.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0), rematch_multiplier=self.rematch_multiplier)
+                            print(f"[Combat] REMATCH CYCLE {self.rematch_cycle}: DUO-BOSS SUMMONED! {self.secondary_boss.name} aids Sol-Rho!")
+                    else:
+                        remaining = [k.replace('_', ' ').title() for k, v in self.defeated_mini_bosses.items() if not v]
+                        print(f"[Combat] Mini-Boss Slain! Remaining biome lords to defeat: {', '.join(remaining)}")
+
+        # 1b. Update Secondary Boss (during rematch duo battles)
+        if self.secondary_boss:
+            if hasattr(self.secondary_boss, "update_dots"):
+                self.secondary_boss.update_dots(dt)
+            self.secondary_boss.update(dt, world, player, self.particle_system, self.camera, combat=self)
+            if not self.secondary_boss.is_dead and self.secondary_boss.rect.colliderect(player.rect):
+                knock_dir = 1.0 if player.center_x > self.secondary_boss.center_x else -1.0
+                damaged = player.take_damage(self.secondary_boss.damage, knockback_vx=knock_dir * 6.0, knockback_vy=-4.5)
+                if damaged:
+                    self.spawn_damage_number(player.center_x, player.y - 10, self.secondary_boss.damage, color=(255, 50, 50))
+                    self.camera.add_shake(6.0, 0.3)
+            if self.secondary_boss.is_dead:
+                self.particle_system.spawn_sparks(self.secondary_boss.center_x, self.secondary_boss.center_y, (255, 230, 80), count=45)
+                player.stats.add_exp(500)
+                print(f"[Combat] Secondary Boss {self.secondary_boss.name} slain in duo battle!")
+                self.secondary_boss = None
 
         # Despawn distant mobs (>1300 pixels from any player) on Host / Singleplayer
         if not self.is_client:
@@ -1442,6 +1534,13 @@ class CombatManager:
                     self.boss.render(target_surf, camera, renderer=renderer)
                 except TypeError:
                     self.boss.render(target_surf, camera)
+
+        if self.secondary_boss:
+            if hasattr(self.secondary_boss, "render"):
+                try:
+                    self.secondary_boss.render(target_surf, camera, renderer=renderer)
+                except TypeError:
+                    self.secondary_boss.render(target_surf, camera)
 
         for dn in self.damage_numbers:
             dn.render(target_surf, camera, self.font, self.font_crit)

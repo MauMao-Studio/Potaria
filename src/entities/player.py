@@ -127,6 +127,8 @@ class Player:
         self.oxygen = 100.0
         self.drown_timer = 0.0
         self.submerged_duration = 0.0
+        self.killed_by_boss = False
+        self.in_boss_fight = False
 
         # State & 12 FPS Animation System
         self.facing_right = True
@@ -575,6 +577,8 @@ class Player:
         if self.health <= 0:
             self.is_dead = True
             self.respawn_timer = 3.0
+            if getattr(self, "in_boss_fight", False):
+                self.killed_by_boss = True
 
         return True
 
@@ -654,6 +658,15 @@ class Player:
                 self.health = self.max_health
                 if hasattr(self, "stats"):
                     self.stats.hp = self.health
+
+                if getattr(self, "killed_by_boss", False):
+                    self.killed_by_boss = False
+                    if hasattr(self, "inventory") and self.inventory:
+                        self.inventory.clear_all_items()
+                    if hasattr(self, "equipment") and self.equipment:
+                        self.equipment.clear_all_items(stats=self.stats)
+                    print("[Player] Defeated by Boss: All inventory items lost. Skills and level retained.")
+
                 sp = getattr(self, "spawn_point", None) or world.spawn_point
                 self.x, self.y = sp
                 self.vx, self.vy = 0.0, 0.0
