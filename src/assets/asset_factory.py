@@ -3378,18 +3378,27 @@ class AssetFactory:
         pygame.draw.line(plat, (120, 75, 35), (0, 3), (15, 3), 1)
         self.tiles[TILE_WOOD_PLATFORM] = plat
 
+        # Sturdy carpenter's wooden workbench with thick tabletop, vise & tool shelf (matching item icon)
         wb = pygame.Surface((16, 16), pygame.SRCALPHA)
-        pygame.draw.rect(wb, (190, 135, 80), (0, 3, 16, 5))
-        pygame.draw.line(wb, (235, 185, 130), (0, 3), (15, 3), 1)
-        pygame.draw.rect(wb, (135, 85, 45), (1, 8, 3, 8))
-        pygame.draw.rect(wb, (135, 85, 45), (12, 8, 3, 8))
+        pygame.draw.rect(wb, (48, 28, 14), (0, 3, 16, 13), border_radius=1)
+        pygame.draw.rect(wb, (185, 125, 65), (1, 4, 14, 4))
+        pygame.draw.line(wb, (225, 175, 110), (1, 4), (14, 4), 1)
+        pygame.draw.rect(wb, (145, 92, 45), (2, 8, 3, 7))
+        pygame.draw.rect(wb, (145, 92, 45), (11, 8, 3, 7))
+        pygame.draw.rect(wb, (120, 75, 38), (4, 11, 8, 2))
+        pygame.draw.rect(wb, (160, 170, 185), (13, 4, 3, 3))
         self.tiles[TILE_WORK_BENCH] = wb
 
+        # Domed cobblestone smelting furnace with roaring firebox (matching item icon)
         furn = pygame.Surface((16, 16), pygame.SRCALPHA)
-        pygame.draw.rect(furn, (135, 128, 122), (1, 1, 14, 15), border_radius=2)
-        pygame.draw.ellipse(furn, (42, 22, 16), (4, 6, 8, 8))
-        pygame.draw.circle(furn, (255, 110, 20), (8, 10), 3)
-        furn.set_at((8, 10), (255, 225, 65))
+        pygame.draw.polygon(furn, (38, 36, 44), [(1, 15), (1, 7), (5, 1), (11, 1), (15, 7), (15, 15)])
+        pygame.draw.polygon(furn, (125, 122, 132), [(2, 15), (2, 7), (5, 2), (10, 2), (14, 7), (14, 15)])
+        pygame.draw.line(furn, (80, 78, 88), (2, 7), (14, 7), 1)
+        pygame.draw.line(furn, (80, 78, 88), (8, 2), (8, 7), 1)
+        pygame.draw.rect(furn, (25, 15, 15), (4, 8, 8, 7), border_radius=2)
+        pygame.draw.polygon(furn, (255, 105, 20), [(5, 14), (7, 9), (8, 11), (10, 8), (11, 14)])
+        pygame.draw.polygon(furn, (255, 230, 85), [(6, 14), (8, 10), (10, 14)])
+        furn.set_at((8, 12), (255, 255, 255))
         self.tiles[TILE_FURNACE] = furn
 
         self.torch_frames = []
@@ -3519,14 +3528,26 @@ class AssetFactory:
         pygame.draw.circle(mcap, (90, 230, 255), (5, 12), 2)
         self.tiles[TILE_MUSHROOM_CAP] = mcap
 
-        # 12. Underground Treasure Chest
+        # 12. Underground Treasure Chest (Polished pixel art matching held/inventory item)
         chest = pygame.Surface((16, 16), pygame.SRCALPHA)
-        pygame.draw.rect(chest, (148, 98, 52), (1, 2, 14, 13), border_radius=2)
-        pygame.draw.line(chest, (85, 55, 25), (1, 7), (14, 7), 1)
-        pygame.draw.rect(chest, (255, 215, 0), (6, 6, 4, 4))
-        pygame.draw.circle(chest, (45, 35, 25), (8, 8), 1)
-        pygame.draw.rect(chest, (95, 105, 125), (1, 2, 2, 13))
-        pygame.draw.rect(chest, (95, 105, 125), (13, 2, 2, 13))
+        # Sturdy dark rim outline
+        pygame.draw.rect(chest, (35, 24, 16), (1, 2, 14, 13), border_radius=2)
+        # Warm wood chest body
+        pygame.draw.rect(chest, (185, 122, 55), (2, 7, 12, 7))
+        # Beveled warm wooden lid
+        pygame.draw.rect(chest, (215, 152, 75), (2, 3, 12, 4), border_radius=1)
+        # Lid highlight
+        pygame.draw.line(chest, (245, 185, 105), (3, 3), (12, 3), 1)
+        # Horizontal dividing seam
+        pygame.draw.line(chest, (40, 28, 18), (1, 7), (14, 7), 1)
+        # Vertical golden reinforcement corner straps
+        for sx in (3, 11):
+            pygame.draw.rect(chest, (245, 198, 48), (sx, 3, 2, 11))
+            pygame.draw.line(chest, (255, 235, 120), (sx, 3), (sx, 6), 1)
+        # Central polished golden lock clasp with keyhole
+        pygame.draw.rect(chest, (255, 215, 55), (6, 6, 4, 3), border_radius=1)
+        chest.set_at((7, 7), (35, 25, 20))
+        chest.set_at((8, 7), (35, 25, 20))
         self.tiles[TILE_CHEST] = chest
 
         # 13. Terracotta Roof Tiles (Warm scalloped terracotta shingles matching reference image)
@@ -6359,14 +6380,17 @@ class AssetFactory:
             if surf:
                 pygame.image.save(surf, item_file)
 
-        # Also export any non-registry special items in self.items (e.g. aliases) that are not in craftable_dir
-        for extra_name in sorted(list(self.items.keys())):
-            if extra_name in crafting_item_ids or extra_name in ITEM_REGISTRY:
-                continue
-            extra_file = os.path.join(target_dir, "items", f"{extra_name}.png")
-            surf = self.items[extra_name]
-            if isinstance(surf, pygame.Surface):
-                pygame.image.save(surf, extra_file)
+        # Remove any stray non-registry files or craftable items in target_dir/items/
+        if os.path.exists(items_dir):
+            for existing_file in os.listdir(items_dir):
+                if not existing_file.endswith(".png"):
+                    continue
+                stem = existing_file[:-4]
+                if stem in crafting_item_ids or stem not in ITEM_REGISTRY:
+                    try:
+                        os.remove(os.path.join(items_dir, existing_file))
+                    except OSError:
+                        pass
 
         # Export player sprites
         for pkey, pval in self.player_sprites.items():

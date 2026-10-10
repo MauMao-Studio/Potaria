@@ -133,7 +133,7 @@ RECIPES = [
         "ingredients": [("sand_block", 2)]
     },
     {
-        "result": "stone_fireplace", "count": 1, "station": "furnace", "category": CRAFT_CAT_FURNITURE,
+        "result": "stone_fireplace", "count": 1, "station": "work_bench", "category": CRAFT_CAT_FURNITURE,
         "ingredients": [("stone_block", 12), ("wood", 4), ("torch", 2)]
     },
     {
@@ -722,9 +722,12 @@ class CraftingSystem:
         recipe_source = getattr(self, "recipes", None) or RECIPES
         for r in recipe_source:
             req_station = r["station"]
-            if req_station == "work_bench" and not has_wb:
+            if isinstance(req_station, (list, tuple)):
+                if not any((st == "work_bench" and has_wb) or (st == "furnace" and has_furn) or (st is None) for st in req_station):
+                    continue
+            elif req_station == "work_bench" and not has_wb:
                 continue
-            if req_station == "furnace" and not has_furn:
+            elif req_station == "furnace" and not has_furn:
                 continue
 
             can_craft = True

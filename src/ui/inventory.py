@@ -956,9 +956,16 @@ ITEM_REGISTRY = {
     "chest": {
         "name": "Treasure Chest", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CHEST,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Place to store keepsakes, or right-click when found in caves to claim rich loot!",
+        "desc": "Lustrous gilded chest with golden reinforcement straps. Found in deep caverns filled with rare subterranean treasures.",
         "lore": "'Holds the forgotten relics of past adventurers.'",
         "special": "Treasure Container"
+    },
+    "wooden_chest": {
+        "name": "Wooden Chest", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CHEST,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Sturdy banded oak chest with iron reinforcement straps. Reliable storage for spuds.",
+        "lore": "'A trusted container crafted from seasoned Potarian oak.'",
+        "special": "Storage Container"
     },
     "iron_chest": {
         "name": "Iron Storage Chest", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CHEST,
@@ -1110,6 +1117,125 @@ ITEM_REGISTRY = {
         "desc": "Smooth wooden wall shelf. Allows Spud to jump up through and stand upon it.",
         "lore": "'Sturdy timber bracketed to hold jars, books, and curious spuds.'",
         "special": "Jump-Through Platform Surface"
+    },
+    "bed": {
+        "name": "Bed", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_BED,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Simple wooden bed. Right-click to set spawn point and rest to recover health.",
+        "lore": "'A humble cot fashioned from dry timber and clean sheets.'",
+        "special": "Sets Respawn Point & Rest Recovery"
+    },
+    "fireplace": {
+        "name": "Fireplace", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_FIREPLACE,
+        "rarity": RARITY_RARE,
+        "desc": "Warm masonry fireplace with an arched hearth. Radiates cozy heat and light.",
+        "lore": "'Crackling flames keep the darkness and cold away from your abode.'",
+        "special": "Warm Ambient Light & Rising Smoke"
+    },
+    "hearth": {
+        "name": "Cozy Hearth", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_FIREPLACE,
+        "rarity": RARITY_RARE,
+        "desc": "Open stone hearth radiating soothing heat across the homestead.",
+        "lore": "'The warm beating heart of any cozy potato home.'",
+        "special": "Warm Ambient Light & Rising Smoke"
+    },
+    "dresser": {
+        "name": "Dresser", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_DRESSER,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Carved wooden dressing chest with brass pull handles and slide-out drawers.",
+        "lore": "'Neatly stores potato skins and fine tunics.'",
+        "special": "Platform Surface & Wardrobe Decor"
+    },
+    "wardrobe": {
+        "name": "Wardrobe", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_DRESSER,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Upright timber wardrobe with twin doors for hanging cloaks and attire.",
+        "lore": "'A tall cupboard keeping garments safe from dungeon dust.'",
+        "special": "Platform Surface & Wardrobe Decor"
+    },
+    "clock": {
+        "name": "Clock", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_GRANDFATHER_CLOCK,
+        "rarity": RARITY_RARE,
+        "desc": "Decorative ticking wall clock keeping celestial time.",
+        "lore": "'Marking every hour of your grand Potarian journey.'",
+        "special": "Interactive Celestial Timekeeper"
+    },
+    "shelf": {
+        "name": "Shelf", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_WOOD_SHELF,
+        "rarity": RARITY_COMMON,
+        "desc": "Smooth wall-mounted wooden shelf for displaying keepsakes.",
+        "lore": "'A simple wooden perch that also serves as a jumping ledge.'",
+        "special": "Jump-Through Platform Surface"
+    },
+    "art": {
+        "name": "Art", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_PAINTING,
+        "rarity": RARITY_RARE,
+        "desc": "Charming canvas sketch capturing pastoral countryside views.",
+        "lore": "'Drawn by an inspired tuber artist of old.'",
+        "special": "Fine Wall Art"
+    },
+    "wall_art": {
+        "name": "Wall Art", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_PAINTING,
+        "rarity": RARITY_RARE,
+        "desc": "Vibrant decorative wall plaque honoring ancient tuber legends.",
+        "lore": "'Inspiring artwork adorning the halls of Potaria.'",
+        "special": "Fine Wall Art"
+    },
+    "plant": {
+        "name": "Plant", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_POTTED_PLANT,
+        "rarity": RARITY_COMMON,
+        "desc": "Fresh leafy houseplant in an earthenware pot.",
+        "lore": "'A touch of green life inside your underground refuge.'",
+        "special": "Decorative Botanical Bonsai"
+    },
+    "bonsai": {
+        "name": "Bonsai", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_POTTED_PLANT,
+        "rarity": RARITY_COMMON,
+        "desc": "Meticulously pruned miniature potato bonsai in a decorative dish.",
+        "lore": "'A tranquil miniature tree nurtured with patience.'",
+        "special": "Decorative Botanical Bonsai"
+    },
+    "potted_spud_plant": {
+        "name": "Potted Spud Plant", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_POTTED_PLANT,
+        "rarity": RARITY_COMMON,
+        "desc": "Cultivated domestic spud sprout potted in rich compost.",
+        "lore": "'Sprouting fresh leafy greens to purify the subterranean air.'",
+        "special": "Decorative Botanical Bonsai"
+    },
+    "banner": {
+        "name": "Banner", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_TAPESTRY,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Long colorful hanging banner bearing the royal seal of Potaria.",
+        "lore": "'Flutters with pride in the homestead halls.'",
+        "special": "Decorative Wall Ornament"
+    },
+    "tapestry": {
+        "name": "Tapestry", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_TAPESTRY,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Intricate decorative textile hanging woven from soft spud silk.",
+        "lore": "'A majestic woven scene depicting ancient potato lore.'",
+        "special": "Decorative Wall Ornament"
+    },
+    "wood_sword": {
+        "name": "Wooden Sword", "cat": CAT_WEAPON, "damage": 3, "atk": 7, "power": 10, "speed": 1.0, "max_stack": 1, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Whittled wooden practice blade. Essential starter weapon for aspiring spud warriors.",
+        "lore": "'Carved from sturdy surface oak to defend against roaming garden pests.'",
+        "special": ""
+    },
+    "arrow": {
+        "name": "Arrow", "cat": CAT_CONSUMABLE, "damage": 4, "max_stack": 999, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Standard notched arrow tipped with pointed flint.",
+        "lore": "'Reliable basic ammunition for wooden bows.'",
+        "special": "Bow Ammunition"
+    },
+    "curved_tuber_lantern": {
+        "name": "Curved Tuber Lantern", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CARVED_TUBER_LANTERN,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Artfully sculpted root lantern casting curved beams of warm light.",
+        "lore": "'A decorative hanging root light providing warm amber illumination.'",
+        "special": "Warm Amber Light Source"
     },
     "wood_wall": {
         "name": "Wood Wall", "cat": CAT_WALL, "wall": WALL_WOOD, "power": 0, "damage": 0, "max_stack": 999, "tile": None,
@@ -2248,6 +2374,10 @@ class Inventory:
             self.add_coins(gold=count)
             return 0
 
+        target_id = ITEM_ALIASES.get(target_id, target_id)
+        if stack_source:
+            stack_source.item_id = target_id
+
         data = ITEM_REGISTRY.get(target_id, {})
         max_s = data.get("max_stack", 999)
 
@@ -2255,14 +2385,16 @@ class Inventory:
         is_modified = stack_source and (stack_source.enhancement_level > 0 or stack_source.is_broken or stack_source.affixes or stack_source.removed_stats)
         if max_s > 1 and not is_modified:
             for slot in self.slots:
-                if slot and slot.item_id == target_id and slot.count < max_s:
-                    if not (slot.enhancement_level > 0 or slot.is_broken or slot.affixes or slot.removed_stats):
-                        space = max_s - slot.count
-                        transfer = min(space, count)
-                        slot.count += transfer
-                        count -= transfer
-                        if count <= 0:
-                            return 0
+                if slot:
+                    slot_canon = ITEM_ALIASES.get(slot.item_id, slot.item_id)
+                    if (slot.item_id == target_id or slot_canon == target_id) and slot.count < max_s:
+                        if not (slot.enhancement_level > 0 or slot.is_broken or slot.affixes or slot.removed_stats):
+                            space = max_s - slot.count
+                            transfer = min(space, count)
+                            slot.count += transfer
+                            count -= transfer
+                            if count <= 0:
+                                return 0
 
         for idx in range(len(self.slots)):
             if self.slots[idx] is None:
