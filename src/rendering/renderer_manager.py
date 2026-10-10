@@ -40,9 +40,19 @@ class RendererManager:
         self.fullscreen = False
         self.requested_type = RENDERER_HARDWARE
         self.active_renderer: Optional[BaseRenderer] = None
+        self.shaders_enabled: bool = True
         self.bloom_enabled: bool = True
         self.bloom_intensity: float = 0.8
         self.bloom_threshold: float = 0.65
+        self.vignette_enabled: bool = True
+        self.vignette_intensity: float = 0.35
+        self.water_distortion_enabled: bool = True
+        self.water_distortion_intensity: float = 1.0
+        self.color_grading_mode: int = 1
+        self.saturation: float = 1.18
+        self.contrast: float = 1.08
+        self.lighting_quality: str = "high"
+        self.particle_density: str = "high"
 
     def initialize(
         self,
@@ -83,6 +93,17 @@ class RendererManager:
             self.active_renderer.set_bloom_enabled(self.bloom_enabled)
             self.active_renderer.set_bloom_intensity(self.bloom_intensity)
             self.active_renderer.set_bloom_threshold(self.bloom_threshold)
+        if hasattr(self.active_renderer, "set_shaders_enabled"):
+            self.active_renderer.set_shaders_enabled(self.shaders_enabled)
+            self.active_renderer.set_vignette_enabled(self.vignette_enabled)
+            self.active_renderer.set_vignette_intensity(self.vignette_intensity)
+            self.active_renderer.set_water_distortion_enabled(self.water_distortion_enabled)
+            self.active_renderer.set_water_distortion_intensity(self.water_distortion_intensity)
+            self.active_renderer.set_color_grading_mode(self.color_grading_mode)
+            self.active_renderer.set_saturation(self.saturation)
+            self.active_renderer.set_contrast(self.contrast)
+            self.active_renderer.set_lighting_quality(self.lighting_quality)
+            self.active_renderer.set_particle_density(self.particle_density)
         return self.active_renderer
 
     def switch_renderer(
@@ -246,6 +267,84 @@ class RendererManager:
         if hasattr(self.renderer, "get_bloom_params"):
             return self.renderer.get_bloom_params()
         return {"enabled": self.bloom_enabled, "intensity": self.bloom_intensity, "threshold": self.bloom_threshold}
+
+    def set_shaders_enabled(self, enabled: bool):
+        self.shaders_enabled = bool(enabled)
+        if hasattr(self.renderer, "set_shaders_enabled"):
+            self.renderer.set_shaders_enabled(enabled)
+
+    def is_shaders_enabled(self) -> bool:
+        if hasattr(self.renderer, "is_shaders_enabled"):
+            return self.renderer.is_shaders_enabled()
+        return self.shaders_enabled
+
+    def set_vignette_enabled(self, enabled: bool):
+        self.vignette_enabled = bool(enabled)
+        if hasattr(self.renderer, "set_vignette_enabled"):
+            self.renderer.set_vignette_enabled(enabled)
+
+    def set_vignette_intensity(self, intensity: float):
+        self.vignette_intensity = max(0.0, min(1.0, float(intensity)))
+        if hasattr(self.renderer, "set_vignette_intensity"):
+            self.renderer.set_vignette_intensity(intensity)
+
+    def set_water_distortion_enabled(self, enabled: bool):
+        self.water_distortion_enabled = bool(enabled)
+        if hasattr(self.renderer, "set_water_distortion_enabled"):
+            self.renderer.set_water_distortion_enabled(enabled)
+
+    def set_water_distortion_intensity(self, intensity: float):
+        self.water_distortion_intensity = max(0.0, min(3.0, float(intensity)))
+        if hasattr(self.renderer, "set_water_distortion_intensity"):
+            self.renderer.set_water_distortion_intensity(intensity)
+
+    def set_color_grading_mode(self, mode: Union[int, str]):
+        if isinstance(mode, str):
+            mapping = {"standard": 0, "vibrant": 1, "cinematic": 2, "cool": 3}
+            self.color_grading_mode = mapping.get(mode.lower().strip(), 0)
+        else:
+            self.color_grading_mode = int(mode)
+        if hasattr(self.renderer, "set_color_grading_mode"):
+            self.renderer.set_color_grading_mode(self.color_grading_mode)
+
+    def set_saturation(self, saturation: float):
+        self.saturation = max(0.0, min(2.5, float(saturation)))
+        if hasattr(self.renderer, "set_saturation"):
+            self.renderer.set_saturation(saturation)
+
+    def set_contrast(self, contrast: float):
+        self.contrast = max(0.0, min(2.5, float(contrast)))
+        if hasattr(self.renderer, "set_contrast"):
+            self.renderer.set_contrast(contrast)
+
+    def set_lighting_quality(self, quality: str):
+        self.lighting_quality = str(quality).lower().strip()
+        if hasattr(self.renderer, "set_lighting_quality"):
+            self.renderer.set_lighting_quality(quality)
+
+    def set_particle_density(self, density: str):
+        self.particle_density = str(density).lower().strip()
+        if hasattr(self.renderer, "set_particle_density"):
+            self.renderer.set_particle_density(density)
+
+    def get_graphics_params(self) -> dict:
+        if hasattr(self.renderer, "get_graphics_params"):
+            return self.renderer.get_graphics_params()
+        return {
+            "shaders_enabled": self.shaders_enabled,
+            "bloom_enabled": self.bloom_enabled,
+            "bloom_intensity": self.bloom_intensity,
+            "bloom_threshold": self.bloom_threshold,
+            "vignette_enabled": self.vignette_enabled,
+            "vignette_intensity": self.vignette_intensity,
+            "water_distortion_enabled": self.water_distortion_enabled,
+            "water_distortion_intensity": self.water_distortion_intensity,
+            "color_grading_mode": self.color_grading_mode,
+            "saturation": self.saturation,
+            "contrast": self.contrast,
+            "lighting_quality": self.lighting_quality,
+            "particle_density": self.particle_density,
+        }
 
     def cleanup(self):
         if self.active_renderer:

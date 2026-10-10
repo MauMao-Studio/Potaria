@@ -167,18 +167,7 @@ class PotariaGame:
         self.playtime = 0.0
         self.achievement_manager = AchievementManager(sound_manager=self.sound_manager)
         self.menu = MenuManager(self.asset_factory, self.sound_manager, self.bgm, self.achievement_manager)
-        if hasattr(self.menu, "settings"):
-            self.camera.shake_enabled = self.menu.settings.get("screen_shake", True)
-            req_rend = self.menu.settings.get("renderer", RENDERER_HARDWARE)
-            if hasattr(self, "renderer_manager") and req_rend != self.renderer_manager.requested_type:
-                self.set_renderer_mode(req_rend)
-            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_bloom_enabled"):
-                self.renderer_manager.set_bloom_enabled(self.menu.settings.get("bloom", True))
-            if self.menu.settings.get("fullscreen", False):
-                try:
-                    self.toggle_fullscreen()
-                except Exception:
-                    pass
+        self._apply_graphics_settings()
 
         # 8. Mobile Virtual Touch Controller (Cross-Platform Controls)
         self.touch_controller = TouchController(self.asset_factory, self.sound_manager)
@@ -679,6 +668,47 @@ class PotariaGame:
                     pygame.DOUBLEBUF
                 )
 
+    def _apply_graphics_settings(self):
+        """Propagates loaded menu settings into active rendering, camera, particle, combat, and inventory systems."""
+        if not hasattr(self, "menu") or not hasattr(self.menu, "settings"):
+            return
+        settings = self.menu.settings
+        if hasattr(self, "camera"):
+            self.camera.shake_enabled = settings.get("screen_shake", True)
+        req_rend = settings.get("renderer", RENDERER_HARDWARE)
+        if hasattr(self, "renderer_manager") and req_rend != self.renderer_manager.requested_type:
+            self.set_renderer_mode(req_rend)
+        if hasattr(self, "renderer_manager"):
+            if hasattr(self.renderer_manager, "set_shaders_enabled"):
+                self.renderer_manager.set_shaders_enabled(settings.get("shaders", True))
+            if hasattr(self.renderer_manager, "set_bloom_enabled"):
+                self.renderer_manager.set_bloom_enabled(settings.get("bloom", True))
+            if hasattr(self.renderer_manager, "set_vignette_enabled"):
+                self.renderer_manager.set_vignette_enabled(settings.get("vignette", True))
+            if hasattr(self.renderer_manager, "set_water_distortion_enabled"):
+                self.renderer_manager.set_water_distortion_enabled(settings.get("water_effects", True))
+            if hasattr(self.renderer_manager, "set_color_grading_mode"):
+                self.renderer_manager.set_color_grading_mode(settings.get("color_grade", "vibrant"))
+            if hasattr(self.renderer_manager, "set_lighting_quality"):
+                self.renderer_manager.set_lighting_quality(settings.get("lighting_quality", "high"))
+            if hasattr(self.renderer_manager, "set_particle_density"):
+                self.renderer_manager.set_particle_density(settings.get("particle_density", "high"))
+
+        density_map = {"ultra": 500, "high": 250, "medium": 120, "low": 60}
+        if hasattr(self, "particle_system"):
+            self.particle_system.max_particles = density_map.get(str(settings.get("particle_density", "high")).lower(), 250)
+        self.boost_mode = settings.get("boost_mode", True)
+        if hasattr(self, "combat"):
+            self.combat.show_damage_numbers = settings.get("damage_numbers", True)
+        if hasattr(self, "inventory"):
+            self.inventory.tooltip_mode = settings.get("tooltips", "detailed")
+
+        if settings.get("fullscreen", False):
+            try:
+                self.toggle_fullscreen()
+            except Exception:
+                pass
+
     def set_renderer_mode(self, mode: str):
         """Switches the active renderer between hardware (ModernGL) and software via HAL."""
         if hasattr(self, "renderer_manager"):
@@ -862,6 +892,14 @@ class PotariaGame:
             self.set_renderer_mode(action[1])
         elif action == "toggle_renderer":
             self.toggle_renderer_mode()
+        elif isinstance(action, tuple) and action[0] == "set_shaders":
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_shaders_enabled"):
+                self.renderer_manager.set_shaders_enabled(action[1])
+        elif action == "toggle_shaders":
+            cur_s = self.menu.settings.get("shaders", True)
+            self.menu.settings["shaders"] = not cur_s
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_shaders_enabled"):
+                self.renderer_manager.set_shaders_enabled(not cur_s)
         elif isinstance(action, tuple) and action[0] == "set_bloom":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_bloom_enabled"):
                 self.renderer_manager.set_bloom_enabled(action[1])
@@ -870,8 +908,61 @@ class PotariaGame:
             self.menu.settings["bloom"] = not cur_b
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_bloom_enabled"):
                 self.renderer_manager.set_bloom_enabled(not cur_b)
+        elif isinstance(action, tuple) and action[0] == "set_vignette":
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_vignette_enabled"):
+                self.renderer_manager.set_vignette_enabled(action[1])
+        elif action == "toggle_vignette":
+            cur_v = self.menu.settings.get("vignette", True)
+            self.menu.settings["vignette"] = not cur_v
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_vignette_enabled"):
+                self.renderer_manager.set_vignette_enabled(not cur_v)
+        elif isinstance(action, tuple) and action[0] == "set_water_effects":
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_water_distortion_enabled"):
+                self.renderer_manager.set_water_distortion_enabled(action[1])
+        elif action == "toggle_water_effects":
+            cur_w = self.menu.settings.get("water_effects", True)
+            self.menu.settings["water_effects"] = not cur_w
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_water_distortion_enabled"):
+                self.renderer_manager.set_water_distortion_enabled(not cur_w)
+        elif isinstance(action, tuple) and action[0] == "set_color_grade":
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_color_grading_mode"):
+                self.renderer_manager.set_color_grading_mode(action[1])
+        elif isinstance(action, tuple) and action[0] == "set_lighting_quality":
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_lighting_quality"):
+                self.renderer_manager.set_lighting_quality(action[1])
+        elif isinstance(action, tuple) and action[0] == "set_particle_density":
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_particle_density"):
+                self.renderer_manager.set_particle_density(action[1])
+            if hasattr(self, "particle_system"):
+                density_map = {"ultra": 500, "high": 250, "medium": 120, "low": 60}
+                self.particle_system.max_particles = density_map.get(str(action[1]).lower(), 250)
         elif isinstance(action, tuple) and action[0] == "set_shake":
             self.camera.shake_enabled = action[1]
+        elif action == "toggle_shake":
+            cur_s = self.menu.settings.get("screen_shake", True)
+            self.menu.settings["screen_shake"] = not cur_s
+            self.camera.shake_enabled = not cur_s
+        elif isinstance(action, tuple) and action[0] == "set_boost_mode":
+            self.boost_mode = bool(action[1])
+        elif action == "toggle_boost_mode":
+            self.boost_mode = not getattr(self, "boost_mode", True)
+            self.menu.settings["boost_mode"] = self.boost_mode
+        elif isinstance(action, tuple) and action[0] == "set_damage_numbers":
+            if hasattr(self, "combat"):
+                self.combat.show_damage_numbers = bool(action[1])
+        elif action == "toggle_damage_numbers":
+            cur_d = self.menu.settings.get("damage_numbers", True)
+            self.menu.settings["damage_numbers"] = not cur_d
+            if hasattr(self, "combat"):
+                self.combat.show_damage_numbers = not cur_d
+        elif isinstance(action, tuple) and action[0] == "set_tooltips":
+            if hasattr(self, "inventory"):
+                self.inventory.tooltip_mode = str(action[1])
+        elif action == "toggle_tooltips":
+            cur_t = "compact" if self.menu.settings.get("tooltips", "detailed") == "detailed" else "detailed"
+            self.menu.settings["tooltips"] = cur_t
+            if hasattr(self, "inventory"):
+                self.inventory.tooltip_mode = cur_t
         elif isinstance(action, tuple) and action[0] == "set_touch_controls":
             if hasattr(self, "touch_controller"):
                 self.touch_controller.set_mode(action[1])
@@ -940,8 +1031,8 @@ class PotariaGame:
                     self.touch_controller.reset()
 
             elif event.type in (pygame.FINGERDOWN, pygame.FINGERMOTION, pygame.FINGERUP):
-                px = int(event.x * SCREEN_WIDTH)
-                py = int(event.y * SCREEN_HEIGHT)
+                px = int(round(event.x * SCREEN_WIDTH))
+                py = int(round(event.y * SCREEN_HEIGHT))
 
                 if hasattr(self, "touch_controller"):
                     self.touch_controller.has_touch_input = True

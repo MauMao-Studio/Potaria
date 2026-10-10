@@ -2303,6 +2303,7 @@ class Inventory:
         # Notification banner when learning a skill
         self.last_learned_message = None
         self.last_learned_timer = 0.0
+        self.tooltip_mode = "detailed"
 
         # Set initial loadout based on difficulty mode
         self.set_difficulty_loadout(difficulty)

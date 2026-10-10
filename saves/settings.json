@@ -4,9 +4,20 @@
     "bgm_volume": 0.65,
     "sfx_volume": 0.88,
     "fullscreen": false,
-    "screen_shake": false,
+    "screen_shake": true,
     "touch_controls": "on",
-    "touch_opacity": 0.5
+    "touch_opacity": 0.75,
+    "renderer": "hardware",
+    "bloom": true,
+    "shaders": false,
+    "vignette": false,
+    "water_effects": false,
+    "color_grade": "cinematic",
+    "lighting_quality": "high",
+    "particle_density": "high",
+    "boost_mode": false,
+    "damage_numbers": false,
+    "tooltips": "compact"
   },
   "key_bindings": {
     "Move Left": 97,

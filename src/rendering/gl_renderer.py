@@ -49,9 +49,21 @@ class GLRenderer(BaseRenderer):
     uniform sampler2D u_texture;
     uniform vec2 u_resolution;
     uniform float u_time;
+
+    uniform int u_shaders_enabled;
+    uniform int u_bloom_enabled;
     uniform float u_bloom_intensity;
     uniform float u_bloom_threshold;
-    uniform int u_bloom_enabled;
+
+    uniform int u_vignette_enabled;
+    uniform float u_vignette_intensity;
+
+    uniform int u_water_distortion_enabled;
+    uniform float u_water_distortion_intensity;
+
+    uniform int u_color_grading_mode;
+    uniform float u_saturation;
+    uniform float u_contrast;
 
     in vec2 v_text;
     out vec4 f_color;
@@ -60,40 +72,88 @@ class GLRenderer(BaseRenderer):
         return dot(color, vec3(0.2126, 0.7152, 0.0722));
     }
 
+    vec3 adjust_saturation(vec3 color, float sat) {
+        float l = luminance(color);
+        return mix(vec3(l), color, sat);
+    }
+
+    vec3 adjust_contrast(vec3 color, float cont) {
+        return (color - 0.5) * cont + 0.5;
+    }
+
     void main() {
-        vec4 base_color = texture(u_texture, v_text);
-        if (u_bloom_enabled == 0 || u_bloom_intensity <= 0.0) {
+        vec2 uv = v_text;
+        if (u_shaders_enabled == 1 && u_water_distortion_enabled == 1) {
+            float wave_x = sin(v_text.y * 50.0 + u_time * 3.0) * 0.0016 * u_water_distortion_intensity;
+            float wave_y = cos(v_text.x * 40.0 + u_time * 2.5) * 0.0012 * u_water_distortion_intensity;
+            uv += vec2(wave_x, wave_y);
+        }
+
+        vec4 base_color = texture(u_texture, uv);
+
+        if (u_shaders_enabled == 0) {
             f_color = base_color;
             return;
         }
 
-        vec2 texel = 1.0 / u_resolution;
-        vec3 bloom_acc = vec3(0.0);
-        float total_weight = 0.0;
+        vec3 rgb = base_color.rgb;
 
-        for (int x = -3; x <= 3; x++) {
-            for (int y = -3; y <= 3; y++) {
-                float dist = length(vec2(float(x), float(y)));
-                if (dist > 3.5) continue;
-                float weight = exp(-0.5 * (dist * dist) / 3.0);
-                vec2 offset = vec2(float(x), float(y)) * texel * 1.5;
-                vec4 s = texture(u_texture, v_text + offset);
-                float luma = luminance(s.rgb);
-                if (luma > u_bloom_threshold) {
-                    bloom_acc += s.rgb * weight * (luma - u_bloom_threshold);
+        // Bloom extraction and multi-sample accumulation
+        if (u_bloom_enabled == 1 && u_bloom_intensity > 0.0) {
+            vec2 texel = 1.0 / u_resolution;
+            vec3 bloom_acc = vec3(0.0);
+            float total_weight = 0.0;
+
+            for (int x = -3; x <= 3; x++) {
+                for (int y = -3; y <= 3; y++) {
+                    float dist = length(vec2(float(x), float(y)));
+                    if (dist > 3.5) continue;
+                    float weight = exp(-0.5 * (dist * dist) / 3.0);
+                    vec2 offset = vec2(float(x), float(y)) * texel * 1.6;
+                    vec4 s = texture(u_texture, uv + offset);
+                    float luma = luminance(s.rgb);
+                    if (luma > u_bloom_threshold) {
+                        bloom_acc += s.rgb * weight * (luma - u_bloom_threshold);
+                    }
+                    total_weight += weight;
                 }
-                total_weight += weight;
             }
+
+            if (total_weight > 0.0) {
+                bloom_acc /= total_weight;
+            }
+
+            float pulse = 1.0 + 0.06 * sin(u_time * 3.0);
+            rgb += bloom_acc * u_bloom_intensity * 2.5 * pulse;
         }
 
-        if (total_weight > 0.0) {
-            bloom_acc /= total_weight;
+        // Color Grading Modes
+        // 0: Standard, 1: Vibrant, 2: Cinematic Warm, 3: Cool / Spectral
+        if (u_color_grading_mode == 1) {
+            rgb = adjust_saturation(rgb, u_saturation > 0.0 ? u_saturation : 1.18);
+            rgb = adjust_contrast(rgb, u_contrast > 0.0 ? u_contrast : 1.08);
+        } else if (u_color_grading_mode == 2) {
+            rgb.r *= 1.06;
+            rgb.g *= 1.02;
+            rgb.b *= 0.94;
+            rgb = adjust_contrast(rgb, 1.10);
+        } else if (u_color_grading_mode == 3) {
+            rgb.r *= 0.92;
+            rgb.g *= 1.04;
+            rgb.b *= 1.12;
+            rgb = adjust_contrast(rgb, 1.06);
         }
 
-        float pulse = 1.0 + 0.06 * sin(u_time * 3.0);
-        vec3 final_rgb = base_color.rgb + bloom_acc * u_bloom_intensity * 2.5 * pulse;
-        final_rgb = min(final_rgb, vec3(1.0));
-        f_color = vec4(final_rgb, base_color.a);
+        // Vignette & Ambiance
+        if (u_vignette_enabled == 1 && u_vignette_intensity > 0.0) {
+            vec2 coord = (v_text - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
+            float d = length(coord);
+            float vig = smoothstep(0.85, 0.25, d * (0.8 + u_vignette_intensity * 0.5));
+            rgb *= mix(1.0, vig, u_vignette_intensity);
+        }
+
+        rgb = clamp(rgb, 0.0, 1.0);
+        f_color = vec4(rgb, base_color.a);
     }
     """
 
@@ -124,10 +184,20 @@ class GLRenderer(BaseRenderer):
         self.vao = None
         self.texture_cache: Dict[int, any] = {}
 
-        # Stage 2: Bloom Post-Processing and High-Density Projectile Batching
+        # Graphics and Post-Processing Settings
+        self.shaders_enabled: bool = True
         self.bloom_enabled: bool = True
         self.bloom_intensity: float = 0.8
         self.bloom_threshold: float = 0.65
+        self.vignette_enabled: bool = True
+        self.vignette_intensity: float = 0.35
+        self.water_distortion_enabled: bool = True
+        self.water_distortion_intensity: float = 1.0
+        self.color_grading_mode: int = 1
+        self.saturation: float = 1.18
+        self.contrast: float = 1.08
+        self.lighting_quality: str = "high"
+        self.particle_density: str = "high"
         self.time: float = 0.0
         self.last_batch_count: int = 0
         self.total_batched_projectiles: int = 0
@@ -236,6 +306,16 @@ class GLRenderer(BaseRenderer):
             self.fallback_renderer.set_bloom_enabled(self.bloom_enabled)
             self.fallback_renderer.set_bloom_intensity(self.bloom_intensity)
             self.fallback_renderer.set_bloom_threshold(self.bloom_threshold)
+            self.fallback_renderer.set_shaders_enabled(self.shaders_enabled)
+            self.fallback_renderer.set_vignette_enabled(self.vignette_enabled)
+            self.fallback_renderer.set_vignette_intensity(self.vignette_intensity)
+            self.fallback_renderer.set_water_distortion_enabled(self.water_distortion_enabled)
+            self.fallback_renderer.set_water_distortion_intensity(self.water_distortion_intensity)
+            self.fallback_renderer.set_color_grading_mode(self.color_grading_mode)
+            self.fallback_renderer.set_saturation(self.saturation)
+            self.fallback_renderer.set_contrast(self.contrast)
+            self.fallback_renderer.set_lighting_quality(self.lighting_quality)
+            self.fallback_renderer.set_particle_density(self.particle_density)
         self.initialized = True
 
     def _init_gl_pipeline(self):
@@ -279,16 +359,24 @@ class GLRenderer(BaseRenderer):
                 pass
 
     def _update_shader_uniforms(self):
-        """Updates active shader uniforms for bloom, resolution, and time."""
+        """Updates active shader uniforms for bloom, vignette, water distortion, color grading, resolution, and time."""
         if not self.program:
             return
         uniform_map = {
             "u_texture": 0,
             "u_resolution": (float(self.width), float(self.height)),
             "u_time": float(self.time),
+            "u_shaders_enabled": 1 if self.shaders_enabled else 0,
             "u_bloom_enabled": 1 if self.bloom_enabled else 0,
             "u_bloom_intensity": float(self.bloom_intensity),
             "u_bloom_threshold": float(self.bloom_threshold),
+            "u_vignette_enabled": 1 if self.vignette_enabled else 0,
+            "u_vignette_intensity": float(self.vignette_intensity),
+            "u_water_distortion_enabled": 1 if self.water_distortion_enabled else 0,
+            "u_water_distortion_intensity": float(self.water_distortion_intensity),
+            "u_color_grading_mode": int(self.color_grading_mode),
+            "u_saturation": float(self.saturation),
+            "u_contrast": float(self.contrast),
         }
         for name, val in uniform_map.items():
             try:
@@ -524,6 +612,106 @@ class GLRenderer(BaseRenderer):
             "enabled": self.bloom_enabled,
             "intensity": self.bloom_intensity,
             "threshold": self.bloom_threshold,
+        }
+
+    def set_shaders_enabled(self, enabled: bool):
+        self.shaders_enabled = bool(enabled)
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_shaders_enabled"):
+                self.fallback_renderer.set_shaders_enabled(enabled)
+        else:
+            self._update_shader_uniforms()
+
+    def is_shaders_enabled(self) -> bool:
+        return self.shaders_enabled
+
+    def set_vignette_enabled(self, enabled: bool):
+        self.vignette_enabled = bool(enabled)
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_vignette_enabled"):
+                self.fallback_renderer.set_vignette_enabled(enabled)
+        else:
+            self._update_shader_uniforms()
+
+    def set_vignette_intensity(self, intensity: float):
+        self.vignette_intensity = max(0.0, min(1.0, float(intensity)))
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_vignette_intensity"):
+                self.fallback_renderer.set_vignette_intensity(intensity)
+        else:
+            self._update_shader_uniforms()
+
+    def set_water_distortion_enabled(self, enabled: bool):
+        self.water_distortion_enabled = bool(enabled)
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_water_distortion_enabled"):
+                self.fallback_renderer.set_water_distortion_enabled(enabled)
+        else:
+            self._update_shader_uniforms()
+
+    def set_water_distortion_intensity(self, intensity: float):
+        self.water_distortion_intensity = max(0.0, min(3.0, float(intensity)))
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_water_distortion_intensity"):
+                self.fallback_renderer.set_water_distortion_intensity(intensity)
+        else:
+            self._update_shader_uniforms()
+
+    def set_color_grading_mode(self, mode: Union[int, str]):
+        if isinstance(mode, str):
+            mapping = {"standard": 0, "vibrant": 1, "cinematic": 2, "cool": 3}
+            self.color_grading_mode = mapping.get(mode.lower().strip(), 0)
+        else:
+            self.color_grading_mode = int(mode)
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_color_grading_mode"):
+                self.fallback_renderer.set_color_grading_mode(self.color_grading_mode)
+        else:
+            self._update_shader_uniforms()
+
+    def set_saturation(self, saturation: float):
+        self.saturation = max(0.0, min(2.5, float(saturation)))
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_saturation"):
+                self.fallback_renderer.set_saturation(saturation)
+        else:
+            self._update_shader_uniforms()
+
+    def set_contrast(self, contrast: float):
+        self.contrast = max(0.0, min(2.5, float(contrast)))
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_contrast"):
+                self.fallback_renderer.set_contrast(contrast)
+        else:
+            self._update_shader_uniforms()
+
+    def set_lighting_quality(self, quality: str):
+        self.lighting_quality = str(quality).lower().strip()
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_lighting_quality"):
+                self.fallback_renderer.set_lighting_quality(quality)
+
+    def set_particle_density(self, density: str):
+        self.particle_density = str(density).lower().strip()
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_particle_density"):
+                self.fallback_renderer.set_particle_density(density)
+
+    def get_graphics_params(self) -> dict:
+        return {
+            "shaders_enabled": self.shaders_enabled,
+            "bloom_enabled": self.bloom_enabled,
+            "bloom_intensity": self.bloom_intensity,
+            "bloom_threshold": self.bloom_threshold,
+            "vignette_enabled": self.vignette_enabled,
+            "vignette_intensity": self.vignette_intensity,
+            "water_distortion_enabled": self.water_distortion_enabled,
+            "water_distortion_intensity": self.water_distortion_intensity,
+            "color_grading_mode": self.color_grading_mode,
+            "saturation": self.saturation,
+            "contrast": self.contrast,
+            "lighting_quality": self.lighting_quality,
+            "particle_density": self.particle_density,
         }
 
     def get_surface(self) -> pygame.Surface:

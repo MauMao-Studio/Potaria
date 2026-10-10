@@ -168,6 +168,68 @@ class BaseRenderer(ABC):
         """Returns active bloom parameters."""
         return {"enabled": False, "intensity": 0.0, "threshold": 0.65}
 
+    def set_shaders_enabled(self, enabled: bool):
+        """Toggles master GLSL post-processing shaders."""
+        pass
+
+    def is_shaders_enabled(self) -> bool:
+        """Returns True if post-processing shaders are active."""
+        return False
+
+    def set_vignette_enabled(self, enabled: bool):
+        """Toggles atmospheric cinematic vignette."""
+        pass
+
+    def set_vignette_intensity(self, intensity: float):
+        """Configures vignette corner falloff intensity."""
+        pass
+
+    def set_water_distortion_enabled(self, enabled: bool):
+        """Toggles water wave refraction and distortion."""
+        pass
+
+    def set_water_distortion_intensity(self, intensity: float):
+        """Configures water wave distortion amplitude."""
+        pass
+
+    def set_color_grading_mode(self, mode: Union[int, str]):
+        """Configures color grading profile (standard, vibrant, cinematic, cool)."""
+        pass
+
+    def set_saturation(self, saturation: float):
+        """Configures color vibrance saturation factor."""
+        pass
+
+    def set_contrast(self, contrast: float):
+        """Configures color grading contrast ratio."""
+        pass
+
+    def set_lighting_quality(self, quality: str):
+        """Configures dynamic lighting resolution quality."""
+        pass
+
+    def set_particle_density(self, density: str):
+        """Configures particle generation density."""
+        pass
+
+    def get_graphics_params(self) -> dict:
+        """Returns comprehensive graphics configuration dictionary."""
+        return {
+            "shaders_enabled": False,
+            "bloom_enabled": False,
+            "bloom_intensity": 0.0,
+            "bloom_threshold": 0.65,
+            "vignette_enabled": False,
+            "vignette_intensity": 0.0,
+            "water_distortion_enabled": False,
+            "water_distortion_intensity": 0.0,
+            "color_grading_mode": 0,
+            "saturation": 1.0,
+            "contrast": 1.0,
+            "lighting_quality": "high",
+            "particle_density": "high",
+        }
+
     @abstractmethod
     def cleanup(self):
         """Releases all graphics and windowing resources cleanly."""

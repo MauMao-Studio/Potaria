@@ -26,9 +26,19 @@ class SurfaceRenderer(BaseRenderer):
     ):
         super().__init__(width=width, height=height, title=title, fullscreen=fullscreen)
         self.surface: Optional[pygame.Surface] = None
+        self.shaders_enabled: bool = True
         self.bloom_enabled: bool = False
         self.bloom_intensity: float = 0.0
         self.bloom_threshold: float = 0.65
+        self.vignette_enabled: bool = False
+        self.vignette_intensity: float = 0.35
+        self.water_distortion_enabled: bool = False
+        self.water_distortion_intensity: float = 1.0
+        self.color_grading_mode: int = 0
+        self.saturation: float = 1.0
+        self.contrast: float = 1.0
+        self.lighting_quality: str = "high"
+        self.particle_density: str = "high"
         self.last_batch_count: int = 0
         self.total_batched_projectiles: int = 0
 
@@ -254,6 +264,60 @@ class SurfaceRenderer(BaseRenderer):
             "enabled": self.bloom_enabled,
             "intensity": self.bloom_intensity,
             "threshold": self.bloom_threshold,
+        }
+
+    def set_shaders_enabled(self, enabled: bool):
+        self.shaders_enabled = bool(enabled)
+
+    def is_shaders_enabled(self) -> bool:
+        return self.shaders_enabled
+
+    def set_vignette_enabled(self, enabled: bool):
+        self.vignette_enabled = bool(enabled)
+
+    def set_vignette_intensity(self, intensity: float):
+        self.vignette_intensity = max(0.0, min(1.0, float(intensity)))
+
+    def set_water_distortion_enabled(self, enabled: bool):
+        self.water_distortion_enabled = bool(enabled)
+
+    def set_water_distortion_intensity(self, intensity: float):
+        self.water_distortion_intensity = max(0.0, min(3.0, float(intensity)))
+
+    def set_color_grading_mode(self, mode: Union[int, str]):
+        if isinstance(mode, str):
+            mapping = {"standard": 0, "vibrant": 1, "cinematic": 2, "cool": 3}
+            self.color_grading_mode = mapping.get(mode.lower().strip(), 0)
+        else:
+            self.color_grading_mode = int(mode)
+
+    def set_saturation(self, saturation: float):
+        self.saturation = max(0.0, min(2.5, float(saturation)))
+
+    def set_contrast(self, contrast: float):
+        self.contrast = max(0.0, min(2.5, float(contrast)))
+
+    def set_lighting_quality(self, quality: str):
+        self.lighting_quality = str(quality).lower().strip()
+
+    def set_particle_density(self, density: str):
+        self.particle_density = str(density).lower().strip()
+
+    def get_graphics_params(self) -> dict:
+        return {
+            "shaders_enabled": self.shaders_enabled,
+            "bloom_enabled": self.bloom_enabled,
+            "bloom_intensity": self.bloom_intensity,
+            "bloom_threshold": self.bloom_threshold,
+            "vignette_enabled": self.vignette_enabled,
+            "vignette_intensity": self.vignette_intensity,
+            "water_distortion_enabled": self.water_distortion_enabled,
+            "water_distortion_intensity": self.water_distortion_intensity,
+            "color_grading_mode": self.color_grading_mode,
+            "saturation": self.saturation,
+            "contrast": self.contrast,
+            "lighting_quality": self.lighting_quality,
+            "particle_density": self.particle_density,
         }
 
     def cleanup(self):

@@ -95,6 +95,7 @@ class CombatManager:
         self.projectiles = []
         self.enemy_projectiles = []
         self.damage_numbers = []
+        self.show_damage_numbers = True
         self.dropped_items = []
         self.boss = None
         self.secondary_boss = None
@@ -1542,8 +1543,9 @@ class CombatManager:
                 except TypeError:
                     self.secondary_boss.render(target_surf, camera)
 
-        for dn in self.damage_numbers:
-            dn.render(target_surf, camera, self.font, self.font_crit)
+        if getattr(self, "show_damage_numbers", True):
+            for dn in self.damage_numbers:
+                dn.render(target_surf, camera, self.font, self.font_crit)
 
     def get_enemy_projectiles_sync_data(self):
         """Serializes active enemy projectiles on host for network broadcast."""

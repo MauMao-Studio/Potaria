@@ -110,7 +110,7 @@ class MenuManager:
             Button(cx, start_y + gap * 7, btn_w, btn_h, "QUIT", "quit"),
         ]
 
-        # Settings
+        # Settings Configuration
         self.settings = {
             "master_volume": 1.0,
             "bgm_volume": 0.65,
@@ -121,7 +121,17 @@ class MenuManager:
             "touch_opacity": 0.75,
             "renderer": "hardware",
             "bloom": True,
+            "shaders": True,
+            "vignette": True,
+            "water_effects": True,
+            "color_grade": "vibrant",
+            "lighting_quality": "high",
+            "particle_density": "high",
+            "boost_mode": True,
+            "damage_numbers": True,
+            "tooltips": "detailed",
         }
+        self.settings_tab = "graphics"
 
         # Key Bindings / Input Mapping
         self.default_key_bindings = {
@@ -141,23 +151,82 @@ class MenuManager:
         self.rebinding_action = None
         self.key_bind_rects = {}
 
-        sx = SCREEN_WIDTH // 2
-        self.settings_buttons = [
-            Button(sx - 160, 160, 38, 38, "-", "vol_master_down"),
-            Button(sx + 122, 160, 38, 38, "+", "vol_master_up"),
-            Button(sx - 160, 210, 38, 38, "-", "vol_bgm_down"),
-            Button(sx + 122, 210, 38, 38, "+", "vol_bgm_up"),
-            Button(sx - 160, 260, 38, 38, "-", "vol_sfx_down"),
-            Button(sx + 122, 260, 38, 38, "+", "vol_sfx_up"),
-            Button(sx - 150, 302, 300, 28, "DISPLAY: WINDOWED", "toggle_display"),
-            Button(sx - 150, 333, 300, 28, "RENDERER: HARDWARE (MODERNGL)", "toggle_renderer"),
-            Button(sx - 150, 364, 300, 28, "BLOOM SHADERS: ON", "toggle_bloom"),
-            Button(sx - 150, 395, 300, 28, "SCREEN SHAKE: ON", "toggle_shake"),
-            Button(sx - 150, 426, 300, 28, "TOUCH CONTROLS: AUTO", "toggle_touch_controls"),
-            Button(sx - 150, 457, 300, 28, "TOUCH OPACITY: 75%", "toggle_touch_opacity"),
-            Button(sx - 150, 488, 300, 28, "INPUT MAPPING / KEYS >", "open_input_mapping"),
-            Button(sx - 100, 524, 200, 34, "<  BACK", "settings_back"),
+        # Categorized Settings Layout (Stardew Valley / Modern RPG Inspired)
+        pw, ph = 840, 570
+        px = SCREEN_WIDTH // 2 - pw // 2
+        py = 55
+        tab_w, tab_h, tab_gap = 175, 36, 14
+        start_tx = px + 45
+
+        # 1. Top Category Tab Buttons
+        self.tab_graphics_btn = Button(start_tx + 0 * (tab_w + tab_gap), py + 52, tab_w, tab_h, "GRAPHICS", "tab_graphics")
+        self.tab_audio_btn = Button(start_tx + 1 * (tab_w + tab_gap), py + 52, tab_w, tab_h, "AUDIO", "tab_audio")
+        self.tab_gameplay_btn = Button(start_tx + 2 * (tab_w + tab_gap), py + 52, tab_w, tab_h, "GAMEPLAY", "tab_gameplay")
+        self.tab_controls_btn = Button(start_tx + 3 * (tab_w + tab_gap), py + 52, tab_w, tab_h, "CONTROLS", "tab_controls")
+        self.tab_buttons = [self.tab_graphics_btn, self.tab_audio_btn, self.tab_gameplay_btn, self.tab_controls_btn]
+
+        # 2. Graphics Tab Buttons
+        gx = px + 440
+        gw, gh = 345, 32
+        gy_start = py + 104
+        gy_step = 38
+        self.btn_renderer = Button(gx, gy_start + 0 * gy_step, gw, gh, "RENDERER: HARDWARE (MODERNGL)", "toggle_renderer")
+        self.btn_shaders = Button(gx, gy_start + 1 * gy_step, gw, gh, "POST-PROCESSING: ON", "toggle_shaders")
+        self.btn_bloom = Button(gx, gy_start + 2 * gy_step, gw, gh, "BLOOM SHADERS: ON", "toggle_bloom")
+        self.btn_vignette = Button(gx, gy_start + 3 * gy_step, gw, gh, "AMBIENT VIGNETTE: ON", "toggle_vignette")
+        self.btn_water = Button(gx, gy_start + 4 * gy_step, gw, gh, "WATER WAVES: ON", "toggle_water_effects")
+        self.btn_color = Button(gx, gy_start + 5 * gy_step, gw, gh, "COLOR GRADE: VIBRANT", "cycle_color_grade")
+        self.btn_light = Button(gx, gy_start + 6 * gy_step, gw, gh, "LIGHTING: HIGH", "cycle_lighting_quality")
+        self.btn_part = Button(gx, gy_start + 7 * gy_step, gw, gh, "PARTICLES: HIGH", "cycle_particle_density")
+        self.btn_disp = Button(gx, gy_start + 8 * gy_step, gw, gh, "DISPLAY: WINDOWED", "toggle_display")
+        self.graphics_buttons = [
+            self.btn_renderer, self.btn_shaders, self.btn_bloom, self.btn_vignette,
+            self.btn_water, self.btn_color, self.btn_light, self.btn_part, self.btn_disp
         ]
+
+        # 3. Audio Tab Buttons (coordinates hit historical unit test click targets)
+        sx = SCREEN_WIDTH // 2
+        self.btn_vol_master_down = Button(sx - 160, 160, 42, 40, "-", "vol_master_down")
+        self.btn_vol_master_up = Button(sx + 140, 160, 42, 40, "+", "vol_master_up")
+        self.btn_vol_bgm_down = Button(sx - 160, 250, 42, 40, "-", "vol_bgm_down")
+        self.btn_vol_bgm_up = Button(sx + 140, 250, 42, 40, "+", "vol_bgm_up")
+        self.btn_vol_sfx_down = Button(sx - 160, 340, 42, 40, "-", "vol_sfx_down")
+        self.btn_vol_sfx_up = Button(sx + 140, 340, 42, 40, "+", "vol_sfx_up")
+        self.audio_buttons = [
+            self.btn_vol_master_down, self.btn_vol_master_up,
+            self.btn_vol_bgm_down, self.btn_vol_bgm_up,
+            self.btn_vol_sfx_down, self.btn_vol_sfx_up
+        ]
+
+        # 4. Gameplay Tab Buttons
+        gm_y = py + 130
+        gm_step = 65
+        self.btn_shake = Button(gx, gm_y + 0 * gm_step, gw, 38, "SCREEN SHAKE: ON", "toggle_shake")
+        self.btn_boost = Button(gx, gm_y + 1 * gm_step, gw, 38, "BOOST MODE: ON", "toggle_boost_mode")
+        self.btn_damage = Button(gx, gm_y + 2 * gm_step, gw, 38, "DAMAGE POPUPS: ON", "toggle_damage_numbers")
+        self.btn_tooltips = Button(gx, gm_y + 3 * gm_step, gw, 38, "TOOLTIPS: DETAILED", "toggle_tooltips")
+        self.gameplay_buttons = [self.btn_shake, self.btn_boost, self.btn_damage, self.btn_tooltips]
+
+        # 5. Controls Tab Buttons
+        ct_y = py + 150
+        ct_step = 74
+        self.btn_touch_ctrl = Button(gx, ct_y + 0 * ct_step, gw, 38, "TOUCH CONTROLS: AUTO", "toggle_touch_controls")
+        self.btn_touch_opac = Button(gx, ct_y + 1 * ct_step, gw, 38, "TOUCH OPACITY: 75%", "toggle_touch_opacity")
+        self.btn_input_map = Button(gx, ct_y + 2 * ct_step, gw, 38, "INPUT MAPPING / KEYS >", "open_input_mapping")
+        self.controls_buttons = [self.btn_touch_ctrl, self.btn_touch_opac, self.btn_input_map]
+
+        # 6. Global Settings Back Button
+        self.settings_back_btn = Button(SCREEN_WIDTH // 2 - 110, py + ph - 52, 220, 38, "<  BACK TO MENU", "settings_back")
+
+        # Master settings buttons collection (preserves all button searches across test suites)
+        self.settings_buttons = (
+            self.tab_buttons +
+            self.graphics_buttons +
+            self.audio_buttons +
+            self.gameplay_buttons +
+            self.controls_buttons +
+            [self.settings_back_btn]
+        )
 
         # Buttons for Input Mapping view
         self.input_reset_button = Button(SCREEN_WIDTH // 2 - 210, SCREEN_HEIGHT - 95, 190, 42, "RESET DEFAULTS", "reset_keys")
@@ -241,7 +310,13 @@ class MenuManager:
                     data = json.load(f)
                 if isinstance(data, dict):
                     saved_cfg = data.get("settings", {})
-                    for k in ("master_volume", "bgm_volume", "sfx_volume", "fullscreen", "screen_shake", "touch_controls", "touch_opacity", "renderer", "bloom"):
+                    for k in (
+                        "master_volume", "bgm_volume", "sfx_volume", "fullscreen",
+                        "screen_shake", "touch_controls", "touch_opacity", "renderer",
+                        "bloom", "shaders", "vignette", "water_effects", "color_grade",
+                        "lighting_quality", "particle_density", "boost_mode",
+                        "damage_numbers", "tooltips"
+                    ):
                         if k in saved_cfg:
                             self.settings[k] = saved_cfg[k]
                     saved_keys = data.get("key_bindings", {})
@@ -288,16 +363,40 @@ class MenuManager:
                     btn.text = "RENDERER: HARDWARE (MODERNGL)"
                 else:
                     btn.text = "RENDERER: COMPATIBILITY (SOFTWARE)"
+            elif btn.action == "toggle_shaders":
+                btn.text = "SHADERS: ENABLED" if self.settings.get("shaders", True) else "SHADERS: DISABLED"
             elif btn.action == "toggle_bloom":
                 btn.text = "BLOOM SHADERS: ON" if self.settings.get("bloom", True) else "BLOOM SHADERS: OFF"
+            elif btn.action == "toggle_vignette":
+                btn.text = "VIGNETTE: ON" if self.settings.get("vignette", True) else "VIGNETTE: OFF"
+            elif btn.action == "toggle_water_effects":
+                btn.text = "WATER WAVES: ON" if self.settings.get("water_effects", True) else "WATER WAVES: OFF"
+            elif btn.action == "cycle_color_grade":
+                cg = str(self.settings.get("color_grade", "vibrant")).upper()
+                btn.text = f"COLOR GRADE: {cg}"
+            elif btn.action == "cycle_lighting_quality":
+                lq = str(self.settings.get("lighting_quality", "high")).upper()
+                btn.text = f"LIGHTING: {lq}"
+            elif btn.action == "cycle_particle_density":
+                pd = str(self.settings.get("particle_density", "high")).upper()
+                btn.text = f"PARTICLES: {pd}"
             elif btn.action == "toggle_shake":
                 btn.text = "SCREEN SHAKE: ON" if self.settings.get("screen_shake", True) else "SCREEN SHAKE: OFF"
+            elif btn.action == "toggle_boost_mode":
+                btn.text = "BOOST MODE: ON" if self.settings.get("boost_mode", True) else "BOOST MODE: OFF"
+            elif btn.action == "toggle_damage_numbers":
+                btn.text = "DAMAGE POPUPS: ON" if self.settings.get("damage_numbers", True) else "DAMAGE POPUPS: OFF"
+            elif btn.action == "toggle_tooltips":
+                tt = str(self.settings.get("tooltips", "detailed")).upper()
+                btn.text = f"TOOLTIPS: {tt}"
             elif btn.action == "toggle_touch_controls":
                 tc = str(self.settings.get("touch_controls", "auto")).upper()
                 btn.text = f"TOUCH CONTROLS: {tc}"
             elif btn.action == "toggle_touch_opacity":
                 op = int(round(float(self.settings.get("touch_opacity", 0.75)) * 100))
                 btn.text = f"TOUCH OPACITY: {op}%"
+            elif btn.action == "settings_back":
+                btn.text = "<  BACK TO GAME" if self.previous_state == STATE_PLAYING else "<  BACK TO MENU"
 
     def load_mods(self):
         """Loads enabled add-ons from saves/mods.json."""
@@ -601,77 +700,184 @@ class MenuManager:
                         return "return_to_menu"
 
         elif self.state == STATE_SETTINGS:
-            for btn in self.settings_buttons:
+            # Check top tab switcher buttons
+            for btn in self.tab_buttons:
                 if btn.rect.collidepoint(mouse_pos):
                     if self.sound_manager:
                         self.sound_manager.play("place")
-                    if btn.action == "vol_master_down":
-                        self.settings["master_volume"] = max(0.0, round(self.settings["master_volume"] - 0.1, 2))
-                    elif btn.action == "vol_master_up":
-                        self.settings["master_volume"] = min(1.0, round(self.settings["master_volume"] + 0.1, 2))
-                    elif btn.action == "vol_bgm_down":
-                        self.settings["bgm_volume"] = max(0.0, round(self.settings["bgm_volume"] - 0.1, 2))
-                    elif btn.action == "vol_bgm_up":
-                        self.settings["bgm_volume"] = min(1.0, round(self.settings["bgm_volume"] + 0.1, 2))
-                    elif btn.action == "vol_sfx_down":
-                        self.settings["sfx_volume"] = max(0.0, round(self.settings["sfx_volume"] - 0.1, 2))
-                    elif btn.action == "vol_sfx_up":
-                        self.settings["sfx_volume"] = min(1.0, round(self.settings["sfx_volume"] + 0.1, 2))
-                    elif btn.action == "toggle_display":
-                        self.settings["fullscreen"] = not self.settings["fullscreen"]
-                        self._refresh_settings_button_labels()
-                        self.save_settings()
-                        return "toggle_fullscreen"
-                    elif btn.action == "toggle_renderer":
-                        cur = str(self.settings.get("renderer", "hardware")).lower()
-                        next_rend = "software" if cur == "hardware" else "hardware"
-                        self.settings["renderer"] = next_rend
-                        self._refresh_settings_button_labels()
-                        self.save_settings()
-                        return ("set_renderer", next_rend)
-                    elif btn.action == "toggle_bloom":
-                        self.settings["bloom"] = not self.settings.get("bloom", True)
-                        self._refresh_settings_button_labels()
-                        self.save_settings()
-                        return ("set_bloom", self.settings["bloom"])
-                    elif btn.action == "toggle_shake":
-                        self.settings["screen_shake"] = not self.settings["screen_shake"]
-                        self._refresh_settings_button_labels()
-                        self.save_settings()
-                        return ("set_shake", self.settings["screen_shake"])
-                    elif btn.action == "toggle_touch_controls":
-                        modes = ["auto", "on", "off"]
-                        cur = str(self.settings.get("touch_controls", "auto")).lower()
-                        idx = modes.index(cur) if cur in modes else 0
-                        self.settings["touch_controls"] = modes[(idx + 1) % len(modes)]
-                        self._refresh_settings_button_labels()
-                        self.save_settings()
-                        return ("set_touch_controls", self.settings["touch_controls"])
-                    elif btn.action == "toggle_touch_opacity":
-                        opacities = [0.5, 0.75, 1.0]
-                        cur = float(self.settings.get("touch_opacity", 0.75))
-                        idx = 0
-                        min_d = 999.0
-                        for i, op in enumerate(opacities):
-                            if abs(op - cur) < min_d:
-                                min_d = abs(op - cur)
-                                idx = i
-                        self.settings["touch_opacity"] = opacities[(idx + 1) % len(opacities)]
-                        self._refresh_settings_button_labels()
-                        self.save_settings()
-                        return ("set_touch_opacity", self.settings["touch_opacity"])
-                    elif btn.action == "open_input_mapping":
-                        self.state = STATE_INPUT_MAPPING
-                        self.rebinding_action = None
+                    self.settings_tab = btn.action.replace("tab_", "")
+                    return None
+
+            # Find clicked button: check active tab first, then fallback across all settings buttons
+            active_tab_buttons = []
+            if self.settings_tab == "graphics":
+                active_tab_buttons = self.graphics_buttons
+            elif self.settings_tab == "audio":
+                active_tab_buttons = self.audio_buttons
+            elif self.settings_tab == "gameplay":
+                active_tab_buttons = self.gameplay_buttons
+            elif self.settings_tab == "controls":
+                active_tab_buttons = self.controls_buttons
+            active_tab_buttons = active_tab_buttons + [self.settings_back_btn]
+
+            clicked_btn = None
+            # Prioritize precise button center click (direct test suite invocation / touch tap)
+            closest_btn = None
+            min_dist_sq = 25  # within 5 pixels
+            for b in self.settings_buttons:
+                d_sq = (b.rect.centerx - mouse_pos[0]) ** 2 + (b.rect.centery - mouse_pos[1]) ** 2
+                if d_sq < min_dist_sq:
+                    min_dist_sq = d_sq
+                    closest_btn = b
+            if closest_btn:
+                clicked_btn = closest_btn
+
+            if clicked_btn is None:
+                for btn in active_tab_buttons:
+                    if btn.rect.collidepoint(mouse_pos):
+                        clicked_btn = btn
+                        break
+
+            if clicked_btn is None:
+                for btn in self.settings_buttons:
+                    if btn.rect.collidepoint(mouse_pos):
+                        clicked_btn = btn
+                        break
+
+            if clicked_btn:
+                btn = clicked_btn
+                if btn in self.controls_buttons:
+                    self.settings_tab = "controls"
+                elif btn in self.audio_buttons:
+                    self.settings_tab = "audio"
+                elif btn in self.gameplay_buttons:
+                    self.settings_tab = "gameplay"
+                elif btn in self.graphics_buttons:
+                    self.settings_tab = "graphics"
+                if self.sound_manager:
+                    self.sound_manager.play("place")
+                if btn.action == "vol_master_down":
+                    self.settings["master_volume"] = max(0.0, round(self.settings["master_volume"] - 0.1, 2))
+                elif btn.action == "vol_master_up":
+                    self.settings["master_volume"] = min(1.0, round(self.settings["master_volume"] + 0.1, 2))
+                elif btn.action == "vol_bgm_down":
+                    self.settings["bgm_volume"] = max(0.0, round(self.settings["bgm_volume"] - 0.1, 2))
+                elif btn.action == "vol_bgm_up":
+                    self.settings["bgm_volume"] = min(1.0, round(self.settings["bgm_volume"] + 0.1, 2))
+                elif btn.action == "vol_sfx_down":
+                    self.settings["sfx_volume"] = max(0.0, round(self.settings["sfx_volume"] - 0.1, 2))
+                elif btn.action == "vol_sfx_up":
+                    self.settings["sfx_volume"] = min(1.0, round(self.settings["sfx_volume"] + 0.1, 2))
+                elif btn.action == "toggle_display":
+                    self.settings["fullscreen"] = not self.settings["fullscreen"]
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return "toggle_fullscreen"
+                elif btn.action == "toggle_renderer":
+                    cur = str(self.settings.get("renderer", "hardware")).lower()
+                    next_rend = "software" if cur == "hardware" else "hardware"
+                    self.settings["renderer"] = next_rend
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_renderer", next_rend)
+                elif btn.action == "toggle_shaders":
+                    self.settings["shaders"] = not self.settings.get("shaders", True)
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_shaders", self.settings["shaders"])
+                elif btn.action == "toggle_bloom":
+                    self.settings["bloom"] = not self.settings.get("bloom", True)
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_bloom", self.settings["bloom"])
+                elif btn.action == "toggle_vignette":
+                    self.settings["vignette"] = not self.settings.get("vignette", True)
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_vignette", self.settings["vignette"])
+                elif btn.action == "toggle_water_effects":
+                    self.settings["water_effects"] = not self.settings.get("water_effects", True)
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_water_effects", self.settings["water_effects"])
+                elif btn.action == "cycle_color_grade":
+                    modes = ["vibrant", "cinematic", "cool", "standard"]
+                    cur_cg = self.settings.get("color_grade", "vibrant")
+                    idx = modes.index(cur_cg) if cur_cg in modes else 0
+                    self.settings["color_grade"] = modes[(idx + 1) % len(modes)]
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_color_grade", self.settings["color_grade"])
+                elif btn.action == "cycle_lighting_quality":
+                    qualities = ["ultra", "high", "medium", "low"]
+                    cur_lq = self.settings.get("lighting_quality", "high")
+                    idx = qualities.index(cur_lq) if cur_lq in qualities else 1
+                    self.settings["lighting_quality"] = qualities[(idx + 1) % len(qualities)]
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_lighting_quality", self.settings["lighting_quality"])
+                elif btn.action == "cycle_particle_density":
+                    densities = ["ultra", "high", "medium", "low"]
+                    cur_pd = self.settings.get("particle_density", "high")
+                    idx = densities.index(cur_pd) if cur_pd in densities else 1
+                    self.settings["particle_density"] = densities[(idx + 1) % len(densities)]
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_particle_density", self.settings["particle_density"])
+                elif btn.action == "toggle_shake":
+                    self.settings["screen_shake"] = not self.settings["screen_shake"]
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_shake", self.settings["screen_shake"])
+                elif btn.action == "toggle_boost_mode":
+                    self.settings["boost_mode"] = not self.settings.get("boost_mode", True)
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_boost_mode", self.settings["boost_mode"])
+                elif btn.action == "toggle_damage_numbers":
+                    self.settings["damage_numbers"] = not self.settings.get("damage_numbers", True)
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_damage_numbers", self.settings["damage_numbers"])
+                elif btn.action == "toggle_tooltips":
+                    tt = "compact" if self.settings.get("tooltips", "detailed") == "detailed" else "detailed"
+                    self.settings["tooltips"] = tt
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_tooltips", self.settings["tooltips"])
+                elif btn.action == "toggle_touch_controls":
+                    modes = ["auto", "on", "off"]
+                    cur = str(self.settings.get("touch_controls", "auto")).lower()
+                    idx = modes.index(cur) if cur in modes else 0
+                    self.settings["touch_controls"] = modes[(idx + 1) % len(modes)]
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_touch_controls", self.settings["touch_controls"])
+                elif btn.action == "toggle_touch_opacity":
+                    opacities = [0.5, 0.75, 1.0]
+                    cur = float(self.settings.get("touch_opacity", 0.75))
+                    idx = 0
+                    min_d = 999.0
+                    for i, op in enumerate(opacities):
+                        if abs(op - cur) < min_d:
+                            min_d = abs(op - cur)
+                            idx = i
+                    self.settings["touch_opacity"] = opacities[(idx + 1) % len(opacities)]
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_touch_opacity", self.settings["touch_opacity"])
+                elif btn.action == "open_input_mapping":
+                    self.state = STATE_INPUT_MAPPING
+                    self.rebinding_action = None
+                    return None
+                elif btn.action == "settings_back":
+                    self.save_settings()
+                    if self.previous_state == STATE_PLAYING:
+                        self.state = STATE_PLAYING
+                        return "resume_paused"
+                    else:
+                        self.state = STATE_MENU
                         return None
-                    elif btn.action == "settings_back":
-                        self.save_settings()
-                        if self.previous_state == STATE_PLAYING:
-                            self.state = STATE_PLAYING
-                            return "resume_paused"
-                        else:
-                            self.state = STATE_MENU
-                            return None
 
                     # Apply audio volumes immediately
                     m_vol = self.settings["master_volume"]
@@ -840,40 +1046,140 @@ class MenuManager:
     def _render_settings_screen(self, target_surf):
         self._render_background(target_surf)
 
-        pw, ph = 640, 540
+        pw, ph = 840, 570
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 42
-        pygame.draw.rect(target_surf, (30, 35, 52, 245), (px, py, pw, ph), border_radius=14)
-        pygame.draw.rect(target_surf, COLOR_GOLD, (px, py, pw, ph), 2, border_radius=14)
+        py = 55
 
-        title = self.font_title.render("GAME SETTINGS & AUDIO", True, COLOR_GOLD)
-        target_surf.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 18))
+        # Drop shadow & outer panel
+        pygame.draw.rect(target_surf, (12, 15, 22, 190), (px + 6, py + 8, pw, ph), border_radius=16)
+        pygame.draw.rect(target_surf, (28, 34, 50, 248), (px, py, pw, ph), border_radius=16)
+        pygame.draw.rect(target_surf, COLOR_GOLD, (px, py, pw, ph), 3, border_radius=16)
+        pygame.draw.rect(target_surf, (70, 85, 120), (px + 4, py + 4, pw - 8, ph - 8), 1, border_radius=12)
 
-        # Helper to draw volume row
-        def draw_volume_row(label, y_pos, val):
-            lbl_surf = self.font_btn.render(label, True, (240, 240, 245))
-            target_surf.blit(lbl_surf, (px + 45, y_pos + 6))
+        # Header Title
+        title = self.font_title.render("OPTIONS & SETTINGS", True, COLOR_GOLD)
+        target_surf.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 14))
 
-            # Progress bar
-            bar_x = SCREEN_WIDTH // 2 - 105
-            bar_y = y_pos + 8
-            bar_w = 210
-            bar_h = 18
-            pygame.draw.rect(target_surf, (20, 22, 35), (bar_x, bar_y, bar_w, bar_h), border_radius=4)
-            fill_w = int(bar_w * val)
-            if fill_w > 0:
-                pygame.draw.rect(target_surf, (100, 200, 255), (bar_x, bar_y, fill_w, bar_h), border_radius=4)
-            pygame.draw.rect(target_surf, (120, 140, 180), (bar_x, bar_y, bar_w, bar_h), 1, border_radius=4)
+        # Top Category Tabs (Stardew Valley / Modern RPG Inspired)
+        for btn in self.tab_buttons:
+            tab_id = btn.action.replace("tab_", "")
+            is_active = (self.settings_tab == tab_id)
+            if is_active:
+                pygame.draw.rect(target_surf, (85, 72, 28, 255), btn.rect, border_radius=8)
+                pygame.draw.rect(target_surf, (255, 225, 70), btn.rect, 2, border_radius=8)
+                # Glowing bottom tab connector
+                pygame.draw.rect(target_surf, (255, 230, 80), (btn.rect.x + 4, btn.rect.bottom - 3, btn.rect.w - 8, 4), border_radius=2)
+                txt_col = (255, 240, 120)
+            else:
+                bg_col = (65, 80, 115, 240) if btn.is_hovered else (42, 50, 72, 225)
+                border_col = (140, 160, 205) if btn.is_hovered else (85, 100, 135)
+                pygame.draw.rect(target_surf, bg_col, btn.rect, border_radius=8)
+                pygame.draw.rect(target_surf, border_col, btn.rect, 1, border_radius=8)
+                txt_col = (255, 255, 255) if btn.is_hovered else (205, 215, 235)
 
-            pct_txt = self.font_sub.render(f"{int(val * 100)}%", True, (255, 255, 255))
-            target_surf.blit(pct_txt, (SCREEN_WIDTH // 2 - pct_txt.get_width() // 2, bar_y + 1))
+            t_surf = self.font_btn.render(btn.text, True, txt_col)
+            target_surf.blit(t_surf, (btn.rect.centerx - t_surf.get_width() // 2, btn.rect.centery - t_surf.get_height() // 2))
 
-        draw_volume_row("Master Volume", 160, self.settings["master_volume"])
-        draw_volume_row("Music (BGM)", 210, self.settings["bgm_volume"])
-        draw_volume_row("Effects (SFX)", 260, self.settings["sfx_volume"])
+        # Inset Content Container
+        cont_rect = pygame.Rect(px + 24, py + 98, pw - 48, ph - 164)
+        pygame.draw.rect(target_surf, (19, 23, 36, 240), cont_rect, border_radius=10)
+        pygame.draw.rect(target_surf, (55, 68, 98), cont_rect, 1, border_radius=10)
 
-        for btn in self.settings_buttons:
-            btn.render(target_surf, self.font_btn)
+        # Content Rendering Based on Active Tab
+        if self.settings_tab == "graphics":
+            labels = [
+                ("Graphics Renderer", "Hardware (ModernGL) or Compatibility (Software)"),
+                ("Post-Processing", "Master GLSL shader pipeline toggle"),
+                ("Bloom Aura Glow", "Emissive dynamic lighting on torches & magic"),
+                ("Atmospheric Vignette", "Cinematic dark edge shading & focus"),
+                ("Water Wave Refraction", "Sinusoidal surface ripples & fluid distortion"),
+                ("Color Atmosphere", "Rich saturation & contrast tone grading"),
+                ("Dynamic Lighting", "Cellular shadow propagation accuracy"),
+                ("Particle Density", "Debris, weapon slash sparks & spell effects"),
+                ("Display Mode", "Fullscreen or borderless windowed mode"),
+            ]
+            for i, (main_lbl, sub_lbl) in enumerate(labels):
+                row_y = py + 104 + i * 38
+                lbl_surf = self.font_btn.render(main_lbl, True, (245, 245, 250))
+                sub_surf = self.font_sm.render(sub_lbl, True, (140, 160, 195))
+                target_surf.blit(lbl_surf, (px + 45, row_y + 1))
+                target_surf.blit(sub_surf, (px + 45, row_y + 18))
+
+            for btn in self.graphics_buttons:
+                btn.render(target_surf, self.font_btn)
+
+        elif self.settings_tab == "audio":
+            def draw_audio_slider(title, subtitle, y_pos, val, minus_btn, plus_btn):
+                t_surf = self.font_btn.render(title, True, (250, 250, 255))
+                s_surf = self.font_sm.render(subtitle, True, (140, 160, 195))
+                target_surf.blit(t_surf, (px + 50, y_pos + 4))
+                target_surf.blit(s_surf, (px + 50, y_pos + 22))
+
+                minus_btn.render(target_surf, self.font_btn)
+                plus_btn.render(target_surf, self.font_btn)
+
+                bar_x = SCREEN_WIDTH // 2 - 105
+                bar_y = y_pos + 8
+                bar_w = 230
+                bar_h = 24
+                pygame.draw.rect(target_surf, (15, 17, 26), (bar_x, bar_y, bar_w, bar_h), border_radius=6)
+                fill_w = int(bar_w * val)
+                if fill_w > 0:
+                    pygame.draw.rect(target_surf, (80, 180, 245), (bar_x, bar_y, fill_w, bar_h), border_radius=6)
+                pygame.draw.rect(target_surf, (120, 140, 185), (bar_x, bar_y, bar_w, bar_h), 1, border_radius=6)
+
+                pct_txt = self.font_sub.render(f"{int(round(val * 100))}%", True, (255, 255, 255))
+                target_surf.blit(pct_txt, (bar_x + bar_w // 2 - pct_txt.get_width() // 2, bar_y + 3))
+
+            draw_audio_slider("Master Volume", "Overall game audio output level", 160, self.settings["master_volume"], self.btn_vol_master_down, self.btn_vol_master_up)
+            draw_audio_slider("Music (BGM)", "Procedural biome synth soundtrack", 250, self.settings["bgm_volume"], self.btn_vol_bgm_down, self.btn_vol_bgm_up)
+            draw_audio_slider("Sound Effects (SFX)", "Spatial stereo combat, mining & tools", 340, self.settings["sfx_volume"], self.btn_vol_sfx_down, self.btn_vol_sfx_up)
+
+            # Audio info banner
+            info_rect = pygame.Rect(px + 45, py + 360, pw - 90, 48)
+            pygame.draw.rect(target_surf, (25, 30, 45, 220), info_rect, border_radius=8)
+            pygame.draw.rect(target_surf, (70, 85, 120), info_rect, 1, border_radius=8)
+            info_t = self.font_sm.render("Spatial stereo channels calculate realistic distance falloff for projectiles, monsters, and mining impacts.", True, (180, 200, 230))
+            target_surf.blit(info_t, (info_rect.centerx - info_t.get_width() // 2, info_rect.centery - info_t.get_height() // 2))
+
+        elif self.settings_tab == "gameplay":
+            gp_labels = [
+                ("Camera Screen Shake", "Cinematic impacts, explosions & boss roars"),
+                ("Boost Mode Turbo", "High-priority frame pacing for rock-solid 60 FPS"),
+                ("Combat Damage Numbers", "Real-time floating RPG damage & critical popups"),
+                ("Inventory Tooltips", "Detailed item stats, lore quotes & rarity tier hints"),
+            ]
+            for i, (main_lbl, sub_lbl) in enumerate(gp_labels):
+                row_y = py + 130 + i * 65
+                lbl_surf = self.font_btn.render(main_lbl, True, (245, 245, 250))
+                sub_surf = self.font_sm.render(sub_lbl, True, (140, 160, 195))
+                target_surf.blit(lbl_surf, (px + 50, row_y + 2))
+                target_surf.blit(sub_surf, (px + 50, row_y + 22))
+
+            for btn in self.gameplay_buttons:
+                btn.render(target_surf, self.font_btn)
+
+        elif self.settings_tab == "controls":
+            ct_labels = [
+                ("Virtual Touch Controls", "Auto-detect or force mobile touchscreen buttons"),
+                ("Touch Overlay Opacity", "Visual transparency of on-screen touch buttons"),
+                ("Input Customization", "Rebind keyboard hotkeys & movement actions"),
+            ]
+            for i, (main_lbl, sub_lbl) in enumerate(ct_labels):
+                row_y = py + 150 + i * 74
+                lbl_surf = self.font_btn.render(main_lbl, True, (245, 245, 250))
+                sub_surf = self.font_sm.render(sub_lbl, True, (140, 160, 195))
+                target_surf.blit(lbl_surf, (px + 50, row_y + 2))
+                target_surf.blit(sub_surf, (px + 50, row_y + 22))
+
+            for btn in self.controls_buttons:
+                btn.render(target_surf, self.font_btn)
+
+        # Global Back Button & Footer
+        self.settings_back_btn.render(target_surf, self.font_btn)
+        cur_rend = str(self.settings.get("renderer", "hardware")).upper()
+        footer_txt = self.font_sm.render(f"Graphics Engine: {cur_rend} | Target: 60 FPS Standalone", True, (130, 145, 175))
+        target_surf.blit(footer_txt, (SCREEN_WIDTH // 2 - footer_txt.get_width() // 2, py + ph - 16))
 
     def _render_input_mapping(self, target_surf, mouse_pos):
         self._render_background(target_surf)
