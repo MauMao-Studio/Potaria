@@ -392,39 +392,138 @@ class HUD:
                 pygame.draw.rect(target_surf, (50, 220, 50), (bar_x, sy + 3, int(bar_w * hp_pct), 7))
                 pygame.draw.rect(target_surf, (0, 0, 0), (bar_x, sy + 3, bar_w, 7), 1)
 
+    def add_chat_message(self, sender, text):
+        """Adds a timestamped message to the local chat and console history."""
+        import time
+        if not hasattr(self, "local_chat_history"):
+            self.local_chat_history = []
+        entry = {
+            "time": time.time(),
+            "sender": str(sender),
+            "text": str(text)
+        }
+        self.local_chat_history.append(entry)
+        if len(self.local_chat_history) > 40:
+            self.local_chat_history = self.local_chat_history[-40:]
+
     def _render_chat(self, target_surf, lan_client=None):
-        """Draws chat/command log messages and active typing box in both singleplayer & multiplayer."""
-        cx = 20
-        cy = SCREEN_HEIGHT - 170
+        """Draws word-wrapped chat/command console box with 6.0s auto-hide when idle."""
+        import time
+        now = time.time()
 
-        # Draw last 5 chat messages
+        # Fetch raw message logs
         if lan_client and hasattr(lan_client, "chat_messages") and lan_client.chat_messages:
-            raw_entries = lan_client.chat_messages[-5:]
+            raw_entries = lan_client.chat_messages
         else:
-            raw_entries = getattr(self, "local_chat_history", [])[-5:]
+            raw_entries = getattr(self, "local_chat_history", [])
 
-        lines = []
-        for item in raw_entries:
-            if isinstance(item, (tuple, list)) and len(item) >= 2:
-                lines.append(f"[{item[0]}]: {item[1]}")
+        # Normalize entries into dicts with timestamps
+        norm_entries = []
+        for idx, item in enumerate(raw_entries):
+            if isinstance(item, dict):
+                norm_entries.append(item)
+            elif isinstance(item, (tuple, list)) and len(item) >= 2:
+                if len(item) >= 3 and isinstance(item[0], (int, float)):
+                    t_val, s_val, m_val = item[0], item[1], item[2]
+                else:
+                    s_val, m_val = item[0], item[1]
+                    t_val = now
+                entry = {"time": t_val, "sender": s_val, "text": m_val}
+                norm_entries.append(entry)
+                if isinstance(raw_entries, list):
+                    raw_entries[idx] = entry
             else:
-                lines.append(str(item))
+                entry = {"time": now, "sender": "", "text": str(item)}
+                norm_entries.append(entry)
+                if isinstance(raw_entries, list):
+                    raw_entries[idx] = entry
 
-        for i, line in enumerate(lines):
-            ts = self.font_sm.render(str(line), True, (255, 255, 255))
-            bg = pygame.Rect(cx, cy + i * 18, ts.get_width() + 6, 16)
-            pygame.draw.rect(target_surf, (0, 0, 0, 160), bg, border_radius=3)
-            target_surf.blit(ts, (cx + 3, cy + i * 18))
+        is_typing = getattr(self, "chat_active", False)
 
-        # If currently typing
-        if self.chat_active:
+        # Auto-hide: When not actively typing in console, only show messages newer than 6.0 seconds
+        if not is_typing:
+            visible_entries = [e for e in norm_entries if (now - e.get("time", now)) <= 6.0]
+            if not visible_entries:
+                return  # Screen is 100% clean and unobstructed
+        else:
+            visible_entries = norm_entries[-10:]
+
+        cx = 20
+        box_width = 460
+        max_text_w = box_width - 16
+
+        # Word wrap messages to prevent long text from crossing the screen
+        wrapped_lines = []
+        for e in visible_entries:
+            sender = e.get("sender", "")
+            msg = e.get("text", "")
+            prefix = f"[{sender}]: " if sender else ""
+            full_str = f"{prefix}{msg}"
+
+            # Semantic message colors
+            if "[SYSTEM]" in prefix or sender == "[SYSTEM]":
+                color = (255, 215, 100) if "error" not in msg.lower() else (255, 120, 120)
+            elif "[NOTICE]" in prefix or sender == "[NOTICE]":
+                color = (120, 220, 255)
+            elif sender in ("Spud", "Player"):
+                color = (160, 240, 160)
+            else:
+                color = (240, 242, 250)
+
+            words = full_str.split(" ")
+            cur = []
+            for w in words:
+                test_str = " ".join(cur + [w])
+                if self.font_sm.size(test_str)[0] <= max_text_w:
+                    cur.append(w)
+                else:
+                    if cur:
+                        wrapped_lines.append((" ".join(cur), color))
+                    cur = [w]
+            if cur:
+                wrapped_lines.append((" ".join(cur), color))
+
+        display_lines = wrapped_lines[-8:]  # Fit comfortably in console area
+
+        # Mode A: Active Typing (Display console window & input bar)
+        if is_typing:
+            console_h = 24 + len(display_lines) * 17 + 8
+            console_y = SCREEN_HEIGHT - 75 - console_h
+            console_rect = pygame.Rect(cx, console_y, box_width, console_h)
+            
+            # Semi-transparent dark slate backdrop
+            pygame.draw.rect(target_surf, (14, 18, 28, 220), console_rect, border_radius=6)
+            pygame.draw.rect(target_surf, (70, 95, 140, 200), console_rect, 1, border_radius=6)
+
+            # Header
+            hdr = self.font_sm.render("CONSOLE / CHAT (Type /help for cheat commands)", True, (140, 175, 220))
+            target_surf.blit(hdr, (cx + 8, console_y + 5))
+
+            # History lines
+            line_y = console_y + 24
+            for l_text, l_color in display_lines:
+                ts = self.font_sm.render(l_text, True, l_color)
+                target_surf.blit(ts, (cx + 8, line_y))
+                line_y += 17
+
+            # Typing input box
             box_y = SCREEN_HEIGHT - 65
-            box_rect = pygame.Rect(cx, box_y, 420, 24)
-            pygame.draw.rect(target_surf, (20, 25, 40, 240), box_rect, border_radius=4)
+            box_rect = pygame.Rect(cx, box_y, box_width, 24)
+            pygame.draw.rect(target_surf, (20, 25, 40, 245), box_rect, border_radius=4)
             pygame.draw.rect(target_surf, COLOR_GOLD, box_rect, 1, border_radius=4)
             cursor_vis = "_" if int(pygame.time.get_ticks() / 400) % 2 == 0 else ""
             in_surf = self.font_sm.render(f"> {self.chat_input_text}{cursor_vis}", True, (255, 255, 255))
             target_surf.blit(in_surf, (cx + 6, box_y + 4))
+
+        # Mode B: Idle (Render recent active messages as compact floating pills)
+        else:
+            base_y = SCREEN_HEIGHT - 75 - len(display_lines) * 18
+            for i, (l_text, l_color) in enumerate(display_lines):
+                ts = self.font_sm.render(l_text, True, l_color)
+                pill_rect = pygame.Rect(cx, base_y + i * 18, ts.get_width() + 10, 16)
+                pygame.draw.rect(target_surf, (12, 16, 26, 180), pill_rect, border_radius=3)
+                pygame.draw.rect(target_surf, (50, 70, 100, 140), pill_rect, 1, border_radius=3)
+                target_surf.blit(ts, (cx + 5, base_y + i * 18 + 1))
 
     def _render_ancient_drop_toast(self, target_surf, banner_name):
         """Renders radiant celebratory toast banner for Ancient Relic discoveries."""

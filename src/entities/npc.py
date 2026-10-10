@@ -15,7 +15,7 @@ from src.constants import (
 )
 from src.ui.inventory import ItemStack, ITEM_REGISTRY
 
-NPC_TYPES = ("guide", "merchant", "nurse", "blacksmith", "mystic_trader")
+NPC_TYPES = ("guide", "merchant", "nurse", "blacksmith", "mystic_trader", "trader_wares", "trader_enhance", "trader_affix")
 
 NPC_TITLES = {
     "guide": ("Pip", "Town Guide", (120, 215, 100)),
@@ -23,6 +23,9 @@ NPC_TITLES = {
     "nurse": ("Florencia", "Field Nurse", (255, 140, 170)),
     "blacksmith": ("Russet", "Master Blacksmith", (245, 150, 60)),
     "mystic_trader": ("Zephyrion", "Mystic Trader", (180, 100, 255)),
+    "trader_wares": ("Zephyrion", "Wares Merchant", (100, 220, 255)),
+    "trader_enhance": ("Ignis Vance", "Grand Artificer", (255, 160, 50)),
+    "trader_affix": ("Morrigan", "Runic Occultist", (195, 110, 255)),
 }
 
 
@@ -52,8 +55,10 @@ class TownNPC:
         self.target_vx = 0.0
         self.is_talking = False
 
-        # Visual assets
+        # Visual assets & idle animation
         self.sprite = asset_factory.npcs.get(npc_type) if hasattr(asset_factory, "npcs") else None
+        self.anim_frames = asset_factory.npc_frames.get(npc_type, []) if hasattr(asset_factory, "npc_frames") else []
+        self.anim_timer = 0.0
         self.portrait = asset_factory.npc_portraits.get(npc_type) if hasattr(asset_factory, "npc_portraits") else None
 
         pygame.font.init()
@@ -80,6 +85,7 @@ class TownNPC:
         return dist <= 68.0
 
     def update(self, dt, world):
+        self.anim_timer += dt
         if self.is_talking:
             self.vx = 0.0
             return
@@ -161,9 +167,16 @@ class TownNPC:
     def render(self, target_surf, camera, player=None):
         sx, sy = camera.world_to_screen(self.x, self.y)
 
-        # Draw character sprite
-        if self.sprite:
-            draw_surf = self.sprite if self.facing_right else pygame.transform.flip(self.sprite, True, False)
+        # Draw character sprite (with multi-frame animation if present)
+        active_surf = None
+        if self.anim_frames:
+            f_idx = int((self.anim_timer * 4.0) % len(self.anim_frames))
+            active_surf = self.anim_frames[f_idx]
+        elif self.sprite:
+            active_surf = self.sprite
+
+        if active_surf:
+            draw_surf = active_surf if self.facing_right else pygame.transform.flip(active_surf, True, False)
             target_surf.blit(draw_surf, (sx, sy))
         else:
             pygame.draw.rect(target_surf, (200, 150, 90), (sx, sy, self.width, self.height), border_radius=4)
@@ -213,14 +226,17 @@ class TownNPC:
             "merchant": MerchantNPC,
             "nurse": NurseNPC,
             "blacksmith": BlacksmithNPC,
-            "mystic_trader": MysticTraderNPC
+            "mystic_trader": MysticTraderNPC,
+            "trader_wares": WaresTraderNPC,
+            "trader_enhance": EnhancerTraderNPC,
+            "trader_affix": OccultistTraderNPC,
         }
         target_cls = cls_map.get(t_type, TownNPC)
-        if target_cls == MysticTraderNPC:
+        if target_cls in (MysticTraderNPC, WaresTraderNPC, EnhancerTraderNPC, OccultistTraderNPC) or issubclass(target_cls, MysticTraderNPC):
             dur = data.get("duration", 240.0)
             tl = data.get("time_left", dur)
             sc = data.get("shop_catalog")
-            npc_obj = MysticTraderNPC(name, t_type, x, y, asset_factory, sound_manager, home_tile=ht, duration=dur, shop_catalog=sc)
+            npc_obj = target_cls(name=name, npc_type=t_type, x=x, y=y, asset_factory=asset_factory, sound_manager=sound_manager, home_tile=ht, duration=dur, shop_catalog=sc)
             npc_obj.time_left = tl
             return npc_obj
         return target_cls(name, t_type, x, y, asset_factory, sound_manager, home_tile=ht)
@@ -366,13 +382,18 @@ class MysticTraderNPC(TownNPC):
         self.time_left = float(duration)
         self.is_despawned = False
         self.shield_active = False
-        self.shield_radius = 7 * SCALED_TILE # 224 px
+        self.shield_radius = 3 * SCALED_TILE # 96 px (3 blocks radius)
         self.shield_anim_time = 0.0
 
         if shop_catalog is not None:
             self.shop_catalog = shop_catalog
         else:
             self.shop_catalog = self.roll_wares()
+
+    def repair_item(self, target_item, inventory):
+        """All Mystic Traders can repair broken gear for 1 Gold Coin (10,000 Copper)."""
+        from src.rpg.enhancement import repair_item
+        return repair_item(target_item, inventory, self.sound_manager)
 
     def roll_wares(self):
         """
@@ -585,7 +606,7 @@ class MysticTraderNPC(TownNPC):
         # 3. Floating Time Left Badge & Shield Warning
         mins = int(max(0, self.time_left) // 60)
         secs = int(max(0, self.time_left) % 60)
-        time_tag = f"Mystic Trader [{mins}:{secs:02d}]"
+        time_tag = f"{self.role_title} [{mins}:{secs:02d}]"
         t_col = (255, 220, 100) if not self.shield_active else (100, 230, 255)
         t_surf = self.font_hint.render(time_tag, True, t_col)
         tx = sx + self.width // 2 - t_surf.get_width() // 2
@@ -610,4 +631,79 @@ class MysticTraderNPC(TownNPC):
         d["time_left"] = self.time_left
         d["shop_catalog"] = self.shop_catalog
         return d
+
+
+# ==============================================================================
+# 5a. Wares Merchant Spud (Zephyrion - Rare Armaments & Gear)
+# ==============================================================================
+class WaresTraderNPC(MysticTraderNPC):
+    """Zephyrion the Wandering Merchant - Specializes in weapons and armor wares."""
+    def __init__(self, name="Zephyrion", npc_type="trader_wares", x=200.0, y=200.0, asset_factory=None, sound_manager=None, home_tile=None, duration=240.0, shop_catalog=None):
+        super().__init__(name=name, npc_type=npc_type, x=x, y=y, asset_factory=asset_factory, sound_manager=sound_manager, home_tile=home_tile, duration=duration, shop_catalog=shop_catalog)
+
+    def get_quote(self):
+        quotes = [
+            "The cosmic winds whisper of great battles! Peruse my rare armaments before I depart.",
+            "A broken blade? For 1 gold coin, I can mend even the most shattered relics.",
+            "I travel between the stars to bring you these fine blades, bows, and tunics. Choose wisely!",
+            "My dimensional tether lasts only a few minutes. Trade while the stars align!"
+        ]
+        return random.choice(quotes)
+
+
+# ==============================================================================
+# 5b. Grand Artificer Spud (Ignis Vance - Master Gear Enhancer)
+# ==============================================================================
+class EnhancerTraderNPC(MysticTraderNPC):
+    """Ignis Vance the Grand Artificer - Master of equipment forging and enhancement (+1..+7)."""
+    def __init__(self, name="Ignis Vance", npc_type="trader_enhance", x=200.0, y=200.0, asset_factory=None, sound_manager=None, home_tile=None, duration=240.0, shop_catalog=None):
+        super().__init__(name=name, npc_type=npc_type, x=x, y=y, asset_factory=asset_factory, sound_manager=sound_manager, home_tile=home_tile, duration=duration, shop_catalog=shop_catalog or [])
+
+    def roll_wares(self):
+        # Grand Artificer provides enhancement materials and rare smithing catalysts
+        catalog = [
+            {"item_id": "iron_bar", "name": "Refined Iron Bar", "price": 40, "currency": "copper_coin", "count": 5, "rarity": "common"},
+            {"item_id": "gold_bar", "name": "Lustrous Gold Bar", "price": 3, "currency": "silver_coin", "count": 2, "rarity": "uncommon"},
+            {"item_id": "celestial_shard", "name": "Celestial Starch Core", "price": 12, "currency": "silver_coin", "count": 1, "rarity": "rare"},
+            {"item_id": "affix_stone", "name": "Artificer's Whetstone", "price": 25, "currency": "silver_coin", "count": 1, "rarity": "epic"},
+            {"item_id": "titan_alloy", "name": "Titan Forgestone", "price": 45, "currency": "silver_coin", "count": 1, "rarity": "epic"},
+        ]
+        return catalog
+
+    def get_quote(self):
+        quotes = [
+            "The arcane forge calls to you! I can hone your weapons and gear up to +7 with my celestial anvil.",
+            "Beware pushing past +4! The mystical resonance can break fragile gear. But I can mend broken arms for 1 gold coin.",
+            "Give me steel, gold, and celestial shards, and I shall elevate your blade to godlike stature!",
+            "A well-tempered blade cuts swifter than a thousand clumsy strikes. Shall we forge?"
+        ]
+        return random.choice(quotes)
+
+
+# ==============================================================================
+# 5c. Runic Occultist Spud (Morrigan - Affix Stone & Socket Master)
+# ==============================================================================
+class OccultistTraderNPC(MysticTraderNPC):
+    """Morrigan the Runic Occultist - Carves Affix Slots and sockets Affix Stones into Legendary/Ancient gear."""
+    def __init__(self, name="Morrigan", npc_type="trader_affix", x=200.0, y=200.0, asset_factory=None, sound_manager=None, home_tile=None, duration=240.0, shop_catalog=None):
+        super().__init__(name=name, npc_type=npc_type, x=x, y=y, asset_factory=asset_factory, sound_manager=sound_manager, home_tile=home_tile, duration=duration, shop_catalog=shop_catalog or [])
+
+    def roll_wares(self):
+        catalog = [
+            {"item_id": "affix_stone", "name": "Pristine Affix Stone", "price": 35, "currency": "silver_coin", "count": 1, "rarity": "epic"},
+            {"item_id": "affix_slot_service", "name": "Affix Slot Carving", "price": 50, "currency": "silver_coin", "count": 1, "is_affix_service": True, "rarity": "legendary"},
+            {"item_id": "celestial_shard", "name": "Void Resonator", "price": 15, "currency": "silver_coin", "count": 2, "rarity": "rare"},
+            {"item_id": "shadow_essence", "name": "Starlight Catalyst", "price": 20, "currency": "silver_coin", "count": 1, "rarity": "epic"},
+            {"item_id": "portal_shard", "name": "Runic Keystone", "price": 30, "currency": "silver_coin", "count": 1, "rarity": "epic"},
+        ]
+        return catalog
+
+    def get_quote(self):
+        quotes = [
+            "The stars whisper of hidden potentials. Bring me Legendary or Ancient relics, and I shall carve Affix Slots into them!",
+            "Through ancient Runic stones, your weapons shall gain powers that defy mortal comprehension.",
+            "Broken weapons leak arcane energy. Bring me 1 gold coin, and I shall weave their shattered spirits whole.",
+            "Mortals fear the void, but in the void lies infinite power. Let us inscribe your arms."
+        ]
+        return random.choice(quotes)
 

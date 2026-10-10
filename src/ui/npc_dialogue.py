@@ -9,9 +9,11 @@ import math
 import pygame
 from src.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_GOLD,
-    RARITY_COLORS, RARITY_COMMON
+    RARITY_COLORS, RARITY_COMMON, RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT,
+    CAT_WEAPON, CAT_TOOL
 )
 from src.ui.inventory import ItemStack, ITEM_REGISTRY
+from src.rpg.equipment import ARMOR_DATA
 
 
 class NPCDialogueWindow:
@@ -39,6 +41,8 @@ class NPCDialogueWindow:
         self.font_body = pygame.font.SysFont("Georgia", 13)
         self.font_btn = pygame.font.SysFont("Arial", 12, bold=True)
         self.font_sm = pygame.font.SysFont("Arial", 11)
+        self.font_bold = pygame.font.SysFont("Arial", 11, bold=True)
+        self.font_lore = pygame.font.SysFont("Georgia", 11, italic=True)
 
     def open(self, npc, player, world=None, combat=None):
         if combat and hasattr(npc, "check_hostile_enemies"):
@@ -67,7 +71,7 @@ class NPCDialogueWindow:
                 self.dialogue_text = "Your vitality is blooming, hero! Take care out there in the underground caverns."
         elif npc.npc_type == "blacksmith":
             self.dialogue_text = "The forge burns hot today! Bring me a weapon to hone its cutting edge, or browse my smelted metal ingots."
-        elif npc.npc_type == "mystic_trader":
+        elif npc.npc_type in ("mystic_trader", "trader_wares", "trader_enhance", "trader_affix"):
             self.dialogue_text = npc.get_quote() if hasattr(npc, "get_quote") else "The cosmic currents brought me here for a fleeting moment. Browse my rare armaments, repair your shattered blades, or carve an Affix Slot!"
         else:
             self.dialogue_text = f"Greetings, traveler! I'm glad to call this shelter my home."
@@ -243,7 +247,7 @@ class NPCDialogueWindow:
                     self.close()
                     return True
 
-            elif npc.npc_type == "mystic_trader":
+            elif npc.npc_type in ("mystic_trader", "trader_wares"):
                 has_affix_service = any(e.get("is_affix_service") for e in getattr(npc, "shop_catalog", []))
                 b1 = pygame.Rect(self.x + 20, start_y, 110, btn_h)
                 b2 = pygame.Rect(self.x + 135, start_y, 115, btn_h)
@@ -285,6 +289,98 @@ class NPCDialogueWindow:
                         self.typewriter_chars = 0
                     else:
                         ok, msg = add_affix_slot_to_item(active, inventory, cost_copper=5000, sound_manager=self.sound_manager)
+                        self.status_message = msg
+                        self.dialogue_text = msg
+                        self.typewriter_chars = 0
+                    return True
+                elif b_close.collidepoint(mouse_x, mouse_y):
+                    self.close()
+                    return True
+
+            elif npc.npc_type == "trader_enhance":
+                b1 = pygame.Rect(self.x + 20, start_y, 110, btn_h)
+                b2 = pygame.Rect(self.x + 135, start_y, 125, btn_h)
+                b3 = pygame.Rect(self.x + 265, start_y, 115, btn_h)
+                b_close = pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h)
+
+                if b1.collidepoint(mouse_x, mouse_y):
+                    self.current_view = "shop"
+                    self.sound_manager.play("dialogue_chime")
+                    return True
+                elif b2.collidepoint(mouse_x, mouse_y):
+                    active = inventory.get_active_item()
+                    from src.rpg.enhancement import enhance_item
+                    status, msg = enhance_item(active, inventory, self.sound_manager)
+                    self.status_message = msg
+                    self.dialogue_text = msg
+                    self.typewriter_chars = 0
+                    return True
+                elif b3.collidepoint(mouse_x, mouse_y):
+                    active = inventory.get_active_item()
+                    target_item = None
+                    if active and getattr(active, "is_broken", False):
+                        target_item = active
+                    else:
+                        for s in inventory.slots:
+                            if s and getattr(s, "is_broken", False):
+                                target_item = s
+                                break
+                    if not target_item:
+                        self.status_message = "No broken items in your hands or backpack!"
+                        self.dialogue_text = "All of your equipment is intact and ready for battle!"
+                        self.typewriter_chars = 0
+                    else:
+                        from src.rpg.enhancement import repair_item
+                        ok, msg = repair_item(target_item, inventory, self.sound_manager)
+                        self.status_message = msg
+                        self.dialogue_text = msg
+                        self.typewriter_chars = 0
+                    return True
+                elif b_close.collidepoint(mouse_x, mouse_y):
+                    self.close()
+                    return True
+
+            elif npc.npc_type == "trader_affix":
+                b1 = pygame.Rect(self.x + 20, start_y, 110, btn_h)
+                b2 = pygame.Rect(self.x + 135, start_y, 125, btn_h)
+                b3 = pygame.Rect(self.x + 265, start_y, 115, btn_h)
+                b_close = pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h)
+
+                if b1.collidepoint(mouse_x, mouse_y):
+                    self.current_view = "shop"
+                    self.sound_manager.play("dialogue_chime")
+                    return True
+                elif b2.collidepoint(mouse_x, mouse_y):
+                    active = inventory.get_active_item()
+                    from src.rpg.enhancement import can_add_affix_slot, add_affix_slot_to_item
+                    can_add, reason = can_add_affix_slot(active)
+                    if not can_add:
+                        self.status_message = reason
+                        self.dialogue_text = f"I cannot carve this: {reason}"
+                        self.typewriter_chars = 0
+                    else:
+                        ok, msg = add_affix_slot_to_item(active, inventory, cost_copper=5000, sound_manager=self.sound_manager)
+                        self.status_message = msg
+                        self.dialogue_text = msg
+                        self.typewriter_chars = 0
+                    return True
+                elif b3.collidepoint(mouse_x, mouse_y):
+                    active = inventory.get_active_item()
+                    target_item = None
+                    if active and getattr(active, "is_broken", False):
+                        target_item = active
+                    else:
+                        for s in inventory.slots:
+                            if s and getattr(s, "is_broken", False):
+                                target_item = s
+                                break
+                    if not target_item:
+                        self.status_message = "No broken items in your hands or backpack!"
+                        self.dialogue_text = "All of your equipment is intact and ready for battle!"
+                        self.typewriter_chars = 0
+                    else:
+                        from src.rpg.enhancement import repair_item
+                        ok, msg = repair_item(target_item, inventory, self.sound_manager)
                         self.status_message = msg
                         self.dialogue_text = msg
                         self.typewriter_chars = 0
@@ -465,16 +561,28 @@ class NPCDialogueWindow:
                 draw_btn(pygame.Rect(self.x + 120, start_y, 85, btn_h), "Hone (35c)")
                 draw_btn(pygame.Rect(self.x + 210, start_y, 115, btn_h), "Enhance (+1..7)")
                 draw_btn(pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h), "Close")
-            elif npc.npc_type == "mystic_trader":
+            elif npc.npc_type in ("mystic_trader", "trader_wares"):
                 has_affix_service = any(e.get("is_affix_service") for e in getattr(npc, "shop_catalog", []))
                 draw_btn(pygame.Rect(self.x + 20, start_y, 110, btn_h), "Browse Wares", is_accent=True)
                 draw_btn(pygame.Rect(self.x + 135, start_y, 115, btn_h), "Repair (1 Gold)")
                 if has_affix_service:
                     draw_btn(pygame.Rect(self.x + 255, start_y, 125, btn_h), "Carve Affix Slot")
                 draw_btn(pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h), "Close")
+            elif npc.npc_type == "trader_enhance":
+                draw_btn(pygame.Rect(self.x + 20, start_y, 110, btn_h), "Browse Wares", is_accent=True)
+                draw_btn(pygame.Rect(self.x + 135, start_y, 125, btn_h), "Enhance (+1..7)")
+                draw_btn(pygame.Rect(self.x + 265, start_y, 115, btn_h), "Repair (1 Gold)")
+                draw_btn(pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h), "Close")
+            elif npc.npc_type == "trader_affix":
+                draw_btn(pygame.Rect(self.x + 20, start_y, 110, btn_h), "Browse Wares", is_accent=True)
+                draw_btn(pygame.Rect(self.x + 135, start_y, 125, btn_h), "Carve Affix Slot")
+                draw_btn(pygame.Rect(self.x + 265, start_y, 115, btn_h), "Repair (1 Gold)")
+                draw_btn(pygame.Rect(self.x + self.width - 80, start_y, 65, btn_h), "Close")
 
         # Mode: Shop View
         elif self.current_view == "shop":
+            hovered_entry = None
+
             # Catalog Items Grid
             catalog = getattr(npc, "shop_catalog", [])
             for idx, entry in enumerate(catalog):
@@ -484,7 +592,13 @@ class NPCDialogueWindow:
                 by = self.y + 70 + row * 46
 
                 slot_rect = pygame.Rect(bx, by, 240, 38)
+                buy_rect = pygame.Rect(bx + 180, by + 4, 55, 24)
                 is_slot_hover = slot_rect.collidepoint(mouse_x, mouse_y)
+                is_buy_hover = buy_rect.collidepoint(mouse_x, mouse_y)
+
+                if is_slot_hover and not is_buy_hover:
+                    hovered_entry = entry
+
                 pygame.draw.rect(target_surf, (28, 34, 48) if is_slot_hover else (18, 22, 32), slot_rect, border_radius=4)
                 pygame.draw.rect(target_surf, (65, 80, 115), slot_rect, 1, border_radius=4)
 
@@ -513,8 +627,6 @@ class NPCDialogueWindow:
                 target_surf.blit(p_surf, (bx + 36, by + 20))
 
                 # Buy Button
-                buy_rect = pygame.Rect(bx + 180, by + 4, 55, 24)
-                is_buy_hover = buy_rect.collidepoint(mouse_x, mouse_y)
                 pygame.draw.rect(target_surf, (60, 120, 60) if is_buy_hover else (35, 75, 35), buy_rect, border_radius=4)
                 pygame.draw.rect(target_surf, (120, 220, 120) if is_buy_hover else (60, 140, 60), buy_rect, 1, border_radius=4)
                 buy_txt = self.font_btn.render("BUY", True, (255, 255, 255))
@@ -538,3 +650,112 @@ class NPCDialogueWindow:
             if self.status_message:
                 stat_surf = self.font_sm.render(self.status_message, True, (255, 230, 90))
                 target_surf.blit(stat_surf, (self.x + 290, self.y + self.height - 35))
+
+            # Render Rich Tooltip on top when hovering over any shop card
+            if hovered_entry:
+                self._render_shop_item_tooltip(target_surf, mouse_x, mouse_y, hovered_entry)
+
+    def _render_shop_item_tooltip(self, target_surf, mx, my, entry):
+        """Displays rich Diablo/Torchlight-style item tooltip for shop wares."""
+        iid = entry.get("item_id", "")
+        currency = entry.get("currency", "copper_coin")
+        curr_name = "Gold" if currency == "gold_coin" else ("Silver" if currency == "silver_coin" else "Copper")
+        price = entry.get("price", 0)
+
+        # Affix Voucher special case
+        if entry.get("is_affix_service"):
+            lines = [
+                ("Affix Slot Carving Voucher", (220, 160, 255), self.font_bold),
+                ("[LEGENDARY ENCHANTMENT SERVICE]", (220, 160, 255), self.font_sm),
+                ("Service: Carves an open Affix Slot into gear", (180, 240, 255), self.font_sm),
+                ("Requirements: Hold a Legendary or Ancient weapon or armor piece in your hands.", (255, 215, 100), self.font_sm),
+                ("• Replaces one minor attribute with an imbuable celestial Affix Slot.", (140, 230, 255), self.font_sm),
+                ("• Allows embedding Affix Stones crafted at the Work Bench.", (140, 230, 255), self.font_sm),
+                (f"Cost: {price} {curr_name} Coins", (255, 220, 90), self.font_bold),
+                ("'The stars whisper of hidden potentials waiting to be unlocked.'", (240, 205, 120), self.font_lore)
+            ]
+            r_color = (220, 160, 255)
+        else:
+            reg = ITEM_REGISTRY.get(iid, {})
+            armor = ARMOR_DATA.get(iid, {})
+            rarity = entry.get("rarity") or reg.get("rarity") or armor.get("rarity") or RARITY_COMMON
+            r_color = RARITY_COLORS.get(rarity, (220, 220, 220))
+            name = entry.get("name") or reg.get("name") or armor.get("name") or iid.replace("_", " ").title()
+            cat = reg.get("cat") or armor.get("slot") or "item"
+            cat_str = str(cat).replace("_", " ").upper()
+
+            lines = []
+            lines.append((name, r_color, self.font_bold))
+            lines.append((f"[{rarity.upper()} {cat_str}]", r_color, self.font_sm))
+
+            # Combat / Armor stats
+            dmg_val = reg.get("damage", 0)
+            if reg.get("cat") == CAT_WEAPON or (dmg_val > 0 and reg.get("cat") != CAT_TOOL):
+                lines.append((f"Weapon Power: {dmg_val} Damage", (255, 215, 100), self.font_sm))
+                if any(w in iid.lower() for w in ("dagger", "shortsword", "knife")):
+                    speed_str = "Very Fast Speed (0.22s)"
+                elif any(w in iid.lower() for w in ("greatsword", "cleaver", "hammer", "scythe")):
+                    speed_str = "Slow, Heavy Speed (0.46s)"
+                elif "bow" in iid.lower():
+                    speed_str = "Average Speed (0.36s)"
+                elif any(w in iid.lower() for w in ("staff", "wand", "scepter", "rod", "catalyst")):
+                    speed_str = "Average Speed (0.34s)"
+                else:
+                    speed_str = "Fast Speed (0.30s)"
+                lines.append((f"Use Speed: {speed_str}", (240, 230, 160), self.font_sm))
+            elif reg.get("cat") == CAT_TOOL:
+                lines.append((f"Tool Damage: {dmg_val}", (190, 205, 225), self.font_sm))
+
+            def_val = armor.get("def") or reg.get("def", 0)
+            if def_val > 0:
+                lines.append((f"+{def_val} Defense", (140, 230, 140), self.font_sm))
+            if armor.get("hp", 0) > 0:
+                lines.append((f"+{armor['hp']} Max HP", (255, 120, 120), self.font_sm))
+            if armor.get("atk", 0) > 0:
+                lines.append((f"+{armor['atk']} Attack", (255, 215, 100), self.font_sm))
+            if armor.get("crit", 0) > 0 or reg.get("crit", 0) > 0:
+                lines.append((f"+{armor.get('crit', reg.get('crit', 0))}% Crit Chance", (255, 175, 80), self.font_sm))
+            if armor.get("speed", 0) > 0 or reg.get("speed", 0) > 0:
+                sp = armor.get("speed", reg.get("speed", 0))
+                lines.append((f"+{sp} Movement Speed", (200, 210, 255), self.font_sm))
+
+            # Effects for high tier
+            effects = reg.get("effects") or armor.get("effects", [])
+            rarity_str = str(rarity).lower()
+            if rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient") and "wood" not in iid.lower():
+                if effects:
+                    for eff in effects:
+                        lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
+                elif reg.get("special") or armor.get("special"):
+                    lines.append((f"Special: {reg.get('special') or armor.get('special')}", (100, 240, 240), self.font_sm))
+
+            desc = reg.get("desc") or armor.get("desc")
+            if not desc or str(desc).strip() == "":
+                desc = f"A fine {rarity.title()} item radiating elemental potency."
+            lines.append((desc, (215, 225, 240), self.font_sm))
+
+            if rarity_str in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "legendary", "mythic", "ancient"):
+                lore = reg.get("lore") or armor.get("lore")
+                if lore:
+                    lines.append((lore, (240, 205, 120), self.font_lore))
+
+            lines.append((f"Price: {price} {curr_name} Coins", (255, 215, 100), self.font_bold))
+
+        # Render tooltip box
+        rendered_surfs = [fnt.render(txt, True, col) for txt, col, fnt in lines]
+        tw = max(s.get_width() for s in rendered_surfs) + 20
+        th = sum(s.get_height() + 3 for s in rendered_surfs) + 12
+
+        tx = min(SCREEN_WIDTH - tw - 12, mx + 16)
+        ty = min(SCREEN_HEIGHT - th - 12, my + 16)
+        if ty < 10:
+            ty = 10
+
+        rect = pygame.Rect(tx, ty, tw, th)
+        pygame.draw.rect(target_surf, (20, 24, 38, 245), rect, border_radius=6)
+        pygame.draw.rect(target_surf, r_color, rect, 1, border_radius=6)
+
+        cur_y = ty + 6
+        for s in rendered_surfs:
+            target_surf.blit(s, (tx + 10, cur_y))
+            cur_y += s.get_height() + 3

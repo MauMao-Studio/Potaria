@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.6.0** | October 2026 | *Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics* | 3 distinct animated traders (Wares, Enhance, Affix) with 4-frame animations & 64x64 portraits, single-trader existence & 15-35 tile distant spawn, 3-block turtle shield radius, 1 Gold repair, rich shop hover tooltips, dedicated `data/crafting/craftable_items.json` folder, word-wrapped 6.0s auto-hiding command console, torch physical support rules, and 308 passing tests. |
 | **v1.5.0** | October 2026 | *Minecraft-Style Crafting Categories & 56+ Craftable Arsenal* | 5-tab category filter system ([ALL], [BUILDING], [EQUIPMENT], [SURVIVAL], [FURNITURE]), mouse-wheel crafting pagination, zero-drop panel hitboxes, 56 new craftable items (114 total recipes), paperdoll shields & off-hands, dynamic consumable healing, and procedural pixel art sprites. |
 | **v1.4.0** | October 2026 | *Bullet-Hell Boss Barrages & Touhou Dodging Mechanics* | High-density geometric bullet patterns for all 4 Mini-Bosses & Grand Boss Sol-Rho (Phases 1 & 2), 52% fair lethal core hitbox, perimeter graze hitbox (+1 MP reward), 60+ FPS quantized surface caching (<1.2ms for 500 projectiles), authoritative LAN multiplayer bullet synchronization. |
 | **v1.3.0** | October 2026 | *Mystic Trader, Affix Grimoire & Storage Chests* | Mystic Wandering Trader, Turtle Shield, Affix Slot Carving & Affix Stones, +1..7 Enhancement & Breaking/Repair, 20-slot Storage Chests, Playtime & Last Played World Select tracking. |
@@ -31,7 +32,57 @@
 
 ## Detailed Version Logs
 
-### [v1.5.0] — Minecraft-Style Recipe Book Categories & 56+ Craftable Arsenal Expansion (Current Release)
+### [v1.6.0] — Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics (Current Release)
+*Release Date: October 2026*
+
+#### Added
+- **Three Distinct Animated Specialized Traders (`src/entities/npc.py`, `src/assets/asset_factory.py`)**:
+  - Added 3 distinct wandering trader specializations:
+    - **Wares Merchant Spud (`trader_wares`, Zephyrion)**: Wandering cosmic merchant selling 5 weapons and armor pieces rolled at ARPG drop rates (capped strictly at Epic), with a random chance to offer Affix Slot Carving Vouchers.
+    - **Grand Artificer Spud (`trader_enhance`, Ignis Vance)**: Master forge artificer selling refined bars, celestial starch cores, and artificer whetstones; provides on-the-spot equipment enhancement up to +7 with broken gear protection warning.
+    - **Runic Occultist Spud (`trader_affix`, Morrigan)**: Mystic socket master selling pristine affix stones, keystone shards, and starlight catalysts; carves open Affix Slots into Legendary and Ancient gear in exchange for silver/gold or service vouchers.
+  - **Single Trader World Existence Rule**: Strictly **one** trader can exist in the world at any given time. Spawning checks existing active traders across all chunks and suppresses duplicate spawns until the current trader despawns.
+  - **Distant Spawning Algorithm**: Traders spawn 15 to 35 blocks (480–1120px) away from the player into safe grounded subterranean or surface locations, ensuring the player must explore to discover them and preventing base camp exploits.
+  - **4-Frame Pixel Art Idle Animations**: Handcrafted 4-frame breathing, floating, and tool-swaying sprites synthesized in `AssetFactory.npc_frames` for each trader archetype (Zephyrion's sapphire cloak and glowing lantern, Ignis Vance's glowing rune hammer and forge embers, Morrigan's levitating robes and 3 orbiting runic stones).
+  - **64x64 High-Resolution Dialogue Portraits**: Handcrafted 64x64 portraits synthesized in `AssetFactory.npc_portraits` with distinctive character design (Zephyrion's golden spectacles & sapphire cowl, Ignis Vance's brass steampunk goggles & soot smudges, Morrigan's starry cowl & cosmic violet eyes).
+  - **Universal Gear Repair**: All three traders provide a reliable gear repair service restoring broken (`is_broken`) weapons and armor to 100% functionality for exactly 1 Gold Coin (10,000 Copper).
+  - **Turtle Shield 3-Block Radius (96px)**: Adjusted hostile enemy detection radius from 7 blocks down to **3 blocks radius** (96px). When enemies enter within 96px, the trader retracts into their impenetrable energy shell, locking trades and deflecting 100% of incoming damage.
+
+- **Browse Wares Rich Item Tooltips (`src/ui/npc_dialogue.py`)**:
+  - Implemented `_render_shop_item_tooltip()` in `NPCDialogueWindow`. Hovering over any ware card in the shop view instantly displays a comprehensive Diablo/Torchlight-style item card matching inventory tooltips.
+  - Displays rarity-colored title, rarity and category badge, attack damage, weapon swing speed, defense, bonus stats, bulleted special perks, description, lore quotes for high-tier relics, and price tag in Copper, Silver, or Gold.
+
+- **Dedicated Directory for Craftable Items (`data/crafting/craftable_items.json`, `src/ui/crafting.py`)**:
+  - Created dedicated `data/crafting/` folder, isolating craftable items from the 1,100+ droppable items catalog (`data/weapons.json` & `data/equipments.json`) for effortless player/developer inspection and monitoring.
+  - Saved all 129 craftable recipes into `data/crafting/craftable_items.json` categorized across `building`, `equipment`, `survival`, and `furniture` with required crafting stations, ingredient counts, descriptions, and rarities.
+  - Added `load_craftable_recipes()` in `src/ui/crafting.py` which dynamically loads and parses the JSON file with safe fallback to hardcoded definitions.
+
+- **Word-Wrapped Console & 6.0-Second Auto-Hide (`src/ui/hud.py`, `main.py`)**:
+  - Redesigned chat and command console into a stylish semi-transparent dark glass window (460px width) with gold accents.
+  - Implemented text word-wrapping to prevent long cheat commands (`/give ...`) and system announcements from stretching across the screen or obscuring gameplay.
+  - Implemented 6.0-second auto-hide timer: when the console is idle, messages older than 6.0 seconds automatically disappear, providing a 100% clear screen. Pressing `/`, `~`, or `Enter` reopens the console box with full history.
+  - Expanded command input text buffer from 40 to 80 characters in `main.py`.
+
+- **Physical Torch Placement & Support Rules (`src/world/world.py`, `main.py`)**:
+  - Torches can no longer be placed underwater (`TILE_WATER`); attempting to place underwater gives clear feedback: *"Torches cannot be placed underwater!"*.
+  - Torches can no longer float unsupported in open air. Placement strictly requires physical support:
+    - A background wall behind the torch (`self.get_wall(tx, ty) != WALL_AIR`), OR
+    - A solid supporting block directly beneath (`self.is_tile_solid(tx, ty + 1)`), OR
+    - An adjacent solid block to the left or right (`tx - 1` or `tx + 1`).
+  - Attempting to place a torch without support displays *"Torches require a supporting block or background wall!"*.
+  - When a block beneath a torch is mined or destroyed, unsupported torches automatically pop off into air.
+
+- **Zero-Crash Item Safety & Procedural Error Handling (`src/assets/asset_factory.py`)**:
+  - Enhanced `ItemSpriteDict` to safely handle `ItemStack` objects, missing IDs, or corrupt item queries without raising uncaught exceptions.
+  - Gracefully logs `[AssetFactory ERROR]` to the console and generates a clean procedural fallback surface, ensuring the game never crashes during item rendering or equipping.
+
+- **Dedicated Test Suite (`tests/test_traders_ui_and_torch_rules.py`)**:
+  - Created 9 comprehensive unit tests verifying 3 trader archetypes, animation frames, 64x64 portraits, single-trader spawning, 15-35 block distant spawn, 3-block turtle shield radius, 1 Gold repair, shop hover tooltips, craftable items JSON loading, console auto-hide, torch placement rules, and item asset generation safety.
+  - Full project test suite passed 100% green across 308 tests in 24 test suites (`Ran 308 tests in 143.165s, OK`).
+
+---
+
+### [v1.5.0] — Minecraft-Style Recipe Book Categories & 56+ Craftable Arsenal Expansion
 *Release Date: October 2026*
 
 #### Added

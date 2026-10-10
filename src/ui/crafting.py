@@ -567,10 +567,36 @@ RECIPES = [
 ]
 
 
+def load_craftable_recipes():
+    """Loads categorized crafting recipes from data/crafting/craftable_items.json if present,
+    falling back safely to hardcoded RECIPES."""
+    import os, json
+    json_path = os.path.join("data", "crafting", "craftable_items.json")
+    if os.path.exists(json_path):
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loaded = []
+            for item in data.get("craftable_items", []):
+                loaded.append({
+                    "result": item["id"],
+                    "count": item.get("count", 1),
+                    "station": item.get("station"),
+                    "category": item.get("category", CRAFT_CAT_ALL),
+                    "ingredients": [(ing["item"], ing["count"]) for ing in item.get("ingredients", [])]
+                })
+            if loaded:
+                return loaded
+        except Exception as e:
+            print(f"[Crafting ERROR] Failed to load {json_path}: {e}")
+    return RECIPES
+
+
 class CraftingSystem:
     def __init__(self, asset_factory, sound_manager):
         self.asset_factory = asset_factory
         self.sound_manager = sound_manager
+        self.recipes = load_craftable_recipes()
         self.available_recipes = []
         self.selected_category = CRAFT_CAT_ALL
         self.scroll_row = 0
@@ -693,7 +719,8 @@ class CraftingSystem:
         has_wb, has_furn = self.check_nearby_stations(world, player)
 
         station_recipes = []
-        for r in RECIPES:
+        recipe_source = getattr(self, "recipes", None) or RECIPES
+        for r in recipe_source:
             req_station = r["station"]
             if req_station == "work_bench" and not has_wb:
                 continue

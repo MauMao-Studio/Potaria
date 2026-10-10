@@ -102,15 +102,25 @@ class ItemSpriteDict(dict):
         self.factory = factory
 
     def __getitem__(self, key):
+        raw_key = str(getattr(key, "item_id", key))
+        if super().__contains__(raw_key):
+            return super().__getitem__(raw_key)
         if super().__contains__(key):
             return super().__getitem__(key)
         from src.ui.inventory import ITEM_ALIASES
-        alias = ITEM_ALIASES.get(key, key)
+        alias = ITEM_ALIASES.get(raw_key, raw_key)
         if super().__contains__(alias):
             return super().__getitem__(alias)
         # Generate procedural fallback sprite dynamically
-        sprite = self.factory.generate_item_icon(key)
-        self[key] = sprite
+        try:
+            sprite = self.factory.generate_item_icon(raw_key)
+        except Exception as e:
+            print(f"[AssetFactory ERROR] Error generating sprite for '{raw_key}': {e}")
+            sprite = pygame.Surface((24, 24), pygame.SRCALPHA)
+            pygame.draw.rect(sprite, (200, 160, 40), (2, 2, 20, 20), border_radius=3)
+        self[raw_key] = sprite
+        if key != raw_key:
+            self[key] = sprite
         return sprite
 
     def get(self, key, default=None):
@@ -118,17 +128,18 @@ class ItemSpriteDict(dict):
             return default
         try:
             return self[key]
-        except KeyError:
+        except Exception:
             return default
 
     def __contains__(self, key):
-        if super().__contains__(key):
+        raw_key = str(getattr(key, "item_id", key))
+        if super().__contains__(raw_key) or super().__contains__(key):
             return True
         from src.ui.inventory import ITEM_ALIASES, ITEM_REGISTRY
-        alias = ITEM_ALIASES.get(key, key)
+        alias = ITEM_ALIASES.get(raw_key, raw_key)
         if super().__contains__(alias):
             return True
-        return key in ITEM_REGISTRY or alias in ITEM_REGISTRY
+        return raw_key in ITEM_REGISTRY or alias in ITEM_REGISTRY
 
 
 class AssetFactory:
@@ -145,6 +156,7 @@ class AssetFactory:
         self.cutscene_scenes = {}
         self.cutscene_portraits = {}
         self.npcs = {}
+        self.npc_frames = {}
         self.npc_portraits = {}
         self.torch_frames = []
         self.crack_overlays = []
@@ -204,6 +216,7 @@ class AssetFactory:
 
     def generate_item_icon(self, item_id):
         """Generates a unique, beautifully shaded 24x24 pixel art icon for any item."""
+        item_id = str(getattr(item_id, "item_id", item_id))
         from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
         canon = ITEM_ALIASES.get(item_id, item_id)
         data = ITEM_REGISTRY.get(item_id) or ITEM_REGISTRY.get(canon, {})
@@ -2189,6 +2202,101 @@ class AssetFactory:
         pygame.draw.rect(b_raw, (160, 165, 175), (14, 8, 5, 3), border_radius=1)
         self.npcs["blacksmith"] = pygame.transform.scale(b_raw, (28, 36))
 
+        # 5. Mystic Trader 1: Wares Merchant (Zephyrion - Wandering Merchant)
+        # Deep sapphire traveler cloak, brass lantern staff, backpack of curiosities, animated breathing & swaying lantern
+        wares_frames = []
+        for frame_idx in range(4):
+            w_raw = create_npc_base()
+            bob = 1 if frame_idx in (1, 2) else 0
+            sway = -1 if frame_idx == 1 else (1 if frame_idx == 3 else 0)
+            # Cloak & Cowl
+            pygame.draw.rect(w_raw, (35, 55, 115), (2, 9 - bob, 16, 11), border_radius=3)
+            pygame.draw.rect(w_raw, (245, 215, 80), (3, 19 - bob, 14, 1)) # Gold hem
+            # Traveler's Feathered Cap / Hood
+            pygame.draw.rect(w_raw, (45, 70, 140), (2, 1 - bob, 16, 6), border_radius=2)
+            pygame.draw.polygon(w_raw, (255, 220, 100), [(14, 2 - bob), (18, 0 - bob), (15, 4 - bob)]) # Golden plume
+            # Merchant Backpack with rolled map
+            pygame.draw.rect(w_raw, (95, 60, 30), (0, 8 - bob, 4, 10), border_radius=1)
+            pygame.draw.rect(w_raw, (220, 205, 165), (0, 6 - bob, 4, 2), border_radius=1)
+            # Brass Lantern on staff in hand
+            staff_x = 17
+            pygame.draw.line(w_raw, (115, 75, 40), (staff_x, 5 - bob), (staff_x, 21), 1)
+            lan_x = staff_x + 1 + sway
+            lan_y = 11 - bob
+            pygame.draw.rect(w_raw, (215, 175, 50), (lan_x, lan_y, 4, 5), border_radius=1)
+            pygame.draw.rect(w_raw, (255, 240, 120), (lan_x + 1, lan_y + 1, 2, 3)) # Lantern glow core
+            # Subtle floating golden stardust
+            if frame_idx % 2 == 1:
+                w_raw.set_at((lan_x + 2, max(0, lan_y - 2)), (255, 235, 130))
+            wares_frames.append(pygame.transform.scale(w_raw, (28, 36)))
+
+        self.npc_frames["trader_wares"] = wares_frames
+        self.npc_frames["mystic_trader"] = wares_frames
+        self.npcs["trader_wares"] = wares_frames[0]
+        self.npcs["mystic_trader"] = wares_frames[0]
+
+        # 6. Mystic Trader 2: Grand Artificer (Ignis Vance - Master Gear Enhancer)
+        # Steampunk brass goggles, heavy leather smock, glowing runic hammer emitting sparks
+        enhance_frames = []
+        for frame_idx in range(4):
+            e_raw = create_npc_base()
+            bob = 1 if frame_idx in (1, 2) else 0
+            # Heavy fireproof Artificer Apron
+            pygame.draw.rect(e_raw, (90, 45, 22), (3, 11 - bob, 14, 9), border_radius=2)
+            pygame.draw.rect(e_raw, (205, 120, 40), (7, 13 - bob, 6, 2)) # Tool pouch
+            # Steampunk Brass Goggles with glowing ruby lenses
+            pygame.draw.rect(e_raw, (195, 155, 50), (3, 3 - bob, 14, 4), border_radius=2)
+            pygame.draw.ellipse(e_raw, (255, 70, 70), (5, 4 - bob, 4, 3))
+            pygame.draw.ellipse(e_raw, (255, 70, 70), (11, 4 - bob, 4, 3))
+            e_raw.set_at((6, 4 - bob), (255, 220, 220))
+            e_raw.set_at((12, 4 - bob), (255, 220, 220))
+            # Runic Forging Hammer with sparks
+            ham_y = 7 - bob if frame_idx in (1, 2) else 9 - bob
+            pygame.draw.line(e_raw, (100, 65, 35), (16, ham_y), (16, ham_y + 10), 1)
+            pygame.draw.rect(e_raw, (170, 180, 195), (14, ham_y - 2, 5, 4), border_radius=1)
+            # Runic glow on hammer head
+            glow_col = (255, 180, 50) if frame_idx % 2 == 0 else (255, 240, 100)
+            e_raw.set_at((16, ham_y - 1), glow_col)
+            # Forge ember spark
+            if frame_idx == 1:
+                e_raw.set_at((18, max(0, ham_y - 4)), (255, 200, 60))
+            elif frame_idx == 2:
+                e_raw.set_at((17, max(0, ham_y - 5)), (255, 120, 30))
+            enhance_frames.append(pygame.transform.scale(e_raw, (28, 36)))
+
+        self.npc_frames["trader_enhance"] = enhance_frames
+        self.npcs["trader_enhance"] = enhance_frames[0]
+
+        # 7. Mystic Trader 3: Runic Occultist (Morrigan - Affix Stone & Socket Master)
+        # Flowing obsidian & violet cosmic robes, ethereal eyes, 3 orbiting runic stones
+        affix_frames = []
+        for frame_idx in range(4):
+            a_raw = create_npc_base()
+            levitate_y = 1 if frame_idx in (1, 2) else 0
+            # Ethereal Robes (Obsidian & Void Violet)
+            pygame.draw.rect(a_raw, (55, 25, 85), (2, 9 - levitate_y, 16, 12), border_radius=3)
+            pygame.draw.rect(a_raw, (185, 110, 255), (4, 19 - levitate_y, 12, 1)) # Arcane runic hem
+            # Mystical Cowl
+            pygame.draw.rect(a_raw, (40, 18, 65), (2, 1 - levitate_y, 16, 6), border_radius=2)
+            # Glowing Cosmic Violet Eyes
+            pygame.draw.ellipse(a_raw, (215, 140, 255), (6, 5 - levitate_y, 3, 4))
+            pygame.draw.ellipse(a_raw, (215, 140, 255), (11, 5 - levitate_y, 3, 4))
+            a_raw.set_at((7, 6 - levitate_y), (255, 255, 255))
+            a_raw.set_at((12, 6 - levitate_y), (255, 255, 255))
+            # Orbiting Runic Stones (3 stones rotating around potato)
+            base_angle = frame_idx * (math.pi / 2.0)
+            for stone_i in range(3):
+                ang = base_angle + stone_i * (2.0 * math.pi / 3.0)
+                ox = int(10 + math.cos(ang) * 8.0)
+                oy = int(11 - levitate_y + math.sin(ang) * 5.0)
+                if 0 <= ox < 20 and 0 <= oy < 24:
+                    pygame.draw.rect(a_raw, (170, 90, 240), (max(0, ox - 1), max(0, oy - 1), 3, 3), border_radius=1)
+                    a_raw.set_at((ox, oy), (255, 230, 255))
+            affix_frames.append(pygame.transform.scale(a_raw, (28, 36)))
+
+        self.npc_frames["trader_affix"] = affix_frames
+        self.npcs["trader_affix"] = affix_frames[0]
+
         # ----------------------------------------------------------------------
         # High-Resolution 64x64 Dialogue Portraits
         # ----------------------------------------------------------------------
@@ -2287,6 +2395,82 @@ class AssetFactory:
         pygame.draw.rect(pb, (200, 155, 50), (28, 48, 8, 4), border_radius=1)
         self.npc_portraits["blacksmith"] = pb
         self.cutscene_portraits["npc_blacksmith"] = pb
+
+        # 5. Wares Merchant Portrait (Zephyrion)
+        pw = make_portrait_frame((35, 50, 85), (15, 22, 45), (255, 215, 80))
+        pygame.draw.ellipse(pw, (150, 100, 50), (14, 15, 36, 40))
+        pygame.draw.ellipse(pw, (205, 155, 90), (15, 16, 34, 38))
+        pygame.draw.ellipse(pw, (238, 192, 130), (18, 18, 26, 14))
+        # Deep sapphire cowl & feathered brim
+        pygame.draw.rect(pw, (40, 65, 130), (10, 10, 44, 10), border_radius=3)
+        pygame.draw.rect(pw, (255, 215, 80), (10, 18, 44, 2))
+        pygame.draw.polygon(pw, (255, 225, 100), [(38, 10), (48, 4), (42, 14)])
+        # Golden round spectacles & warm eyes
+        pygame.draw.circle(pw, (255, 215, 0), (25, 30), 6, 2)
+        pygame.draw.circle(pw, (255, 215, 0), (39, 30), 6, 2)
+        pygame.draw.line(pw, (255, 215, 0), (31, 30), (33, 30), 2)
+        pw.set_at((25, 29), (255, 255, 255))
+        pw.set_at((39, 29), (255, 255, 255))
+        pygame.draw.arc(pw, (135, 65, 35), (26, 38, 12, 6), math.pi, 2 * math.pi, 2)
+        # Hanging brass lantern on left with warm light
+        pygame.draw.rect(pw, (215, 175, 50), (6, 32, 8, 12), border_radius=2)
+        pygame.draw.rect(pw, (255, 240, 130), (8, 35, 4, 6))
+        self.npc_portraits["trader_wares"] = pw
+        self.npc_portraits["mystic_trader"] = pw
+        self.cutscene_portraits["npc_trader_wares"] = pw
+        self.cutscene_portraits["npc_mystic_trader"] = pw
+
+        # 6. Grand Artificer Portrait (Ignis Vance)
+        pe = make_portrait_frame((85, 38, 18), (35, 15, 8), (255, 140, 50))
+        pygame.draw.ellipse(pe, (135, 85, 40), (14, 15, 36, 40))
+        pygame.draw.ellipse(pe, (195, 140, 80), (15, 16, 34, 38))
+        pygame.draw.ellipse(pe, (225, 175, 110), (18, 18, 26, 14))
+        # Brass magnifying steampunk goggles pushed up
+        pygame.draw.rect(pe, (195, 145, 45), (14, 14, 36, 8), border_radius=3)
+        pygame.draw.circle(pe, (255, 70, 70), (24, 18), 5)
+        pygame.draw.circle(pe, (255, 70, 70), (40, 18), 5)
+        pe.set_at((23, 17), (255, 230, 230))
+        pe.set_at((39, 17), (255, 230, 230))
+        # Soot smudges & sharp confident eyes
+        pygame.draw.ellipse(pe, (55, 45, 40), (18, 27, 7, 5))
+        pygame.draw.ellipse(pe, (55, 45, 40), (37, 32, 8, 5))
+        pygame.draw.ellipse(pe, (25, 20, 30), (23, 29, 6, 7))
+        pygame.draw.ellipse(pe, (25, 20, 30), (37, 29, 6, 7))
+        pe.set_at((25, 30), (255, 255, 255))
+        pe.set_at((39, 30), (255, 255, 255))
+        pygame.draw.arc(pe, (135, 65, 35), (27, 38, 11, 6), math.pi, 2 * math.pi, 2)
+        # Heavy copper bib & forge ember glow
+        pygame.draw.rect(pe, (95, 45, 20), (14, 46, 36, 14), border_radius=3)
+        pygame.draw.circle(pe, (255, 160, 50), (32, 50), 3) # Glowing forge emblem
+        pe.set_at((12, 10), (255, 200, 60))
+        pe.set_at((52, 12), (255, 160, 40))
+        self.npc_portraits["trader_enhance"] = pe
+        self.cutscene_portraits["npc_trader_enhance"] = pe
+
+        # 7. Runic Occultist Portrait (Morrigan)
+        pa = make_portrait_frame((55, 22, 80), (20, 8, 35), (195, 110, 255))
+        pygame.draw.ellipse(pa, (135, 80, 60), (14, 15, 36, 40))
+        pygame.draw.ellipse(pa, (190, 135, 110), (15, 16, 34, 38))
+        pygame.draw.ellipse(pa, (220, 165, 140), (18, 18, 26, 14))
+        # Deep Obsidian & Violet Velvet Cowl with starry embroidery
+        pygame.draw.rect(pa, (45, 18, 70), (12, 10, 40, 12), border_radius=4)
+        pygame.draw.polygon(pa, (185, 110, 255), [(14, 22), (20, 14), (26, 22)]) # Runic cowl crest
+        # Glowing Cosmic Violet Eyes with starry core
+        pygame.draw.ellipse(pa, (180, 90, 255), (22, 28, 7, 8))
+        pygame.draw.ellipse(pa, (180, 90, 255), (36, 28, 7, 8))
+        pa.set_at((24, 30), (255, 255, 255))
+        pa.set_at((38, 30), (255, 255, 255))
+        pa.set_at((25, 31), (255, 215, 255))
+        pa.set_at((39, 31), (255, 215, 255))
+        # Serene knowing smile
+        pygame.draw.arc(pa, (115, 50, 60), (27, 39, 10, 5), math.pi, 2 * math.pi, 2)
+        # Floating Runic Stones flanking the frame
+        pygame.draw.rect(pa, (160, 80, 240), (4, 18, 7, 9), border_radius=2)
+        pygame.draw.rect(pa, (240, 200, 255), (6, 21, 3, 3))
+        pygame.draw.rect(pa, (160, 80, 240), (53, 36, 7, 9), border_radius=2)
+        pygame.draw.rect(pa, (240, 200, 255), (55, 39, 3, 3))
+        self.npc_portraits["trader_affix"] = pa
+        self.cutscene_portraits["npc_trader_affix"] = pa
 
     # ==========================================================================
     # 5. BOSS SPRITES (Polished 4-Frame Multi-Layer Animated Encounters)

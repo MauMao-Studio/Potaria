@@ -58,7 +58,7 @@ class TestRandomTraderAndFeatures(unittest.TestCase):
         traders = [npc for npc in self.world.town_npcs if isinstance(npc, MysticTraderNPC) or getattr(npc, "npc_type", "") == "mystic_trader"]
         self.assertEqual(len(traders), 1, "Mystic Trader must spawn when timer threshold is reached")
         trader = traders[0]
-        self.assertEqual(trader.name, "Zephyrion")
+        self.assertIn(trader.name, ("Zephyrion", "Ignis Vance", "Morrigan"))
 
         # 2. Enclose trader completely with solid stone blocks (caging)
         tx = int(trader.x // SCALED_TILE)
@@ -110,22 +110,22 @@ class TestRandomTraderAndFeatures(unittest.TestCase):
         self.assertFalse(trader.shield_active)
         self.assertTrue(trader.can_interact(self.player))
 
-        # Spawn hostile mob within 224px (e.g. at distance 100px)
-        enemy = Mob(600, 500, 24, 24, 50, 10, "Crawler")
+        # Spawn hostile mob within 3 blocks (96px) radius (e.g. at distance 50px)
+        enemy = Mob(550, 500, 24, 24, 50, 10, "Crawler")
         self.combat.mobs.append(enemy)
 
         trader.update(0.1, self.world, self.combat)
-        self.assertTrue(trader.shield_active, "Turtle shield must activate when enemy is within 224px")
+        self.assertTrue(trader.shield_active, "Turtle shield must activate when enemy is within 3 blocks radius (96px)")
         self.assertFalse(trader.can_interact(self.player), "Interaction must be locked when shield is active")
 
         # Attack trader with on_hit while shielded -> zero damage taken, deflects
         dmg_taken = trader.on_hit(50)
         self.assertEqual(dmg_taken, 0, "Shield must deflect all damage")
 
-        # Move enemy away beyond 224px (e.g. at 450px away)
-        enemy.x = 950
+        # Move enemy away beyond 3 blocks radius (e.g. at 200px away)
+        enemy.x = 750
         trader.update(0.1, self.world, self.combat)
-        self.assertFalse(trader.shield_active, "Turtle shield must deactivate when enemy is beyond 224px")
+        self.assertFalse(trader.shield_active, "Turtle shield must deactivate when enemy is beyond 3 blocks radius (96px)")
         self.assertTrue(trader.can_interact(self.player), "Interaction must unlock when enemies leave")
 
     def test_04_repair_broken_item_costs_exactly_one_gold(self):

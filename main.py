@@ -447,11 +447,12 @@ class PotariaGame:
                 feedback = f"Unknown command '/{cmd}'. Type /help for command list."
 
         if feedback:
-            if not hasattr(self.hud, "local_chat_history"):
-                self.hud.local_chat_history = []
-            self.hud.local_chat_history.append(("[SYSTEM]", feedback))
-            if len(self.hud.local_chat_history) > 20:
-                self.hud.local_chat_history = self.hud.local_chat_history[-20:]
+            if hasattr(self.hud, "add_chat_message"):
+                self.hud.add_chat_message("[SYSTEM]", feedback)
+            else:
+                if not hasattr(self.hud, "local_chat_history"):
+                    self.hud.local_chat_history = []
+                self.hud.local_chat_history.append(("[SYSTEM]", feedback))
             if hasattr(self.inventory, "notify"):
                 self.inventory.notify(feedback)
 
@@ -999,11 +1000,12 @@ class PotariaGame:
                             elif self.client and self.client.connected:
                                 self.client.send_chat("Spud", msg)
                             else:
-                                if not hasattr(self.hud, "local_chat_history"):
-                                    self.hud.local_chat_history = []
-                                self.hud.local_chat_history.append(("Spud", msg))
-                                if len(self.hud.local_chat_history) > 20:
-                                    self.hud.local_chat_history = self.hud.local_chat_history[-20:]
+                                if hasattr(self.hud, "add_chat_message"):
+                                    self.hud.add_chat_message("Spud", msg)
+                                else:
+                                    if not hasattr(self.hud, "local_chat_history"):
+                                        self.hud.local_chat_history = []
+                                    self.hud.local_chat_history.append(("Spud", msg))
                         self.hud.chat_input_text = ""
                         self.hud.chat_active = False
                     elif event.key == pygame.K_ESCAPE:
@@ -1011,7 +1013,7 @@ class PotariaGame:
                         self.hud.chat_input_text = ""
                     elif event.key == pygame.K_BACKSPACE:
                         self.hud.chat_input_text = self.hud.chat_input_text[:-1]
-                    elif event.unicode and len(self.hud.chat_input_text) < 40:
+                    elif event.unicode and len(self.hud.chat_input_text) < 80:
                         self.hud.chat_input_text += event.unicode
                     continue
 
@@ -1993,6 +1995,14 @@ class PotariaGame:
                 self.achievement_manager.unlock("home_sweet_home")
             self.lighting.dirty = True
             self.hud.minimap.mark_dirty()
+        else:
+            if tile_id_to_place == TILE_TORCH:
+                if self.world.is_water(tx, ty):
+                    msg = "Torches cannot be placed underwater!"
+                else:
+                    msg = "Torches require a supporting block or background wall!"
+                if hasattr(self.hud, "add_chat_message"):
+                    self.hud.add_chat_message("[NOTICE]", msg)
 
     def update_gameplay(self, dt):
         self.playtime = getattr(self, "playtime", 0.0) + dt

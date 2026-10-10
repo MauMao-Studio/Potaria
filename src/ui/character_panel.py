@@ -169,7 +169,8 @@ class CharacterPanel:
 
             equipped_id = player.equipment.slots.get(slot_name)
             if equipped_id:
-                icon = self.asset_factory.items.get(equipped_id)
+                raw_id = getattr(equipped_id, "item_id", equipped_id)
+                icon = self.asset_factory.items.get(raw_id)
                 if icon:
                     target_surf.blit(icon, (sx + 9, sy + 9))
 
@@ -191,10 +192,11 @@ class CharacterPanel:
         
         held_weapon = getattr(player.equipment, "active_weapon_id", None)
         if held_weapon:
-            hw_icon = self.asset_factory.items.get(held_weapon)
+            raw_hw = getattr(held_weapon, "item_id", held_weapon)
+            hw_icon = self.asset_factory.items.get(raw_hw)
             if hw_icon:
                 target_surf.blit(hw_icon, (px + 39, hw_y + 9))
-            w_name = ARMOR_DATA.get(held_weapon, {}).get("name", held_weapon.replace("_", " ").title())
+            w_name = ARMOR_DATA.get(raw_hw, {}).get("name", str(raw_hw).replace("_", " ").title())
             hw_title = self.font_sm.render("IN HAND (HOTBAR)", True, (255, 215, 100))
             hw_name = self.font_sm.render(w_name[:16], True, (255, 255, 255))
             target_surf.blit(hw_title, (px + 78, hw_y + 6))
@@ -451,10 +453,17 @@ class CharacterPanel:
             cy += s.get_height() + 3
 
     def _render_equipped_tooltip(self, target_surf, mx, my, item_id, is_held=False):
-        armor = ARMOR_DATA.get(item_id, {})
-        reg = ITEM_REGISTRY.get(item_id, {})
+        raw_id = str(getattr(item_id, "item_id", item_id))
+        enh_lvl = getattr(item_id, "enhancement_level", 0)
+        is_broken = getattr(item_id, "is_broken", False)
+        item_affixes = getattr(item_id, "affixes", [])
 
-        name = reg.get("name") or armor.get("name") or item_id
+        armor = ARMOR_DATA.get(raw_id, {})
+        reg = ITEM_REGISTRY.get(raw_id, {})
+
+        name = reg.get("name") or armor.get("name") or raw_id.replace("_", " ").title()
+        if enh_lvl > 0:
+            name = f"{name} +{enh_lvl}"
         rarity = reg.get("rarity") or armor.get("rarity") or RARITY_COMMON
         r_color = RARITY_COLORS.get(rarity, (255, 255, 255))
 
@@ -465,17 +474,29 @@ class CharacterPanel:
 
         lines = []
         lines.append((f"{name} [{rarity.upper()}]", r_color, self.font_bold))
+        if is_broken:
+            lines.append(("[BROKEN - REPAIR AT TRADER]", (255, 70, 70), self.font_bold))
         lines.append((f"Slot: {slot_name}", (255, 215, 100), self.font_sm))
 
         # Weapon damage / power
         if reg.get("cat") == CAT_WEAPON or (reg.get("damage", 0) > 0 and reg.get("cat") != CAT_TOOL):
-            lines.append((f"+{reg.get('damage', 0)} Base Attack Power", (255, 180, 80), self.font_sm))
+            dmg_val = reg.get('damage', 0)
+            if enh_lvl > 0:
+                bonus_mult = 1.0 + (enh_lvl * 0.15)
+                lines.append((f"+{int(dmg_val * bonus_mult)} Total Attack (+{dmg_val} Base, +{int(dmg_val * (bonus_mult - 1.0))} Forge)", (255, 180, 80), self.font_sm))
+            else:
+                lines.append((f"+{dmg_val} Base Attack Power", (255, 180, 80), self.font_sm))
         elif reg.get("cat") == CAT_TOOL:
             lines.append((f"+{reg.get('damage', 0)} Tool Damage", (190, 205, 225), self.font_sm))
 
         # Armor and accessory stats
         if armor.get("def", 0) > 0:
-            lines.append((f"+{armor['def']} Defense", (140, 240, 140), self.font_sm))
+            def_val = armor['def']
+            if enh_lvl > 0:
+                def_mult = 1.0 + (enh_lvl * 0.15)
+                lines.append((f"+{int(def_val * def_mult)} Total Defense (+{def_val} Base)", (140, 240, 140), self.font_sm))
+            else:
+                lines.append((f"+{def_val} Defense", (140, 240, 140), self.font_sm))
         if armor.get("hp", 0) > 0:
             lines.append((f"+{armor['hp']} Max HP", (255, 120, 120), self.font_sm))
         if armor.get("atk", 0) > 0:
@@ -492,9 +513,15 @@ class CharacterPanel:
             reg_val = armor.get("mp_regen", reg.get("mp_regen", 0))
             lines.append((f"+{reg_val:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
 
+        # Imbued Affixes
+        if item_affixes:
+            for af in item_affixes:
+                af_name = af.get("name", str(af)) if isinstance(af, dict) else str(af)
+                lines.append((f"✦ {af_name}", (210, 150, 255), self.font_sm))
+
         # Effects & Special Perks (Only Epic, Mythic, Legendary, Ancient; suppressed for wooden and low-tier)
         effects = reg.get("effects") or armor.get("effects", [])
-        iid = item_id.lower()
+        iid = raw_id.lower()
         rarity_str = str(rarity).lower()
         is_high_tier = rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient")
         if "wood" not in iid and is_high_tier:

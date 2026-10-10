@@ -369,6 +369,17 @@ class World:
                 return True, "wood", t_id
 
             self.set_tile(tx, ty, TILE_AIR)
+            # Check adjacent torches for loss of physical support
+            for ndx, ndy in ((0, -1), (1, 0), (-1, 0)):
+                ntx, nty = tx + ndx, ty + ndy
+                if self.get_tile(ntx, nty) == TILE_TORCH:
+                    has_wall = (self.get_wall(ntx, nty) != WALL_AIR)
+                    base_solid = self.is_tile_solid(ntx, nty + 1)
+                    left_solid = self.is_tile_solid(ntx - 1, nty)
+                    right_solid = self.is_tile_solid(ntx + 1, nty)
+                    if not (has_wall or base_solid or left_solid or right_solid):
+                        self.set_tile(ntx, nty, TILE_AIR)
+                        self.player_placed_tiles.discard((ntx, nty))
             return True, drop, t_id
 
         return False, None, t_id
@@ -377,6 +388,22 @@ class World:
         cur = self.get_tile(tx, ty)
         if cur != TILE_AIR and cur != TILE_WATER:
             return False
+
+        # Physical placement rules for torches:
+        if tile_id == TILE_TORCH:
+            # 1. Torches cannot be placed underwater
+            if cur == TILE_WATER or self.is_water(tx, ty):
+                return False
+            # 2. Torches cannot float in open air; they require support:
+            #    - A background wall behind it (self.get_wall(tx, ty) != WALL_AIR)
+            #    - A solid block beneath it (self.is_tile_solid(tx, ty + 1))
+            #    - An adjacent solid block to left or right (self.is_tile_solid(tx - 1, ty) or self.is_tile_solid(tx + 1, ty))
+            has_wall = (self.get_wall(tx, ty) != WALL_AIR)
+            base_solid = self.is_tile_solid(tx, ty + 1)
+            left_solid = self.is_tile_solid(tx - 1, ty)
+            right_solid = self.is_tile_solid(tx + 1, ty)
+            if not (has_wall or base_solid or left_solid or right_solid):
+                return False
 
         # Adjacency check
         has_neighbor = (self.get_wall(tx, ty) != WALL_AIR)
@@ -651,38 +678,82 @@ class World:
                 inventory.notify(f"{name} the {role_title} has settled in!")
             sound_manager.play("craft")
 
-    def spawn_mystic_trader(self, player, asset_factory=None, sound_manager=None, duration=240.0):
-        """Spawns the Mystic Wandering Trader near the player on a safe surface tile."""
-        from src.entities.npc import MysticTraderNPC
-        from src.constants import SCALED_TILE, TILE_AIR
+    def spawn_mystic_trader(self, player, asset_factory=None, sound_manager=None, duration=240.0, trader_type=None):
+        """Spawns one of three specialized wandering traders far from the player (15 to 35 blocks away).
+        Strictly guarantees only ONE trader is active in the world at a time."""
+        from src.entities.npc import MysticTraderNPC, WaresTraderNPC, EnhancerTraderNPC, OccultistTraderNPC
+        from src.constants import SCALED_TILE, TILE_AIR, TILE_WATER
+
+        # Strict rule: Only one trader in the world at a time
+        for n in self.town_npcs:
+            if isinstance(n, MysticTraderNPC) or getattr(n, "npc_type", "").startswith("trader_") or getattr(n, "npc_type", "") == "mystic_trader":
+                return None
 
         ptx = int(player.center_x // self.scaled_tile)
         pty = int(player.center_y // self.scaled_tile)
 
+        # Distant spawn exploration: 15 to 35 blocks away from the player
+        cand_dx = [22, -22, 28, -28, 18, -18, 32, -32, 15, -15, 35, -35]
+        random.shuffle(cand_dx)
         found_pos = None
-        for dx in (4, -4, 6, -6, 3, -3, 8, -8):
+
+        max_w = getattr(self, "width", 100000)
+        for dx in cand_dx:
             tx = ptx + dx
-            for ty in range(max(10, pty - 10), min(self.height - 10, pty + 10)):
-                if self.is_tile_solid(tx, ty) and not self.is_tile_solid(tx, ty - 1) and not self.is_tile_solid(tx, ty - 2):
+            if tx < 5 or tx >= max_w - 5:
+                continue
+            for ty in range(max(10, pty - 12), min(self.height - 10, pty + 15)):
+                if (self.is_tile_solid(tx, ty) and
+                    not self.is_tile_solid(tx, ty - 1) and
+                    not self.is_tile_solid(tx, ty - 2) and
+                    self.get_tile(tx, ty - 1) != TILE_WATER):
                     found_pos = (tx * self.scaled_tile, (ty - 1) * self.scaled_tile)
                     break
             if found_pos:
                 break
 
+        # Fallback if no safe surface found at distant radius: safe nearby tile
         if not found_pos:
-            found_pos = (player.center_x + 64, player.center_y)
+            found_pos = (player.center_x + (480 if random.random() < 0.5 else -480), player.center_y)
 
         af = asset_factory or self.asset_factory
         sm = sound_manager or self.sound_manager
-        trader = MysticTraderNPC(
-            name="Zephyrion",
-            npc_type="mystic_trader",
-            x=found_pos[0],
-            y=found_pos[1],
-            asset_factory=af,
-            sound_manager=sm,
-            duration=duration
-        )
+
+        # Randomly choose one of the three traders if not specified
+        if trader_type is None:
+            trader_type = random.choice(["trader_wares", "trader_enhance", "trader_affix"])
+
+        if trader_type in ("trader_wares", "mystic_trader", "wares"):
+            trader = WaresTraderNPC(
+                name="Zephyrion",
+                npc_type="trader_wares",
+                x=found_pos[0],
+                y=found_pos[1],
+                asset_factory=af,
+                sound_manager=sm,
+                duration=duration
+            )
+        elif trader_type in ("trader_enhance", "enhance", "artificer"):
+            trader = EnhancerTraderNPC(
+                name="Ignis Vance",
+                npc_type="trader_enhance",
+                x=found_pos[0],
+                y=found_pos[1],
+                asset_factory=af,
+                sound_manager=sm,
+                duration=duration
+            )
+        else:
+            trader = OccultistTraderNPC(
+                name="Morrigan",
+                npc_type="trader_affix",
+                x=found_pos[0],
+                y=found_pos[1],
+                asset_factory=af,
+                sound_manager=sm,
+                duration=duration
+            )
+
         self.town_npcs.append(trader)
         if sm:
             sm.play("craft")
@@ -695,7 +766,8 @@ class World:
         if self.mystic_trader_timer >= self.mystic_trader_interval:
             self.mystic_trader_timer = 0.0
             from src.entities.npc import MysticTraderNPC
-            if not any(isinstance(n, MysticTraderNPC) or getattr(n, "npc_type", "") == "mystic_trader" for n in self.town_npcs):
+            has_active_trader = any(isinstance(n, MysticTraderNPC) or getattr(n, "npc_type", "").startswith("trader_") or getattr(n, "npc_type", "") == "mystic_trader" for n in self.town_npcs)
+            if not has_active_trader:
                 self.spawn_mystic_trader(player, asset_factory, sound_manager, duration=random.uniform(180.0, 300.0))
 
         # 2. Check town housing if enabled
@@ -716,16 +788,20 @@ class World:
     def render_town_npcs(self, target_surf, camera, player=None):
         """Renders Town NPCs and their name badges."""
         housing_enabled = getattr(self, "town_housing_enabled", False)
+        from src.entities.npc import MysticTraderNPC
         for npc in self.town_npcs:
-            if not housing_enabled and getattr(npc, "npc_type", "") != "mystic_trader":
+            is_trader = isinstance(npc, MysticTraderNPC) or getattr(npc, "npc_type", "").startswith("trader_") or getattr(npc, "npc_type", "") == "mystic_trader"
+            if not housing_enabled and not is_trader:
                 continue
             npc.render(target_surf, camera, player=player)
 
     def get_npc_at(self, world_x, world_y, radius=45.0):
         """Returns the TownNPC closest to (world_x, world_y) within reach radius, if any."""
         housing_enabled = getattr(self, "town_housing_enabled", False)
+        from src.entities.npc import MysticTraderNPC
         for npc in self.town_npcs:
-            if not housing_enabled and getattr(npc, "npc_type", "") != "mystic_trader":
+            is_trader = isinstance(npc, MysticTraderNPC) or getattr(npc, "npc_type", "").startswith("trader_") or getattr(npc, "npc_type", "") == "mystic_trader"
+            if not housing_enabled and not is_trader:
                 continue
             if math.hypot(npc.center_x - world_x, npc.center_y - world_y) <= radius:
                 return npc

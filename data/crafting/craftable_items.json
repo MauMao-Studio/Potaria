@@ -1,0 +1,2439 @@
+{
+  "craftable_items": [
+    {
+      "id": "work_bench",
+      "name": "Work Bench",
+      "category": "furniture",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 10
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Place on the ground. Stand near it to unlock advanced crafting recipes for tools, furniture, and house blocks."
+    },
+    {
+      "id": "wood_platform",
+      "name": "Wood Platform",
+      "category": "building",
+      "station": null,
+      "count": 2,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Semi-solid ledge for vertical climbing. Hold [S] or Down to drop through."
+    },
+    {
+      "id": "torch",
+      "name": "Torch",
+      "category": "furniture",
+      "station": null,
+      "count": 3,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 1
+        },
+        {
+          "item": "spud_sap",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Provides bright illumination. Emits light to deter monsters and light up homes."
+    },
+    {
+      "id": "wood_axe",
+      "name": "Wooden Axe",
+      "category": "equipment",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 6
+        }
+      ],
+      "rarity": "common",
+      "description": "A basic axe carved from raw timber. Chops down trees."
+    },
+    {
+      "id": "wooden_sword",
+      "name": "Wooden Sword",
+      "category": "equipment",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 7
+        }
+      ],
+      "rarity": "common",
+      "description": "A basic wooden sword carved from raw timber. Ideal for fending off early surface beasts."
+    },
+    {
+      "id": "wood_shovel",
+      "name": "Wooden Shovel",
+      "category": "equipment",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "rarity": "common",
+      "description": "Wooden scoop tool for swiftly excavating soft dirt and sand."
+    },
+    {
+      "id": "wood_pickaxe",
+      "name": "Wooden Pickaxe",
+      "category": "equipment",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 10
+        }
+      ],
+      "rarity": "common",
+      "description": "Crude wooden pick. Slowly chips through soft earth and stone."
+    },
+    {
+      "id": "wooden_arrow",
+      "name": "Wooden Arrow",
+      "category": "equipment",
+      "station": null,
+      "count": 25,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 1
+        },
+        {
+          "item": "stone_block",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Standard bow ammunition crafted from wood and stone."
+    },
+    {
+      "id": "rope_rungs",
+      "name": "Rope Rungs",
+      "category": "building",
+      "station": null,
+      "count": 3,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 2
+        },
+        {
+          "item": "spud_sap",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Knotted fiber ladder rungs for swiftly ascending vertical cliffs and shafts."
+    },
+    {
+      "id": "bamboo_scaffold",
+      "name": "Cane Scaffold",
+      "category": "building",
+      "station": null,
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 3
+        },
+        {
+          "item": "spud_sap",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Lightweight modular scaffold lattice designed for rapid construction."
+    },
+    {
+      "id": "dried_thatch_bale",
+      "name": "Dried Thatch Bale",
+      "category": "building",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 3
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Tightly compressed dried grain stalks for rustic roofing and soft landings."
+    },
+    {
+      "id": "pyrite_sparker",
+      "name": "Pyrite Sparker",
+      "category": "equipment",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 1
+        },
+        {
+          "item": "stone_block",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Iron striker paired with mineral pyrite that ignites campfires and scorches brush."
+    },
+    {
+      "id": "spud_angler_rod",
+      "name": "Spud Angler Rod",
+      "category": "equipment",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Flexible whittled birch rod rigged with braided fiber for freshwater angling."
+    },
+    {
+      "id": "copper_harvester_sickle",
+      "name": "Copper Harvester Sickle",
+      "category": "equipment",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 4
+        },
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Curved copper blade for swiftly clearing wild grass and gathering potato yields."
+    },
+    {
+      "id": "herbal_salve",
+      "name": "Herbal Salve",
+      "category": "survival",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 1
+        },
+        {
+          "item": "spud_sap",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Quick-acting botanical poultice ground from mashed spud pulp and soothing sap. Restores 35 Health."
+    },
+    {
+      "id": "burlap_tether",
+      "name": "Burlap Tether",
+      "category": "survival",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 2
+        },
+        {
+          "item": "spud_sap",
+          "count": 3
+        }
+      ],
+      "rarity": "common",
+      "description": "Braided hemp tether with a sturdy copper clip for securing gear and companion creatures."
+    },
+    {
+      "id": "cozy_hearth_pit",
+      "name": "Cozy Hearth Pit",
+      "category": "furniture",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 6
+        },
+        {
+          "item": "torch",
+          "count": 2
+        },
+        {
+          "item": "stone_block",
+          "count": 4
+        }
+      ],
+      "rarity": "common",
+      "description": "A crackling cobblestone fire pit radiating gentle light and soothing campfire smoke."
+    },
+    {
+      "id": "carved_tuber_lantern",
+      "name": "Carved Tuber Lantern",
+      "category": "furniture",
+      "station": null,
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 3
+        },
+        {
+          "item": "torch",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Whimsically hollowed giant potato grinning merrily with a warm flame burning inside."
+    },
+    {
+      "id": "mashed_potato",
+      "name": "Mashed Potato Meal",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Cooked at a furnace. Hearty creamy meal that restores +60 HP."
+    },
+    {
+      "id": "golden_fry",
+      "name": "Golden French Fry",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 3
+        },
+        {
+          "item": "gold_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "rare",
+      "description": "Crispy golden fry seasoned with gold dust. Restores +100 HP."
+    },
+    {
+      "id": "copper_bar",
+      "name": "Copper Bar",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_ore",
+          "count": 3
+        }
+      ],
+      "rarity": "common",
+      "description": "Refined copper ingot smelted from 3 copper ores. Used at a Work Bench."
+    },
+    {
+      "id": "iron_bar",
+      "name": "Iron Bar",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_ore",
+          "count": 3
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Tempered iron ingot smelted from 3 iron ores. Used for sturdy armor and tools."
+    },
+    {
+      "id": "gold_bar",
+      "name": "Gold Bar",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_ore",
+          "count": 3
+        }
+      ],
+      "rarity": "rare",
+      "description": "Pure gold ingot smelted from 3 gold ores. Used for high-tier swords and runes."
+    },
+    {
+      "id": "stone_brick",
+      "name": "Stone Brick",
+      "category": "building",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "stone_block",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Smooth masonry bricks smelted in a furnace. Sturdy block for castles and fortresses."
+    },
+    {
+      "id": "glass_window",
+      "name": "Glass Window",
+      "category": "building",
+      "station": "furnace",
+      "count": 2,
+      "ingredients": [
+        {
+          "item": "sand_block",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Refined crystal pane. Lets in daylight while stopping intruders."
+    },
+    {
+      "id": "stone_fireplace",
+      "name": "Stone Fireplace",
+      "category": "furniture",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "stone_block",
+          "count": 12
+        },
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "torch",
+          "count": 2
+        }
+      ],
+      "rarity": "rare",
+      "description": "Rustic stone hearth crackling with warm embers. Emits cozy light and smoke."
+    },
+    {
+      "id": "mosaic_tiles",
+      "name": "Mosaic Tiles",
+      "category": "building",
+      "station": "furnace",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "dirt_block",
+          "count": 2
+        },
+        {
+          "item": "sand_block",
+          "count": 2
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Fired clay tiles with lustrous mineral glaze for elegant manor flooring."
+    },
+    {
+      "id": "hardened_clay_shingles",
+      "name": "Hardened Clay Shingles",
+      "category": "building",
+      "station": "furnace",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "dirt_block",
+          "count": 4
+        },
+        {
+          "item": "stone_block",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Terracotta architectural shingles for high-angle rooftops."
+    },
+    {
+      "id": "hearty_root_stew",
+      "name": "Hearty Root Stew",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 3
+        },
+        {
+          "item": "glowing_mushroom",
+          "count": 1
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Simmering rustic stew of cubed potatoes, glowing mushrooms, and savory wild herbs. Restores 60 Health."
+    },
+    {
+      "id": "glazed_golden_tuber",
+      "name": "Glazed Golden Tuber",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 2
+        },
+        {
+          "item": "gold_bar",
+          "count": 2
+        }
+      ],
+      "rarity": "rare",
+      "description": "Heirloom russet potato roasted in molten gold and clover nectar. Restores 100 Health and 30 Mana."
+    },
+    {
+      "id": "smoked_spud_jerky",
+      "name": "Smoked Spud Jerky",
+      "category": "survival",
+      "station": "furnace",
+      "count": 2,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Hickory-cured salted potato jerky crisps that provide quick sustenance during expeditions."
+    },
+    {
+      "id": "gilded_russet",
+      "name": "Gilded Russet",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 3
+        },
+        {
+          "item": "gold_bar",
+          "count": 3
+        }
+      ],
+      "rarity": "epic",
+      "description": "Supreme confection of candied royal root providing massive vitality recovery."
+    },
+    {
+      "id": "glass_flask",
+      "name": "Glass Flask",
+      "category": "survival",
+      "station": "furnace",
+      "count": 3,
+      "ingredients": [
+        {
+          "item": "sand_block",
+          "count": 3
+        }
+      ],
+      "rarity": "common",
+      "description": "Blown glass flask for collecting mountain springs, glowing extracts, and sap."
+    },
+    {
+      "id": "abyssal_alloy_bar",
+      "name": "Abyssal Alloy Bar",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "blightstone_block",
+          "count": 4
+        },
+        {
+          "item": "gold_bar",
+          "count": 2
+        },
+        {
+          "item": "iron_bar",
+          "count": 2
+        }
+      ],
+      "rarity": "epic",
+      "description": "Dense iridescent alloy ingot forged from Blightstone, gold, and iron."
+    },
+    {
+      "id": "potato_bread",
+      "name": "Oven-Baked Potato Loaf",
+      "category": "survival",
+      "station": "furnace",
+      "count": 2,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 3
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Warm crusty hearth bread baked from wholesome potato flour. Restores 45 Health."
+    },
+    {
+      "id": "sweet_tuber_pie",
+      "name": "Sweet Tuber Pie",
+      "category": "survival",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 2
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Caramelized tuber pie baked to golden perfection with sweet forest sap. Restores 70 Health."
+    },
+    {
+      "id": "iron_cauldron",
+      "name": "Iron Cauldron",
+      "category": "furniture",
+      "station": "furnace",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 7
+        }
+      ],
+      "rarity": "common",
+      "description": "Heavy cast kettle for collecting rainwater, washing ore, and boiling root broths."
+    },
+    {
+      "id": "roof_tiles",
+      "name": "Roof Tiles",
+      "category": "building",
+      "station": "work_bench",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "stone_block",
+          "count": 2
+        },
+        {
+          "item": "dirt_block",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Decorative red clay roofing shingles. Solid blocks that block monsters and rainwater."
+    },
+    {
+      "id": "wood_planks",
+      "name": "Wood Planks",
+      "category": "building",
+      "station": "work_bench",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Sanded polished timber blocks. Ideal for walls, solid floors, and ceilings."
+    },
+    {
+      "id": "wooden_door",
+      "name": "Wooden Door",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 6
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Solid wooden door. Right-click to open or close. Keeps monsters out!"
+    },
+    {
+      "id": "wooden_table",
+      "name": "Wooden Table",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 8
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Crafted wooden table for living quarters and house qualification."
+    },
+    {
+      "id": "wooden_chair",
+      "name": "Wooden Chair",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Handcrafted spud chair. Essential for comfortable homesteads."
+    },
+    {
+      "id": "wooden_bed",
+      "name": "Wooden Bed",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 12
+        },
+        {
+          "item": "spud_sap",
+          "count": 4
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Comfortable handcrafted bed. Right-click to set spawn point and rest to recover health."
+    },
+    {
+      "id": "bookshelf",
+      "name": "Bookshelf",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 10
+        },
+        {
+          "item": "bone",
+          "count": 2
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Sturdy wooden shelves lined with leather-bound arcane tomes and recipes."
+    },
+    {
+      "id": "grandfather_clock",
+      "name": "Grandfather Clock",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 10
+        },
+        {
+          "item": "iron_bar",
+          "count": 2
+        },
+        {
+          "item": "gold_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "rare",
+      "description": "Towering pendulum clock. Right-click to check in-game celestial time."
+    },
+    {
+      "id": "candelabra",
+      "name": "Candelabra",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 3
+        },
+        {
+          "item": "torch",
+          "count": 3
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Ornate three-pronged brass candelabra. Emits a warm, golden illumination."
+    },
+    {
+      "id": "chandelier",
+      "name": "Chandelier",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_bar",
+          "count": 3
+        },
+        {
+          "item": "torch",
+          "count": 4
+        },
+        {
+          "item": "iron_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "rare",
+      "description": "Grand hanging ceiling chandelier fitted with four glowing candles."
+    },
+    {
+      "id": "potted_plant",
+      "name": "Potted Spud Plant",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "stone_block",
+          "count": 2
+        },
+        {
+          "item": "dirt_block",
+          "count": 2
+        },
+        {
+          "item": "raw_potato",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "A terracotta pot nurturing a lush miniature leafy potato bonsai."
+    },
+    {
+      "id": "wooden_dresser",
+      "name": "Wooden Dresser",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 10
+        },
+        {
+          "item": "copper_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Carved wooden dresser with brass pull handles and polished top shelf."
+    },
+    {
+      "id": "wall_tapestry",
+      "name": "Wall Tapestry",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 2
+        },
+        {
+          "item": "spud_sap",
+          "count": 4
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Woven decorative banner depicting the Golden Spud of legend."
+    },
+    {
+      "id": "bathtub",
+      "name": "Bathtub",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 4
+        },
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Porcelain-enameled tub filled with warm, soothing bubble water."
+    },
+    {
+      "id": "sink",
+      "name": "Sink",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 2
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Brass-faucet washbasin mounted on a carved wooden cabinet."
+    },
+    {
+      "id": "painting",
+      "name": "Painting",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        },
+        {
+          "item": "gold_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "rare",
+      "description": "Gilded framed oil landscape portraying rolling potato hills under a sunset."
+    },
+    {
+      "id": "wood_shelf",
+      "name": "Wood Shelf",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 2,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Smooth wooden wall shelf. Allows Spud to jump up through and stand upon it."
+    },
+    {
+      "id": "wood_wall",
+      "name": "Wood Wall",
+      "category": "building",
+      "station": "work_bench",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Place in the background to build secure, monster-proof rooms."
+    },
+    {
+      "id": "stone_brick_wall",
+      "name": "Stone Brick Wall",
+      "category": "building",
+      "station": "work_bench",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "stone_brick",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Heavy reinforced masonry backdrop for fortresses and castles."
+    },
+    {
+      "id": "carved_stone_bricks",
+      "name": "Carved Stone Bricks",
+      "category": "building",
+      "station": "work_bench",
+      "count": 2,
+      "ingredients": [
+        {
+          "item": "stone_brick",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Precision-hewn stone masonry carved with ancient geometric friezes."
+    },
+    {
+      "id": "cobblestone_parapet",
+      "name": "Cobblestone Parapet",
+      "category": "building",
+      "station": "work_bench",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "stone_block",
+          "count": 4
+        }
+      ],
+      "rarity": "common",
+      "description": "Low defensive battlement blocks for fortifying homestead ramparts."
+    },
+    {
+      "id": "wrought_iron_palisade",
+      "name": "Wrought Iron Palisade",
+      "category": "building",
+      "station": "work_bench",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Sturdy forged iron security grating that permits sunlight while stopping foes."
+    },
+    {
+      "id": "forged_iron_chain",
+      "name": "Forged Iron Chain",
+      "category": "building",
+      "station": "work_bench",
+      "count": 2,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Interlocked iron chain links for suspending chandeliers and drawbridges."
+    },
+    {
+      "id": "reinforced_slate_slab",
+      "name": "Reinforced Slate Slab",
+      "category": "building",
+      "station": "work_bench",
+      "count": 4,
+      "ingredients": [
+        {
+          "item": "stone_block",
+          "count": 4
+        },
+        {
+          "item": "iron_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Heavy slate slabs tempered to resist blast concussions."
+    },
+    {
+      "id": "furnace",
+      "name": "Furnace",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "stone_block",
+          "count": 20
+        },
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "torch",
+          "count": 3
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Place on the ground. Stand near it to smelt raw ores into ingots and cook savory potato meals."
+    },
+    {
+      "id": "chest",
+      "name": "Treasure Chest",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 10
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Place to store keepsakes, or right-click when found in caves to claim rich loot!"
+    },
+    {
+      "id": "iron_chest",
+      "name": "Iron Storage Chest",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 8
+        },
+        {
+          "item": "iron_bar",
+          "count": 2
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Heavy reinforced chest for storing 20 items safely. Right-click to open or manage items."
+    },
+    {
+      "id": "blight_ember_hearth",
+      "name": "Blight Ember Hearth",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "blightstone_block",
+          "count": 4
+        },
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 3
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Occult hearth pit glowing with spectral indigo embers, warding off darkness."
+    },
+    {
+      "id": "smithing_anvil",
+      "name": "Smithing Anvil",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 12
+        }
+      ],
+      "rarity": "common",
+      "description": "Heavy forged iron anvil for shaping blades, tuning armor, and seating socketed gems."
+    },
+    {
+      "id": "whetstone_wheel",
+      "name": "Whetstone Wheel",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "stone_block",
+          "count": 6
+        },
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "iron_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Revolving sandstone wheel mounted on timber trestles for grinding and sharpening tools."
+    },
+    {
+      "id": "alchemical_retort",
+      "name": "Alchemical Retort",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 3
+        },
+        {
+          "item": "glass_window",
+          "count": 2
+        },
+        {
+          "item": "torch",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Brass burner and glassware condenser stand for concocting high-tier alchemical solutions."
+    },
+    {
+      "id": "iron_reinforced_door",
+      "name": "Iron-Reinforced Door",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 6
+        },
+        {
+          "item": "iron_bar",
+          "count": 3
+        }
+      ],
+      "rarity": "common",
+      "description": "Heavy timber door bolted with forged iron strapping to withstand monstrous dungeon sieges."
+    },
+    {
+      "id": "brass_lantern",
+      "name": "Brass Lantern",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 2
+        },
+        {
+          "item": "torch",
+          "count": 1
+        },
+        {
+          "item": "glass_window",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Weatherproof brass oil lantern that burns steadily through heavy storms and downpours."
+    },
+    {
+      "id": "spectral_lantern",
+      "name": "Spectral Lantern",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 2
+        },
+        {
+          "item": "glowing_mushroom",
+          "count": 2
+        },
+        {
+          "item": "torch",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Chilled lantern casting an azure glow that illuminates cavern depths."
+    },
+    {
+      "id": "timber_trapdoor",
+      "name": "Timber Trapdoor",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 2,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 6
+        }
+      ],
+      "rarity": "common",
+      "description": "Hinged wooden floor hatch for cellar entrances and mine shaft ladders."
+    },
+    {
+      "id": "hooped_cask",
+      "name": "Hooped Cask",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 8
+        },
+        {
+          "item": "copper_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Stout wooden storage cask sealed with copper banding for keeping cellar preserves."
+    },
+    {
+      "id": "weaver_loom",
+      "name": "Weaver's Loom",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 6
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Crafting loom with wooden shuttles for weaving tapestries, sails, and explorer cloaks."
+    },
+    {
+      "id": "blast_kiln",
+      "name": "High-Temp Blast Kiln",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "stone_brick",
+          "count": 8
+        },
+        {
+          "item": "iron_bar",
+          "count": 4
+        },
+        {
+          "item": "furnace",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Refractory smelting kiln insulated with dense brick for processing ores at intense temperatures."
+    },
+    {
+      "id": "smokehouse_stove",
+      "name": "Smokehouse Stove",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "furnace",
+          "count": 1
+        },
+        {
+          "item": "wood",
+          "count": 6
+        }
+      ],
+      "rarity": "common",
+      "description": "Chimney-vented wooden smoke oven designed for rapidly curing and smoking provisions."
+    },
+    {
+      "id": "cartographer_desk",
+      "name": "Cartographer's Desk",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 6
+        },
+        {
+          "item": "stone_block",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Drafting table equipped with brass calipers and parchment rolls for mapping uncharted lands."
+    },
+    {
+      "id": "fletcher_bench",
+      "name": "Fletcher's Bench",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 6
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Specialist work station for notching arrow shafts and tensioning composite bows."
+    },
+    {
+      "id": "masonry_saw",
+      "name": "Masonry Saw",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "stone_brick",
+          "count": 4
+        },
+        {
+          "item": "iron_bar",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Rotary iron cutting wheel for cleanly trimming stone blocks into precision architectural trim."
+    },
+    {
+      "id": "archery_target",
+      "name": "Archery Target",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Painted straw bullseye target for measuring marksmanship and projectile distance."
+    },
+    {
+      "id": "galvanic_attractor",
+      "name": "Galvanic Attractor",
+      "category": "furniture",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 4
+        }
+      ],
+      "rarity": "common",
+      "description": "Pointed copper spire that attracts atmospheric static and redirects lightning strikes."
+    },
+    {
+      "id": "wood_bow",
+      "name": "Wood Bow",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 10
+        }
+      ],
+      "rarity": "common",
+      "description": "Simple wooden bow. Consumes arrows from your backpack when fired."
+    },
+    {
+      "id": "copper_shortsword",
+      "name": "Spud Shortsword",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 5
+        },
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "A trusty starter copper blade. Pierces close-range foes."
+    },
+    {
+      "id": "copper_broadsword",
+      "name": "Copper Broadsword",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 8
+        },
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Broad cutting arc capable of keeping creeping slimes at bay."
+    },
+    {
+      "id": "copper_axe",
+      "name": "Copper Axe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 6
+        },
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Sturdy forged copper axe head. Efficient woodcutter."
+    },
+    {
+      "id": "copper_pickaxe",
+      "name": "Copper Pickaxe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 8
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "rarity": "common",
+      "description": "Starter mining tool. Digs through dirt, clay, and soft copper veins."
+    },
+    {
+      "id": "iron_pickaxe",
+      "name": "Iron Pickaxe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Tempered iron head that swiftly breaks through dense stone and minerals."
+    },
+    {
+      "id": "iron_axe",
+      "name": "Iron Axe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 8
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Hardened iron lumber axe. Swiftly fells towering trees and dense trunks."
+    },
+    {
+      "id": "iron_shovel",
+      "name": "Iron Shovel",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 4
+        },
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Tempered iron spade for rapid trench excavation and gravel clearing."
+    },
+    {
+      "id": "gold_broadsword",
+      "name": "Golden Spud Blade",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_bar",
+          "count": 8
+        },
+        {
+          "item": "wood",
+          "count": 2
+        }
+      ],
+      "rarity": "rare",
+      "description": "A masterwork golden blade that shines brilliantly underground."
+    },
+    {
+      "id": "gold_pickaxe",
+      "name": "Gold Pickaxe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_bar",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "rarity": "rare",
+      "description": "Lustrous gilded pickaxe boasting exceptional digging speed."
+    },
+    {
+      "id": "gold_axe",
+      "name": "Gold Axe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_bar",
+          "count": 8
+        },
+        {
+          "item": "wood",
+          "count": 3
+        }
+      ],
+      "rarity": "rare",
+      "description": "Lustrous gold axe with unmatched cutting velocity. Cleaves wood in seconds."
+    },
+    {
+      "id": "fiber_clippers",
+      "name": "Fiber Clippers",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 2
+        }
+      ],
+      "rarity": "common",
+      "description": "Spring-tensioned iron shears for harvesting foliage, vines, and raw plant fibers."
+    },
+    {
+      "id": "oak_buckler",
+      "name": "Oak Buckler",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 10
+        },
+        {
+          "item": "iron_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Iron-bossed oak roundshield that absorbs stray arrows and monster charges."
+    },
+    {
+      "id": "iron_aegis",
+      "name": "Iron Aegis",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 6
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Heavy tempered steel kite shield bearing the royal Spud crest."
+    },
+    {
+      "id": "arbalest_repeater",
+      "name": "Arbalest Repeater",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 6
+        },
+        {
+          "item": "wood",
+          "count": 8
+        },
+        {
+          "item": "spud_sap",
+          "count": 3
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Lever-action mechanised arbalest delivering high-velocity armor-piercing bolts."
+    },
+    {
+      "id": "glowing_lumen_arrow",
+      "name": "Glowing Lumen Arrow",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 25,
+      "ingredients": [
+        {
+          "item": "wooden_arrow",
+          "count": 25
+        },
+        {
+          "item": "glowing_mushroom",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Bioluminescent tipped arrows that pierce shadows and illuminate hit adversaries."
+    },
+    {
+      "id": "spud_quiver",
+      "name": "Spud Hunter's Quiver",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 4
+        },
+        {
+          "item": "copper_bar",
+          "count": 1
+        }
+      ],
+      "rarity": "common",
+      "description": "Lightweight shoulder quiver that improves archer draw speed and critical precision."
+    },
+    {
+      "id": "totem_of_resurgence",
+      "name": "Totem of Resurgence",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_bar",
+          "count": 8
+        },
+        {
+          "item": "portal_shard",
+          "count": 2
+        },
+        {
+          "item": "fallen_star",
+          "count": 2
+        }
+      ],
+      "rarity": "mythic",
+      "description": "Gilded pocket idol of the Great Spud that channels restorative starlight when life wanes."
+    },
+    {
+      "id": "bone_bow",
+      "name": "Bone Recurve Bow",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "bone",
+          "count": 12
+        },
+        {
+          "item": "spud_sap",
+          "count": 4
+        }
+      ],
+      "rarity": "rare",
+      "description": "Reinforced skeletal recurve bow with formidable arrow velocity."
+    },
+    {
+      "id": "frostburn_arrow",
+      "name": "Frostburn Arrow",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 25,
+      "ingredients": [
+        {
+          "item": "wooden_arrow",
+          "count": 25
+        },
+        {
+          "item": "frost_core",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Chilled arrow dipped in frost core essence. Deals +8 bonus damage."
+    },
+    {
+      "id": "flame_arrow",
+      "name": "Flame Arrow",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 25,
+      "ingredients": [
+        {
+          "item": "wooden_arrow",
+          "count": 25
+        },
+        {
+          "item": "torch",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Ignited arrow tipped with torch flame and sap. Burns targets on hit."
+    },
+    {
+      "id": "astral_arrow",
+      "name": "Astral Arrow",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 25,
+      "ingredients": [
+        {
+          "item": "wooden_arrow",
+          "count": 25
+        },
+        {
+          "item": "fallen_star",
+          "count": 1
+        }
+      ],
+      "rarity": "epic",
+      "description": "Arrow imbued with fallen star matter. Flies at high velocity and pierces darkness."
+    },
+    {
+      "id": "starch_blade",
+      "name": "Legendary Starch Blade",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_bar",
+          "count": 8
+        },
+        {
+          "item": "raw_potato",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 6
+        }
+      ],
+      "rarity": "legendary",
+      "description": "Ancestral blade of King Spudicus. Infused with living potato vitality and radiant sparkles."
+    },
+    {
+      "id": "cactus_sword",
+      "name": "Cactus Sword",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "cactus",
+          "count": 10
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Thorny desert blade fashioned from needle-sharp desert cactus."
+    },
+    {
+      "id": "cactus_helmet",
+      "name": "Cactus Helmet",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "cactus",
+          "count": 8
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Thorny headgear that dissuades flying pests from diving."
+    },
+    {
+      "id": "cactus_chestplate",
+      "name": "Cactus Chestplate",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "cactus",
+          "count": 12
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Reinforced cuirass bristling with sharp defensive spikes."
+    },
+    {
+      "id": "cactus_greaves",
+      "name": "Cactus Greaves",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "cactus",
+          "count": 10
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Spiky desert leg guards that kick away creeping crawlers."
+    },
+    {
+      "id": "celestial_axe",
+      "name": "Celestial Axe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "celestial_essence",
+          "count": 1
+        },
+        {
+          "item": "gold_bar",
+          "count": 8
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "rarity": "legendary",
+      "description": "Star-forged battle axe. Instantly annihilates ancient trees and dense timber."
+    },
+    {
+      "id": "celestial_pickaxe",
+      "name": "Celestial Pickaxe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "celestial_essence",
+          "count": 1
+        },
+        {
+          "item": "gold_bar",
+          "count": 10
+        },
+        {
+          "item": "wood",
+          "count": 5
+        }
+      ],
+      "rarity": "legendary",
+      "description": "Starlight mining pickaxe. Effortlessly shreds subterranean bedrock and gems."
+    },
+    {
+      "id": "magma_greatsword",
+      "name": "Magma Greatsword",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "magma_core",
+          "count": 1
+        },
+        {
+          "item": "gold_bar",
+          "count": 8
+        }
+      ],
+      "rarity": "epic",
+      "description": "A colossal greatsword quenched in subterranean magma. Engulfs targets in blazing fire."
+    },
+    {
+      "id": "magma_chestplate",
+      "name": "Magma Cuirass",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "magma_core",
+          "count": 2
+        },
+        {
+          "item": "iron_bar",
+          "count": 10
+        }
+      ],
+      "rarity": "epic",
+      "description": "Heavy molten plates glowing with perpetual subterranean heat."
+    },
+    {
+      "id": "cryo_chestplate",
+      "name": "Cryo Carapace",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "frost_core",
+          "count": 3
+        },
+        {
+          "item": "iron_bar",
+          "count": 10
+        }
+      ],
+      "rarity": "epic",
+      "description": "Hardened permafrost carapace dropped by Cryo-Spud."
+    },
+    {
+      "id": "bone_scythe",
+      "name": "Bone Scythe",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "bone",
+          "count": 16
+        },
+        {
+          "item": "iron_bar",
+          "count": 6
+        }
+      ],
+      "rarity": "epic",
+      "description": "A wicked scythe carved from ancient subterranean horrors. Reaps the souls of the fallen."
+    },
+    {
+      "id": "titans_ring",
+      "name": "Titan's Ring",
+      "category": "equipment",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "celestial_essence",
+          "count": 1
+        },
+        {
+          "item": "gold_bar",
+          "count": 6
+        }
+      ],
+      "rarity": "epic",
+      "description": "Heavy obsidian band pulsing with titanic fortitude."
+    },
+    {
+      "id": "affix_stone",
+      "name": "Affix Stone",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "portal_shard",
+          "count": 3
+        },
+        {
+          "item": "gold_bar",
+          "count": 5
+        },
+        {
+          "item": "blightstone",
+          "count": 5
+        }
+      ],
+      "rarity": "mythic",
+      "description": "A primordial runic stone. Apply to Legendary or Ancient gear with an open affix slot to awaken god-tier affixes!"
+    },
+    {
+      "id": "greater_healing_potion",
+      "name": "Greater Healing Potion",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "healing_potion",
+          "count": 2
+        },
+        {
+          "item": "glowing_mushroom",
+          "count": 1
+        }
+      ],
+      "rarity": "rare",
+      "description": "Distilled glowing mushroom tonic. Instantly heals +120 HP."
+    },
+    {
+      "id": "speed_potion",
+      "name": "Swiftness Potion",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 1
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Effervescent tonic granting temporary hyper-speed."
+    },
+    {
+      "id": "night_gazer_elixir",
+      "name": "Night Gazer Elixir",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "spud_sap",
+          "count": 2
+        },
+        {
+          "item": "glowing_mushroom",
+          "count": 2
+        },
+        {
+          "item": "fallen_star",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Phosphorescent brew infused with starlight and spores, enhancing subterranean clarity."
+    },
+    {
+      "id": "zephyr_tonic",
+      "name": "Zephyr Tonic",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "raw_potato",
+          "count": 2
+        },
+        {
+          "item": "copper_bar",
+          "count": 1
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Sparkling effervescent tonic distilled with airy minerals, quickening footwork."
+    },
+    {
+      "id": "explorers_satchel",
+      "name": "Explorer's Satchel",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "spud_sap",
+          "count": 6
+        },
+        {
+          "item": "wood",
+          "count": 4
+        }
+      ],
+      "rarity": "common",
+      "description": "Compact oiled satchel that keeps field specimens and minerals neatly organized."
+    },
+    {
+      "id": "magnetic_lodestone",
+      "name": "Magnetic Lodestone",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "iron_bar",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 2
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Floating magnetite compass that attunes to deep underground geological anomalies."
+    },
+    {
+      "id": "brass_far_seer",
+      "name": "Brass Far-Seer",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "copper_bar",
+          "count": 3
+        },
+        {
+          "item": "glass_window",
+          "count": 1
+        }
+      ],
+      "rarity": "uncommon",
+      "description": "Extending brass optical cylinder fitted with crystal lenses for surveying distant horizons."
+    },
+    {
+      "id": "solar_chronometer",
+      "name": "Solar Chronometer",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_bar",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 1
+        }
+      ],
+      "rarity": "rare",
+      "description": "Gilded pocket timepiece with celestial planetary gears predicting sunrise and sunset."
+    },
+    {
+      "id": "dungeon_rune",
+      "name": "Dungeon Teleporter Rune",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "gold_bar",
+          "count": 4
+        },
+        {
+          "item": "spud_sap",
+          "count": 5
+        },
+        {
+          "item": "stone_brick",
+          "count": 6
+        }
+      ],
+      "rarity": "epic",
+      "description": "Right-click to teleport directly to the Nether Dungeon Chamber and summon Lord Malus!"
+    },
+    {
+      "id": "desert_rune",
+      "name": "Sun Altar Rune",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "cactus",
+          "count": 6
+        },
+        {
+          "item": "sandstone_block",
+          "count": 8
+        },
+        {
+          "item": "gold_bar",
+          "count": 2
+        }
+      ],
+      "rarity": "rare",
+      "description": "Right-click to teleport to the Arid Waste Arena to summon Ignis Colossus!"
+    },
+    {
+      "id": "cryo_rune",
+      "name": "Glacial Altar Rune",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "frost_core",
+          "count": 2
+        },
+        {
+          "item": "ice_block",
+          "count": 10
+        },
+        {
+          "item": "iron_bar",
+          "count": 4
+        }
+      ],
+      "rarity": "rare",
+      "description": "Right-click to teleport to the Permafrost Arena to summon Cryo-Spud!"
+    },
+    {
+      "id": "necro_rune",
+      "name": "Blight Altar Rune",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "bone",
+          "count": 8
+        },
+        {
+          "item": "blightstone_block",
+          "count": 10
+        },
+        {
+          "item": "gold_bar",
+          "count": 2
+        }
+      ],
+      "rarity": "rare",
+      "description": "Right-click to teleport to the Shadow Crypt to summon Necro-Tuber!"
+    },
+    {
+      "id": "celestial_keystone",
+      "name": "Celestial Keystone",
+      "category": "survival",
+      "station": "work_bench",
+      "count": 1,
+      "ingredients": [
+        {
+          "item": "portal_shard",
+          "count": 4
+        },
+        {
+          "item": "gold_bar",
+          "count": 5
+        },
+        {
+          "item": "stone_brick",
+          "count": 10
+        }
+      ],
+      "rarity": "legendary",
+      "description": "Right-click to summon Grand Boss Sol-Rho - The Celestial Titan!"
+    }
+  ]
+}
