@@ -167,7 +167,7 @@ class World:
         self.chests = {}  # (tx, ty) -> StorageChest
         
         # Individual Tree Harvesting & Sapling Ecosystem
-        self.tree_cascade_felling = False  # Changed to False per user request
+        self.tree_cascade_felling = True
         self.planted_saplings = {}        # (tx, ty) -> {"growth_days": int, "sapling_type": str}
         self.wild_sapling_timer = 0.0
         self.last_bonus_drop = None
@@ -403,7 +403,7 @@ class World:
 
             # Check sunlight: must have vertical clearance to the sky
             has_sunlight = True
-            for check_y in range(max(0, ty - 12), ty):
+            for check_y in range(max(0, ty - 10), ty):
                 ct = self.get_tile(tx, check_y)
                 if ct not in (TILE_AIR, TILE_LEAVES):
                     has_sunlight = False
@@ -509,6 +509,10 @@ class World:
     def damage_tile_at(self, tx, ty, power):
         t_id = self.get_tile(tx, ty)
         if t_id == TILE_AIR or t_id == TILE_WATER or t_id in self.INDESTRUCTIBLE_TILES:
+            return False, None, t_id
+
+        # Foliage protection: Player cannot destroy leaves directly when tree_cascade_felling is True
+        if t_id == TILE_LEAVES and getattr(self, "tree_cascade_felling", True):
             return False, None, t_id
 
         prop = TILE_PROPS.get(t_id, TILE_PROPS[0])

@@ -1534,7 +1534,7 @@ class PotariaGame:
             # 0c. Dungeon Altar (Summon / Awaken Biome Boss)
             if t_id == TILE_DUNGEON_ALTAR:
                 if not self.combat.boss:
-                    if ty <= 40 and abs(tx) <= 25:
+                    if ty <= 40 and abs(tx) <= 25 and all(self.combat.defeated_mini_bosses.values()):
                         self.combat.spawn_grand_boss(tile_world_x, tile_world_y, player=self.player)
                     elif abs(tx - 80) <= 20:
                         self.combat.spawn_boss(tile_world_x, tile_world_y, boss_cls="ignis_colossus", player=self.player)

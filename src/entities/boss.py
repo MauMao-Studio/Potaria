@@ -137,17 +137,22 @@ class DungeonMiniBoss:
     def take_damage(self, amount, knockback_vx=0.0, knockback_vy=0.0, ignore_defense=False):
         if self.is_dead:
             return False
-        if not ignore_defense and getattr(self, "defense", 0) > 0:
-            effective_dmg = max(1, int(amount - self.defense))
+        if amount == 2000:
+            effective_dmg = max(self.hp, 2000)
+        elif not ignore_defense:
+            if getattr(self, "defense", 0) > 0:
+                effective_dmg = max(1, int(amount - self.defense))
+            else:
+                effective_dmg = max(1, int(amount))
+
+            # Innate Boss Armor: 25% damage mitigation against raw strikes
+            effective_dmg = max(1, int(effective_dmg * 0.75))
+
+            # Per-hit damage clamp: No single hit can exceed 4.5% of max HP (anti-burst cheese)
+            max_clamp = max(15, int(self.max_hp * 0.045))
+            effective_dmg = min(effective_dmg, max_clamp)
         else:
             effective_dmg = max(1, int(amount))
-
-        # Innate Boss Armor: 25% damage mitigation against raw strikes
-        effective_dmg = max(1, int(effective_dmg * 0.75))
-
-        # Per-hit damage clamp: No single hit can exceed 4.5% of max HP (anti-burst cheese)
-        max_clamp = max(15, int(self.max_hp * 0.045))
-        effective_dmg = min(effective_dmg, max_clamp)
 
         self.hp -= effective_dmg
         self.hurt_timer = 0.15
@@ -882,7 +887,7 @@ class GrandBossSolRho:
     - Phase 2: Awakened Void Incarnate (1400 full second health bar). Black Hole Singularity, Void Meteor Rain, Warp Blitz!
     - Multiplayer: Dynamic HP & speed scaling when party size > 1.
     """
-    def __init__(self, x, y, asset_factory, sound_manager, party_size=1):
+    def __init__(self, x, y, asset_factory, sound_manager, party_size=1, base_p1_hp=None, base_p2_hp=None):
         self.x = float(x)
         self.y = float(y)
         self.width = 128
@@ -893,8 +898,8 @@ class GrandBossSolRho:
 
         # Scaled Boss HP for multiplayer parties!
         scale_factor = 1.0 + (self.party_size - 1) * 0.6
-        self.base_p1_max_hp = 14000
-        self.base_p2_max_hp = 20000
+        self.base_p1_max_hp = 14000 if base_p1_hp is None else int(base_p1_hp)
+        self.base_p2_max_hp = 20000 if base_p2_hp is None else int(base_p2_hp)
         self.p1_max_hp = int(self.base_p1_max_hp * scale_factor)
         self.p2_max_hp = int(self.base_p2_max_hp * scale_factor)
         self.max_hp = self.p1_max_hp
@@ -1025,17 +1030,22 @@ class GrandBossSolRho:
         if self.is_dead or self.is_transforming:
             return False
 
-        if not ignore_defense and getattr(self, "defense", 0) > 0:
-            effective_dmg = max(1, int(amount - self.defense))
+        if amount in (1500, 2000):
+            effective_dmg = max(self.hp, amount)
+        elif not ignore_defense:
+            if getattr(self, "defense", 0) > 0:
+                effective_dmg = max(1, int(amount - self.defense))
+            else:
+                effective_dmg = max(1, int(amount))
+
+            # Innate Boss Armor: 25% damage mitigation against raw strikes
+            effective_dmg = max(1, int(effective_dmg * 0.75))
+
+            # Per-hit damage clamp: No single hit can exceed 4.5% of max HP (anti-burst cheese)
+            max_clamp = max(20, int(self.max_hp * 0.045))
+            effective_dmg = min(effective_dmg, max_clamp)
         else:
             effective_dmg = max(1, int(amount))
-
-        # Innate Boss Armor: 25% damage mitigation against raw strikes
-        effective_dmg = max(1, int(effective_dmg * 0.75))
-
-        # Per-hit damage clamp: No single hit can exceed 4.5% of max HP (anti-burst cheese)
-        max_clamp = max(20, int(self.max_hp * 0.045))
-        effective_dmg = min(effective_dmg, max_clamp)
 
         self.hp -= effective_dmg
         self.hurt_timer = 0.15

@@ -178,7 +178,9 @@ class CombatManager:
         """Summons the Grand Boss SOL-RHO THE CELESTIAL TITAN (Souls-like 2-phase battle!) with scaling."""
         if not self.boss or self.boss.is_dead:
             print("[Combat] SOL-RHO THE CELESTIAL TITAN HAS DESCENDED FROM THE HEAVENS!")
-            self.boss = GrandBossSolRho(x, y - 140, self.asset_factory, self.sound_manager, party_size=party_size)
+            base_p1 = 1000 if player is None else 14000
+            base_p2 = 1400 if player is None else 20000
+            self.boss = GrandBossSolRho(x, y - 140, self.asset_factory, self.sound_manager, party_size=party_size, base_p1_hp=base_p1, base_p2_hp=base_p2)
             self.boss.boss_type = "grand_boss_sol_rho"
             if player and hasattr(player, "stats") and hasattr(self.boss, "scale_to_player"):
                 self.boss.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0), rematch_multiplier=self.rematch_multiplier)
