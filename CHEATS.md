@@ -88,6 +88,12 @@ Type your command and press **`Enter`** to execute. Press **`Escape`** to dismis
 - `chrono_rod_of_sol_rho` - Time-piercing rod javelin
 - `scorpion_catalyst_of_the_vale` - Desert starlight catalyst
 
+### Crafting, Storage & Enhancement Catalysts
+- `wooden_sword` - Basic craftable wooden starter blade
+- `chest` - Craftable multi-slot storage container
+- `affix_stone` - Rare catalyst required for affix slot carving at Morrigan the Void Weaver
+- `gold_bar` - Smelted gold ingot used for Keystone crafting and high-tier gear
+
 ### Boss Runes & Summoners
 - `dungeon_rune` - Warps to Nether Dungeon & summons Lord Malus
 - `desert_rune` - Warps to Arid Waste Arena & summons Ignis Colossus
@@ -100,4 +106,4 @@ Type your command and press **`Enter`** to execute. Press **`Escape`** to dismis
 ## 4. Notable Mob & Boss Names for `/spawn`
 
 - **Bosses**: `malus`, `ignis`, `cryo`, `necro`, `sol_rho` (or `titan`)
-- **Hostile Mobs**: `green_slime`, `frost_slime`, `sand_slime`, `zombie`, `ice_zombie`, `rock_zombie`, `mummy`, `demon_eye`, `skeleton`, `cave_bat`, `ice_bat`, `scorpion`, `crawler`
+- **Hostile Mobs**: `green_slime`, `frost_slime`, `sand_slime`, `zombie`, `ice_zombie`, `rock_zombie`, `mummy`, `night_gazer`, `demon_eye`, `skeleton`, `cave_bat`, `ice_bat`, `scorpion`, `crawler`

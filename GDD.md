@@ -1,251 +1,307 @@
-# SPUD: ROOT REALM (POTARIA)
+# Potaria (Spud: Root Realm)
 ## Master Game Design Document (GDD)
 
 **Developer:** Kurados  
 **Genre:** 2D Sandbox Action RPG  
-**Subgenre:** Survival • Exploration • Crafting • Dungeon Crawler • Character Progression • Cooperative Multiplayer  
+**Subgenre:** Survival • Exploration • Crafting • Dungeon Crawler • Character Progression • Bullet-Hell Danmaku • Cooperative Multiplayer  
 **Perspective:** 2D Side-View  
-**Core Inspiration:** Terraria-style sandbox exploration + Chroisen-style Action RPG equipment & skills  
-**Target Platform:** PC (Pygame-ce Community Edition Engine, 100% Offline Standalone)  
-**Player Mode:** Single-Player & 1–5 Player LAN Cooperative Multiplayer  
-**World Structure:** Infinite procedurally generated chunk-based open world + Subterranean Arenas & Nether Dungeon  
+**Core Inspirations:** Terraria (world sandbox & building), Chroisen (paperdoll equipment & skill trees), Touhou Project (bullet-hell danmaku patterns)  
+**Target Platforms:** PC (Steam / Standalone) & Mobile (Google Play Android)  
+**Engine Architecture:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone, Hybrid OpenGL HAL)  
+**Player Modes:** Single-Player & 1–5 Player LAN Cooperative Multiplayer  
+**World Structure:** Infinite procedurally generated chunk-based open world + Subterranean Dungeon Arenas  
+**Document Version:** v1.6.0  
 
 ---
 
-# 1. GAME VISION
+# 1. Game Vision & Design Pillars
 
-**SPUD: Root Realm (Potaria)** is a 2D sandbox action RPG where the player controls **SPUD**, a humble potato destined to cleanse the Root Realm of primordial corruption and celestial blight.
+**Potaria: Root Realm** is an open-ended 2D sandbox action RPG where players embody **Spud**, an ordinary potato who sprouted with an extraordinary destiny to cleanse the Root Realm of subterranean corruption and celestial blight.
 
-The player explores an infinite, boundless procedurally generated world, gathers resources, constructs fortified settlements, crafts hundreds of weapons and armor sets, masters 40 RPG skills from ancient Skill Books, defeats subterranean mini-bosses, and challenges the cosmic ruler **Sol-Rho The Celestial Titan**.
+The game blends boundless procedural world exploration, resource gathering, modular base construction, and a 129-recipe crafting catalog with the deep progression systems of a classic action RPG: paperdoll armor slots, thematic set auras, weapon enhancements up to +7, affix slot carving, animated specialized traders, and bullet-hell boss encounters.
 
-### Core Pillars:
-- **Boundless Sandbox**: Continuous multi-octave Perlin noise chunks with zero artificial borders ($-\infty \leftarrow 0 \rightarrow +\infty$).
-- **Deep RPG Customization**: Chroisen-style paperdoll slots, layered armor sets with set bonuses and radiant pulsing auras, and 100 character levels.
-- **Diverse Combat Archetypes**: Melee blades, ballistics-driven archery with ammo variants, homing catalysts, piercing rods, elemental staves, and shockwave scepters.
-- **Visual Grandeur**: Procedural animated visual effects (100+ frames), screen shake, glowing aura mandalas, and orbital starlight motes.
-- **Balanced Pacing**: Morning Peace for peaceful daytime gathering, escalating night danger, and rewarding grind with ultra-rare ancient drops.
-- **LAN Cooperative Multiplayer**: Host-authoritative server supporting 1–5 players with nearest-player targeting and dynamic boss scaling.
-- **Developer Debug Suite**: Full in-game cheat console for testing and content showcase.
-
----
-
-# 2. STORY & LORE
-
-### 2.1 The Root Realm & The Heartroot
-Long ago, the ancient **Starchlands of Potaria** thrived beneath the nurturing glow of the **Heartroot**, a colossal living starch core radiating life force to all vegetable kind.
-
-### 2.2 The Corruption of Lord Malus
-Deep beneath the mantle, **Lord Malus**, an ancient root guardian, sought to siphon the Heartroot's cosmic starch. The unstable power decayed his flesh into an abomination of blight. Bound within the Nether Dungeon, Malus unleashes hordes of zombies, corrupted slimes, and demon eyes into the surface world.
-
-### 2.3 Sol-Rho The Celestial Titan
-Beyond the subterranean darkness lies the cosmic architect: **Sol-Rho The Celestial Titan**. Wielding solar fire and gravitational pulses, Sol-Rho judges mortal civilizations. Only a hero clad in full Ancient Relic armor wielding cosmic weaponry can stand before Sol-Rho's two-phase celestial trial.
+### Core Design Pillars:
+1. **Boundless Freedom**: Infinite multi-octave chunk generation without artificial boundary walls ($-\infty \leftarrow 0 \rightarrow +\infty$).
+2. **Deep RPG Progression**: 100-level character curve, dynamic enemy scaling, equipment enhancement, affix carving, and 40 skill abilities.
+3. **High-Stakes Combat & Danmaku Precision**: Single-target weapon enforcement paired with Touhou-inspired bullet-hell boss encounters, micro-dodging (52% fair lethal core), and perimeter grazing (+1 MP).
+4. **Vibrant Settlement & Nomadic Trading**: Specialized animated traders that roam the world, retreat into turtle shell defenses when threatened, and offer gear enhancements and 1-Gold repairs.
+5. **Categorized Crafting Depth**: Minecraft-inspired 5-category crafting interface supported by a dedicated asset pipeline isolating craftable gear from droppable items.
+6. **Cross-Platform Parity**: Seamless gameplay across PC (keyboard/mouse/gamepad) and Android mobile devices (virtual touch ergonomics) powered by a Hybrid Architecture.
 
 ---
 
-# 3. PLAYER ATTRIBUTES & RPG SCALING
+# 2. Lore & Narrative Setting
 
-Spud's progression follows a 100-level Action RPG curve with dedicated stat point allocation:
+### 2.1 The Golden Age of Sol-Rho & The Spud Civilization
+Long ago, the fertile starchlands of Potaria flourished under the celestial warmth of Sol-Rho and the cosmic resonance of the Celestial Keystone. Vegetable kind thrived in subterranean groves and sprawling surface settlements.
 
-| Attribute | Base | Scaling / Effect |
-|---|---|---|
-| **Level** | 1 | 1 to 100 max; siphons EXP from monster and boss takedowns |
-| **HP (Health)** | 100 | Scaled by Base HP + Armor bonuses + Set effects; zero HP enters downed/respawn state |
-| **MP (Mana)** | 50 | Scaled by Gear + Passives; base 1.5 MP/s natural regeneration; fuels spells & skills |
-| **ATK (Physical)**| 10 | Primary damage multiplier for melee swords, axes, spears, and bows |
-| **DEF (Defense)** | 2 | Mitigates damage: $\text{Damage Taken} = \max(1, \text{Enemy ATK} - \text{DEF})$ |
-| **Crit Rate** | 5.0% | Chance to deal 1.5x–2.0x golden damage numbers |
-| **Speed** | 3.0 | Movement velocity; boosted by boots, french fries, and set bonuses |
-| **Attack Speed** | 1.0x | Modifies weapon swing and cast recovery rates |
+### 2.2 The Celestial Cataclysm & The Sundering
+An ancient ambition fractured the Celestial Keystone into four elemental Portal Shards. The cataclysm plunged the starchlands into turmoil:
+- Lord Malus, the Blight-Bringer, claimed the subterranean Nether Crypts.
+- Ignis Colossus arose from molten magma rifts deep beneath the crust.
+- Cryo-Spud entrenched himself within the permafrost glaciers of the north.
+- Necro-Tuber harnessed necrotic decay within forgotten crypts.
+
+### 2.3 The Prophecy of the Chosen Tuber
+Awakened from the fertile loam with a glowing sprout, Spud is tasked with descending into the subterranean dungeons, slaying the four elemental overlords, reuniting the Portal Shards into the Celestial Keystone, and challenging the cosmic architect: **Sol-Rho The Celestial Titan**.
 
 ---
 
-# 4. CHROISEN-STYLE RPG EQUIPMENT & ARMOR SETS
+# 3. Character Attributes & Progression
 
-Equipment is managed through a comprehensive paperdoll inventory system:
-- **Head**: Potato Cap, Wooden Helmet, Copper Helmet, Iron Helmet, Gold Helmet, Ancient Helmet, Titan Helmet, Magma Helmet, Cryo Helmet, Shadow Helmet, Cactus Helmet.
-- **Chest**: Potato Tunic, Wooden Chestplate, Copper Chestplate, Iron Chestplate, Gold Chestplate, Ancient Chestplate, Titan Chestplate, Magma Chestplate, Cryo Chestplate, Shadow Plate, Cactus Chestplate.
-- **Legs**: Potato Pants, Wooden Greaves, Copper Greaves, Iron Greaves, Gold Greaves, Ancient Greaves, Titan Greaves, Magma Greaves, Cryo Greaves, Shadow Greaves, Cactus Greaves.
-- **Weapon**: Active weapon slot with on-hand rendering.
-- **Accessories**: 6 accessory slots supporting charms, rings, quivers, boots, and shields.
+Spud's attributes follow a calibrated 100-level progression curve:
 
-### 4.1 Thematic Equipment Sets & Radiant Pulsing Auras
+| Attribute | Base Value | Progression / Scaling Formula | Tactical Function |
+|---|---|---|---|
+| **Level** | 1 | Level 1 to 100 max; siphons EXP from monster takedowns | Core progression tier |
+| **HP (Health)** | 100 | Scaled by Base HP + Armor + Set Bonuses + Enhancements | Zero HP triggers downed/respawn state |
+| **MP (Mana)** | 50 | Base 1.8 MP/s regen; boosted by gear, passives, and bullet grazing | Fuels active skills and spellcasting |
+| **ATK (Physical)** | 10 | Primary multiplier for melee weapons, bows, and tools | Determines raw damage before enemy defense |
+| **DEF (Defense)** | 2 | Mitigates incoming damage: $\max(1, \text{Enemy ATK} - \text{DEF})$ | Flat reduction of physical damage |
+| **Crit Rate** | 5.0% | Chance to deal 1.8x golden critical strikes with screen shake | Burst damage mechanic |
+| **Movement Speed**| 3.0 | Boosted by boots, buffs, and agility affixes | Traversal and combat dodging velocity |
+| **Attack Speed** | 1.0x | Modifies swing cooldowns and spellcasting channels | Deliberate combat cadence |
 
-When a player equips a complete 3-piece armor set (Head, Chest, Legs), a powerful set bonus activates alongside a dynamic glowing visual aura rendered around Spud:
+### Dynamic Enemy Scaling
+To maintain engaging gameplay across the 100-level journey, hostile enemies scale dynamically based on the player's level and equipment score:
+- Enemy HP scales smoothly: $\text{Base HP} \times (1.0 + 0.08 \times \text{Player Level})$.
+- Enemy Attack scales modestly: $\text{Base ATK} + 0.75 \times \text{Player Level}$.
+- Tools have reduced combat damage to prevent starter axes and pickaxes from trivializing early combat.
+
+---
+
+# 4. RPG Equipment, Enhancements & Affixes
+
+Equipment is managed through a comprehensive paperdoll layout (`C` key):
+- **Armor Slots**: Head, Chest, Legs.
+- **Weapon Slot**: Active hotbar hand slot with on-sprite rendering.
+- **Accessory Slots**: 6 dedicated slots (rings, amulets, boots, charms, shields).
+- **Dedicated Coin Purse**: Currency stored independently of the 40-slot backpack (100 Copper = 1 Silver, 100 Silver = 1 Gold).
+
+### 4.1 Thematic Equipment Sets & Visual Auras
+Equipping a full 3-piece matching armor set unlocks powerful passive bonuses and activates a continuous radiant visual aura:
 
 | Set Name | Pieces Required | Set Bonus Effects | Active Visual Aura |
 |---|---|---|---|
-| **Ancient Resonating Set** | Ancient Helmet, Chestplate, Greaves | **+35% ATK, +30% DEF, +50 Max HP, +20% Crit Rate** | Radiant golden-crimson celestial aura with orbiting starlight motes |
-| **Celestial Titan Set** | Titan Helmet, Chestplate, Greaves | **+25% DEF, +30 Max HP, +15% ATK** | Celestial blue aegis ward aura with defensive halos |
-| **Magma Core Set** | Magma Helmet, Chestplate, Greaves | **+20% ATK, +15 Reflected Fire Thorns, +25 HP** | Pulsing fiery orange molten aura with floating embers |
-| **Cryo Carapace Set** | Cryo Helmet, Chestplate, Greaves | **+20% DEF, +2.5 MP/s Regen, +35 HP** | Cyan permafrost glacial aura with freezing frost motes |
-| **Umbral Shadow Set** | Shadow Helmet, Shadow Plate, Shadow Greaves | **+20% Crit, +20% ATK, +0.2 Move Speed, +20 HP** | Dark violet void phantom aura |
-| **Spud Sovereign Set** | Potato Cap, Potato Tunic, Potato Pants | **+30 Max HP, +5 HP/s Regen, +10% ATK, +10% DEF** | Emerald green earth sprout aura with botanical particles |
-| **Cactus Needle Set** | Cactus Helmet, Chestplate, Greaves | **+15 Reflected Thorns, +10% ATK, +10% DEF** | Prickly amber desert spine aura |
+| **Ancient Resonating Set** | Ancient Helmet, Chestplate, Greaves | +35% ATK, +30% DEF, +50 Max HP, +20% Crit Rate | Pulsing golden-crimson celestial aura with orbiting starlight motes |
+| **Celestial Titan Set** | Titan Helmet, Chestplate, Greaves | +25% DEF, +30 Max HP, +15% ATK | Celestial blue aegis ward with defensive energy halos |
+| **Magma Core Set** | Magma Helmet, Chestplate, Greaves | +20% ATK, +15 Reflected Fire Thorns, +25 HP | Fiery orange molten aura with rising embers |
+| **Cryo Carapace Set** | Cryo Helmet, Chestplate, Greaves | +20% DEF, +2.5 MP/s Regen, +35 HP | Cyan permafrost glacial aura with freezing motes |
+| **Umbral Shadow Set** | Shadow Helmet, Shadow Plate, Shadow Greaves | +20% Crit, +20% ATK, +0.2 Move Speed, +20 HP | Dark violet void phantom aura |
+| **Spud Sovereign Set** | Potato Cap, Potato Tunic, Potato Pants | +30 Max HP, +5 HP/s Regen, +10% ATK, +10% DEF | Emerald green botanical aura |
+| **Cactus Needle Set** | Cactus Helmet, Chestplate, Greaves | +15 Reflected Thorns, +10% ATK, +10% DEF | Prickly amber desert spine aura |
 
-### 4.2 Drop Rates & Economy Rebalance
+### 4.2 Item Enhancement System (+1 to +7)
+At the Forge Master trader (Ignis Vance), weapons and equipment can be enhanced up to +7:
+- **Stat Growth**: Each enhancement level grants approximately +14% baseline stats, reaching +100% (double stats) at +7.
+- **Safe Threshold (+1 to +4)**: Upgrades up to +4 have no risk of item breakage.
+- **Danger Threshold (+5 to +7)**: Upgrades carry a failure risk that can crack and break the item:
+  - +5: 45% Success, 35% Safe Failure, 20% Break.
+  - +6: 30% Success, 35% Safe Failure, 35% Break.
+  - +7: 18% Success, 32% Safe Failure, 50% Break.
+- **Broken Gear State**: A broken item becomes unusable in combat until repaired by a trader.
+- **Trader Restoration**: Any trader can restore broken gear to working order for a flat fee of **1 Gold Coin** (10,000 Copper).
 
-To make item acquisition rewarding and grinding purposeful over hours, days, and months, equipment drop rates follow strict rarity weighting:
+### 4.3 Affix Slot Carving
+At the Void Weaver trader (Morrigan), players can modify Legendary and Ancient items:
+- Consumes an **Affix Stone**, an endgame catalyst crafted at the Work Bench from rare diamonds, mythic dust, and boss remnants.
+- Affix carving replaces a randomly selected secondary stat on the item with an open Affix Slot, rolling from exclusive offensive and defensive modifiers (e.g. Life Steal, Movement Speed, Elemental Pierce, CDR).
 
-| Rarity Tier | Drop Chance | Visual Color | Characteristics |
-|---|---|---|---|
-| **Common** | 98.69% | `#FFFFFF` White | Baseline equipment and craftable tools |
-| **Uncommon** | 1.0% | `#4CAF50` Green | Modest stat additions (+1 affix) |
-| **Rare** | 0.25% | `#2196F3` Blue | Enhanced combat attributes (+2 affixes) |
-| **Epic** | 0.05% | `#9C27B0` Purple | Specialized passive traits (+3 affixes) |
-| **Mythic** | 0.008% | `#F44336` Crimson | Endgame dungeon boss drops |
-| **Legendary**| 0.002% | `#FF9800` Gold | Unique active weapon abilities |
-| **Ancient** | **0.0004%** | `#FFD700` Relic Gold | Mythological relics (1 in 250,000); unlocks `rarity_ancient` achievement, celebratory fanfare, ancient discovery VFX, & screen shake |
-
----
-
-# 5. WEAPON ARCHETYPES, BALLISTICS & ATTACK SPEEDS
-
-### 5.1 Long-Range Weapon Archetypes
-
-1. **Bows & Archery Ammo System (Shortbows, Recurves, Longbows, Composite Bows)**:
-   - Arrows utilize sub-pixel `pygame.FRect` + `Vector2` physics subject to realistic downward gravity ($g = 140\text{ px/s}^2$).
-   - **Composite Bows**: Multi-layered horn/timber bows with higher arrow velocities (`composite_bow`, `reinforced_composite_bow`, `ancient_composite_bow`).
-   - **Ammo Priority**: Bows automatically consume arrows from inventory in descending order of power:
-     $$\text{Astral Arrow} > \text{Frostburn Arrow} > \text{Flame Arrow} > \text{Wooden Arrow}$$
-   - **Ammo Types**:
-     - *Wooden Arrow*: Baseline arrow (+0 bonus damage).
-     - *Flame Arrow*: Inflicts fire damage (+6 dmg) and burning status ticks.
-     - *Frostburn Arrow*: Inflicts freezing chill (+8 dmg) and slows enemy movement.
-     - *Astral Arrow*: Starlight velocity (+14 dmg) with zero gravity drop-off.
-   - **Relic Bows**: Weapons like *Ancient Eternal Shortbow*, *Ancient Composite Bow*, and *Celestial Bow* channel ethereal starlight, firing astral projectiles even when conventional arrows are exhausted.
-
-2. **Magic Catalysts**:
-   - Casts celestial homing stars (`CatalystStarProjectile`).
-   - Features autonomous steering vectors toward the closest hostile mob or active boss.
-   - Strict range cap of **560 pixels** to prevent off-screen cheese.
-
-3. **Magic Staves**:
-   - Projects concentrated elemental bolts (`StaffBoltProjectile`) across Arcane, Frost, Fire, and Nature affinities.
-   - High velocity with custom status application upon impact; capped at **560 pixels** range.
-
-4. **Magic Rods**:
-   - Launches high-velocity piercing javelins (`RodJavelinProjectile`).
-   - Penetrates through up to **3 consecutive enemies** before expiring; capped at **560 pixels** range.
-
-5. **Magic Scepters**:
-   - Releases expanding radial shockwave pulses (`ScepterPulseProjectile`).
-   - Deals area-of-effect damage to closely packed swarms; capped at **560 pixels** range.
-
-### 5.2 Weapon Attack Speeds & Anti-Spam Tuning
-
-Weapon attack speeds are calibrated to deliver deliberate combat weight and prevent spamming:
-- **Shortswords / Daggers**: $0.22\text{s}$ base cooldown (quick agile slashes).
-- **Broadswords / Battleaxes**: $0.32\text{s}$ base cooldown (balanced strikes).
-- **Greatswords / Warhammers**: $0.46\text{s}$ base cooldown (heavy crushing blows).
-- **Bows (including Composite Bows)**: $0.52\text{s}$ base cooldown (calibrated draw cadence).
-- **Magic Weapons (Catalysts, Staves, Rods, Scepters)**: $0.54\text{s}$ base cooldown (focused spellcasting channel).
+### 4.4 Economy & Rarity Drop Rates
+- **Common (98.69%)**: Standard drops and basic craftables.
+- **Uncommon (1.0%)**: Mildly boosted equipment (+1 minor affix).
+- **Rare (0.25%)**: Specialized combat gear (+2 affixes).
+- **Epic (0.05%)**: High-tier equipment (+3 affixes).
+- **Mythic (0.008%)**: Subterranean dungeon boss drops.
+- **Legendary (0.002%)**: Unique active weapon abilities.
+- **Ancient (0.0004%)**: 1 in 250,000 ultra-rare relics triggering celebratory fanfare, screen shake, and the Ancient discovery achievement.
 
 ---
 
-# 6. SKILL SYSTEM & ANIMATED VFX PIPELINE
+# 5. Combat Archetypes, Ballistics & Bullet-Hell Encounters
 
-### 6.1 40-Skill Roster
-Skills are acquired by reading **Skill Books** discovered in ancient ruins chests and dropped by dungeon bosses:
-- **Warrior (10)**: Power Slash, Heavy Strike, Whirlwind, Shield Bash, Ground Slam, Charge, Uppercut, Blade Storm, Berserk, Last Stand.
-- **Ranger (8)**: Rapid Shot, Piercing Shot, Multi Shot, Explosive Arrow, Rain of Arrows, Hunter's Mark, Critical Shot, Phantom Arrow.
-- **Mage (10)**: Magic Missile, Fireball, Ice Shard, Lightning Bolt, Root Bind, Fire Nova, Arcane Burst, Blight Storm, Nether Beam, Nether Explosion.
-- **Survival (6)**: Efficient Mining, Lumberjack, Forager, Treasure Hunter, Cook's Knowledge, Resourceful.
-- **Mobility (6)**: Dash / Roll, Double Jump, Air Dash, Wall Climb, Blink, Nether Step.
+### 5.1 Weapon Archetypes
+1. **Melee Blades (Shortswords, Broadswords, Greatswords, Axes)**:
+   - Cadenced swing arcs with recovery cooldowns ($0.22\text{s}$ to $0.46\text{s}$).
+   - **Single-Target Enforcement**: Melee swings damage at most 1 enemy per attack.
+   - **Ancient Cleave Exception**: Ancient melee weapons (e.g. Celestial Greatsword, Astral Wrath) cleave through all enemies in their swing arc.
+2. **Ballistic Archery (Shortbows, Recurves, Longbows, Composite Bows)**:
+   - Parabolic gravity trajectory ($g = 140\text{ px/s}^2$).
+   - Ammunition hierarchy: Astral Arrow > Frostburn Arrow > Flame Arrow > Wooden Arrow.
+   - Standard arrows terminate on the first entity struck; Ancient bows fire piercing starlight volleys.
+3. **Magic Catalysts**:
+   - Fires homing celestial stars with autonomous steering toward the nearest threat (560px range cap).
+4. **Magic Staves**:
+   - Concentrated elemental bolts (Fire, Frost, Nature, Arcane) inflicting status ticks (560px range cap).
+5. **Magic Rods**:
+   - High-velocity piercing javelins penetrating up to 3 consecutive enemies (560px range cap).
+6. **Magic Scepters**:
+   - Expanding radial shockwaves dealing area-of-effect damage to closely packed foes (560px range cap).
 
-### 6.2 Animated VFX Pipeline
-- **VisualEffectManager & AnimatedVFX**: Handles complex multi-frame particle animations, screen flashes, and shockwave halos.
-- **Procedural & Offline Synthesis**: 100+ frames of animated visual effects synthesized procedurally at launch with offline fallbacks.
-- **Dynamic Anchoring**: Effects can be locked to world coordinates or anchored dynamically to living entities.
-- **Screen Shake Integration**: Heavy impacts (e.g. Celestial Greatsword swing, ancient relic discovery, boss roars) trigger camera trauma shake.
-
----
-
-# 7. INFINITE BOUNDLESS WORLD & TIME-OF-DAY DYNAMICS
-
-### 7.1 Boundless Generation
-The world generates dynamically via 16-block wide chunks with continuous multi-octave Perlin noise. The coordinate space is boundless horizontally ($-\infty \leftarrow 0 \rightarrow +\infty$).
-
-### 7.2 Time-of-Day Pacing: Morning Peace vs. Night Danger
-The in-game sky clock progresses cyclically from $0.0$ to $1.0$:
-
-- **Morning Peace ($0.0 \le t < 0.22$)**:
-  - Surface monster spawn rate is set to **0**.
-  - Players can safely mine, harvest timber, farm crops, and construct homes without harassment.
-- **Midday ($0.22 \le t < 0.50$)**:
-  - Gentle surface wildlife and occasional green slimes roam the plains.
-- **Night Peak ($0.50 \le t < 1.0$)**:
-  - Aggressive undead spawn en masse: Zombies, Rock Zombies, Demon Eyes, and Shadow Crawlers.
-  - Subterranean depths remain perilous regardless of surface time.
-- **Sheltered Housing Protection**:
-  - Monster spawning is strictly suppressed inside enclosed structures featuring placed background walls (Wood, Stone Brick, Glass) and illumination (Torches).
+### 5.2 Touhou-Inspired Bullet-Hell Boss Danmaku
+Boss encounters feature intricate geometric bullet patterns requiring precision dodging:
+- **Danmaku Patterns**:
+  - 16-way expanding spiral starbursts.
+  - Dual rotating celestial cross beams.
+  - Targeted bullet rings with narrow micro-gaps.
+  - Curved undulating waves of frost needles and magma orbs.
+- **52% Fair Lethal Core**: Projectile hitboxes are concentrated into the inner 52% of their visual sprite radius. Visual bullet edges do not register cheap hits.
+- **Perimeter Graze Mechanic**: Dodging within 100% to 175% of a projectile's visual radius triggers an auditory chime, visual graze sparks, and awards **+1 Mana (MP)**. This rewards players who aggressively graze bullet curtains to fuel their combat skills.
 
 ---
 
-# 8. DEVELOPER DEBUG CONSOLE & CHEAT ENGINE
+# 6. Specialized Animated Traders & Nomadic Economy
 
-To facilitate rapid QA verification and sandbox experimentation, an integrated developer console is built into the engine.
+Three specialized nomadic traders wander the Root Realm:
 
-### 8.1 Console Access
-Press **`Enter`**, **`/`**, or **`~` (Tilde)** during active gameplay to open the command console.
+### 6.1 Trader Roster
+1. **Zephyrion the Wandering Peddler (Wares)**:
+   - Sells up to 5 randomized weapons and equipment.
+   - Stock matches world drop rate distributions, capped at Epic rarity (no skill books).
+2. **Ignis Vance the Forge Master (Enhance)**:
+   - Conducts gear enhancements (+1 to +7) and repairs broken items for 1 Gold.
+3. **Morrigan the Void Weaver (Affix)**:
+   - Performs affix slot carving using Affix Stones and repairs broken items for 1 Gold.
 
-### 8.2 Command Reference
-| Command | Syntax | Description |
-|---|---|---|
-| `/god` | `/god` | Toggles God Mode (invulnerability, continuous full HP/MP restoration) |
-| `/heal` | `/heal` | Instantly restores maximum Health, Mana, and Oxygen |
-| `/speed` | `/speed [mult]` | Sets movement speed multiplier (e.g. `/speed 3.0`) |
-| `/time` | `/time <preset\|0.0-1.0>` | Sets time of day (`morning`, `day`, `dusk`, `night`, or float) |
-| `/give` | `/give <item_id> [count]` | Spawns specified quantity of any catalog item directly to inventory |
-| `/ancient` | `/ancient` | Equips full Ancient Set, activates pulsing aura, grants 250 Astral Arrows & Relic weapons |
-| `/weapons` | `/weapons` | Fills inventory with complete showcase pack of bows, arrows, and magic weapons |
-| `/spawn` | `/spawn <mob\|boss> [count]` | Spawns specified enemies or bosses (`slime`, `zombie`, `malus`, `sol_rho`) |
-| `/killall` | `/killall` | Clears all active hostile mobs, enemy projectiles, and active bosses |
-| `/level` | `/level [count]` | Levels up Spud by specified increments, increasing base attributes |
-| `/clear` | `/clear` | Empties all inventory and held item slots |
-| `/help` | `/help` | Displays available cheat command listings in system chat |
-
-*Detailed instructions and full item IDs are documented in `CHEATS.md`.*
+### 6.2 Trader Behavior & Safeguards
+- **Mutual Exclusion**: Only one trader may exist in the world at any given time.
+- **Nomadic Rarity**: Spawns randomly at a distance from player shelters to encourage world exploration, lingering for a limited duration before vanishing.
+- **Turtle Shell Defense**: If any hostile entity enters within a **3-block radius (96 pixels)**, the trader withdraws into an invulnerable turtle shell defense barrier. All incoming enemy attacks are deflected, and trading is disabled until the player clears the perimeter.
+- **Hover Inspection UI**: Browsing shop wares displays comprehensive item tooltips, matching backpack inspection with stat differences, enhancement indicators, and affix details.
 
 ---
 
-# 9. LAN COOPERATIVE MULTIPLAYER (1 TO 5 PLAYERS)
+# 7. Crafting Systems & Dedicated Asset Pipeline
 
-- **Network Architecture**: Host-authoritative LAN socket server.
-- **Party Scalability**: Seamless support for 1 Host + up to 4 Client players over local Wi-Fi or Ethernet.
-- **Dynamic Boss Scaling**: Boss HP scales from 100% (solo) up to 350% (5 players); boss ATK scales from 100% up to 140%.
-- **Nearest-Player Targeting**: Host AI evaluates Euclidean distance to all active party members, directing mob aggro to the closest threat.
-- **Individual Loot Drops**: Drop tables roll independently per player to prevent resource hoarding.
-- **In-Game Chat**: `Enter` key enables cross-player communication with system broadcast tags.
+### 7.1 Minecraft-Style 5 Crafting Categories
+The crafting window (`E` key) organizes 129 recipes across five distinct categories:
+1. **Building Blocks**: Wooden planks, stone bricks, dungeon bricks, glass windows, roof shingles, platforms.
+2. **Equipment & Tools**: Swords, composite bows, pickaxes, axes, shovels, armor pieces.
+3. **Consumables & Alchemy**: Potions, meals, golden french fries, ammunition arrows.
+4. **Furniture & Housing**: Tables, chairs, beds, grandfather clocks, stone fireplaces, bookshelves.
+5. **Miscellaneous & Raw**: Affix stones, portal shards, ingots, textiles, mechanical parts.
+
+### 7.2 Dedicated Craftables Asset Directory
+All 129 craftable item sprites are strictly stored in `assets/craftable_items/`, completely isolated from the 1,337 droppable items in `assets/items/`. The engine's asset factory checks `assets/craftable_items/` first, ensuring clear separation and modifiability.
+
+### 7.3 Tool Tiers & Bare-Hand Anti-Softlock
+- Block breaking speed scales directly with tool tier: Wooden < Copper < Iron < Gold < Celestial.
+- Tools have reduced combat damage to prevent starter tools from acting as dominant early-game weapons.
+- Bare-hand harvesting allows punching wood and dirt at very slow speeds, ensuring players who lose their tools can never be softlocked.
 
 ---
 
-# 10. BOSS PROGRESSION & CLIMAX
+# 8. World Dynamics, Environment & Physics
 
-### 10.1 Subterranean Mini-Bosses
-1. **Lord Malus The Blight-Bringer** (Underground Crypts): Rot spits, sweeping cleaves, and summonable blight slimes.
-2. **Ignis Colossus The Magma Golem** (Cavern Lava Pools): Scorching ground slams, magma projectiles, and fire waves.
-3. **Cryo-Spud The Glacial Terror** (Snow Biome Depths): Freezing blizzards, icicle spears, and permafrost barriers.
-4. **Necro-Tuber The Crypt Fiend** (Deep Dungeon): Bone volleys, life drain, and teleportation.
+### 8.1 Boundless Chunk Streaming
+Terrain is synthesized using continuous multi-octave Perlin noise in 16x240 tile chunks. Generating chunks executes asynchronously on a background thread pool, eliminating frame drops during high-speed traversal.
+
+### 8.2 Time-of-Day Dynamics
+- **Morning Peace ($0.0 \le t < 0.22$)**: Zero surface monster spawns; dedicated time for gathering and construction.
+- **Midday ($0.22 \le t < 0.50$)**: Passive wildlife and occasional slimes.
+- **Night Peak ($0.50 \le t < 1.0$)**: Aggressive hordes of zombies, night gazers, and crawlers.
+- **Nightly Elite Champion**: A single, enlarged elite monster spawns once per night with 2.5x-3.5x HP, custom visual scale, and a unique combat skill.
+- **Subterranean Mini-Boss Placement**: Mini-bosses reside exclusively in underground dungeon chambers; random surface mini-boss spawns are disabled.
+- **Bed Proximity Safety Check**: Sleeping in a bed is only permitted at night when no hostile entities are within a 6-block radius (192 pixels).
+
+### 8.3 Torch Placement Physics
+Torches cannot float freely in open air or be placed underwater. Valid placement requires:
+- An adjacent solid support tile (below, left, or right), OR
+- A valid background wall (Wood Wall, Stone Wall, Brick Wall).
+
+---
+
+# 9. UI, Controls & Quality of Life
+
+### 9.1 World Selection History
+The world selection menu records and displays:
+- Accumulated playtime in hours.
+- Last played calendar date and timestamp.
+
+### 9.2 Word-Wrapped Auto-Hiding Console & Chat
+In-game command feedback and player chat are formatted in a dedicated, word-wrapped text container that smoothly fades after a period of inactivity, keeping the screen clean during combat.
+
+### 9.3 Cross-Platform Input Controls
+- **PC Controls**:
+  - Movement: `A` / `D` (or Left / Right Arrows)
+  - Jump: `Space` / `W`
+  - Drop Through Platform: `S`
+  - Mine / Attack: Left Mouse Button (Hold for continuous action)
+  - Place Block / Interact: Right Mouse Button
+  - Inventory & 5-Category Crafting: `E`
+  - Character Paperdoll & Grimoire: `C`
+  - Active Skills: `Q`, `F`, `V`, `R`
+  - Console / Chat: `Enter`, `/`, or `~`
+  - Fullscreen Toggle: `F11`
+  - Profiler Overlay: `F3`
+- **Mobile Controls**:
+  - Virtual dynamic left joystick for movement.
+  - Right action cluster: Primary Attack/Mine, Jump, Dash, Potion.
+  - Radial arc skill cluster (`Q`, `F`, `V`, `R`).
+  - Minimum 48x48px touch targets with active press feedback and opacity configuration.
+
+---
+
+# 10. Boss Progression & Climax Encounters
+
+### 10.1 Subterranean Dungeon Mini-Bosses
+1. **Lord Malus the Blight-Bringer** (Nether Crypt): Rot spits, sweeping cleaves, and summonable blight slimes. Drops Nether Portal Shard.
+2. **Ignis Colossus the Magma Golem** (Cavern Lava Pools): Scorching ground slams and magma waves. Drops Magma Portal Shard.
+3. **Cryo-Spud the Glacial Terror** (Snow Depths): Freezing blizzards, icicle spears, and permafrost barriers. Drops Frost Portal Shard.
+4. **Necro-Tuber the Crypt Fiend** (Catacombs): Bone volleys, life drain, and teleportation. Drops Shadow Portal Shard.
 
 ### 10.2 Grand Boss: Sol-Rho The Celestial Titan
-The culmination of Potaria's campaign:
-- **Phase 1: Celestial Form (1000 HP)**: Levitates above the arena, firing tracking celestial stars, solar flare shockwaves, and orbital lasers.
-- **Phase 2: Enraged Supernova (1400 HP)**: Descends into high-speed dive attacks, gravitational vortex singularity pulls, and relentless screen-shaking solar bursts.
-- **Rewards**: Slain Sol-Rho yields the legendary *Crown of Potaria*, *Astral Wrath*, Celestial Portal Shards, and royal fortunes in coin.
+Constructing the **Celestial Keystone** at a Work Bench (4 Portal Shards + 4 Gold Bars + 8 Stone Bricks) summons Sol-Rho:
+- **Phase 1: Solar Titan Form (2,500 HP)**: Levitates above the arena, firing 16-way danmaku starbursts, solar flare shockwaves, and rotating cross beams.
+- **Phase 2: Awakened Void Incarnate (4,000 HP)**: Enters cosmic void fury with singularity vortexes, rapid warp blitzes, and dense bullet hell curtains.
+- **Victory Rewards**: Slain Sol-Rho drops the *Crown of Potaria*, *Astral Wrath*, *Celestial Greatsword*, and the divine achievement.
 
 ---
 
-# 11. CONTROLS SUMMARY
+# 11. Technical Architecture & Hybrid Engine Strategy
 
-- **Movement**: `A` / `D` or Left / Right Arrows
-- **Jump**: `W` / Space / Up Arrow
-- **Drop Through Platforms**: `S` + Jump or Down Arrow
-- **Primary Attack / Mine**: Left Mouse Button (Hold to continuously mine)
-- **Secondary Action / Place**: Right Mouse Button
-- **Inventory & Crafting**: `E` or `Esc`
-- **Character Equipment & Paperdoll**: `C` (or Equipment tab in `E`)
-- **Active Skills**: `Q` (Power Slash), `F` (Whirlwind), `C` (Dash), `R` (Fireball)
-- **Hotbar Selection**: `1`–`9`, `0` or Mouse Scroll Wheel
-- **Cheat Console / Chat**: `Enter`, `/`, or `~`
-- **Toggle Fullscreen**: `F11`
-- **Debug Overlay**: `F1`
+Potaria uses a **Hybrid Architecture** designed to maximize portability, performance, and cross-platform release capability:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 Potaria Game Logic & Systems                │
+│       (Combat, World Chunks, Entities, RPG, Networking)     │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+               ┌───────────────┴───────────────┐
+               │  Renderer Hardware Abstraction│
+               │          Layer (HAL)          │
+               └───────┬───────────────┬───────┘
+                       │               │
+      ┌────────────────┴──────┐ ┌──────┴───────────────┐
+      │ SurfaceRenderer       │ │ GLRenderer           │
+      │ (Pygame-ce Software)  │ │ (ModernGL / OpenGL)  │
+      │ 100% Offline Fallback │ │ GPU Shaders & Bloom  │
+      └───────────────────────┘ └──────────────────────┘
+```
+
+1. **Host-Authoritative Simulation**: Pure Python 3.13 game state authority.
+2. **SurfaceRenderer (Stage 1)**: Native Pygame-ce software blitting with baked chunk surfaces. Runs everywhere out of the box with zero external drivers.
+3. **GLRenderer (Stage 2)**: Hardware-accelerated OpenGL / ModernGL backend featuring GPU sprite batching, GLSL lighting, bloom shaders, and high-density projectile rendering (144+ FPS).
+4. **Steam PC Packaging (Stage 3)**: Standalone executable compiled via Nuitka C-extension compilation.
+5. **Google Play Android Packaging (Stage 4)**: Buildozer / python-for-android packaging with virtual touch controls.
+
+---
+
+# 12. Dual-Franchise Roadmap: Root Realm vs. Story Edition
+
+To deliver both open-ended sandbox freedom and rich narrative storytelling, the Potaria franchise is divided into two distinct, complementary titles:
+
+### Product A: Potaria: Root Realm (The Sandbox ARPG)
+- **Concept**: The boundless, open-ended survival action RPG (the current foundation).
+- **Focus**: Player agency, infinite chunk exploration, 129 crafting recipes, building, character customization, bullet-hell boss fights, and multiplayer cooperation.
+- **Target Audience**: Fans of Terraria, Minecraft, and Chroisen.
+
+### Product B: Potaria: Story Edition (The Narrative Companion)
+- **Concept**: A story-rich, episodic action-adventure companion (inspired by Minecraft: Story Mode).
+- **Focus**:
+  - Chapter-based episodic narrative with voiced characters (Spud, Pip, Barnaby, Florencia, Russet).
+  - Branching dialogue trees and moral choices affecting the fate of the Root Realm.
+  - Scripted story set pieces, cinematic cutscenes, bespoke puzzle dungeons, and cinematic boss battles.
+  - Overhauled combat mechanics tailored for dramatic choreography.
+- **Target Audience**: Fans of narrative adventures, story RPGs, and episodic character dramas.

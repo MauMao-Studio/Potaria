@@ -1,116 +1,193 @@
-# POTARIA (SPUD: ROOT REALM) — DEVELOPMENT ROADMAP & TODO
-**Lead Developer:** Kurados  
+# Potaria Development Roadmap & Master Task Tracker
+
+**Developer:** Kurados  
 **Engine:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)  
-**Architecture:** Host-Authoritative 2D Sandbox Action RPG  
-**Last Updated:** October 2026  
+**Architecture:** Host-Authoritative 2D Sandbox Action RPG (Hybrid Native 2D / OpenGL HAL)  
+**Test Suite Status:** 309 / 309 Tests Passing across 25 Test Suites  
+**Last Updated:** October 2026 (v1.6.0 Baseline)  
 
 ---
 
-## TABLE OF CONTENTS
-1. [Executive Summary & Current Architecture](#1-executive-summary--current-architecture)
-2. [Completed Systems & Verified Milestones](#2-completed-systems--verified-milestones)
-3. [Near-Term Development (v1.1 - v1.3)](#3-near-term-development-v11---v13)
-4. [Mid-Term Content Expansion (v1.4 - v1.6)](#4-mid-term-content-expansion-v14---v16)
-5. [Long-Term Vision & Engine Scalability (v1.7 - v2.0)](#5-long-term-vision--engine-scalability-v17---v20)
-6. [Engine Optimization & Technical Debt Tracker](#6-engine-optimization--technical-debt-tracker)
-7. [Automated Verification & QA Matrix](#7-automated-verification--qa-matrix)
+## Table of Contents
+1. [Executive Summary & Current Baseline](#1-executive-summary--current-baseline)
+2. [Completed Systems & Verified Milestones (v1.0 - v1.6)](#2-completed-systems--verified-milestones-v10---v16)
+3. [Approved Hybrid Architecture & Cross-Platform Roadmap](#3-approved-hybrid-architecture--cross-platform-roadmap)
+4. [Dual-Product Vision: Sandbox vs. Story Edition](#4-dual-product-vision-sandbox-vs-story-edition)
+5. [Automated Verification & QA Matrix](#5-automated-verification--qa-matrix)
 
 ---
 
-## 1. EXECUTIVE SUMMARY & CURRENT ARCHITECTURE
+## 1. Executive Summary & Current Baseline
 
-Potaria is a boundless 2D sandbox action RPG merging the infinite terrain generation and digging/building freedom of Terraria with the deep character progression, 40-skill roster, paperdoll equipment customization, and boss gauntlets of Chroisen.
+Potaria is a 2D sandbox action RPG combining the infinite terrain generation and digging/building mechanics of Terraria with the deep character progression, 40-skill roster, paperdoll equipment customization, and boss gauntlets of classic action RPGs.
 
-### Key Architecture Modules:
-- **`main.py`**: Core game state manager, event dispatcher, HUD overlay renderer, in-game cheat console, and multiplayer network sync loop.
-- **`src/world/`**: Infinite multi-octave chunk generator (`chunk_manager.py`, `world.py`), tile physics, wall systems, and lighting engine.
-- **`src/rpg/`**: Character leveling (1–100), EXP curves, equipment paperdoll slots, thematic armor set bonuses, radiant auras, and 40 skill books.
-- **`src/combat/`**: Hitbox collisions, damage formulas with defense mitigation, critical rolls, natural mob spawner, subterranean mini-bosses, and Sol-Rho the Celestial Titan.
-- **`src/entities/projectile.py`**: Sub-pixel `pygame.FRect` + `Vector2` ballistic arrows with gravity, homing catalyst stars, piercing rod javelins, elemental staff bolts, and expanding scepter pulses.
-- **`src/entities/vfx.py`**: High-performance multi-frame `AnimatedVFX` pipeline supporting 100+ frames of procedural and AI-generated combat effects, entity anchoring, and screen shake.
-- **`src/network/`**: Host-authoritative LAN socket server (`lan_server.py`) and client (`lan_client.py`) supporting 1–5 player cooperative sessions.
-- **`src/ui/`**: Responsive inventory grid, crafting tree, equipment paperdoll, hotbars, cheat console, local chat, and touch control overlays.
+The codebase is structured around modular, host-authoritative systems:
+- `main.py`: Core game loop, event management, state machine, and HUD rendering.
+- `src/world/`: Infinite procedural chunk generator (`chunk_manager.py`), tile physics, wall layers, and optimized cellular lighting engine (`lighting.py`).
+- `src/rpg/`: Character leveling (1–100), EXP curves, equipment paperdoll slots, thematic armor set bonuses, radiant auras, and 40 skill books.
+- `src/combat/`: Hitbox collision, damage mitigation, critical strikes, single-target combat enforcement, projectile ballistics, and bullet-hell danmaku patterns.
+- `src/entities/trader.py`: Animated specialized traders (Wares, Enhance, Affix), turtle shell defenses, and 1-Gold repair mechanics.
+- `src/ui/`: Minecraft-style 5-category crafting book (`crafting.py`), dedicated inventory (`inventory.py`), word-wrapped auto-hiding console, and touch control overlays.
+- `src/network/`: Host-authoritative LAN socket server (`lan_server.py`) and client (`lan_client.py`) supporting 1–5 player cooperative sessions.
+- `assets/craftable_items/`: Dedicated directory isolating all 129 craftable item sprites from droppable items.
 
 ---
 
-## 2. COMPLETED SYSTEMS & VERIFIED MILESTONES
+## 2. Completed Systems & Verified Milestones (v1.0 - v1.6)
 
-### Core Mechanics, World, & Engine Performance
+### 2.1 World Generation & Engine Optimization
 - [x] **Boundless Open World**: Infinite horizontal coordinate generation without artificial boundary walls ($-\infty \leftarrow 0 \rightarrow +\infty$).
-- [x] **Engine Performance & Chunk Streaming**: Asynchronous ThreadPool chunk generation. Chunk fetching never blocks the main thread, resulting in a solid 60+ FPS experience without 300ms stuttering when moving across chunk boundaries.
-- [x] **Lighting Optimization**: 32-bit RGB integer mapping (`map_rgb`) and `absorb_grid` cache.
-- [x] **Chunk Surface Baking**: `ChunkSection` bakes static tiles to 16x16 chunk surfaces to drastically reduce blit calls per frame.
-- [x] **Tile Interaction**: Left-click mining, right-click block placement, background wall placement.
+- [x] **Asynchronous Chunk Streaming**: Multi-threaded chunk synthesis prevents frame stalls during rapid player traversal.
+- [x] **Chunk Surface Baking**: `ChunkSection` pre-renders static tiles to 16x16 chunk surfaces, reducing draw calls by >90%.
+- [x] **Optimized Cellular Lighting**: 32-bit integer color mapping and `absorb_grid` cache reduce per-frame lighting calculations to 0.02ms.
+- [x] **Torch Placement Physics**: Torches cannot float in mid-air or be placed underwater; they require a supporting solid block or background wall.
+- [x] **Removal of Town Checks**: Town housing requirements and automated NPC checks removed from world update loops to preserve pure wilderness sandbox exploration.
 
-### Combat, RPG, & Visual Effects
-- [x] **Chroisen Paperdoll & Thematic Sets**: Head, Chest, Legs, Weapon, and 6 Accessory slots. Armor sets grant pulsing visual auras and powerful stat buffs.
-- [x] **Long-Range Weapons & Projectile Behaviors**: Ballistic physics for bows, homing catalysts, piercing rods, and expanding scepters.
-- [x] **Skill System**: 40 unique abilities (Warrior, Ranger, Mage, Survival, Mobility).
-- [x] **Multiplayer**: Host-authoritative LAN socket server for up to 5 players.
+### 2.2 RPG Systems, Equipment & Economy
+- [x] **Chroisen Paperdoll Roster**: Head, Chest, Legs, Weapon, and 6 Accessory slots with active visual rendering.
+- [x] **Thematic Armor Sets & Auras**: 3-piece set bonuses with glowing visual auras (Ancient Resonating, Celestial Titan, Magma Core, Cryo Carapace, Umbral Shadow, Spud Sovereign, Cactus Needle).
+- [x] **Dedicated Coin Purse**: Currency moved out of 40-slot backpack into dedicated character status purse with auto-conversion (100 Copper = 1 Silver, 100 Silver = 1 Gold).
+- [x] **Item Magnetism Safety**: Dropped items do not chase or hover around the player when inventory is full.
+- [x] **Item Description Audit**: Verified non-empty, lore-rich descriptions across all registered catalog items.
+- [x] **Rebalanced Leveling Curve**: Higher EXP scaling prevents rapid power spikes, ensuring meaningful progression across sessions.
 
----
+### 2.3 Specialized Traders, Item Enhancements & Affixes
+- [x] **Three Specialized Animated Traders**:
+  - Zephyrion (Wares): Sells randomized weapons/equipment (Common to Epic) matching world drop rates.
+  - Ignis Vance (Enhance): Upgrades gear from +1 to +7 and performs master repairs.
+  - Morrigan (Affixes): Carves specialized affix slots on Legendary and Ancient gear using Affix Stones.
+- [x] **Trader Spawn Rules**: Mutual exclusion (max 1 active trader), rare spawning far from player shelters, and limited duration.
+- [x] **Turtle Shell Defense**: Traders retreat into an invulnerable shell when enemies are within 3 blocks (96 pixels), disabling trade until safe.
+- [x] **1 Gold Gear Restoration**: Broken items (+5 to +7 failed enhancements) can be repaired by any trader for 1 Gold (10,000 Copper).
+- [x] **Item Enhancement (+1 to +7)**:
+  - +1..+4: Safe upgrades.
+  - +5..+7: Failure chance breaks the item, requiring trader repair.
+  - +7 doubles baseline weapon/armor stats (+100%).
+- [x] **Affix Carving**: Consumes rare Affix Stones to replace a random secondary stat with a high-tier affix slot.
 
-## 3. OUTSTANDING USER REQUESTS & ACTIVE TODOs (v1.1)
+### 2.4 Combat, Ballistics & Bullet-Hell Bosses
+- [x] **Single-Target Enforcement**: Melee swings and standard projectiles damage at most 1 target per attack.
+- [x] **Ancient Relic Cleave & Pierce**: Ancient and Mythic weapons retain multi-target cleave and infinite piercing capabilities.
+- [x] **Ballistic Archery**: Arrows follow parabolic gravity trajectories; four ammo types (Wooden, Flame, Frostburn, Astral).
+- [x] **Magic Archetypes**: Catalysts (homing stars), Staves (elemental bolts), Rods (piercing javelins), Scepters (expanding shockwaves).
+- [x] **Touhou-Inspired Bullet-Hell Bosses**:
+  - Complex geometric danmaku patterns (16-way spiral novas, rotating cross beams, targeted rings).
+  - Fair lethal core hitbox (52% radius) for micro-dodging.
+  - Perimeter graze system (+1 MP reward and visual sparks when skimming close to bullets).
+- [x] **Subterranean Mini-Boss Placement**: Mini-bosses restricted to underground dungeon arenas; surface night spawns eliminated.
+- [x] **Nightly Elite Champion**: Single enlarged elite monster spawns once per night with enhanced stats and a unique combat skill.
+- [x] **Bed Sleeping Proximity Check**: Sleeping restricted to nighttime with zero hostiles within 6 blocks (192 pixels).
 
-These are the immediate priorities requested for the next milestones:
-
-### 3.1 Artstyle Rework & Visual Overhaul
-- [ ] **Terraria x Stardew Valley Aesthetic**: Rework the global artstyle with rich pixel shading and warm palettes.
-- [ ] **Unique Item Sprites**: Overhaul the procedural asset generator so upper-tier weapons and armor have grand, ornate silhouettes (crystalline blades, gilded engravings) rather than identical sprites.
-- [ ] **Boss Design Polish**: Rework Lord Malus, Ignis Colossus, Cryo-Spud, Necro-Tuber, and Sol-Rho with multi-layered pixel shading, organic textures, and epic transitions.
-- [ ] **Cute Terraria Trees**: Replace blocky bush trees with appealing rounded leafy canopies and organic bark. Player can only mine the wood trunk, not the leaves.
-- [ ] **Animated Water & Swimming System**: Implement liquid water with animated surface waves, semi-transparent refraction. Add swimming physics, buoyancy, and an underwater oxygen meter.
-
-### 3.2 UI / UX & Quality of Life
-- [ ] **Create New World Polish**: Fix UI layout. Remove the "MODE: ADVENTURE" button from world creation.
-- [ ] **Mods / Add-ons Menu**: Move game modes (e.g., "Last Man Standing" PvP) to a dedicated Mods/Add-ons menu accessible from the Main Menu.
-
-### 3.3 Audio & Achievements
-- [ ] **Cinematic BGM System**: Implement dynamic, cinematic synth BGM with smooth fade-in/out transitions across menus, day/night, biomes, and boss fights.
-- [ ] **Achievement System**: Create `data/achievements.json`. Add an Achievement Browser to the Main Menu and trigger floating in-game popups when an achievement is unlocked (e.g., "Slayer of Titans").
-
----
-
-## 4. MID-TERM CONTENT EXPANSION (v1.4 - v1.6)
-
-### 4.1 Additional Biomes & World Expansion
-- [ ] **Lush Jungle Biome**: Giant vine canopies, mud blocks, mahogany wood, Spud Wasps.
-- [ ] **Floating Sky Islands**: Cloud blocks, high-altitude generation, Starfury chests.
-
-### 4.2 Town NPCs & Housing Quest Engine
-- [ ] **NPC Spawning Validation**: Check suitable housing conditions (table, chair, torch, door).
-- [ ] **NPC Roster**: Farmer Spud, Blacksmith Spud, Wizard Spud, Alchemist Spud.
-- [ ] **NPC Dialogue & Quests**: Multi-stage questlines awarding rare schematics.
-
----
-
-## 5. LONG-TERM VISION & ENGINE SCALABILITY (v1.7 - v2.0)
-
-### 5.1 Gamepad & Steam Deck Optimization
-- [ ] **Gamepad Input System**: Full XInput and DirectInput support.
-- [ ] **Radial Item & Skill Wheel**: Hold bumper to slow time and select skills.
-- [ ] **Twin-Stick Aiming**: Right thumbstick cursor aiming.
-
-### 5.2 Mobile & Touch Interface Polish
-- [ ] **Virtual Dual Joysticks**: Left thumb movement; right thumb targeting/auto-swing.
-- [ ] **Pinch-to-Zoom Camera**: Smooth multi-touch viewport scaling.
-
-### 5.3 Extensible Modding API & Data Schemas
-- [ ] **Data-Driven Definitions**: Move items, mobs, recipes, tiles, and skills to JSON schemas.
-- [ ] **Lua / Python Plugin Hooks**: Event hooks for world_gen, player_hit, etc.
-- [ ] **Custom Tile & Sprite Loader**: Hot-reloadable mod texture packs and sound banks.
+### 2.5 Crafting, Inventory & UI/UX
+- [x] **Minecraft-Style 5-Category Crafting Book**:
+  - Category 1: Building Blocks.
+  - Category 2: Equipment & Tools.
+  - Category 3: Consumables & Alchemy.
+  - Category 4: Furniture & Housing.
+  - Category 5: Miscellaneous & Raw.
+- [x] **129 Craftables Catalog**: Full catalog of craftable recipes across all categories.
+- [x] **Dedicated Craftable Asset Folder**: All 129 craftable sprites stored exclusively in `assets/craftable_items/`.
+- [x] **Craftable Storage Chests**: Multi-slot chests for world storage.
+- [x] **Tool Tier Mining Speeds & Damage**: Harvesting speed scales with tool tier; tool combat damage reduced to prevent trivializing combat.
+- [x] **Bare-Hand Harvesting**: Anti-softlock feature allowing punching wood and dirt at slow speeds without tools.
+- [x] **Auto-Hiding Word-Wrapped Console**: Word-wrapped console and chat box that fades after inactivity.
+- [x] **World Selection Tracking**: Displays accumulated playtime in hours and last played date.
 
 ---
 
-## 6. AUTOMATED VERIFICATION & QA MATRIX
+## 3. Approved Hybrid Architecture & Cross-Platform Roadmap
 
-### Test Suite Execution
-To run the automated regression suite across all systems:
-```bash
-# Run full suite
+The approved technical strategy retains the 100% pure Python + Pygame-ce engine as the core simulation authority, layered with an optional OpenGL/ModernGL Hardware Abstraction Layer (HAL) for maximum cross-platform performance (PC Steam and Google Play Android).
+
+### Stage 1: Renderer Hardware Abstraction Layer (HAL)
+- **Objective**: Decouple game logic from direct Pygame blitting without breaking existing systems.
+- **Tasks**:
+  - [ ] Implement abstract `BaseRenderer` interface (`draw_sprite`, `draw_rect`, `draw_text`, `present`).
+  - [ ] Wrap current Pygame software rendering as `SurfaceRenderer` (default, 100% backward compatible).
+  - [ ] Verify all 309 automated tests pass under `SurfaceRenderer`.
+  - [ ] Add configuration toggle in `saves/settings.json`: `"renderer": "software" | "hardware"`.
+
+### Stage 2: Hardware Acceleration & ModernGL Visuals
+- **Objective**: Harness desktop and mobile GPUs for high-density rendering, shaders, and visual effects.
+- **Tasks**:
+  - [ ] Implement `GLRenderer` using ModernGL / PyOpenGL.
+  - [ ] Hardware sprite batching for bullet-hell danmaku patterns (thousands of projectiles at 144+ FPS).
+  - [ ] GLSL post-processing shaders: dynamic bloom for Ancient auras, celestial stars, and chromatic aberration on boss phases.
+  - [ ] GLSL smooth lighting pass replacing CPU software blitting.
+  - [ ] Seamless fallback: if OpenGL context fails to initialize on low-end hardware, automatically fall back to `SurfaceRenderer`.
+
+### Stage 3: Steam PC Production Packaging
+- **Objective**: Deliver a self-contained, high-performance desktop release for Windows and Linux (Steam Deck).
+- **Tasks**:
+  - [ ] Package standalone executable using Nuitka (C-compilation of Python source, eliminating Python interpreter overhead).
+  - [ ] Embed SDL2 and asset bundles into single distribution directory.
+  - [ ] Full Steam Deck and XInput/DirectInput gamepad controller support.
+  - [ ] Steam Cloud save synchronization format verification.
+
+### Stage 4: Google Play Android Packaging
+- **Objective**: Deliver a responsive, touch-friendly mobile release on the Google Play Store.
+- **Tasks**:
+  - [ ] Configure Buildozer / python-for-android pipeline for ARM64 APK and AAB bundle builds.
+  - [ ] Refine on-screen virtual joystick and action clusters (48x48px touch targets, haptic feedback).
+  - [ ] Android lifecycle handling: pause on screen lock, background save state preservation.
+  - [ ] Target Android 14+ (API Level 34) compliance with scoped storage.
+
+---
+
+## 4. Dual-Product Vision: Sandbox vs. Story Edition
+
+To expand the Potaria universe while preserving the core sandbox identity, development will support two distinct titles sharing a common lore and engine foundation:
+
+### Product A: Potaria: Root Realm (The Core Game)
+- **Genre**: Boundless 2D Sandbox Survival Action RPG.
+- **Inspirations**: Terraria, Starbound, Minecraft.
+- **Core Loop**: Procedural exploration, mining, building, crafting 129 items, boss progression, open-ended survival freedom, and LAN multiplayer.
+- **Distribution**: Steam PC and Google Play Android.
+
+### Product B: Potaria: Story Edition (The Narrative Companion)
+- **Genre**: Story-Rich Narrative Action RPG Adventure.
+- **Inspirations**: Minecraft: Story Mode, Chrono Trigger, Undertale.
+- **Core Loop**:
+  - Chapter-based episodic narrative following Spud, Pip the Guide, Barnaby the Merchant, Florencia the Nurse, and Russet the Blacksmith.
+  - Dialogue choices with branching narrative consequences.
+  - Handcrafted cinematic story levels, custom puzzle dungeons, and dramatic boss encounters.
+  - Overhauled combat mechanics tailored for narrative battles, scripted set pieces, and dynamic camera choreography.
+- **Distribution**: Standalone companion release on PC and mobile.
+
+---
+
+## 5. Automated Verification & QA Matrix
+
+All development must maintain zero regressions across the test suite:
+
+### Test Suite Execution Command:
+```powershell
 python -m unittest discover -s tests
 ```
-- [x] Zero failing tests in `tests/`.
-- [x] Headless display compatibility via `SDL_VIDEODRIVER="dummy"`.
-- [x] Save isolation: saving/loading worlds never causes entity bleed.
-- [x] 100% offline standalone execution with zero external network dependencies.
+
+### Verified Test Suites (25 Suites, 309 Tests):
+1. `tests/test_game.py` - Core engine integration and world loops.
+2. `tests/test_new_features.py` - Early gameplay expansion tests.
+3. `tests/test_lan_hud_mobs_scaling.py` - LAN networking and boss scaling.
+4. `tests/test_gameplay_fixes.py` - Gameplay systems and tile physics.
+5. `tests/test_reviewer_fixes.py` - Engine consistency checks.
+6. `tests/test_water_oxygen_swimming.py` - Liquid physics and underwater oxygen.
+7. `tests/test_achievements_and_polish.py` - Achievement tracking and unlock criteria.
+8. `tests/test_furniture.py` - Furniture block placement, beds, and clocks.
+9. `tests/test_cutscene_engine.py` - Prologue cutscene state flow and typewriter text.
+10. `tests/test_inventory_coins_and_tools.py` - Dedicated coin purse and tool tiers.
+11. `tests/test_voice_and_audio.py` - Procedural audio synthesis and synth voices.
+12. `tests/test_mobile_controls.py` - Virtual joystick and touch control clusters.
+13. `tests/test_combat_overhaul_and_cheats.py` - Bow ballistics, staves, rods, scepters, and cheat commands.
+14. `tests/test_performance_and_profiler.py` - Performance baseline and F3 profiler metrics.
+15. `tests/test_lighting_and_victory_fixes.py` - Cellular lighting optimization and victory screen.
+16. `tests/test_wooden_sword.py` - Basic crafting and starter weapons.
+17. `tests/test_tool_tier_and_bare_hand.py` - Bare-hand anti-softlock and tool harvest times.
+18. `tests/test_item_descriptions_and_balance.py` - Item catalog descriptions and level curve balance.
+19. `tests/test_single_target_combat.py` - Single-target melee and ballistic rules.
+20. `tests/test_nightly_elite_and_dungeon_bosses.py` - Dungeon mini-bosses, bed proximity, and elite champion.
+21. `tests/test_random_trader_and_features.py` - Animated traders, enhancement, affixes, and turtle shield.
+22. `tests/test_crafting_categories_and_items.py` - 5-category crafting book and 129 items.
+23. `tests/test_danmaku_bullet_hell.py` - Danmaku patterns, 52% hitbox core, and perimeter grazing.
+24. `tests/test_traders_ui_and_torch_rules.py` - 3-block shield, shop hover UI, torch physics, and craftable asset folders.
+25. `tests/test_world_bleed_multiplayer_effects_assets.py` - World isolation and multiplayer state preservation.

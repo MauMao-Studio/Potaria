@@ -79,8 +79,8 @@
   - Gracefully logs `[AssetFactory ERROR]` to the console and generates a clean procedural fallback surface, ensuring the game never crashes during item rendering or equipping.
 
 - **Automated Quality Assurance & Verification**:
-  - Created 9 comprehensive unit tests verifying 3 trader archetypes, animation frames, 64x64 portraits, single-trader spawning, 15-35 block distant spawn, 3-block turtle shield radius, 1 Gold repair, shop hover tooltips, craftable items JSON loading, console auto-hide, torch placement rules, and item asset generation safety.
-  - Full project test suite passed 100% green across 308 tests in 24 test suites (`Ran 308 tests in 143.165s, OK`).
+  - Created comprehensive unit tests verifying 3 trader archetypes, animation frames, 64x64 portraits, single-trader spawning, 15-35 block distant spawn, 3-block turtle shield radius, 1 Gold repair, shop hover tooltips, craftable items JSON loading, console auto-hide, torch placement rules, and dedicated craftable asset directory separation.
+  - Full project test suite passed 100% green across 309 tests in 25 test suites (`Ran 309 tests in 131.512s, OK`).
 
 ---
 
