@@ -419,18 +419,23 @@ def run_tests():
     test_section("5. Full Disk Asset Generation & Export Verification")
     asset_factory.export_all_assets("assets", force=False)
     items_dir = os.path.join("assets", "items")
+    craftable_dir = os.path.join("assets", "craftable_items")
     proj_dir = os.path.join("assets", "projectiles")
 
-    item_files = os.listdir(items_dir)
-    proj_files = os.listdir(proj_dir)
-    print(f"  -> Total exported items on disk: {len(item_files)}")
+    item_files = os.listdir(items_dir) if os.path.exists(items_dir) else []
+    craftable_files = os.listdir(craftable_dir) if os.path.exists(craftable_dir) else []
+    proj_files = os.listdir(proj_dir) if os.path.exists(proj_dir) else []
+    print(f"  -> Total exported droppable items on disk: {len(item_files)}")
+    print(f"  -> Total exported craftable items on disk: {len(craftable_files)}")
     print(f"  -> Total exported projectiles on disk: {len(proj_files)}")
-    assert len(item_files) >= 1338, f"Expected at least 1338 items on disk, found {len(item_files)}"
+    assert len(item_files) >= 1300, f"Expected at least 1300 droppable items on disk, found {len(item_files)}"
+    assert len(craftable_files) >= 120, f"Expected at least 120 craftable items on disk, found {len(craftable_files)}"
+    assert len(item_files) + len(craftable_files) >= 1400, "Expected at least 1400 total items across droppable and craftable catalogs"
     assert "freezing_needle.png" in proj_files, "freezing_needle.png missing in assets/projectiles"
     assert "astral_arrow.png" in proj_files, "astral_arrow.png missing in assets/projectiles"
     assert "solar_flare.png" in proj_files, "solar_flare.png missing in assets/projectiles"
     assert "gravitational_pulse.png" in proj_files, "gravitational_pulse.png missing in assets/projectiles"
-    print("  -> All 1338+ items, tiles, mobs, bosses, and projectiles verified on disk!")
+    print("  -> All droppable items, craftable items, tiles, mobs, bosses, and projectiles verified on disk!")
 
     print("\n" + "=" * 65)
     print("ALL 5 SYSTEM OVERHAUL VERIFICATION TESTS PASSED SUCCESSFULLY!")

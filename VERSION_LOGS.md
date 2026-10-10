@@ -10,7 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v1.6.0** | October 2026 | *Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics* | 3 distinct animated traders (Wares, Enhance, Affix) with 4-frame animations & 64x64 portraits, single-trader existence & 15-35 tile distant spawn, 3-block turtle shield radius, 1 Gold repair, rich shop hover tooltips, dedicated craftable items catalog directory, word-wrapped 6.0s auto-hiding command console, torch physical support rules, and 308 passing tests. |
+| **v1.6.0** | October 2026 | *Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics* | 3 distinct animated traders (Wares, Enhance, Affix) with 4-frame animations & 64x64 portraits, single-trader existence & 15-35 tile distant spawn, 3-block turtle shield radius, 1 Gold repair, rich shop hover tooltips, dedicated craftable items catalog and asset directories, word-wrapped 6.0s auto-hiding command console, torch physical support rules, and 309 passing tests. |
 | **v1.5.0** | October 2026 | *Minecraft-Style Crafting Categories & 56+ Craftable Arsenal* | 5-tab category filter system ([ALL], [BUILDING], [EQUIPMENT], [SURVIVAL], [FURNITURE]), mouse-wheel crafting pagination, zero-drop panel hitboxes, 56 new craftable items (114 total recipes), paperdoll shields & off-hands, dynamic consumable healing, and procedural pixel art sprites. |
 | **v1.4.0** | October 2026 | *Bullet-Hell Boss Barrages & Touhou Dodging Mechanics* | High-density geometric bullet patterns for all 4 Mini-Bosses & Grand Boss Sol-Rho (Phases 1 & 2), 52% fair lethal core hitbox, perimeter graze hitbox (+1 MP reward), 60+ FPS quantized surface caching (<1.2ms for 500 projectiles), authoritative LAN multiplayer bullet synchronization. |
 | **v1.3.0** | October 2026 | *Mystic Trader, Affix Grimoire & Storage Chests* | Mystic Wandering Trader, Turtle Shield, Affix Slot Carving & Affix Stones, +1..7 Enhancement & Breaking/Repair, 20-slot Storage Chests, Playtime & Last Played World Select tracking. |
@@ -52,8 +52,10 @@
   - Implemented `_render_shop_item_tooltip()` in `NPCDialogueWindow`. Hovering over any ware card in the shop view instantly displays a comprehensive Diablo/Torchlight-style item card matching inventory tooltips.
   - Displays rarity-colored title, rarity and category badge, attack damage, weapon swing speed, defense, bonus stats, bulleted special perks, description, lore quotes for high-tier relics, and price tag in Copper, Silver, or Gold.
 
-- **Dedicated Directory for Craftable Items**:
+- **Dedicated Directory for Craftable Items & Assets**:
   - Created a dedicated crafting catalog directory, isolating craftable items from the 1,100+ droppable items catalog for effortless inspection and balancing.
+  - Established dedicated asset directories isolating all 129 craftable item sprite assets from droppable item sprites, enabling immediate visual inspection and modding.
+  - Separated droppable item assets so droppable and craftable catalogs remain strictly distinguished without mixing.
   - Saved all 129 craftable recipes categorized across `building`, `equipment`, `survival`, and `furniture` with required crafting stations, ingredient counts, descriptions, and rarities.
   - Added `load_craftable_recipes()` which dynamically loads and parses external recipe catalogs with safe fallback to built-in definitions.
 

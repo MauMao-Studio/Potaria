@@ -286,6 +286,39 @@ class TestTradersUIAndTorchRules(unittest.TestCase):
         self.assertIsNotNone(stack_icon)
         self.assertIsInstance(stack_icon, pygame.Surface)
 
+    def test_10_craftable_items_dedicated_asset_folder(self):
+        """All craftable items have their own dedicated folder (assets/craftable_items) distinguished from droppable items."""
+        craftable_dir = os.path.join("assets", "craftable_items")
+        items_dir = os.path.join("assets", "items")
+        self.assertTrue(os.path.exists(craftable_dir), "assets/craftable_items directory must exist")
+        self.assertTrue(os.path.exists(items_dir), "assets/items directory must exist")
+
+        craftable_recipes = load_craftable_recipes()
+        crafting_ids = {r["result"] for r in craftable_recipes}
+        self.assertGreaterEqual(len(crafting_ids), 120, "Should have 120+ craftable items")
+
+        craftable_files = os.listdir(craftable_dir)
+        self.assertGreaterEqual(len(craftable_files), len(crafting_ids), "All craftable items must be exported to assets/craftable_items")
+
+        # Verify each craftable item exists in assets/craftable_items and is a valid image
+        for cid in crafting_ids:
+            cf_path = os.path.join(craftable_dir, f"{cid}.png")
+            self.assertTrue(os.path.exists(cf_path), f"Craftable item {cid}.png must exist in assets/craftable_items")
+            # Verify file size > 0
+            self.assertGreater(os.path.getsize(cf_path), 0, f"{cid}.png must not be empty")
+
+        # Verify droppable items directory does not contain craftable items
+        droppable_files = os.listdir(items_dir)
+        for cid in crafting_ids:
+            self.assertNotIn(f"{cid}.png", droppable_files, f"Craftable item {cid}.png must NOT be in assets/items (must be separated)")
+
+        # Verify AssetFactory resolves craftable item sprites
+        for cid in list(crafting_ids)[:30]:
+            surf = self.asset_factory.items.get(cid)
+            self.assertIsNotNone(surf, f"AssetFactory must resolve sprite for craftable item {cid}")
+            self.assertIsInstance(surf, pygame.Surface)
+
 
 if __name__ == "__main__":
     unittest.main()
+

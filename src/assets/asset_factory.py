@@ -111,6 +111,25 @@ class ItemSpriteDict(dict):
         alias = ITEM_ALIASES.get(raw_key, raw_key)
         if super().__contains__(alias):
             return super().__getitem__(alias)
+
+        # Check if asset exists on disk (prioritize dedicated craftable_items folder, then items folder)
+        craftable_path = os.path.join("assets", "craftable_items", f"{raw_key}.png")
+        if not os.path.exists(craftable_path):
+            craftable_path = os.path.join("assets", "craftable", f"{raw_key}.png")
+        item_path = os.path.join("assets", "items", f"{raw_key}.png")
+        disk_path = craftable_path if os.path.exists(craftable_path) else (item_path if os.path.exists(item_path) else None)
+        if disk_path and os.path.exists(disk_path):
+            try:
+                sprite = pygame.image.load(disk_path)
+                if pygame.display.get_init() and pygame.display.get_surface():
+                    sprite = sprite.convert_alpha()
+                self[raw_key] = sprite
+                if key != raw_key:
+                    self[key] = sprite
+                return sprite
+            except Exception:
+                pass
+
         # Generate procedural fallback sprite dynamically
         try:
             sprite = self.factory.generate_item_icon(raw_key)
@@ -4396,17 +4415,23 @@ class AssetFactory:
     # ==========================================================================
     def export_all_assets(self, target_dir="assets", force=False):
         items_dir = os.path.join(target_dir, "items")
+        craftable_dir = os.path.join(target_dir, "craftable_items")
+        craftable_alias_dir = os.path.join(target_dir, "craftable")
+        data_crafting_dir = os.path.join("data", "crafting", "assets")
         proj_dir = os.path.join(target_dir, "projectiles")
         eff_dir = os.path.join(target_dir, "effects")
         cutscene_sample = os.path.join(target_dir, "cutscene", "scene_1_golden_age_0.png")
+        craftable_sample = os.path.join(craftable_dir, "work_bench.png")
         has_new_projs = os.path.exists(os.path.join(proj_dir, "catalyst_star.png")) and os.path.exists(os.path.join(proj_dir, "staff_bolt.png")) and os.path.exists(os.path.join(proj_dir, "rod_javelin.png")) and os.path.exists(os.path.join(proj_dir, "scepter_pulse.png"))
         has_effects = os.path.exists(os.path.join(eff_dir, "ancient_slash_0.png")) and len(os.listdir(eff_dir)) >= 100 if os.path.exists(eff_dir) else False
-        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1338 and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects:
+        has_craftable = os.path.exists(craftable_dir) and len(os.listdir(craftable_dir)) >= 120 and os.path.exists(craftable_sample)
+        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects:
             return
 
         os.makedirs(target_dir, exist_ok=True)
-        for subdir in ["tiles", "walls", "items", "player", "mobs", "boss", "projectiles", "ui", "branding", "environment", "cutscene", "story"]:
+        for subdir in ["tiles", "walls", "items", "craftable_items", "craftable", "player", "mobs", "boss", "projectiles", "ui", "branding", "environment", "cutscene", "story"]:
             os.makedirs(os.path.join(target_dir, subdir), exist_ok=True)
+        os.makedirs(data_crafting_dir, exist_ok=True)
 
         for tid, surf in self.tiles.items():
             if isinstance(surf, pygame.Surface):
@@ -4419,9 +4444,31 @@ class AssetFactory:
             if isinstance(surf, pygame.Surface):
                 pygame.image.save(surf, os.path.join(target_dir, "walls", f"wall_{wid}.png"))
 
-        # Export all items to assets/items/
+        # Obtain all craftable recipe item IDs
+        from src.ui.crafting import load_craftable_recipes
+        craftable_recipes = load_craftable_recipes()
+        crafting_item_ids = {r["result"] for r in craftable_recipes}
+
+        # Export dedicated craftable items to assets/craftable_items/, assets/craftable/, and data/crafting/assets/
+        for cname in crafting_item_ids:
+            surf = self.items.get(cname)
+            if surf:
+                pygame.image.save(surf, os.path.join(craftable_dir, f"{cname}.png"))
+                pygame.image.save(surf, os.path.join(craftable_alias_dir, f"{cname}.png"))
+                pygame.image.save(surf, os.path.join(data_crafting_dir, f"{cname}.png"))
+
+        # Export droppable items to assets/items/
         from src.ui.inventory import ITEM_REGISTRY
         for iname in ITEM_REGISTRY.keys():
+            if iname in crafting_item_ids:
+                # Remove from items_dir if present to cleanly distinguish droppable from craftable
+                old_file = os.path.join(target_dir, "items", f"{iname}.png")
+                if os.path.exists(old_file):
+                    try:
+                        os.remove(old_file)
+                    except OSError:
+                        pass
+                continue
             item_file = os.path.join(target_dir, "items", f"{iname}.png")
             surf = self.items[iname]
             if surf:
