@@ -40,6 +40,9 @@ class RendererManager:
         self.fullscreen = False
         self.requested_type = RENDERER_HARDWARE
         self.active_renderer: Optional[BaseRenderer] = None
+        self.bloom_enabled: bool = True
+        self.bloom_intensity: float = 0.8
+        self.bloom_threshold: float = 0.65
 
     def initialize(
         self,
@@ -76,6 +79,10 @@ class RendererManager:
             )
 
         self.active_renderer.initialize()
+        if hasattr(self.active_renderer, "set_bloom_enabled"):
+            self.active_renderer.set_bloom_enabled(self.bloom_enabled)
+            self.active_renderer.set_bloom_intensity(self.bloom_intensity)
+            self.active_renderer.set_bloom_threshold(self.bloom_threshold)
         return self.active_renderer
 
     def switch_renderer(
@@ -205,6 +212,40 @@ class RendererManager:
         width: int = 0,
     ):
         self.renderer.draw_circle(color, center, radius, width)
+
+    def draw_projectiles_batch(
+        self,
+        projectiles: list,
+        camera: Optional[any] = None,
+    ) -> int:
+        """Delegates high-density projectile batch rendering to active renderer."""
+        if hasattr(self.renderer, "draw_projectiles_batch"):
+            return self.renderer.draw_projectiles_batch(projectiles, camera)
+        return 0
+
+    def set_bloom_enabled(self, enabled: bool):
+        """Configures GLSL bloom post-processing on active renderer."""
+        self.bloom_enabled = bool(enabled)
+        if hasattr(self.renderer, "set_bloom_enabled"):
+            self.renderer.set_bloom_enabled(enabled)
+
+    def set_bloom_intensity(self, intensity: float):
+        """Sets bloom post-processing aura intensity on active renderer."""
+        self.bloom_intensity = max(0.0, min(5.0, float(intensity)))
+        if hasattr(self.renderer, "set_bloom_intensity"):
+            self.renderer.set_bloom_intensity(intensity)
+
+    def set_bloom_threshold(self, threshold: float):
+        """Sets bloom luminance threshold on active renderer."""
+        self.bloom_threshold = max(0.0, min(1.0, float(threshold)))
+        if hasattr(self.renderer, "set_bloom_threshold"):
+            self.renderer.set_bloom_threshold(threshold)
+
+    def get_bloom_params(self) -> dict:
+        """Returns active bloom parameters from active renderer."""
+        if hasattr(self.renderer, "get_bloom_params"):
+            return self.renderer.get_bloom_params()
+        return {"enabled": self.bloom_enabled, "intensity": self.bloom_intensity, "threshold": self.bloom_threshold}
 
     def cleanup(self):
         if self.active_renderer:

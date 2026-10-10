@@ -1405,7 +1405,7 @@ class CombatManager:
             else:
                 self.spawn_mob(GreenSlime(spawn_x, spawn_y, self.asset_factory), player=player)
 
-    def render(self, target_surf, camera):
+    def render(self, target_surf, camera, renderer=None):
         for item in self.dropped_items:
             item.render(target_surf, camera)
 
@@ -1426,14 +1426,22 @@ class CombatManager:
             elif hasattr(p, "render"):
                 p.render(target_surf, camera)
 
-        for ep in self.enemy_projectiles:
-            ep.render(target_surf, camera)
+        # High-density projectile batch rendering (Stage 2 HAL Hardware Acceleration)
+        if renderer and hasattr(renderer, "draw_projectiles_batch") and self.enemy_projectiles:
+            renderer.draw_projectiles_batch(self.enemy_projectiles, camera)
+        else:
+            for ep in self.enemy_projectiles:
+                ep.render(target_surf, camera)
 
         for mob in self.mobs:
             mob.render(target_surf, camera)
 
         if self.boss:
-            self.boss.render(target_surf, camera)
+            if hasattr(self.boss, "render"):
+                try:
+                    self.boss.render(target_surf, camera, renderer=renderer)
+                except TypeError:
+                    self.boss.render(target_surf, camera)
 
         for dn in self.damage_numbers:
             dn.render(target_surf, camera, self.font, self.font_crit)

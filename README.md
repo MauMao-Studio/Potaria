@@ -4,8 +4,8 @@
 **Engine:** Pure Python 3.13 + Pygame Community Edition (`pygame-ce` 2.5.8+ with SDL 2.32, 100% Offline Standalone, Zero External Downloads)  
 **Architecture:** Host-Authoritative 2D Sandbox Action RPG (Smart OpenGL HAL with Safe Fallback)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
-**Test Suite Status:** 309+ Tests Passing across 26 Test Suites  
-**Version:** v1.7.0  
+**Test Suite Status:** 338 Tests Passing across 26 Test Suites (100% Green)  
+**Version:** v1.7.1  
 
 ---
 
@@ -70,11 +70,13 @@ The franchise follows a **One Project Repository** architecture:
 - **Dedicated Coin Purse**: Currency stored independently of the 40-slot backpack (100 Copper = 1 Silver, 100 Silver = 1 Gold).
 - **Tool Tier Harvesting Speeds**: Progressive block breaking speeds based on tool tier, with bare-hand harvesting as an anti-softlock backup.
 
-### 2.7 Renderer Hardware Abstraction Layer (HAL) & Smart OpenGL
-- **Modular Renderer HAL**: Decoupled rendering architecture via abstract `BaseRenderer` interface with unified drawing operations (`draw_sprite`, `draw_surface`, `draw_rect`, `draw_text`, `draw_line`, `draw_circle`, `clear`, `present`, `get_surface`).
-- **SurfaceRenderer**: Native Pygame-ce software blitting engine guaranteeing 100% backward compatibility and exact visual parity.
-- **Smart OpenGL Fallback Engine (`GLRenderer`)**: Hardware-first ModernGL backend with safe context initialization, texture caching, and automatic fallback to `SurfaceRenderer` whenever OpenGL drivers or libraries are missing.
-- **In-Game Video Settings Toggle**: Interactive toggle (`Renderer: [Hardware (ModernGL) / Compatibility (Software)]`) in Settings with disk persistence in `saves/settings.json`.
+### 2.7 Renderer Hardware Abstraction Layer (HAL) & Stage 2 ModernGL Visuals
+- **Modular Renderer HAL**: Decoupled rendering architecture via abstract `BaseRenderer` interface with unified drawing operations (`draw_sprite`, `draw_surface`, `draw_rect`, `draw_text`, `draw_line`, `draw_circle`, `clear`, `present`, `get_surface`, `draw_projectiles_batch`).
+- **SurfaceRenderer**: Native Pygame-ce software blitting engine guaranteeing 100% backward compatibility, exact visual parity, and fast multi-blitting (`fblits`) for projectile batches.
+- **Smart OpenGL Fallback Engine (`GLRenderer`)**: Hardware-first ModernGL backend with safe context initialization, texture caching, single-log fallback deduplication, and automatic fallback to `SurfaceRenderer` whenever OpenGL drivers or libraries are missing.
+- **GLSL Bloom Post-Processing Shader Pipeline**: Hardware post-processing fragment shader with dynamic luminance extraction, 2D Gaussian kernel blur, and radiant pulse shimmer for Ancient gear auras, celestial trails, and boss danmaku projectiles.
+- **High-Density Projectile Batch Rendering**: Dedicated `draw_projectiles_batch` optimizing hundreds of active bullet-hell projectiles with viewport frustum culling, integrated directly into boss danmaku barrages.
+- **In-Game Video Settings Toggle**: Interactive toggles for Renderer (`[Hardware (ModernGL) / Compatibility (Software)]`) and Bloom Shaders (`[BLOOM SHADERS: ON / OFF]`) with disk persistence in `saves/settings.json`.
 
 ---
 
@@ -272,11 +274,12 @@ To release Potaria across PC (Steam) and mobile (Google Play Store) with maximum
    - Implemented `GLRenderer` with safe ModernGL / OpenGL context detection, texture caching, and automatic fallback.
    - Wired `RendererManager` into `main.py` and persistent settings (`saves/settings.json`).
    - Integrated Video Settings toggle: `Renderer: [Hardware (ModernGL) / Compatibility (Software)]`.
-2. **Stage 2: Hardware Acceleration & ModernGL Visuals (In Progress)**:
-   - GPU sprite batching for thousands of bullet-hell projectiles at 144+ FPS.
-   - GLSL bloom shaders for Ancient auras, celestial stars, and dynamic lighting.
-   - ModernGL framebuffer post-processing pipelines.
-3. **Stage 3: Steam PC Production Packaging**:
+2. **Stage 2: Hardware Acceleration & ModernGL Visuals (Complete)**:
+   - High-density projectile batch rendering for hundreds of bullet-hell projectiles at 144+ FPS via `draw_projectiles_batch`.
+   - GLSL bloom post-processing fragment shaders for Ancient weapon/armor radiant visual auras, celestial stars, and boss danmaku projectiles.
+   - Interactive in-game Video Settings toggles: `Renderer: [Hardware (ModernGL) / Compatibility (Software)]` and `Bloom Shaders: [BLOOM SHADERS: ON / OFF]`.
+   - Single-log fallback deduplication eliminating repetitive console warning spam.
+3. **Stage 3: Steam PC Production Packaging (Next)**:
    - Package standalone executable via Nuitka C-compilation.
    - Full Steam Deck and XInput/DirectInput gamepad controller integration.
 4. **Stage 4: Google Play Android Packaging**:

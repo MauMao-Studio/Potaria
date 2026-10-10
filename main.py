@@ -167,6 +167,8 @@ class PotariaGame:
             req_rend = self.menu.settings.get("renderer", RENDERER_HARDWARE)
             if hasattr(self, "renderer_manager") and req_rend != self.renderer_manager.requested_type:
                 self.set_renderer_mode(req_rend)
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_bloom_enabled"):
+                self.renderer_manager.set_bloom_enabled(self.menu.settings.get("bloom", True))
             if self.menu.settings.get("fullscreen", False):
                 try:
                     self.toggle_fullscreen()
@@ -855,6 +857,14 @@ class PotariaGame:
             self.set_renderer_mode(action[1])
         elif action == "toggle_renderer":
             self.toggle_renderer_mode()
+        elif isinstance(action, tuple) and action[0] == "set_bloom":
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_bloom_enabled"):
+                self.renderer_manager.set_bloom_enabled(action[1])
+        elif action == "toggle_bloom":
+            cur_b = self.menu.settings.get("bloom", True)
+            self.menu.settings["bloom"] = not cur_b
+            if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_bloom_enabled"):
+                self.renderer_manager.set_bloom_enabled(not cur_b)
         elif isinstance(action, tuple) and action[0] == "set_shake":
             self.camera.shake_enabled = action[1]
         elif isinstance(action, tuple) and action[0] == "set_touch_controls":
@@ -2570,7 +2580,7 @@ class PotariaGame:
 
         # Layer 4: Mobs, Boss & Dropped Items
         with self.profiler.section("render_combat"):
-            self.combat.render(self.screen, self.camera)
+            self.combat.render(self.screen, self.camera, renderer=getattr(self, "renderer", None))
 
         # Layer 4.5: Remote LAN Party Members
         if self.client and self.client.connected:

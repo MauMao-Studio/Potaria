@@ -4,8 +4,8 @@
 **Engine:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
 **Rendering Architecture:** Smart OpenGL Hardware Abstraction Layer (HAL) with Safe Fallback  
-**Test Suite Status:** 328 Tests Passing across 26 Test Suites (100% Green)  
-**Current Version:** v1.7.0  
+**Test Suite Status:** 338 Tests Passing across 26 Test Suites (100% Green)  
+**Current Version:** v1.7.1  
 
 ---
 
@@ -74,12 +74,16 @@ All systems are fully verified, regression-tested, and operate completely offlin
 - **Auto-Hiding Word-Wrapped Console & Chat**: In-game chat and command output format with automatic word wrapping in an unobtrusive box, fading out after a configurable delay to preserve screen real estate.
 - **World Selection History**: World selection UI displays total accumulated playtime in hours and the exact timestamp of the last played session.
 
-### 2.7 Renderer Hardware Abstraction Layer (HAL) & Smart OpenGL
-- **BaseRenderer Abstract Interface**: Defines standardized drawing contracts (`draw_sprite`, `draw_surface`, `draw_rect`, `draw_text`, `draw_line`, `draw_circle`, `clear`, `present`, `get_surface`, `set_mode`) decoupling game logic from graphical backends.
+### 2.7 Renderer Hardware Abstraction Layer (HAL) & Stage 2 ModernGL Visuals
+- **BaseRenderer Abstract Interface**: Defines standardized drawing contracts (`draw_sprite`, `draw_surface`, `draw_rect`, `draw_text`, `draw_line`, `draw_circle`, `clear`, `present`, `get_surface`, `set_mode`, `draw_projectiles_batch`) decoupling game logic from graphical backends.
 - **SurfaceRenderer**: High-performance native Pygame-ce software blitting engine providing 100% exact parity with legacy rendering.
 - **GLRenderer**: ModernGL / OpenGL accelerated renderer featuring safe context detection, texture caching, and automatic fallback to `SurfaceRenderer` upon initialization failure or missing libraries.
-- **RendererManager & Dynamic Toggle**: Centralized manager providing real-time backend switching and user preference persistence in `saves/settings.json`.
-- **In-Game Video Settings Integration**: Interactive toggle in Video Settings (`Renderer: [Hardware (ModernGL) / Compatibility (Software)]`).
+- **GLSL Bloom Post-Processing Pipeline**: Stage 2 custom fragment shader implementing dynamic luminance extraction, 2D Gaussian kernel blur, and radiant pulse shimmer for Ancient weapon/armor radiant visual auras, celestial star trails, and boss danmaku projectiles.
+- **High-Density Projectile Batch Rendering**: `draw_projectiles_batch` on `GLRenderer`, `SurfaceRenderer`, and `RendererManager` optimizing hundreds of active bullet-hell projectiles in a single pass using C-level multi-blitting (`fblits`) with viewport frustum culling.
+- **Single-Log Fallback Deduplication**: Automatic safety fallback warnings are logged only once via `_logged_fallback`, completely eliminating console spam on game startup and world reloads.
+- **Configurable Shader Uniforms**: Clean uniform controls (`set_bloom_enabled`, `set_bloom_intensity`, `set_bloom_threshold`, `get_bloom_params`) across hardware and software backends.
+- **RendererManager & Dynamic Toggle**: Centralized manager providing real-time backend switching, state-preserving bloom parameter retention, and user preference persistence in `saves/settings.json`.
+- **In-Game Video Settings Integration**: Interactive toggles in Video Settings (`Renderer: [Hardware (ModernGL) / Compatibility (Software)]` and `Bloom Shaders: [BLOOM SHADERS: ON / OFF]`) with disk persistence in `saves/settings.json`.
 
 ### 2.8 Franchise Architecture: One Project Repository (Dual-Profile)
 - **Unified Codebase**: Both profiles share common world simulation, physics, networking, and item registries.
@@ -100,17 +104,17 @@ All systems are fully verified, regression-tested, and operate completely offlin
 ## 4. Quality Assurance & Test Coverage
 
 - **Total Test Suites**: 26 distinct suites in `tests/`.
-- **Total Automated Tests**: 309+ tests passing with zero errors.
+- **Total Automated Tests**: 338 tests passing with zero errors (100% Green).
 - **Headless CI/CD Compatibility**: All tests execute cleanly in dummy video/audio driver environments (`SDL_VIDEODRIVER=dummy`, `SDL_AUDIODRIVER=dummy`).
-- **Regression Protection**: Automated test coverage spans inventory safety, combat calculations, equipment set bonuses, procedural terrain, trader state machines, bullet-hell hitboxes, crafting categories, world persistence, and renderer HAL abstraction.
+- **Regression Protection**: Automated test coverage spans inventory safety, combat calculations, equipment set bonuses, procedural terrain, trader state machines, bullet-hell hitboxes, crafting categories, world persistence, renderer HAL abstraction, GLSL Bloom pipeline, and projectile batching.
 
 ---
 
 ## 5. Strategic Roadmap Deliverables
 
 1. **Stage 1 (Complete)**: Renderer Hardware Abstraction Layer (HAL) decoupling Pygame-ce software blitting from rendering backends, with safe fallback and in-game settings toggle.
-2. **Stage 2 (In Progress)**: ModernGL / OpenGL hardware acceleration with GLSL lighting, bloom shaders, and batching.
-3. **Stage 3**: Steam PC production packaging via Nuitka C-compilation and gamepad support.
+2. **Stage 2 (Complete)**: ModernGL / OpenGL hardware acceleration with GLSL lighting, bloom post-processing shaders, high-density projectile batch rendering, and single-log fallback deduplication.
+3. **Stage 3 (Next)**: Steam PC production packaging via Nuitka C-compilation and gamepad support.
 4. **Stage 4**: Google Play Android packaging with virtual touch controls, Buildozer APK/AAB builds, and lifecycle persistence.
 5. **Flagship Franchise Release**: *Potaria: Root Realm* (Narrative episodic adventure with Heartroot transformations and POTAdex).
 

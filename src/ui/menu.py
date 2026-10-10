@@ -120,6 +120,7 @@ class MenuManager:
             "touch_controls": "auto",
             "touch_opacity": 0.75,
             "renderer": "hardware",
+            "bloom": True,
         }
 
         # Key Bindings / Input Mapping
@@ -148,13 +149,14 @@ class MenuManager:
             Button(sx + 122, 210, 38, 38, "+", "vol_bgm_up"),
             Button(sx - 160, 260, 38, 38, "-", "vol_sfx_down"),
             Button(sx + 122, 260, 38, 38, "+", "vol_sfx_up"),
-            Button(sx - 150, 304, 300, 30, "DISPLAY: WINDOWED", "toggle_display"),
-            Button(sx - 150, 338, 300, 30, "RENDERER: HARDWARE (MODERNGL)", "toggle_renderer"),
-            Button(sx - 150, 372, 300, 30, "SCREEN SHAKE: ON", "toggle_shake"),
-            Button(sx - 150, 406, 300, 30, "TOUCH CONTROLS: AUTO", "toggle_touch_controls"),
-            Button(sx - 150, 440, 300, 30, "TOUCH OPACITY: 75%", "toggle_touch_opacity"),
-            Button(sx - 150, 474, 300, 30, "INPUT MAPPING / KEYS >", "open_input_mapping"),
-            Button(sx - 100, 516, 200, 36, "<  BACK", "settings_back"),
+            Button(sx - 150, 302, 300, 28, "DISPLAY: WINDOWED", "toggle_display"),
+            Button(sx - 150, 333, 300, 28, "RENDERER: HARDWARE (MODERNGL)", "toggle_renderer"),
+            Button(sx - 150, 364, 300, 28, "BLOOM SHADERS: ON", "toggle_bloom"),
+            Button(sx - 150, 395, 300, 28, "SCREEN SHAKE: ON", "toggle_shake"),
+            Button(sx - 150, 426, 300, 28, "TOUCH CONTROLS: AUTO", "toggle_touch_controls"),
+            Button(sx - 150, 457, 300, 28, "TOUCH OPACITY: 75%", "toggle_touch_opacity"),
+            Button(sx - 150, 488, 300, 28, "INPUT MAPPING / KEYS >", "open_input_mapping"),
+            Button(sx - 100, 524, 200, 34, "<  BACK", "settings_back"),
         ]
 
         # Buttons for Input Mapping view
@@ -232,7 +234,7 @@ class MenuManager:
                     data = json.load(f)
                 if isinstance(data, dict):
                     saved_cfg = data.get("settings", {})
-                    for k in ("master_volume", "bgm_volume", "sfx_volume", "fullscreen", "screen_shake", "touch_controls", "touch_opacity", "renderer"):
+                    for k in ("master_volume", "bgm_volume", "sfx_volume", "fullscreen", "screen_shake", "touch_controls", "touch_opacity", "renderer", "bloom"):
                         if k in saved_cfg:
                             self.settings[k] = saved_cfg[k]
                     saved_keys = data.get("key_bindings", {})
@@ -279,6 +281,8 @@ class MenuManager:
                     btn.text = "RENDERER: HARDWARE (MODERNGL)"
                 else:
                     btn.text = "RENDERER: COMPATIBILITY (SOFTWARE)"
+            elif btn.action == "toggle_bloom":
+                btn.text = "BLOOM SHADERS: ON" if self.settings.get("bloom", True) else "BLOOM SHADERS: OFF"
             elif btn.action == "toggle_shake":
                 btn.text = "SCREEN SHAKE: ON" if self.settings.get("screen_shake", True) else "SCREEN SHAKE: OFF"
             elif btn.action == "toggle_touch_controls":
@@ -570,6 +574,11 @@ class MenuManager:
                         self._refresh_settings_button_labels()
                         self.save_settings()
                         return ("set_renderer", next_rend)
+                    elif btn.action == "toggle_bloom":
+                        self.settings["bloom"] = not self.settings.get("bloom", True)
+                        self._refresh_settings_button_labels()
+                        self.save_settings()
+                        return ("set_bloom", self.settings["bloom"])
                     elif btn.action == "toggle_shake":
                         self.settings["screen_shake"] = not self.settings["screen_shake"]
                         self._refresh_settings_button_labels()

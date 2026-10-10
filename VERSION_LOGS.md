@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.7.1** | October 2026 | *Stage 2 Hardware Acceleration, GLSL Bloom Shaders & Projectile Batching* | Real GPU ModernGL 5.13 acceleration, GLSL Bloom post-processing fragment shader with dynamic luminance extraction and radiant pulse shimmer for Ancient gear and danmaku projectiles, high-density C-level projectile batch rendering (`draw_projectiles_batch`) integrated with boss danmaku barrages, single-log fallback deduplication eliminating startup warning spam, interactive in-game bloom toggle button (`[BLOOM SHADERS: ON / OFF]`) with `"bloom": true` persistence, state-preserving renderer switching, and 338 tests passing across 26 test suites (100% Green). |
 | **v1.7.0** | October 2026 | *Renderer Hardware Abstraction Layer (HAL), Smart OpenGL Architecture & Dual-Profile Franchise Model* | Modular `src/rendering/` architecture (BaseRenderer, SurfaceRenderer, GLRenderer, RendererManager), Smart OpenGL HAL with hardware-first ModernGL acceleration and automatic graceful fallback to Pygame-ce software rendering, in-game Video Settings toggle (Hardware ModernGL / Compatibility Software) with `saves/settings.json` persistence, ratified One Project Repository franchise model (Base Game Potaria + Flagship ARPG Potaria: Root Realm), and 328 tests passing across 26 test suites (100% Green). |
 | **v1.6.0** | October 2026 | *Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics* | 3 distinct animated traders (Wares, Enhance, Affix) with 4-frame animations & 64x64 portraits, single-trader existence & 15-35 tile distant spawn, 3-block turtle shield radius, 1 Gold repair, rich shop hover tooltips, dedicated craftable items catalog and asset directories, word-wrapped 6.0s auto-hiding command console, torch physical support rules, and 309 passing tests. |
 | **v1.5.0** | October 2026 | *Minecraft-Style Crafting Categories & 56+ Craftable Arsenal* | 5-tab category filter system ([ALL], [BUILDING], [EQUIPMENT], [SURVIVAL], [FURNITURE]), mouse-wheel crafting pagination, zero-drop panel hitboxes, 56 new craftable items (114 total recipes), paperdoll shields & off-hands, dynamic consumable healing, and procedural pixel art sprites. |
@@ -33,7 +34,45 @@
 
 ## Detailed Version Logs
 
-### [v1.7.0] — Renderer Hardware Abstraction Layer (HAL), Smart OpenGL Architecture & Dual-Profile Franchise Model (Current Release)
+### [v1.7.1] — Stage 2 Hardware Acceleration, GLSL Bloom Shaders & Projectile Batching (Current Release)
+*Release Date: October 2026*
+
+#### Added
+- **ModernGL 5.13 Hardware Acceleration**:
+  - Full integration and verification of `moderngl 5.13.0` and `glcontext 3.1.0` in Python 3.13.
+  - Real hardware rendering verified on Intel Iris Xe Graphics with zero driver conflicts.
+  - Headless/dummy driver resilience: automatic graceful fallback to `SurfaceRenderer` when running under `SDL_VIDEODRIVER=dummy` or non-accelerated environments.
+- **GLSL Bloom Post-Processing Shader Pipeline**:
+  - Custom GLSL fragment shader performing dynamic luminance threshold extraction (`u_bloom_threshold`), 9-tap 2D Gaussian kernel blur, and radiant pulse shimmer (`u_bloom_intensity`, `u_time`).
+  - Fullscreen post-processing applied during `present()` over the scene framebuffer texture.
+  - Enhances Ancient and Mythic weapon/armor radiant visual auras, celestial star trails, and bullet-hell boss danmaku projectiles with an ethereal glow.
+  - Dedicated bloom configuration controls (`set_bloom_enabled`, `set_bloom_intensity`, `set_bloom_threshold`, `get_bloom_params`) implemented across `GLRenderer`, `SurfaceRenderer`, and `RendererManager`.
+  - In-game interactive bloom toggle button (`[BLOOM SHADERS: ON / OFF]`) wired directly in Settings menu and persisted under `"bloom": true` in `saves/settings.json`.
+  - State-preserving renderer switching in `RendererManager` maintaining active bloom parameters across backend toggles.
+- **High-Density Projectile Batch Rendering**:
+  - Implemented `draw_projectiles_batch` across `GLRenderer`, `SurfaceRenderer`, and `RendererManager`.
+  - Hardware and software backends utilize optimized multi-blitting (`fblits`) with viewport frustum culling.
+  - Fully integrated into `Boss.render`, `MiniBoss.render`, and `CombatSystem.render` to batch-render all boss and enemy danmaku projectiles (`BossProjectile`) in a single draw pass.
+  - Added support for both `(x, y)` and vector `pos` projectile data structures.
+  - Real-time batch metrics tracking (`last_batch_count`, `total_batched_projectiles`) for performance monitoring.
+- **Single-Log Fallback Deduplication**:
+  - Added `_logged_fallback` class-level flag to `GLRenderer` to ensure fallback warnings are logged only once during game startup or world loads, completely eliminating repetitive console warning spam.
+
+#### Verified & Tested
+- Comprehensive unit tests in `tests/test_renderer_hal.py`:
+  - `test_glsl_bloom_shader_pipeline_configuration`: Validates fragment shader compilation, uniform bindings, and toggling logic.
+  - `test_real_glsl_bloom_shader_compilation`: Validates real ModernGL context shader compilation syntax and uniform locations directly from production shader constants.
+  - `test_projectile_batch_rendering_hardware`: Validates batch culling, coordinate projection, and metric tracking.
+  - `test_projectile_batch_pos_attribute_support`: Validates that Vector2 pos projectiles are frustum culled and batched.
+  - `test_boss_projectiles_batch_rendering`: Validates that DungeonMiniBoss and GrandBossSolRho batch projectiles through renderer HAL.
+  - `test_fallback_warning_logged_only_once`: Validates fallback log deduplication.
+  - `test_surface_renderer_batch_and_bloom`: Validates software fallback batching and bloom state queries.
+  - `test_manager_batch_and_bloom_delegation`: Validates transparent manager delegation.
+  - `test_manager_preserves_bloom_settings_across_switch`: Validates state-preserving bloom parameter retention.
+  - `test_menu_settings_bloom_toggle`: Validates in-game Settings menu bloom toggle button and disk persistence.
+- 338 tests passing across 26 test suites (100% Green).
+
+### [v1.7.0] — Renderer Hardware Abstraction Layer (HAL), Smart OpenGL Architecture & Dual-Profile Franchise Model
 *Release Date: October 2026*
 
 #### Added

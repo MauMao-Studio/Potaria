@@ -26,6 +26,11 @@ class SurfaceRenderer(BaseRenderer):
     ):
         super().__init__(width=width, height=height, title=title, fullscreen=fullscreen)
         self.surface: Optional[pygame.Surface] = None
+        self.bloom_enabled: bool = False
+        self.bloom_intensity: float = 0.0
+        self.bloom_threshold: float = 0.65
+        self.last_batch_count: int = 0
+        self.total_batched_projectiles: int = 0
 
     def initialize(self) -> bool:
         """Initializes the Pygame display mode with double-buffering and crisp scaling."""
@@ -152,6 +157,104 @@ class SurfaceRenderer(BaseRenderer):
     def get_renderer_type(self) -> str:
         """Returns 'software'."""
         return RENDERER_SOFTWARE
+
+    def draw_projectiles_batch(
+        self,
+        projectiles: list,
+        camera: Optional[any] = None,
+    ) -> int:
+        """
+        Renders a high-density batch of projectiles using optimized C-level multi-blitting.
+        Returns the count of successfully rendered projectiles.
+        """
+        if not self.surface or not projectiles:
+            return 0
+
+        target_surf = self.surface
+        rendered_count = 0
+        batch_blits = []
+
+        sw = self.width
+        sh = self.height
+
+        for p in projectiles:
+            if isinstance(p, tuple):
+                if len(p) >= 2 and isinstance(p[0], pygame.Surface):
+                    batch_blits.append((p[0], p[1]))
+                    rendered_count += 1
+                continue
+
+            if hasattr(p, "life") and p.life <= 0:
+                continue
+
+            if hasattr(p, "x") and hasattr(p, "y"):
+                px = float(p.x)
+                py = float(p.y)
+            elif hasattr(p, "pos") and hasattr(p.pos, "x") and hasattr(p.pos, "y"):
+                px = float(p.pos.x)
+                py = float(p.pos.y)
+            else:
+                px, py = None, None
+
+            if px is not None and py is not None:
+                if camera and hasattr(camera, "world_to_screen"):
+                    sx, sy = camera.world_to_screen(px, py)
+                else:
+                    sx, sy = px, py
+
+                rad = getattr(p, "radius", 10.0)
+                pad = int(rad + 32)
+                if sx < -pad or sx > sw + pad or sy < -pad or sy > sh + pad:
+                    continue
+
+                if getattr(p, "sprite", None) is not None and getattr(p, "shape", "") == "sprite":
+                    sp = p.sprite
+                    batch_blits.append((sp, (int(sx - sp.get_width() // 2), int(sy - sp.get_height() // 2))))
+                    rendered_count += 1
+                elif hasattr(p, "shape") and hasattr(p, "color"):
+                    import math
+                    from src.entities.bullet_hell import get_bullet_surface
+                    angle_deg = math.degrees(math.atan2(getattr(p, "vy", 0.0), getattr(p, "vx", 1.0)))
+                    bsurf = get_bullet_surface(
+                        shape=p.shape,
+                        color=p.color,
+                        core_color=getattr(p, "core_color", (255, 255, 255)),
+                        radius=int(rad),
+                        angle_deg=angle_deg,
+                    )
+                    hw = bsurf.get_width() // 2
+                    hh = bsurf.get_height() // 2
+                    batch_blits.append((bsurf, (int(sx - hw), int(sy - hh))))
+                    rendered_count += 1
+                elif hasattr(p, "render"):
+                    p.render(target_surf, camera)
+                    rendered_count += 1
+            elif hasattr(p, "render"):
+                p.render(target_surf, camera)
+                rendered_count += 1
+
+        if batch_blits:
+            target_surf.fblits(batch_blits)
+
+        self.last_batch_count = rendered_count
+        self.total_batched_projectiles += rendered_count
+        return rendered_count
+
+    def set_bloom_enabled(self, enabled: bool):
+        self.bloom_enabled = bool(enabled)
+
+    def set_bloom_intensity(self, intensity: float):
+        self.bloom_intensity = max(0.0, min(5.0, float(intensity)))
+
+    def set_bloom_threshold(self, threshold: float):
+        self.bloom_threshold = max(0.0, min(1.0, float(threshold)))
+
+    def get_bloom_params(self) -> dict:
+        return {
+            "enabled": self.bloom_enabled,
+            "intensity": self.bloom_intensity,
+            "threshold": self.bloom_threshold,
+        }
 
     def cleanup(self):
         """Releases renderer resources."""

@@ -3,9 +3,9 @@
 **Developer:** Kurados  
 **Engine:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)  
 **Architecture:** Host-Authoritative 2D Sandbox Action RPG (Smart OpenGL HAL with Safe Fallback)  
-**Test Suite Status:** 328 / 328 Tests Passing across 26 Test Suites (100% Green)  
-**Current Version:** v1.7.0  
-**Last Updated:** October 2026 (v1.7.0 Release)  
+**Test Suite Status:** 338 / 338 Tests Passing across 26 Test Suites (100% Green)  
+**Current Version:** v1.7.1  
+**Last Updated:** October 2026 (v1.7.1 Stage 2 Release)  
 
 ---
 
@@ -114,10 +114,14 @@ The approved technical strategy retains the 100% pure Python + Pygame-ce engine 
 ### Stage 2: Hardware Acceleration & ModernGL Visuals
 - **Objective**: Harness desktop and mobile GPUs for high-density rendering, shaders, and visual effects.
 - **Tasks**:
-  - [ ] Hardware sprite batching for bullet-hell danmaku patterns (thousands of projectiles at 144+ FPS).
-  - [ ] GLSL post-processing shaders: dynamic bloom for Ancient auras, celestial stars, and chromatic aberration on boss phases.
-  - [ ] GLSL smooth lighting pass replacing CPU software blitting.
-  - [ ] Seamless fallback: if OpenGL context fails to initialize on low-end hardware, automatically fall back to `SurfaceRenderer`.
+  - [x] Hardware sprite batching for bullet-hell danmaku patterns (`draw_projectiles_batch` optimizing hundreds of boss projectiles with frustum culling at 144+ FPS).
+  - [x] Boss and mini-boss bullet-hell danmaku projectile batch rendering integration with viewport frustum culling.
+  - [x] GLSL post-processing shaders: dynamic bloom for Ancient auras, celestial stars, and radiant projectile glows with configurable uniforms (`u_bloom_enabled`, `u_bloom_intensity`, `u_bloom_threshold`, `u_time`, `u_resolution`).
+  - [x] Interactive in-game Video Settings toggles: Video Renderer (`[Hardware (ModernGL) / Compatibility (Software)]`) and Bloom Shaders (`[BLOOM SHADERS: ON / OFF]`) with disk persistence in `saves/settings.json`.
+  - [x] State-preserving renderer switching in `RendererManager` maintaining active bloom parameters across backend toggles.
+  - [x] Clean shader uniform management and software fallback handling when compatibility mode is active.
+  - [x] Seamless single-log fallback: if OpenGL context fails to initialize or headless drivers are used, automatically fall back to `SurfaceRenderer` with deduplicated console warnings (`_logged_fallback`).
+  - [x] ModernGL 5.13 library integration with Python 3.13 standalone OpenGL hardware acceleration.
 
 ### Stage 3: Steam PC Production Packaging
 - **Objective**: Deliver a self-contained, high-performance desktop release for Windows and Linux (Steam Deck).
@@ -195,4 +199,4 @@ python -m unittest discover -s tests
 23. `tests/test_danmaku_bullet_hell.py` - Danmaku patterns, 52% hitbox core, and perimeter grazing.
 24. `tests/test_traders_ui_and_torch_rules.py` - 3-block shield, shop hover UI, torch physics, and craftable asset folders.
 25. `tests/test_world_bleed_multiplayer_effects_assets.py` - World isolation and multiplayer state preservation.
-26. `tests/test_renderer_hal.py` - Renderer HAL, BaseRenderer, SurfaceRenderer, GLRenderer fallback, settings persistence, and mode switching.
+26. `tests/test_renderer_hal.py` - Renderer HAL, BaseRenderer, SurfaceRenderer, GLRenderer Stage 2 GLSL Bloom shader post-processing, projectile batching, single-log fallback deduplication, settings persistence, and mode switching.

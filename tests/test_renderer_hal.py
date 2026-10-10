@@ -52,6 +52,7 @@ class TestBaseRendererInterface(unittest.TestCase):
             "set_mode",
             "is_hardware_accelerated",
             "get_renderer_type",
+            "draw_projectiles_batch",
             "cleanup",
         }
         self.assertTrue(required_methods.issubset(abstract_methods), f"Missing methods: {required_methods - abstract_methods}")
@@ -119,10 +120,28 @@ class TestSurfaceRenderer(unittest.TestCase):
         self.assertEqual(self.renderer.height, 480)
         self.assertEqual(self.renderer.get_surface().get_size(), (640, 480))
 
+    def test_surface_renderer_batch_and_bloom(self):
+        self.renderer.initialize()
+        self.renderer.set_bloom_enabled(True)
+        self.renderer.set_bloom_intensity(1.2)
+        self.renderer.set_bloom_threshold(0.7)
+        params = self.renderer.get_bloom_params()
+        self.assertTrue(params["enabled"])
+        self.assertAlmostEqual(params["intensity"], 1.2)
+        self.assertAlmostEqual(params["threshold"], 0.7)
+
+        sub = pygame.Surface((16, 16))
+        sub.fill((255, 0, 0))
+        batch_items = [(sub, (10, 10)), (sub, (30, 30))]
+        count = self.renderer.draw_projectiles_batch(batch_items)
+        self.assertEqual(count, 2)
+        self.assertEqual(self.renderer.last_batch_count, 2)
+
 
 class TestGLRenderer(unittest.TestCase):
     """Tests GLRenderer initialization, fallback behavior, and hardware abstraction."""
 
+    @patch("src.rendering.gl_renderer.MODERNGL_AVAILABLE", False)
     def test_automatic_fallback_when_moderngl_unavailable(self):
         renderer = GLRenderer(width=800, height=600, title="Test GL")
         success = renderer.initialize()
@@ -237,6 +256,173 @@ class TestGLRenderer(unittest.TestCase):
             self.assertEqual(mock_ctx.viewport, (0, 0, 1024, 768))
             renderer.cleanup()
 
+    def test_fallback_warning_logged_only_once(self):
+        """Verifies that fallback warning is logged only once to avoid console spam."""
+        import io
+        from contextlib import redirect_stdout
+
+        GLRenderer.reset_fallback_log()
+        f = io.StringIO()
+        with redirect_stdout(f):
+            r1 = GLRenderer(width=640, height=480)
+            r1._engage_fallback("Test fallback reason 1")
+            r2 = GLRenderer(width=640, height=480)
+            r2._engage_fallback("Test fallback reason 2")
+
+        output = f.getvalue()
+        self.assertEqual(output.count("[GLRenderer]"), 1)
+        self.assertIn("Test fallback reason 1", output)
+        self.assertNotIn("Test fallback reason 2", output)
+        r1.cleanup()
+        r2.cleanup()
+
+    def test_glsl_bloom_shader_pipeline_configuration(self):
+        """Tests that bloom parameters and shader uniforms update correctly."""
+        mock_ctx = MagicMock()
+        mock_ctx.info = {"GL_RENDERER": "Mock GPU"}
+        mock_prog = MagicMock()
+        mock_vbo = MagicMock()
+        mock_vao = MagicMock()
+        mock_tex = MagicMock()
+
+        uniform_dict = {}
+        mock_prog.__getitem__.side_effect = lambda k: uniform_dict.setdefault(k, MagicMock())
+        mock_prog.__contains__.side_effect = lambda k: True
+
+        mock_ctx.program.return_value = mock_prog
+        mock_ctx.buffer.return_value = mock_vbo
+        mock_ctx.simple_vertex_array.return_value = mock_vao
+        mock_ctx.texture.return_value = mock_tex
+
+        with patch("src.rendering.gl_renderer.MODERNGL_AVAILABLE", True), \
+             patch("src.rendering.gl_renderer.moderngl") as mock_mgl, \
+             patch("pygame.display.set_mode"):
+
+            mock_mgl.create_context.return_value = mock_ctx
+            mock_mgl.NEAREST = 0x2600
+            mock_mgl.TRIANGLE_STRIP = 5
+
+            renderer = GLRenderer(width=800, height=600)
+            renderer.initialize()
+
+            renderer.set_bloom_enabled(True)
+            renderer.set_bloom_intensity(1.4)
+            renderer.set_bloom_threshold(0.75)
+            params = renderer.get_bloom_params()
+            self.assertTrue(params["enabled"])
+            self.assertAlmostEqual(params["intensity"], 1.4)
+            self.assertAlmostEqual(params["threshold"], 0.75)
+
+            renderer.present()
+            self.assertEqual(mock_prog["u_bloom_enabled"].value, 1)
+            self.assertAlmostEqual(mock_prog["u_bloom_intensity"].value, 1.4)
+            self.assertAlmostEqual(mock_prog["u_bloom_threshold"].value, 0.75)
+            self.assertEqual(mock_prog["u_resolution"].value, (800.0, 600.0))
+
+            renderer.set_bloom_enabled(False)
+            renderer.present()
+            self.assertEqual(mock_prog["u_bloom_enabled"].value, 0)
+
+            renderer.cleanup()
+
+    def test_projectile_batch_rendering_hardware(self):
+        """Tests hardware projectile batch rendering with frustum culling and blit batching."""
+        mock_ctx = MagicMock()
+        mock_ctx.info = {"GL_RENDERER": "Mock GPU"}
+        mock_ctx.program.return_value = MagicMock()
+        mock_ctx.buffer.return_value = MagicMock()
+        mock_ctx.simple_vertex_array.return_value = MagicMock()
+        mock_ctx.texture.return_value = MagicMock()
+
+        with patch("src.rendering.gl_renderer.MODERNGL_AVAILABLE", True), \
+             patch("src.rendering.gl_renderer.moderngl") as mock_mgl, \
+             patch("pygame.display.set_mode"):
+
+            mock_mgl.create_context.return_value = mock_ctx
+            mock_mgl.NEAREST = 0x2600
+            mock_mgl.TRIANGLE_STRIP = 5
+
+            renderer = GLRenderer(width=800, height=600)
+            renderer.initialize()
+
+            from src.entities.bullet_hell import BossProjectile
+            p1 = BossProjectile(x=400, y=300, vx=1.0, vy=0.0, radius=8, color=(255, 100, 50))
+            p2 = BossProjectile(x=-500, y=-500, vx=1.0, vy=0.0, radius=8, color=(255, 100, 50))
+            p3 = BossProjectile(x=450, y=320, vx=1.0, vy=0.0, radius=8, life=0.0)
+            sub = pygame.Surface((10, 10))
+            p4 = (sub, (200, 200))
+
+            count = renderer.draw_projectiles_batch([p1, p2, p3, p4])
+            self.assertEqual(count, 2)
+            self.assertEqual(renderer.last_batch_count, 2)
+            self.assertEqual(renderer.total_batched_projectiles, 2)
+
+            renderer.cleanup()
+
+    def test_real_glsl_bloom_shader_compilation(self):
+        """Verifies that the Stage 2 GLSL Bloom shader compiles cleanly with ModernGL."""
+        try:
+            import moderngl
+            ctx = moderngl.create_context(standalone=True)
+        except Exception:
+            self.skipTest("ModernGL standalone context unavailable in current test environment")
+
+        prog = ctx.program(vertex_shader=GLRenderer.VERTEX_SHADER, fragment_shader=GLRenderer.FRAGMENT_SHADER)
+        self.assertIsNotNone(prog)
+        for u in ("u_texture", "u_resolution", "u_time", "u_bloom_intensity", "u_bloom_threshold", "u_bloom_enabled"):
+            self.assertIn(u, prog)
+        ctx.release()
+
+    def test_projectile_batch_pos_attribute_support(self):
+        """Tests that projectiles using Vector2 pos attribute are correctly frustum culled and batched."""
+        renderer = SurfaceRenderer(width=800, height=600)
+        renderer.initialize()
+
+        class MockVectorProj:
+            def __init__(self, x, y, life=1.0):
+                self.pos = pygame.math.Vector2(x, y)
+                self.life = life
+                self.radius = 8
+                self.rendered = False
+
+            def render(self, target_surf, camera):
+                self.rendered = True
+
+        p_inside = MockVectorProj(400, 300)
+        p_outside = MockVectorProj(2000, 2000)
+        p_dead = MockVectorProj(400, 300, life=0.0)
+
+        count = renderer.draw_projectiles_batch([p_inside, p_outside, p_dead])
+        self.assertEqual(count, 1)
+        self.assertTrue(p_inside.rendered)
+        self.assertFalse(p_outside.rendered)
+        renderer.cleanup()
+
+    def test_boss_projectiles_batch_rendering(self):
+        """Verifies that Boss and MiniBoss render methods batch projectiles through renderer HAL."""
+        from src.entities.boss import DungeonMiniBoss, GrandBossSolRho
+        from src.assets.asset_factory import AssetFactory
+
+        factory = AssetFactory()
+        mock_renderer = MagicMock()
+        mock_renderer.draw_projectiles_batch.return_value = 5
+        mock_camera = MagicMock()
+        mock_camera.world_to_screen.return_value = (10, 10)
+
+        # DungeonMiniBoss batching
+        from src.entities.boss import LordMalus
+        d_boss = LordMalus(100, 100, factory, MagicMock())
+        d_boss.projectiles = [MagicMock(life=1.0) for _ in range(5)]
+        d_boss.render(pygame.Surface((100, 100)), mock_camera, renderer=mock_renderer)
+        mock_renderer.draw_projectiles_batch.assert_called_with(d_boss.projectiles, mock_camera)
+
+        # GrandBossSolRho batching
+        mock_renderer.reset_mock()
+        g_boss = GrandBossSolRho(100, 100, factory, MagicMock())
+        g_boss.projectiles = [MagicMock(life=1.0) for _ in range(8)]
+        g_boss.render(pygame.Surface((100, 100)), mock_camera, renderer=mock_renderer)
+        mock_renderer.draw_projectiles_batch.assert_called_with(g_boss.projectiles, mock_camera)
+
 
 class TestRendererManager(unittest.TestCase):
     """Tests the RendererManager central factory and runtime switcher."""
@@ -312,6 +498,42 @@ class TestRendererManager(unittest.TestCase):
         self.manager.switch_renderer("unknown_vulkan_backend")
         self.assertEqual(self.manager.requested_type, RENDERER_HARDWARE)
 
+    def test_manager_batch_and_bloom_delegation(self):
+        """Verifies that RendererManager delegates batch rendering and bloom configuration."""
+        self.manager.initialize(width=800, height=600, requested_type=RENDERER_SOFTWARE)
+        self.manager.set_bloom_enabled(True)
+        self.manager.set_bloom_intensity(1.1)
+        self.manager.set_bloom_threshold(0.68)
+        p = self.manager.get_bloom_params()
+        self.assertTrue(p["enabled"])
+        self.assertAlmostEqual(p["intensity"], 1.1)
+        self.assertAlmostEqual(p["threshold"], 0.68)
+
+        sub = pygame.Surface((8, 8))
+        count = self.manager.draw_projectiles_batch([(sub, (5, 5))])
+        self.assertEqual(count, 1)
+
+    def test_manager_preserves_bloom_settings_across_switch(self):
+        """Verifies that RendererManager preserves bloom parameters when toggling/switching renderers."""
+        self.manager.initialize(width=800, height=600, requested_type=RENDERER_SOFTWARE)
+        self.manager.set_bloom_enabled(False)
+        self.manager.set_bloom_intensity(2.2)
+        self.manager.set_bloom_threshold(0.85)
+
+        # Switch to hardware
+        self.manager.switch_renderer(RENDERER_HARDWARE)
+        p = self.manager.get_bloom_params()
+        self.assertFalse(p["enabled"])
+        self.assertAlmostEqual(p["intensity"], 2.2)
+        self.assertAlmostEqual(p["threshold"], 0.85)
+
+        # Switch back to software
+        self.manager.switch_renderer(RENDERER_SOFTWARE)
+        p2 = self.manager.get_bloom_params()
+        self.assertFalse(p2["enabled"])
+        self.assertAlmostEqual(p2["intensity"], 2.2)
+        self.assertAlmostEqual(p2["threshold"], 0.85)
+
 
 class TestSettingsIntegration(unittest.TestCase):
     """Tests the in-game Settings menu toggle and disk persistence."""
@@ -340,6 +562,31 @@ class TestSettingsIntegration(unittest.TestCase):
         act2 = menu.handle_click((btn.rect.centerx, btn.rect.centery))
         self.assertEqual(act2[1], initial_val)
         self.assertEqual(menu.settings["renderer"], initial_val)
+
+    def test_menu_settings_bloom_toggle(self):
+        """Verifies in-game Settings menu bloom toggle button and disk persistence."""
+        menu = MenuManager(None, None)
+        self.assertIn("bloom", menu.settings)
+
+        btn = next((b for b in menu.settings_buttons if b.action == "toggle_bloom"), None)
+        self.assertIsNotNone(btn, "toggle_bloom button must be present in settings_buttons")
+
+        menu.open_settings()
+        self.assertIn("BLOOM SHADERS:", btn.text)
+
+        initial_bloom = menu.settings["bloom"]
+        act = menu.handle_click((btn.rect.centerx, btn.rect.centery))
+        self.assertEqual(act[0], "set_bloom")
+        self.assertNotEqual(initial_bloom, menu.settings["bloom"])
+        self.assertEqual(act[1], menu.settings["bloom"])
+
+        # Check persistence
+        menu2 = MenuManager(None, None)
+        self.assertEqual(menu2.settings.get("bloom"), menu.settings["bloom"])
+
+        # Restore default
+        menu.handle_click((btn.rect.centerx, btn.rect.centery))
+        self.assertEqual(menu.settings["bloom"], initial_bloom)
 
     def test_settings_persistence_across_reloads(self):
         menu1 = MenuManager(None, None)

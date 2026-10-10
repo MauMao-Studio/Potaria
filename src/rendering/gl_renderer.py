@@ -24,12 +24,84 @@ except ImportError:
     MODERNGL_AVAILABLE = False
 
 
+_logged_fallback_global: bool = False
+
 class GLRenderer(BaseRenderer):
     """
     Hardware-accelerated OpenGL / ModernGL Renderer with automatic safety fallback.
     If ModernGL or GPU context creation is unavailable, it gracefully delegates
     100% of operations to SurfaceRenderer with zero crashes or pipeline stalls.
     """
+
+    VERTEX_SHADER: str = """
+    #version 330 core
+    in vec2 in_vert;
+    in vec2 in_text;
+    out vec2 v_text;
+    void main() {
+        gl_Position = vec4(in_vert, 0.0, 1.0);
+        v_text = in_text;
+    }
+    """
+
+    FRAGMENT_SHADER: str = """
+    #version 330 core
+    uniform sampler2D u_texture;
+    uniform vec2 u_resolution;
+    uniform float u_time;
+    uniform float u_bloom_intensity;
+    uniform float u_bloom_threshold;
+    uniform int u_bloom_enabled;
+
+    in vec2 v_text;
+    out vec4 f_color;
+
+    float luminance(vec3 color) {
+        return dot(color, vec3(0.2126, 0.7152, 0.0722));
+    }
+
+    void main() {
+        vec4 base_color = texture(u_texture, v_text);
+        if (u_bloom_enabled == 0 || u_bloom_intensity <= 0.0) {
+            f_color = base_color;
+            return;
+        }
+
+        vec2 texel = 1.0 / u_resolution;
+        vec3 bloom_acc = vec3(0.0);
+        float total_weight = 0.0;
+
+        for (int x = -3; x <= 3; x++) {
+            for (int y = -3; y <= 3; y++) {
+                float dist = length(vec2(float(x), float(y)));
+                if (dist > 3.5) continue;
+                float weight = exp(-0.5 * (dist * dist) / 3.0);
+                vec2 offset = vec2(float(x), float(y)) * texel * 1.5;
+                vec4 s = texture(u_texture, v_text + offset);
+                float luma = luminance(s.rgb);
+                if (luma > u_bloom_threshold) {
+                    bloom_acc += s.rgb * weight * (luma - u_bloom_threshold);
+                }
+                total_weight += weight;
+            }
+        }
+
+        if (total_weight > 0.0) {
+            bloom_acc /= total_weight;
+        }
+
+        float pulse = 1.0 + 0.06 * sin(u_time * 3.0);
+        vec3 final_rgb = base_color.rgb + bloom_acc * u_bloom_intensity * 2.5 * pulse;
+        final_rgb = min(final_rgb, vec3(1.0));
+        f_color = vec4(final_rgb, base_color.a);
+    }
+    """
+
+    @classmethod
+    def reset_fallback_log(cls):
+        """Resets the fallback warning logged state (primarily for automated unit tests)."""
+        global _logged_fallback_global
+        _logged_fallback_global = False
 
     def __init__(
         self,
@@ -51,6 +123,14 @@ class GLRenderer(BaseRenderer):
         self.vbo = None
         self.vao = None
         self.texture_cache: Dict[int, any] = {}
+
+        # Stage 2: Bloom Post-Processing and High-Density Projectile Batching
+        self.bloom_enabled: bool = True
+        self.bloom_intensity: float = 0.8
+        self.bloom_threshold: float = 0.65
+        self.time: float = 0.0
+        self.last_batch_count: int = 0
+        self.total_batched_projectiles: int = 0
 
     @property
     def using_fallback(self) -> bool:
@@ -141,7 +221,10 @@ class GLRenderer(BaseRenderer):
         self._cleanup_gl_resources()
         self._using_fallback = True
         self.fallback_reason = reason
-        print(f"[GLRenderer] {reason}. Gracefully falling back to native SurfaceRenderer.")
+        global _logged_fallback_global
+        if not _logged_fallback_global:
+            print(f"[GLRenderer] {reason}. Gracefully falling back to native SurfaceRenderer.")
+            _logged_fallback_global = True
         self.fallback_renderer = SurfaceRenderer(
             width=self.width,
             height=self.height,
@@ -149,38 +232,19 @@ class GLRenderer(BaseRenderer):
             fullscreen=self.fullscreen,
         )
         self.fallback_renderer.initialize()
+        if hasattr(self.fallback_renderer, "set_bloom_enabled"):
+            self.fallback_renderer.set_bloom_enabled(self.bloom_enabled)
+            self.fallback_renderer.set_bloom_intensity(self.bloom_intensity)
+            self.fallback_renderer.set_bloom_threshold(self.bloom_threshold)
         self.initialized = True
 
     def _init_gl_pipeline(self):
         """Sets up the ModernGL full-screen quad shader and virtual surface backbuffer."""
         self.virtual_surface = pygame.Surface((self.width, self.height)).convert_alpha()
 
-        # Vertex shader: converts normalized coordinates [-1, 1] and texture coordinates [0, 1]
-        vertex_shader = """
-        #version 330 core
-        in vec2 in_vert;
-        in vec2 in_text;
-        out vec2 v_text;
-        void main() {
-            gl_Position = vec4(in_vert, 0.0, 1.0);
-            v_text = in_text;
-        }
-        """
-
-        # Fragment shader: samples the backbuffer texture
-        fragment_shader = """
-        #version 330 core
-        uniform sampler2D u_texture;
-        in vec2 v_text;
-        out vec4 f_color;
-        void main() {
-            f_color = texture(u_texture, v_text);
-        }
-        """
-
         self.program = self.ctx.program(
-            vertex_shader=vertex_shader,
-            fragment_shader=fragment_shader,
+            vertex_shader=self.VERTEX_SHADER,
+            fragment_shader=self.FRAGMENT_SHADER,
         )
 
         # Fullscreen quad vertices: (x, y, u, v)
@@ -206,15 +270,30 @@ class GLRenderer(BaseRenderer):
         )
         self.screen_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
-        if "u_texture" in self.program:
-            try:
-                self.program["u_texture"].value = 0
-            except Exception:
-                pass
+        self._update_shader_uniforms()
 
         if hasattr(self.ctx, "viewport"):
             try:
                 self.ctx.viewport = (0, 0, self.width, self.height)
+            except Exception:
+                pass
+
+    def _update_shader_uniforms(self):
+        """Updates active shader uniforms for bloom, resolution, and time."""
+        if not self.program:
+            return
+        uniform_map = {
+            "u_texture": 0,
+            "u_resolution": (float(self.width), float(self.height)),
+            "u_time": float(self.time),
+            "u_bloom_enabled": 1 if self.bloom_enabled else 0,
+            "u_bloom_intensity": float(self.bloom_intensity),
+            "u_bloom_threshold": float(self.bloom_threshold),
+        }
+        for name, val in uniform_map.items():
+            try:
+                if name in self.program:
+                    self.program[name].value = val
             except Exception:
                 pass
 
@@ -324,10 +403,128 @@ class GLRenderer(BaseRenderer):
             return
 
         if self.ctx and self.screen_texture and self.virtual_surface and self.vao:
+            self.time += 0.016
             self.screen_texture.write(pygame.image.tobytes(self.virtual_surface, "RGBA"))
             self.screen_texture.use(location=0)
+            self._update_shader_uniforms()
             self.vao.render(moderngl.TRIANGLE_STRIP)
             pygame.display.flip()
+
+    def draw_projectiles_batch(
+        self,
+        projectiles: list,
+        camera: Optional[any] = None,
+    ) -> int:
+        """
+        Renders a high-density batch of projectiles in an optimized pass.
+        Returns the count of successfully rendered projectiles.
+        """
+        if self._using_fallback and self.fallback_renderer:
+            return self.fallback_renderer.draw_projectiles_batch(projectiles, camera)
+
+        if not self.virtual_surface or not projectiles:
+            return 0
+
+        target_surf = self.virtual_surface
+        rendered_count = 0
+        batch_blits = []
+
+        sw = self.width
+        sh = self.height
+
+        for p in projectiles:
+            if isinstance(p, tuple):
+                if len(p) >= 2 and isinstance(p[0], pygame.Surface):
+                    batch_blits.append((p[0], p[1]))
+                    rendered_count += 1
+                continue
+
+            if hasattr(p, "life") and p.life <= 0:
+                continue
+
+            if hasattr(p, "x") and hasattr(p, "y"):
+                px = float(p.x)
+                py = float(p.y)
+            elif hasattr(p, "pos") and hasattr(p.pos, "x") and hasattr(p.pos, "y"):
+                px = float(p.pos.x)
+                py = float(p.pos.y)
+            else:
+                px, py = None, None
+
+            if px is not None and py is not None:
+                if camera and hasattr(camera, "world_to_screen"):
+                    sx, sy = camera.world_to_screen(px, py)
+                else:
+                    sx, sy = px, py
+
+                rad = getattr(p, "radius", 10.0)
+                pad = int(rad + 32)
+                if sx < -pad or sx > sw + pad or sy < -pad or sy > sh + pad:
+                    continue
+
+                if getattr(p, "sprite", None) is not None and getattr(p, "shape", "") == "sprite":
+                    sp = p.sprite
+                    batch_blits.append((sp, (int(sx - sp.get_width() // 2), int(sy - sp.get_height() // 2))))
+                    rendered_count += 1
+                elif hasattr(p, "shape") and hasattr(p, "color"):
+                    import math
+                    from src.entities.bullet_hell import get_bullet_surface
+                    angle_deg = math.degrees(math.atan2(getattr(p, "vy", 0.0), getattr(p, "vx", 1.0)))
+                    bsurf = get_bullet_surface(
+                        shape=p.shape,
+                        color=p.color,
+                        core_color=getattr(p, "core_color", (255, 255, 255)),
+                        radius=int(rad),
+                        angle_deg=angle_deg,
+                    )
+                    hw = bsurf.get_width() // 2
+                    hh = bsurf.get_height() // 2
+                    batch_blits.append((bsurf, (int(sx - hw), int(sy - hh))))
+                    rendered_count += 1
+                elif hasattr(p, "render"):
+                    p.render(target_surf, camera)
+                    rendered_count += 1
+            elif hasattr(p, "render"):
+                p.render(target_surf, camera)
+                rendered_count += 1
+
+        if batch_blits:
+            target_surf.fblits(batch_blits)
+
+        self.last_batch_count = rendered_count
+        self.total_batched_projectiles += rendered_count
+        return rendered_count
+
+    def set_bloom_enabled(self, enabled: bool):
+        self.bloom_enabled = bool(enabled)
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_bloom_enabled"):
+                self.fallback_renderer.set_bloom_enabled(enabled)
+        else:
+            self._update_shader_uniforms()
+
+    def set_bloom_intensity(self, intensity: float):
+        self.bloom_intensity = max(0.0, min(5.0, float(intensity)))
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_bloom_intensity"):
+                self.fallback_renderer.set_bloom_intensity(intensity)
+        else:
+            self._update_shader_uniforms()
+
+    def set_bloom_threshold(self, threshold: float):
+        self.bloom_threshold = max(0.0, min(1.0, float(threshold)))
+        if self._using_fallback and self.fallback_renderer:
+            if hasattr(self.fallback_renderer, "set_bloom_threshold"):
+                self.fallback_renderer.set_bloom_threshold(threshold)
+        else:
+            self._update_shader_uniforms()
+
+    def get_bloom_params(self) -> dict:
+        return {
+            "enabled": self.bloom_enabled,
+            "intensity": self.bloom_intensity,
+            "threshold": self.bloom_threshold,
+        }
 
     def get_surface(self) -> pygame.Surface:
         """Returns the target surface for backward compatibility."""
@@ -378,4 +575,6 @@ class GLRenderer(BaseRenderer):
         self._cleanup_gl_resources()
         self._using_fallback = False
         self.fallback_reason = ""
+        self.time = 0.0
+        self.last_batch_count = 0
         self.initialized = False

@@ -324,12 +324,15 @@ class DungeonMiniBoss:
     def _trail_color(self):
         return (160, 50, 180)
 
-    def render(self, target_surf, camera):
+    def render(self, target_surf, camera, renderer=None):
         if self.is_dead:
             return
 
-        for p in self.projectiles:
-            p.render(target_surf, camera)
+        if renderer and hasattr(renderer, "draw_projectiles_batch") and self.projectiles:
+            renderer.draw_projectiles_batch(self.projectiles, camera)
+        else:
+            for p in self.projectiles:
+                p.render(target_surf, camera)
 
         sx, sy = camera.world_to_screen(self.x, self.y)
         cur_surf = self.frames[self.frame_idx]
@@ -1477,12 +1480,15 @@ class GrandBossSolRho:
                     particle_system.spawn_sparks(p.x, p.y, (200, 240, 255), count=2)
         self.projectiles = [p for p in self.projectiles if p.life > 0]
 
-    def render(self, target_surf, camera):
+    def render(self, target_surf, camera, renderer=None):
         if self.is_dead:
             return
 
-        for p in self.projectiles:
-            p.render(target_surf, camera)
+        if renderer and hasattr(renderer, "draw_projectiles_batch") and self.projectiles:
+            renderer.draw_projectiles_batch(self.projectiles, camera)
+        else:
+            for p in self.projectiles:
+                p.render(target_surf, camera)
 
         sx, sy = camera.world_to_screen(self.x, self.y)
         frames_list = self.p1_frames if self.phase == 1 else self.p2_frames

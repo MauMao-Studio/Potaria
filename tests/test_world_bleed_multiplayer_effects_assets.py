@@ -63,7 +63,7 @@ from src.environment.sky import DayNightCycle
 from main import PotariaGame
 
 
-def test_section(title):
+def print_section(title):
     print(f"\n=======================================================")
     print(f"[TEST] {title}")
     print(f"=======================================================")
@@ -76,7 +76,7 @@ def run_tests():
     # =========================================================================
     # Test 1: Save Isolation & World State Bleed
     # =========================================================================
-    test_section("1. Save Isolation & World State Bleed Prevention")
+    print_section("1. Save Isolation & World State Bleed Prevention")
     game = PotariaGame()
     game.reset_new_session("World_Alpha", WORLD_TYPE_INFINITE, DIFFICULTY_NORMAL, MODE_ADVENTURE)
 
@@ -131,7 +131,7 @@ def run_tests():
     # =========================================================================
     # Test 2: Settings Persistence Across File Reloads
     # =========================================================================
-    test_section("2. Settings & Keybindings File Persistence")
+    print_section("2. Settings & Keybindings File Persistence")
     menu = MenuManager(sound_manager, None)
     menu.settings["master_volume"] = 0.42
     menu.settings["bgm_volume"] = 0.65
@@ -157,7 +157,7 @@ def run_tests():
     # =========================================================================
     # Test 3: Multiplayer Synchronization
     # =========================================================================
-    test_section("3. Multiplayer Nearest-Player Targeting & Entities Sync")
+    print_section("3. Multiplayer Nearest-Player Targeting & Entities Sync")
     camera = Camera(1280, 720)
     host_combat = CombatManager(asset_factory, sound_manager, game.particle_system, camera)
     client_combat = CombatManager(asset_factory, sound_manager, game.particle_system, camera)
@@ -209,7 +209,7 @@ def run_tests():
     # =========================================================================
     # Test 4: Item Powers & Combat Effects (Freezing Needles + 34 Catalog Effects)
     # =========================================================================
-    test_section("4. Weapon Swing, Hit, and Passive Gear Effects (Catalog 34)")
+    print_section("4. Weapon Swing, Hit, and Passive Gear Effects (Catalog 34)")
     test_player = Player(200, 200, asset_factory, sound_manager)
 
     # 4.1 Freezing Needles Swing Effect
@@ -416,7 +416,7 @@ def run_tests():
     # =========================================================================
     # Test 5: Full Disk Asset Export
     # =========================================================================
-    test_section("5. Full Disk Asset Generation & Export Verification")
+    print_section("5. Full Disk Asset Generation & Export Verification")
     asset_factory.export_all_assets("assets", force=False)
     items_dir = os.path.join("assets", "items")
     craftable_dir = os.path.join("assets", "craftable_items")

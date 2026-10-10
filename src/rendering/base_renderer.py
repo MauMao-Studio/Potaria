@@ -141,6 +141,34 @@ class BaseRenderer(ABC):
         pass
 
     @abstractmethod
+    def draw_projectiles_batch(
+        self,
+        projectiles: list,
+        camera: Optional[any] = None,
+    ) -> int:
+        """
+        Renders a high-density batch of projectiles in an optimized pass.
+        Returns the count of rendered projectiles.
+        """
+        pass
+
+    def set_bloom_enabled(self, enabled: bool):
+        """Configures GLSL bloom post-processing state."""
+        pass
+
+    def set_bloom_intensity(self, intensity: float):
+        """Sets bloom post-processing aura intensity."""
+        pass
+
+    def set_bloom_threshold(self, threshold: float):
+        """Sets bloom luminance extraction threshold."""
+        pass
+
+    def get_bloom_params(self) -> dict:
+        """Returns active bloom parameters."""
+        return {"enabled": False, "intensity": 0.0, "threshold": 0.65}
+
+    @abstractmethod
     def cleanup(self):
         """Releases all graphics and windowing resources cleanly."""
         pass
