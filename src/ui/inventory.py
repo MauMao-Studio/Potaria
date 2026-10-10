@@ -1388,6 +1388,392 @@ ITEM_REGISTRY = {
         "lore": "'The divine dust of stellar creation.'",
         "special": "God-Tier Material"
     },
+
+    # =========================================================================
+    # Minecraft-Inspired Potaria Craftable Expansion (v1.5.0)
+    # =========================================================================
+    # ----------------------------------------------------
+    # Building Blocks, Bricks, Walls & Scaffolds
+    # ----------------------------------------------------
+    "carved_stone_bricks": {
+        "name": "Carved Stone Bricks", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_STONE_BRICK, "rarity": RARITY_COMMON,
+        "desc": "Precision-hewn stone masonry carved with ancient geometric friezes.",
+        "lore": "'Centuries of weathering could not erase the artisan\\'s chisel.'",
+        "effects": [], "special": "Building Block"
+    },
+    "mosaic_tiles": {
+        "name": "Mosaic Tiles", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_ROOF_TILES, "rarity": RARITY_UNCOMMON,
+        "desc": "Fired clay tiles with lustrous mineral glaze for elegant manor flooring.",
+        "lore": "'Vibrant tessellations that shimmer in the warm torchlight.'",
+        "effects": [], "special": "Decorative Tile"
+    },
+    "rope_rungs": {
+        "name": "Rope Rungs", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WOOD_PLATFORM, "rarity": RARITY_COMMON,
+        "desc": "Knotted fiber ladder rungs for swiftly ascending vertical cliffs and shafts.",
+        "lore": "", "effects": [], "special": "Climbable Platform"
+    },
+    "bamboo_scaffold": {
+        "name": "Cane Scaffold", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WOOD_PLATFORM, "rarity": RARITY_COMMON,
+        "desc": "Lightweight modular scaffold lattice designed for rapid construction.",
+        "lore": "", "effects": [], "special": "Temporary Scaffold"
+    },
+    "cobblestone_parapet": {
+        "name": "Cobblestone Parapet", "cat": CAT_WALL, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Low defensive battlement blocks for fortifying homestead ramparts.",
+        "lore": "", "effects": [], "special": "Defensive Wall"
+    },
+    "wrought_iron_palisade": {
+        "name": "Wrought Iron Palisade", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WOOD_PLANKS, "rarity": RARITY_COMMON,
+        "desc": "Sturdy forged iron security grating that permits sunlight while stopping foes.",
+        "lore": "", "effects": [], "special": "Security Grate"
+    },
+    "dried_thatch_bale": {
+        "name": "Dried Thatch Bale", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WOOD_PLANKS, "rarity": RARITY_COMMON,
+        "desc": "Tightly compressed dried grain stalks for rustic roofing and soft landings.",
+        "lore": "", "effects": [], "special": "Cushioning Block"
+    },
+    "forged_iron_chain": {
+        "name": "Forged Iron Chain", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Interlocked iron chain links for suspending chandeliers and drawbridges.",
+        "lore": "", "effects": [], "special": "Hardware Material"
+    },
+    "reinforced_slate_slab": {
+        "name": "Reinforced Slate Slab", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_STONE_BRICK, "rarity": RARITY_UNCOMMON,
+        "desc": "Heavy slate slabs tempered to resist blast concussions.",
+        "lore": "", "effects": [], "special": "Hardened Block"
+    },
+    "hardened_clay_shingles": {
+        "name": "Hardened Clay Shingles", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_ROOF_TILES, "rarity": RARITY_COMMON,
+        "desc": "Terracotta architectural shingles for high-angle rooftops.",
+        "lore": "", "effects": [], "special": "Roof Shingle"
+    },
+
+    # ----------------------------------------------------
+    # Tools, Weapons, Armor, Shields & Combat Gear
+    # ----------------------------------------------------
+    "fiber_clippers": {
+        "name": "Fiber Clippers", "cat": CAT_TOOL, "power": 15, "damage": 4, "max_stack": 1,
+        "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Spring-tensioned iron shears for harvesting foliage, vines, and raw plant fibers.",
+        "lore": "'Snip cleanly, leave the root intact.'",
+        "effects": [], "special": "Plant Harvester"
+    },
+    "pyrite_sparker": {
+        "name": "Pyrite Sparker", "cat": CAT_TOOL, "power": 10, "damage": 3, "max_stack": 1,
+        "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Iron striker paired with mineral pyrite that ignites campfires and scorches brush.",
+        "lore": "'A shower of golden sparks to pierce the gloom.'",
+        "effects": [], "special": "Firestarter"
+    },
+    "oak_buckler": {
+        "name": "Oak Buckler", "cat": CAT_ACCESSORY, "power": 0, "damage": 0, "def": 3, "hp": 10,
+        "max_stack": 1, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Iron-bossed oak roundshield that absorbs stray arrows and monster charges.",
+        "lore": "'Carved from seasoned mountain oak.'",
+        "effects": ["+3 Defense", "+10 Max Health"], "special": "Shield Block"
+    },
+    "iron_aegis": {
+        "name": "Iron Aegis", "cat": CAT_ACCESSORY, "power": 0, "damage": 0, "def": 7, "hp": 25,
+        "max_stack": 1, "tile": None, "rarity": RARITY_UNCOMMON,
+        "desc": "Heavy tempered steel kite shield bearing the royal Spud crest.",
+        "lore": "'An unyielding bulwark against subterranean horrors.'",
+        "effects": ["+7 Defense", "+25 Max Health"], "special": "Heavy Guard"
+    },
+    "spud_angler_rod": {
+        "name": "Spud Angler Rod", "cat": CAT_TOOL, "power": 12, "damage": 2, "max_stack": 1,
+        "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Flexible whittled birch rod rigged with braided fiber for freshwater angling.",
+        "lore": "'Patience and a plump spud will catch any river titan.'",
+        "effects": [], "special": "River Fishing"
+    },
+    "arbalest_repeater": {
+        "name": "Arbalest Repeater", "cat": CAT_WEAPON, "power": 0, "damage": 24, "atk": 24, "crit": 5.0, "speed": 0.15,
+        "max_stack": 1, "tile": None, "rarity": RARITY_UNCOMMON,
+        "desc": "Lever-action mechanised arbalest delivering high-velocity armor-piercing bolts.",
+        "lore": "'Crank, lock, release—calibrated for merciless distance.'",
+        "effects": ["Piercing Bolts"], "special": "Armor Piercing"
+    },
+    "glowing_lumen_arrow": {
+        "name": "Glowing Lumen Arrow", "cat": CAT_WEAPON, "power": 0, "damage": 8, "max_stack": 99,
+        "tile": None, "rarity": RARITY_UNCOMMON,
+        "desc": "Bioluminescent tipped arrows that pierce shadows and illuminate hit adversaries.",
+        "lore": "'The subterranean mushroom glow marks the target in absolute pitch.'",
+        "effects": ["Spore Glow"], "special": "Luminescent Beacon"
+    },
+    "totem_of_resurgence": {
+        "name": "Totem of Resurgence", "cat": CAT_ACCESSORY, "power": 0, "damage": 0, "def": 4, "hp": 40, "mp": 20,
+        "max_stack": 1, "tile": None, "rarity": RARITY_MYTHIC,
+        "desc": "Gilded pocket idol of the Great Spud that channels restorative starlight when life wanes.",
+        "lore": "'Even in the deepest abyss, the seedling reaches upward for the dawn.'",
+        "effects": ["+40 Max Health", "+20 Max Mana", "+4 Defense"], "special": "Miraculous Second Chance"
+    },
+    "copper_harvester_sickle": {
+        "name": "Copper Harvester Sickle", "cat": CAT_TOOL, "power": 14, "damage": 5, "max_stack": 1,
+        "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Curved copper blade for swiftly clearing wild grass and gathering potato yields.",
+        "lore": "", "effects": [], "special": "Reap Harvest"
+    },
+    "spud_quiver": {
+        "name": "Spud Hunter's Quiver", "cat": CAT_ACCESSORY, "power": 0, "damage": 2, "crit": 3.0,
+        "max_stack": 1, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Lightweight shoulder quiver that improves archer draw speed and critical precision.",
+        "lore": "'Arrows always at the fingertips.'",
+        "effects": ["+3% Critical Strike Chance", "+2 Ranged Damage"], "special": "Swift Quiver"
+    },
+
+    # ----------------------------------------------------
+    # Survival, Food, Potions, Utilities & Materials
+    # ----------------------------------------------------
+    "hearty_root_stew": {
+        "name": "Hearty Root Stew", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 60,
+        "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Simmering rustic stew of cubed potatoes, glowing mushrooms, and savory wild herbs. Restores 60 Health.",
+        "lore": "'Warm broth that soothes weary bones after a long mine expedition.'",
+        "effects": ["Restores +60 Health"], "special": "Nourishing Feast"
+    },
+    "glazed_golden_tuber": {
+        "name": "Glazed Golden Tuber", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 100, "mp": 30,
+        "max_stack": 99, "tile": None, "rarity": RARITY_RARE,
+        "desc": "Heirloom russet potato roasted in molten gold and clover nectar. Restores 100 Health and 30 Mana.",
+        "lore": "'Fit for kings, treasured by subterranean adventurers.'",
+        "effects": ["Restores +100 Health", "Restores +30 Mana"], "special": "Golden Vitality"
+    },
+    "herbal_salve": {
+        "name": "Herbal Salve", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35,
+        "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Quick-acting botanical poultice ground from mashed spud pulp and soothing sap. Restores 35 Health.",
+        "lore": "'A cool compress against burns, bruises, and monster scrapes.'",
+        "effects": ["Restores +35 Health"], "special": "Rapid Soothing"
+    },
+    "night_gazer_elixir": {
+        "name": "Night Gazer Elixir", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 20, "mp": 25,
+        "max_stack": 99, "tile": None, "rarity": RARITY_UNCOMMON,
+        "desc": "Phosphorescent brew infused with starlight and spores, enhancing subterranean clarity.",
+        "lore": "'The dark caves unveil their deepest secrets to eyes unclouded by shadows.'",
+        "effects": ["Restores +20 Health", "Restores +25 Mana"], "special": "Night Sight"
+    },
+    "zephyr_tonic": {
+        "name": "Zephyr Tonic", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "mp": 15,
+        "max_stack": 99, "tile": None, "rarity": RARITY_UNCOMMON,
+        "desc": "Sparkling effervescent tonic distilled with airy minerals, quickening footwork.",
+        "lore": "'A draft of pure mountain breeze captured in glass.'",
+        "effects": ["Restores +25 Health", "Swiftness Surge"], "special": "Zephyr Wind"
+    },
+    "smoked_spud_jerky": {
+        "name": "Smoked Spud Jerky", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 30,
+        "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Hickory-cured salted potato jerky crisps that provide quick sustenance during expeditions.",
+        "lore": "'Chewy, savory, and keeps indefinitely in a backpack.'",
+        "effects": ["Restores +30 Health"], "special": "Trail Ration"
+    },
+    "gilded_russet": {
+        "name": "Gilded Russet", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 140, "mp": 50,
+        "max_stack": 99, "tile": None, "rarity": RARITY_EPIC,
+        "desc": "Supreme confection of candied royal root providing massive vitality recovery.",
+        "lore": "'An alchemical masterpiece, glowing with eternal sunlight.'",
+        "effects": ["Restores +140 Health", "Restores +50 Mana"], "special": "Regal Regeneration"
+    },
+    "glass_flask": {
+        "name": "Glass Flask", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Blown glass flask for collecting mountain springs, glowing extracts, and sap.",
+        "lore": "", "effects": [], "special": "Alchemy Glassware"
+    },
+    "burlap_tether": {
+        "name": "Burlap Tether", "cat": CAT_TOOL, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Braided hemp tether with a sturdy copper clip for securing gear and companion creatures.",
+        "lore": "'Strong enough to hold a bucking wild hog.'",
+        "effects": [], "special": "Leash & Tether"
+    },
+    "explorers_satchel": {
+        "name": "Explorer's Satchel", "cat": CAT_ACCESSORY, "power": 0, "damage": 0, "def": 1, "hp": 15,
+        "max_stack": 1, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Compact oiled satchel that keeps field specimens and minerals neatly organized.",
+        "lore": "'A seasoned explorer travels light, but carries wisdom.'",
+        "effects": ["+15 Max Health", "+1 Defense"], "special": "Expanded Pouch"
+    },
+    "magnetic_lodestone": {
+        "name": "Magnetic Lodestone", "cat": CAT_ACCESSORY, "power": 0, "damage": 0, "def": 1, "mp": 10,
+        "max_stack": 1, "tile": None, "rarity": RARITY_UNCOMMON,
+        "desc": "Floating magnetite compass that attunes to deep underground geological anomalies.",
+        "lore": "'The needle never wavers from the world\\'s magnetic core.'",
+        "effects": ["+10 Max Mana", "+1 Defense"], "special": "True Compass"
+    },
+    "brass_far_seer": {
+        "name": "Brass Far-Seer", "cat": CAT_ACCESSORY, "power": 0, "damage": 2, "crit": 4.0,
+        "max_stack": 1, "tile": None, "rarity": RARITY_UNCOMMON,
+        "desc": "Extending brass optical cylinder fitted with crystal lenses for surveying distant horizons.",
+        "lore": "'Spotting dungeon spires long before they breach the horizon.'",
+        "effects": ["+4% Critical Strike Chance", "+2 Ranged Damage"], "special": "Distant Sight"
+    },
+    "solar_chronometer": {
+        "name": "Solar Chronometer", "cat": CAT_ACCESSORY, "power": 0, "damage": 0, "crit": 2.0, "mp": 15,
+        "max_stack": 1, "tile": None, "rarity": RARITY_RARE,
+        "desc": "Gilded pocket timepiece with celestial planetary gears predicting sunrise and sunset.",
+        "lore": "'Ticks in harmony with the celestial dance of Sol.'",
+        "effects": ["+15 Max Mana", "+2% Critical Strike Chance"], "special": "Celestial Timekeeping"
+    },
+    "abyssal_alloy_bar": {
+        "name": "Abyssal Alloy Bar", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": None, "rarity": RARITY_EPIC,
+        "desc": "Dense iridescent alloy ingot forged from Blightstone, gold, and iron.",
+        "lore": "'Impervious to heat, acid, and crushing weight.'",
+        "effects": [], "special": "Indestructible Temper"
+    },
+    "potato_bread": {
+        "name": "Oven-Baked Potato Loaf", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 45,
+        "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Warm crusty hearth bread baked from wholesome potato flour. Restores 45 Health.",
+        "lore": "'Crusty on the outside, fluffy and steaming within.'",
+        "effects": ["Restores +45 Health"], "special": "Hearty Sustenance"
+    },
+    "sweet_tuber_pie": {
+        "name": "Sweet Tuber Pie", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 70, "mp": 10,
+        "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
+        "desc": "Caramelized tuber pie baked to golden perfection with sweet forest sap. Restores 70 Health.",
+        "lore": "'A fragrant delight that fills the home with cinnamon and sugar.'",
+        "effects": ["Restores +70 Health", "Restores +10 Mana"], "special": "Sweet Comfort"
+    },
+
+    # ----------------------------------------------------
+    # Furniture, Hearths, Workstations & Mechanisms
+    # ----------------------------------------------------
+    "cozy_hearth_pit": {
+        "name": "Cozy Hearth Pit", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_FIREPLACE, "rarity": RARITY_COMMON,
+        "desc": "A crackling cobblestone fire pit radiating gentle light and soothing campfire smoke.",
+        "lore": "'Gather round Spud, and let the night cold pass.'",
+        "effects": [], "special": "Warm Embers"
+    },
+    "blight_ember_hearth": {
+        "name": "Blight Ember Hearth", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_FIREPLACE, "rarity": RARITY_UNCOMMON,
+        "desc": "Occult hearth pit glowing with spectral indigo embers, warding off darkness.",
+        "lore": "'Cold purple flames that never consume their fuel.'",
+        "effects": [], "special": "Soul Glow"
+    },
+    "smithing_anvil": {
+        "name": "Smithing Anvil", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WORK_BENCH, "rarity": RARITY_COMMON,
+        "desc": "Heavy forged iron anvil for shaping blades, tuning armor, and seating socketed gems.",
+        "lore": "'Every legendary weapon began with an anvil\\'s ring.'",
+        "effects": [], "special": "Heavy Forging"
+    },
+    "whetstone_wheel": {
+        "name": "Whetstone Wheel", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WORK_BENCH, "rarity": RARITY_COMMON,
+        "desc": "Revolving sandstone wheel mounted on timber trestles for grinding and sharpening tools.",
+        "lore": "", "effects": [], "special": "Honing Wheel"
+    },
+    "alchemical_retort": {
+        "name": "Alchemical Retort", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WORK_BENCH, "rarity": RARITY_COMMON,
+        "desc": "Brass burner and glassware condenser stand for concocting high-tier alchemical solutions.",
+        "lore": "'Condensing the essence of stars into restorative drops.'",
+        "effects": [], "special": "Distillation"
+    },
+    "iron_reinforced_door": {
+        "name": "Iron-Reinforced Door", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_DOOR_CLOSED, "rarity": RARITY_COMMON,
+        "desc": "Heavy timber door bolted with forged iron strapping to withstand monstrous dungeon sieges.",
+        "lore": "", "effects": [], "special": "Reinforced Barrier"
+    },
+    "brass_lantern": {
+        "name": "Brass Lantern", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_TORCH, "rarity": RARITY_COMMON,
+        "desc": "Weatherproof brass oil lantern that burns steadily through heavy storms and downpours.",
+        "lore": "", "effects": [], "special": "Steady Lantern Glow"
+    },
+    "spectral_lantern": {
+        "name": "Spectral Lantern", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_TORCH, "rarity": RARITY_UNCOMMON,
+        "desc": "Chilled lantern casting an azure glow that illuminates cavern depths.",
+        "lore": "", "effects": [], "special": "Azure Luminescence"
+    },
+    "timber_trapdoor": {
+        "name": "Timber Trapdoor", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_DOOR_CLOSED, "rarity": RARITY_COMMON,
+        "desc": "Hinged wooden floor hatch for cellar entrances and mine shaft ladders.",
+        "lore": "", "effects": [], "special": "Floor Hatch"
+    },
+    "hooped_cask": {
+        "name": "Hooped Cask", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_CHEST, "rarity": RARITY_COMMON,
+        "desc": "Stout wooden storage cask sealed with copper banding for keeping cellar preserves.",
+        "lore": "", "effects": [], "special": "Dry Storage"
+    },
+    "iron_cauldron": {
+        "name": "Iron Cauldron", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WORK_BENCH, "rarity": RARITY_COMMON,
+        "desc": "Heavy cast kettle for collecting rainwater, washing ore, and boiling root broths.",
+        "lore": "", "effects": [], "special": "Kettle Vessel"
+    },
+    "weaver_loom": {
+        "name": "Weaver's Loom", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WORK_BENCH, "rarity": RARITY_COMMON,
+        "desc": "Crafting loom with wooden shuttles for weaving tapestries, sails, and explorer cloaks.",
+        "lore": "", "effects": [], "special": "Loom Weaving"
+    },
+    "blast_kiln": {
+        "name": "High-Temp Blast Kiln", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_FURNACE, "rarity": RARITY_COMMON,
+        "desc": "Refractory smelting kiln insulated with dense brick for processing ores at intense temperatures.",
+        "lore": "", "effects": [], "special": "High-Heat Smelting"
+    },
+    "smokehouse_stove": {
+        "name": "Smokehouse Stove", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_FURNACE, "rarity": RARITY_COMMON,
+        "desc": "Chimney-vented wooden smoke oven designed for rapidly curing and smoking provisions.",
+        "lore": "", "effects": [], "special": "Food Smoking"
+    },
+    "cartographer_desk": {
+        "name": "Cartographer's Desk", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_TABLE, "rarity": RARITY_COMMON,
+        "desc": "Drafting table equipped with brass calipers and parchment rolls for mapping uncharted lands.",
+        "lore": "", "effects": [], "special": "Chart Table"
+    },
+    "fletcher_bench": {
+        "name": "Fletcher's Bench", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WORK_BENCH, "rarity": RARITY_COMMON,
+        "desc": "Specialist work station for notching arrow shafts and tensioning composite bows.",
+        "lore": "", "effects": [], "special": "Fletching"
+    },
+    "masonry_saw": {
+        "name": "Masonry Saw", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_WORK_BENCH, "rarity": RARITY_COMMON,
+        "desc": "Rotary iron cutting wheel for cleanly trimming stone blocks into precision architectural trim.",
+        "lore": "", "effects": [], "special": "Stone Cutting"
+    },
+    "archery_target": {
+        "name": "Archery Target", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_CHAIR, "rarity": RARITY_COMMON,
+        "desc": "Painted straw bullseye target for measuring marksmanship and projectile distance.",
+        "lore": "", "effects": [], "special": "Marksmanship"
+    },
+    "galvanic_attractor": {
+        "name": "Galvanic Attractor", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_TORCH, "rarity": RARITY_COMMON,
+        "desc": "Pointed copper spire that attracts atmospheric static and redirects lightning strikes.",
+        "lore": "", "effects": [], "special": "Static Grounding"
+    },
+    "carved_tuber_lantern": {
+        "name": "Carved Tuber Lantern", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_TORCH, "rarity": RARITY_COMMON,
+        "desc": "Whimsically hollowed giant potato grinning merrily with a warm flame burning inside.",
+        "lore": "'A smiling beacon that keeps night phantoms away from the doorstep.'",
+        "effects": [], "special": "Festive Light"
+    },
 }
 
 def load_custom_items():

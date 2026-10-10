@@ -953,7 +953,7 @@ class PotariaGame:
                             self.crafting.update_recipes(self.inventory, self.world, self.player)
                         elif self.inventory.held_item:
                             inv_panel = pygame.Rect(16, 16, 448, 214)
-                            craft_panel = pygame.Rect(16, 226, 268, 330)
+                            craft_panel = self.crafting.get_panel_rect()
                             if not inv_panel.collidepoint((px, py)) and not craft_panel.collidepoint((px, py)):
                                 mouse_wx, mouse_wy = self.camera.screen_to_world(px, py)
                                 dropped = self.inventory.drop_held_item()
@@ -1116,7 +1116,11 @@ class PotariaGame:
 
             elif event.type == pygame.MOUSEWHEEL:
                 if self.menu.state == STATE_PLAYING and not self.paused:
-                    self.inventory.selected_slot = (self.inventory.selected_slot - event.y) % 10
+                    mouse_pos = pygame.mouse.get_pos()
+                    if self.inventory.is_open and self.crafting.get_panel_rect().collidepoint(mouse_pos):
+                        self.crafting.handle_scroll(event.y)
+                    else:
+                        self.inventory.selected_slot = (self.inventory.selected_slot - event.y) % 10
                 elif self.menu.state == STATE_ACHIEVEMENTS:
                     self.menu.handle_scroll(event.y)
 
@@ -1221,7 +1225,7 @@ class PotariaGame:
                     elif self.inventory.held_item:
                         # Click was outside inventory & crafting panels while holding an item -> Drop into world!
                         inv_panel = pygame.Rect(16, 16, 448, 214)
-                        craft_panel = pygame.Rect(16, 226, 268, 330)
+                        craft_panel = self.crafting.get_panel_rect()
                         if not inv_panel.collidepoint(mouse_x, mouse_y) and not craft_panel.collidepoint(mouse_x, mouse_y):
                             mouse_wx, mouse_wy = self.camera.screen_to_world(mouse_x, mouse_y)
                             dropped = self.inventory.drop_held_item()

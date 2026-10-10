@@ -234,6 +234,13 @@ CAT_SPECIAL = "special"
 CAT_ACCESSORY = "accessory"
 CAT_CURRENCY = "currency"
 
+# Crafting Recipe Categories (Minecraft-Style Recipe Book)
+CRAFT_CAT_ALL = "all"
+CRAFT_CAT_BUILDING = "building"
+CRAFT_CAT_EQUIPMENT = "equipment"
+CRAFT_CAT_SURVIVAL = "survival"
+CRAFT_CAT_FURNITURE = "furniture"
+
 # Inventory Configurations
 HOTBAR_SLOTS = 10
 INV_COLS = 10

@@ -101,6 +101,21 @@ ARMOR_DATA = {
     "nether_cleaver": {"slot": SLOT_WEAPON, "name": "Nether Cleaver", "def": 5, "hp": 40, "atk": 45, "crit": 14.0, "speed": 0.25},
     "ancient_sword": {"slot": SLOT_WEAPON, "name": "Ancient Sword", "def": 4, "hp": 25, "atk": 42, "crit": 12.0, "speed": 0.25, "rarity": "ancient", "effects": ["Freezing Needles (Pierces through enemies)", "Molten Blaze (+12 Fire Damage over 3s)", "Armor Penetration (+15 True Damage)"]},
     "ancient_sword_1": {"slot": SLOT_WEAPON, "name": "Ancient Sword", "def": 4, "hp": 25, "atk": 42, "crit": 12.0, "speed": 0.25, "rarity": "ancient", "effects": ["Freezing Needles (Pierces through enemies)", "Molten Blaze (+12 Fire Damage over 3s)", "Armor Penetration (+15 True Damage)"]},
+
+    # v1.5.0 Expansion Equipment & Accessories
+    "oak_buckler": {"slot": SLOT_ACCESSORY, "name": "Oak Buckler", "def": 3, "hp": 10, "atk": 0, "crit": 0, "speed": 0, "rarity": "common"},
+    "iron_aegis": {"slot": SLOT_ACCESSORY, "name": "Iron Aegis", "def": 7, "hp": 25, "atk": 0, "crit": 0, "speed": 0, "rarity": "uncommon"},
+    "arbalest_repeater": {"slot": SLOT_WEAPON, "name": "Arbalest Repeater", "def": 0, "hp": 0, "atk": 24, "crit": 5.0, "speed": 0.15, "rarity": "uncommon"},
+    "copper_harvester_sickle": {"slot": SLOT_WEAPON, "name": "Copper Harvester Sickle", "def": 0, "hp": 0, "atk": 10, "crit": 3.0, "speed": 0, "rarity": "common"},
+    "totem_of_resurgence": {"slot": SLOT_ACCESSORY, "name": "Totem of Resurgence", "def": 4, "hp": 40, "atk": 0, "crit": 0, "speed": 0, "rarity": "mythic"},
+    "explorers_satchel": {"slot": SLOT_ACCESSORY, "name": "Explorer's Satchel", "def": 1, "hp": 15, "atk": 0, "crit": 0, "speed": 0, "rarity": "common"},
+    "magnetic_lodestone": {"slot": SLOT_ACCESSORY, "name": "Magnetic Lodestone", "def": 1, "hp": 0, "atk": 0, "crit": 0, "speed": 0, "rarity": "uncommon"},
+    "brass_far_seer": {"slot": SLOT_ACCESSORY, "name": "Brass Far-Seer", "def": 0, "hp": 0, "atk": 2, "crit": 4.0, "speed": 0, "rarity": "uncommon"},
+    "solar_chronometer": {"slot": SLOT_ACCESSORY, "name": "Solar Chronometer", "def": 0, "hp": 0, "atk": 0, "crit": 2.0, "speed": 0, "rarity": "rare"},
+    "spud_quiver": {"slot": SLOT_ACCESSORY, "name": "Spud Hunter's Quiver", "def": 0, "hp": 0, "atk": 2, "crit": 3.0, "speed": 0, "rarity": "common"},
+    "fiber_clippers": {"slot": SLOT_WEAPON, "name": "Fiber Clippers", "def": 0, "hp": 0, "atk": 4, "crit": 1.0, "speed": 0, "rarity": "common"},
+    "pyrite_sparker": {"slot": SLOT_WEAPON, "name": "Pyrite Sparker", "def": 0, "hp": 0, "atk": 3, "crit": 1.0, "speed": 0, "rarity": "common"},
+    "spud_angler_rod": {"slot": SLOT_WEAPON, "name": "Spud Angler Rod", "def": 0, "hp": 0, "atk": 2, "crit": 1.0, "speed": 0, "rarity": "common"},
 }
 
 def load_equipment_catalog():

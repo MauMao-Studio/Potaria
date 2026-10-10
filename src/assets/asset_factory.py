@@ -218,23 +218,65 @@ class AssetFactory:
         id_lower = item_id.lower()
 
         # 1. Archetype Classification & Drawing
-        if cat == "weapon" or any(w in id_lower for w in ("sword", "blade", "cleaver", "scythe", "wrath", "edge", "spear", "bow", "staff", "wand", "scepter", "mace", "hammer", "dagger", "pike", "lance", "tome", "grimoire", "rod", "focus", "katana", "crossbow")):
+        if cat == "weapon" or any(w in id_lower for w in ("sword", "blade", "cleaver", "scythe", "wrath", "edge", "spear", "bow", "staff", "wand", "scepter", "mace", "hammer", "dagger", "pike", "lance", "tome", "grimoire", "rod", "focus", "katana", "crossbow", "arbalest", "repeater")):
             self._draw_weapon_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("buckler", "shield", "aegis")):
+            self._draw_shield_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("lantern", "lamp")):
+            self._draw_lantern_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("hearth", "campfire", "fire_pit")):
+            self._draw_hearth_sprite(surf, item_id, pal, rarity, h)
+        elif "anvil" in id_lower:
+            self._draw_anvil_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("whetstone", "grindstone")):
+            self._draw_whetstone_sprite(surf, item_id, pal, rarity, h)
+        elif "retort" in id_lower:
+            self._draw_retort_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("clippers", "shears")):
+            self._draw_clippers_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("sparker", "striker")):
+            self._draw_sparker_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("lodestone", "compass")):
+            self._draw_compass_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("far_seer", "spyglass", "telescope")):
+            self._draw_spyglass_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("chronometer", "clock")):
+            self._draw_clock_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("satchel", "bundle", "pouch")):
+            self._draw_satchel_sprite(surf, item_id, pal, rarity, h)
+        elif "tether" in id_lower or "lead" in id_lower:
+            self._draw_tether_sprite(surf, item_id, pal, rarity, h)
+        elif "cauldron" in id_lower:
+            self._draw_cauldron_sprite(surf, item_id, pal, rarity, h)
+        elif "totem" in id_lower:
+            self._draw_totem_sprite(surf, item_id, pal, rarity, h)
+        elif "quiver" in id_lower:
+            self._draw_quiver_sprite(surf, item_id, pal, rarity, h)
+        elif "saw" in id_lower:
+            self._draw_saw_sprite(surf, item_id, pal, rarity, h)
+        elif "target" in id_lower:
+            self._draw_target_sprite(surf, item_id, pal, rarity, h)
+        elif "loom" in id_lower:
+            self._draw_loom_sprite(surf, item_id, pal, rarity, h)
+        elif any(w in id_lower for w in ("stew", "soup", "pie", "loaf", "bread", "salve", "jerky", "confection")):
+            self._draw_food_sprite(surf, item_id, pal, rarity, h)
+        elif cat in ("block", "wall") or any(w in id_lower for w in ("brick", "tile", "rung", "ladder", "scaffold", "parapet", "palisade", "shingle", "slab", "cask", "barrel", "stove", "kiln", "desk", "bench", "door", "trapdoor", "attractor")):
+            self._draw_craft_block_sprite(surf, item_id, pal, rarity, h)
         elif cat in ("armor_head", "head") or any(w in id_lower for w in ("helm", "hood", "cap", "crown", "diadem", "circlet", "mask", "coif", "tiara", "hat")):
             self._draw_head_sprite(surf, item_id, pal, rarity, h)
-        elif cat in ("armor_chest", "chest") or any(w in id_lower for w in ("tunic", "plate", "mail", "cuirass", "vest", "robe", "aegis", "hauberk", "jerkin")):
+        elif cat in ("armor_chest", "chest") or any(w in id_lower for w in ("tunic", "plate", "mail", "cuirass", "vest", "robe", "hauberk", "jerkin")):
             self._draw_chest_sprite(surf, item_id, pal, rarity, h)
         elif cat in ("armor_legs", "legs") or any(w in id_lower for w in ("greaves", "boots", "striders", "pants", "leggings", "treads", "sabatons", "shoes")):
             self._draw_legs_sprite(surf, item_id, pal, rarity, h)
         elif cat == "accessory" or any(w in id_lower for w in ("ring", "charm", "amulet", "talisman", "emblem", "clover", "pendant", "necklace", "band", "sigil", "heart", "relic", "brooch")):
             self._draw_accessory_sprite(surf, item_id, pal, rarity, h)
-        elif cat == "tool" or any(w in id_lower for w in ("pickaxe", "axe", "shovel")):
+        elif cat == "tool" or any(w in id_lower for w in ("pickaxe", "axe", "shovel", "sickle", "rod")):
             self._draw_tool_sprite(surf, item_id, pal, rarity, h)
-        elif cat in ("consumable", "food") or any(w in id_lower for w in ("potion", "fry", "potato", "brew", "elixir")):
+        elif cat in ("consumable", "food") or any(w in id_lower for w in ("potion", "fry", "potato", "brew", "elixir", "tuber")):
             self._draw_consumable_sprite(surf, item_id, pal, rarity, h)
         elif cat == "skillbook" or "skillbook" in id_lower:
             self._draw_tome_sprite(surf, item_id, pal, rarity, h)
-        elif cat == "material" or any(w in id_lower for w in ("bar", "ore", "shard", "essence", "core", "gem", "crystal", "sap", "gel")):
+        elif cat == "material" or any(w in id_lower for w in ("bar", "ore", "shard", "essence", "core", "gem", "crystal", "sap", "gel", "flask", "chain")):
             self._draw_material_sprite(surf, item_id, pal, rarity, h)
         else:
             self._draw_generic_sprite(surf, item_id, pal, rarity, h)
@@ -864,6 +906,253 @@ class AssetFactory:
         pygame.draw.polygon(surf, pal["primary"], [(12, 4), (19, 12), (12, 20), (5, 12)])
         pygame.draw.polygon(surf, pal["secondary"], [(12, 7), (16, 12), (12, 17), (8, 12)])
         surf.set_at((12, 12), (255, 255, 255))
+
+    def _draw_shield_sprite(self, surf, item_id, pal, rarity, h):
+        id_lower = item_id.lower()
+        # Shield silhouette
+        pts_out = [(4, 4), (20, 4), (20, 13), (12, 21), (4, 13)]
+        pts_in = [(5, 5), (19, 5), (19, 12), (12, 20), (5, 12)]
+        pygame.draw.polygon(surf, pal["outline"], pts_out)
+        pygame.draw.polygon(surf, pal["primary"], pts_in)
+        pygame.draw.polygon(surf, pal["secondary"], [(7, 6), (17, 6), (17, 10), (12, 16), (7, 10)])
+        # Central boss / emblem
+        cx, cy = 12, 10
+        boss_col = (255, 215, 60) if "gold" in id_lower or rarity in (RARITY_RARE, RARITY_EPIC, RARITY_MYTHIC) else (210, 215, 225)
+        pygame.draw.circle(surf, pal["outline"], (cx, cy), 4)
+        pygame.draw.circle(surf, boss_col, (cx, cy), 3)
+        surf.set_at((cx - 1, cy - 1), (255, 255, 255))
+
+    def _draw_lantern_sprite(self, surf, item_id, pal, rarity, h):
+        id_lower = item_id.lower()
+        frame_col = (75, 45, 20) if "brass" in id_lower else pal["outline"]
+        metal_col = (235, 175, 50) if "brass" in id_lower else pal["primary"]
+        # Handle & Cap
+        pygame.draw.rect(surf, frame_col, (10, 2, 4, 3), 1)
+        pygame.draw.polygon(surf, frame_col, [(6, 6), (18, 6), (15, 8), (9, 8)])
+        pygame.draw.polygon(surf, metal_col, [(7, 6), (17, 6), (14, 8), (10, 8)])
+        # Glass housing
+        pygame.draw.rect(surf, (15, 25, 40), (7, 8, 10, 9))
+        pygame.draw.rect(surf, frame_col, (7, 8, 10, 9), 1)
+        # Glowing flame
+        core_col = (100, 230, 255) if "spectral" in id_lower else (255, 215, 60)
+        pygame.draw.circle(surf, core_col, (12, 12), 3)
+        surf.set_at((12, 12), (255, 255, 255))
+        # Base
+        pygame.draw.rect(surf, frame_col, (6, 17, 12, 3))
+        pygame.draw.rect(surf, metal_col, (7, 17, 10, 2))
+
+    def _draw_hearth_sprite(self, surf, item_id, pal, rarity, h):
+        id_lower = item_id.lower()
+        # Cobblestone ring
+        base_col = (115, 110, 115) if "cozy" in id_lower else (65, 45, 95)
+        pygame.draw.ellipse(surf, pal["outline"], (4, 12, 16, 9))
+        pygame.draw.ellipse(surf, base_col, (5, 13, 14, 7))
+        # Fire flames
+        fire_col = (255, 120, 30) if "cozy" in id_lower else (180, 70, 255)
+        hi_col = (255, 235, 120) if "cozy" in id_lower else (235, 180, 255)
+        pygame.draw.polygon(surf, fire_col, [(8, 14), (12, 5), (16, 14)])
+        pygame.draw.polygon(surf, hi_col, [(10, 14), (12, 7), (14, 14)])
+        surf.set_at((12, 7), (255, 255, 255))
+
+    def _draw_anvil_sprite(self, surf, item_id, pal, rarity, h):
+        body_col = (135, 140, 155)
+        hi_col = (195, 200, 215)
+        # Horn and face
+        pygame.draw.polygon(surf, pal["outline"], [(3, 8), (7, 6), (20, 6), (20, 11), (15, 11), (13, 14), (15, 18), (5, 18), (8, 14), (8, 11), (3, 8)])
+        pygame.draw.polygon(surf, body_col, [(4, 8), (7, 7), (19, 7), (19, 10), (14, 10), (12, 13), (14, 17), (6, 17), (9, 13), (8, 10), (4, 8)])
+        pygame.draw.line(surf, hi_col, (7, 7), (19, 7), 1)
+
+    def _draw_whetstone_sprite(self, surf, item_id, pal, rarity, h):
+        # Timber stand
+        pygame.draw.polygon(surf, (85, 55, 25), [(6, 18), (9, 11), (15, 11), (18, 18), (14, 18), (12, 13), (10, 18)])
+        # Circular grinding wheel
+        pygame.draw.circle(surf, pal["outline"], (12, 10), 6)
+        pygame.draw.circle(surf, (185, 175, 155), (12, 10), 5)
+        pygame.draw.circle(surf, (220, 215, 195), (12, 10), 3)
+        pygame.draw.circle(surf, (90, 60, 30), (12, 10), 1)
+
+    def _draw_retort_sprite(self, surf, item_id, pal, rarity, h):
+        # Brass stand
+        pygame.draw.rect(surf, (165, 120, 45), (6, 18, 12, 2))
+        pygame.draw.line(surf, (165, 120, 45), (8, 18), (8, 6), 1)
+        # Flask & neck
+        pygame.draw.ellipse(surf, pal["outline"], (8, 9, 8, 8))
+        pygame.draw.ellipse(surf, pal["primary"], (9, 10, 6, 6))
+        pygame.draw.line(surf, (200, 230, 255), (12, 9), (18, 5), 2)
+        surf.set_at((10, 11), (255, 255, 255))
+
+    def _draw_clippers_sprite(self, surf, item_id, pal, rarity, h):
+        # Spring shears
+        pygame.draw.arc(surf, (180, 185, 195), (6, 14, 12, 7), 0, 3.14, 2)
+        pygame.draw.line(surf, (200, 205, 215), (7, 15), (16, 5), 2)
+        pygame.draw.line(surf, (200, 205, 215), (17, 15), (8, 5), 2)
+        pygame.draw.circle(surf, (90, 95, 110), (12, 10), 2)
+
+    def _draw_sparker_sprite(self, surf, item_id, pal, rarity, h):
+        # Curved steel striker
+        pygame.draw.arc(surf, (185, 190, 205), (5, 6, 11, 13), 1.0, 5.0, 2)
+        # Pyrite rock
+        pygame.draw.polygon(surf, (195, 165, 55), [(13, 11), (18, 9), (19, 15), (14, 17)])
+        # Sparks
+        surf.set_at((12, 6), (255, 235, 100))
+        surf.set_at((14, 4), (255, 255, 200))
+        surf.set_at((10, 4), (255, 180, 40))
+
+    def _draw_compass_sprite(self, surf, item_id, pal, rarity, h):
+        # Casing
+        pygame.draw.circle(surf, pal["outline"], (12, 12), 9)
+        pygame.draw.circle(surf, (215, 170, 50), (12, 12), 8)
+        pygame.draw.circle(surf, (25, 30, 45), (12, 12), 6)
+        # Needle
+        pygame.draw.polygon(surf, (240, 60, 60), [(12, 7), (10, 12), (14, 12)])
+        pygame.draw.polygon(surf, (180, 210, 245), [(12, 17), (10, 12), (14, 12)])
+        surf.set_at((12, 12), (255, 255, 255))
+
+    def _draw_spyglass_sprite(self, surf, item_id, pal, rarity, h):
+        # Brass telescope barrels
+        pygame.draw.polygon(surf, (215, 165, 45), [(15, 5), (19, 9), (17, 11), (13, 7)])
+        pygame.draw.polygon(surf, (175, 130, 35), [(11, 9), (15, 13), (13, 15), (9, 11)])
+        pygame.draw.polygon(surf, (135, 95, 25), [(6, 14), (10, 18), (8, 20), (4, 16)])
+        # Lenses
+        surf.set_at((17, 7), (180, 240, 255))
+        surf.set_at((5, 18), (140, 210, 245))
+
+    def _draw_clock_sprite(self, surf, item_id, pal, rarity, h):
+        # Pocket chronometer
+        pygame.draw.rect(surf, (215, 170, 50), (10, 2, 4, 3))
+        pygame.draw.circle(surf, pal["outline"], (12, 12), 9)
+        pygame.draw.circle(surf, (245, 200, 60), (12, 12), 8)
+        pygame.draw.circle(surf, (245, 240, 225), (12, 12), 6)
+        # Clock hands
+        pygame.draw.line(surf, (40, 30, 20), (12, 12), (12, 8), 1)
+        pygame.draw.line(surf, (40, 30, 20), (12, 12), (15, 13), 1)
+
+    def _draw_satchel_sprite(self, surf, item_id, pal, rarity, h):
+        # Leather pouch
+        pygame.draw.rect(surf, pal["outline"], (5, 6, 14, 13), border_radius=3)
+        pygame.draw.rect(surf, (160, 105, 55), (6, 7, 12, 11), border_radius=2)
+        # Flap and buckle
+        pygame.draw.polygon(surf, (130, 80, 40), [(6, 7), (18, 7), (12, 12)])
+        pygame.draw.rect(surf, (235, 195, 65), (11, 11, 3, 3))
+
+    def _draw_tether_sprite(self, surf, item_id, pal, rarity, h):
+        # Coiled rope
+        pygame.draw.ellipse(surf, pal["outline"], (5, 6, 14, 12), 3)
+        pygame.draw.ellipse(surf, (190, 155, 95), (6, 7, 12, 10), 2)
+        # Dangling lead with copper clip
+        pygame.draw.line(surf, (190, 155, 95), (15, 14), (18, 19), 2)
+        pygame.draw.circle(surf, (215, 120, 50), (18, 19), 2)
+
+    def _draw_cauldron_sprite(self, surf, item_id, pal, rarity, h):
+        # Iron cauldron
+        pygame.draw.ellipse(surf, (110, 115, 125), (4, 6, 16, 4))
+        pygame.draw.ellipse(surf, pal["outline"], (4, 8, 16, 11))
+        pygame.draw.ellipse(surf, (60, 65, 75), (5, 9, 14, 9))
+        # Potion inside
+        pygame.draw.ellipse(surf, pal["secondary"], (6, 7, 12, 3))
+        # Feet
+        pygame.draw.line(surf, pal["outline"], (6, 18), (5, 21), 2)
+        pygame.draw.line(surf, pal["outline"], (18, 18), (19, 21), 2)
+
+    def _draw_totem_sprite(self, surf, item_id, pal, rarity, h):
+        # Golden Spud Idol
+        pygame.draw.ellipse(surf, pal["outline"], (6, 5, 12, 15))
+        pygame.draw.ellipse(surf, (255, 215, 50), (7, 6, 10, 13))
+        # Tiny wings
+        pygame.draw.polygon(surf, (255, 235, 120), [(6, 10), (2, 8), (5, 13)])
+        pygame.draw.polygon(surf, (255, 235, 120), [(18, 10), (22, 8), (19, 13)])
+        # Radiant gemstone eyes
+        surf.set_at((9, 10), (60, 240, 120))
+        surf.set_at((14, 10), (60, 240, 120))
+
+    def _draw_quiver_sprite(self, surf, item_id, pal, rarity, h):
+        # Quiver body
+        pygame.draw.polygon(surf, pal["outline"], [(7, 7), (15, 7), (13, 21), (9, 21)])
+        pygame.draw.polygon(surf, (145, 95, 50), [(8, 8), (14, 8), (12, 20), (10, 20)])
+        # Protruding fletched arrows
+        pygame.draw.line(surf, (180, 130, 70), (9, 8), (7, 2), 1)
+        pygame.draw.line(surf, (180, 130, 70), (11, 8), (11, 2), 1)
+        pygame.draw.line(surf, (180, 130, 70), (13, 8), (15, 2), 1)
+        # Fletchings
+        pygame.draw.circle(surf, (240, 240, 245), (7, 2), 1)
+        pygame.draw.circle(surf, (240, 240, 245), (11, 2), 1)
+        pygame.draw.circle(surf, (240, 240, 245), (15, 2), 1)
+
+    def _draw_saw_sprite(self, surf, item_id, pal, rarity, h):
+        # Workbench base
+        pygame.draw.rect(surf, (120, 80, 45), (4, 14, 16, 5))
+        # Circular blade
+        pygame.draw.circle(surf, pal["outline"], (12, 10), 6)
+        pygame.draw.circle(surf, (195, 200, 210), (12, 10), 5)
+        pygame.draw.circle(surf, (70, 75, 85), (12, 10), 2)
+
+    def _draw_target_sprite(self, surf, item_id, pal, rarity, h):
+        # Archery bullseye target
+        pygame.draw.circle(surf, pal["outline"], (12, 12), 9)
+        pygame.draw.circle(surf, (220, 50, 50), (12, 12), 8)
+        pygame.draw.circle(surf, (245, 245, 245), (12, 12), 5)
+        pygame.draw.circle(surf, (220, 50, 50), (12, 12), 2)
+
+    def _draw_loom_sprite(self, surf, item_id, pal, rarity, h):
+        # Wooden loom frame
+        pygame.draw.rect(surf, (135, 90, 45), (5, 4, 14, 16), 2)
+        for x in (8, 11, 14):
+            pygame.draw.line(surf, (230, 230, 220), (x, 5), (x, 18), 1)
+        # Cross shuttle
+        pygame.draw.line(surf, (215, 140, 45), (5, 12), (18, 12), 2)
+
+    def _draw_food_sprite(self, surf, item_id, pal, rarity, h):
+        id_lower = item_id.lower()
+        if any(w in id_lower for w in ("stew", "soup")):
+            # Stew bowl
+            pygame.draw.ellipse(surf, (120, 75, 35), (4, 10, 16, 8))
+            pygame.draw.ellipse(surf, pal["primary"], (5, 11, 14, 5))
+            surf.set_at((9, 12), (120, 230, 100))
+            surf.set_at((14, 12), (255, 215, 60))
+        elif any(w in id_lower for w in ("loaf", "bread")):
+            # Golden crust bread
+            pygame.draw.ellipse(surf, pal["outline"], (4, 8, 16, 10))
+            pygame.draw.ellipse(surf, (215, 155, 65), (5, 9, 14, 8))
+            for x in (8, 11, 14):
+                pygame.draw.line(surf, (255, 220, 140), (x, 10), (x + 1, 14), 1)
+        elif "pie" in id_lower:
+            # Fluted pie
+            pygame.draw.polygon(surf, (185, 125, 55), [(4, 14), (20, 14), (17, 18), (7, 18)])
+            pygame.draw.ellipse(surf, (235, 175, 80), (4, 9, 16, 6))
+            surf.set_at((12, 11), (255, 225, 140))
+        elif "salve" in id_lower:
+            # Balm pot with leaf
+            pygame.draw.rect(surf, (175, 180, 190), (6, 9, 12, 9), border_radius=2)
+            pygame.draw.ellipse(surf, (75, 195, 80), (8, 6, 8, 4))
+        else: # Jerky / rations
+            pygame.draw.polygon(surf, (135, 60, 35), [(5, 8), (17, 6), (19, 15), (7, 17)])
+            pygame.draw.line(surf, (95, 35, 20), (7, 10), (17, 8), 1)
+            pygame.draw.line(surf, (95, 35, 20), (8, 14), (18, 12), 1)
+
+    def _draw_craft_block_sprite(self, surf, item_id, pal, rarity, h):
+        id_lower = item_id.lower()
+        if "chain" in id_lower:
+            pygame.draw.ellipse(surf, (175, 180, 190), (9, 3, 6, 9), 2)
+            pygame.draw.ellipse(surf, (175, 180, 190), (9, 11, 6, 9), 2)
+        elif any(w in id_lower for w in ("rung", "ladder", "scaffold")):
+            pygame.draw.line(surf, pal["primary"], (6, 3), (6, 21), 2)
+            pygame.draw.line(surf, pal["primary"], (18, 3), (18, 21), 2)
+            for y in (6, 11, 16):
+                pygame.draw.line(surf, pal["secondary"], (6, y), (18, y), 2)
+        elif any(w in id_lower for w in ("cask", "barrel")):
+            pygame.draw.rect(surf, (150, 95, 50), (6, 5, 12, 14), border_radius=2)
+            pygame.draw.line(surf, (215, 135, 55), (6, 8), (17, 8), 1)
+            pygame.draw.line(surf, (215, 135, 55), (6, 15), (17, 15), 1)
+        elif "door" in id_lower:
+            pygame.draw.rect(surf, (140, 90, 45), (6, 3, 12, 18), border_radius=1)
+            pygame.draw.rect(surf, pal["outline"], (6, 3, 12, 18), 1, border_radius=1)
+            pygame.draw.circle(surf, (235, 185, 65), (15, 12), 1)
+        else:
+            # Architectural isometric block
+            pygame.draw.polygon(surf, pal["outline"], [(12, 3), (20, 8), (20, 17), (12, 21), (4, 17), (4, 8)])
+            pygame.draw.polygon(surf, pal["secondary"], [(12, 4), (19, 8), (12, 12), (5, 8)])
+            pygame.draw.polygon(surf, pal["primary"], [(12, 12), (19, 8), (19, 16), (12, 20)])
+            pygame.draw.polygon(surf, pal["shadow"], [(12, 12), (5, 8), (5, 16), (12, 20)])
 
     def _create_cute_leaf_variant(self, base_surf, up, down, left, right, hi_col, sh_col, snow_cap=False):
         """Creates an organic, cute, non-square pixel-art leaf variant for exposed edges and rounded corners."""

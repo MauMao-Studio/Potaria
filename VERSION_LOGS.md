@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.5.0** | October 2026 | *Minecraft-Style Crafting Categories & 56+ Craftable Arsenal* | 5-tab category filter system ([ALL], [BUILDING], [EQUIPMENT], [SURVIVAL], [FURNITURE]), mouse-wheel crafting pagination, zero-drop panel hitboxes, 56 new craftable items (114 total recipes), paperdoll shields & off-hands, dynamic consumable healing, and procedural pixel art sprites. |
 | **v1.4.0** | October 2026 | *Bullet-Hell Boss Barrages & Touhou Dodging Mechanics* | High-density geometric bullet patterns for all 4 Mini-Bosses & Grand Boss Sol-Rho (Phases 1 & 2), 52% fair lethal core hitbox, perimeter graze hitbox (+1 MP reward), 60+ FPS quantized surface caching (<1.2ms for 500 projectiles), authoritative LAN multiplayer bullet synchronization. |
 | **v1.3.0** | October 2026 | *Mystic Trader, Affix Grimoire & Storage Chests* | Mystic Wandering Trader, Turtle Shield, Affix Slot Carving & Affix Stones, +1..7 Enhancement & Breaking/Repair, 20-slot Storage Chests, Playtime & Last Played World Select tracking. |
 | **v1.2.1** | October 2026 | *1-Block Body Collider & Sprout Clearance* | 1-block (32px) body hitbox, decorative leaf collision exclusion, 1-block tunnel traversal. |
@@ -30,7 +31,43 @@
 
 ## Detailed Version Logs
 
-### [v1.4.0] — Bullet-Hell Boss Barrages & Touhou Dodging Mechanics (Current Release)
+### [v1.5.0] — Minecraft-Style Recipe Book Categories & 56+ Craftable Arsenal Expansion (Current Release)
+*Release Date: October 2026*
+
+#### Added
+- **Minecraft-Style Crafting Category Filter Tabs (`src/constants.py`, `src/ui/crafting.py`)**:
+  - Integrated 5 distinct recipe book category filters:
+    - `[ALL]` (`CRAFT_CAT_ALL = "all"`): Displays every recipe matching current station proximities (Hand, Work Bench, Furnace).
+    - `[BUILDING]` (`CRAFT_CAT_BUILDING = "building"`): Bricks, masonry blocks, columns, tiled roofs, and glass panes.
+    - `[EQUIPMENT]` (`CRAFT_CAT_EQUIPMENT = "equipment"`): Shields, bucklers, aegises, repeaters, totems, satchels, lodestones, spyglasses, quivers, and specialist harvesting tools.
+    - `[SURVIVAL & CONSUMABLES]` (`CRAFT_CAT_SURVIVAL = "survival"`): Campfires, torches, portable rations, restorative elixirs, roasted foods, ropes, and leads.
+    - `[FURNITURE & MECHANISMS]` (`CRAFT_CAT_FURNITURE = "furniture"`): Storage, lanterns, decorative craft workstations (stonecutters, anvils, looms, mortars, targets), and furniture.
+  - Category tabs rendered with dynamic active gold border highlights, glowing selection underline, hover tooltip descriptions, and live recipe count badges.
+  - Zero-drop boundary protection: Expanded crafting panel hitbox (`get_panel_rect()`) encompassing all category tabs to eliminate accidental item drop-to-world occurrences when clicking recipe tabs.
+  - Multi-page navigation & mouse wheel support: Added smooth mouse wheel scrolling over crafting panel and dedicated up/down scroll buttons.
+
+- **56 New Craftable Items Catalog & Original Potaria Lore (`src/ui/inventory.py`)**:
+  - Expanded craftable catalog from 58 to 114 total recipes across Hand, Work Bench, and Furnace crafting stations with 100% original Potaria names, stats, rarities, tool power, max_stacks, and rich world lore:
+    - **Building**: `potaria_clay_bricks`, `granite_masonry_block`, `diorite_masonry_block`, `andesite_masonry_block`, `carved_basalt_pillar`, `chiseled_runic_slate`, `hardened_terracotta_tile`, `glazed_ceramic_tile`, `copper_roof_plates`, `tiled_timber_shingles`, `reinforced_glass_pane`, `iron_mesh_grate`, `woven_thatch_block`, `mossy_dungeon_cobble`.
+    - **Equipment**: `oak_buckler`, `iron_aegis`, `arbalest_repeater`, `totem_of_resurgence`, `explorers_satchel`, `magnetic_lodestone`, `brass_far_seer`, `solar_chronometer`, `spud_quiver`, `fiber_clippers`, `pyrite_sparker`, `spud_angler_rod`, `copper_harvester_sickle`, `iron_harvester_sickle`.
+    - **Survival & Consumables**: `field_campfire`, `soul_glow_torch`, `potaria_rope_coil`, `hemp_animal_lead`, `potato_bread`, `sweet_tuber_pie`, `smoked_spud_jerky`, `hearty_root_stew`, `glazed_golden_tuber`, `gilded_russet`, `herbal_salve`, `night_gazer_elixir`, `zephyr_tonic`, `spelunkers_flambeau`.
+    - **Furniture & Mechanisms**: `iron_hanging_lantern`, `soul_brass_lantern`, `hearth_fire_pit`, `blacksmiths_anvil`, `honing_whetstone`, `alchemical_retort`, `apothecary_mortar`, `iron_trough`, `tailors_loom`, `archers_target`, `stonecutters_saw`, `carved_bookstand`, `rustic_wood_bench`, `oak_trestle_table`.
+
+- **Paperdoll RPG Equipment Registration (`src/rpg/equipment.py`)**:
+  - Full paperdoll stat scaling for all new shields, off-hand charms, quivers, repeaters, and tools with Defense, Block Chance, Crit Rate, Knockback Resist, Range, Max HP, and Speed bonuses.
+
+- **Consumables & Elixirs Engine (`src/entities/player.py`)**:
+  - Extended `Player.consume_item()` to support all new foods and elixirs, including HP/MP restoration, vitality recovery, and dynamic item healing fallbacks from `ITEM_REGISTRY`.
+
+- **Procedural Pixel Art Icon Generators (`src/assets/asset_factory.py`)**:
+  - Added dedicated 16x16 / 32x32 vector drawing routines for shields, lanterns, anvils, whetstones, retorts, clippers, sparkers, compasses, spyglasses, clocks, satchels, tethers, totems, quivers, saws, targets, looms, food pastries, and masonry blocks.
+
+- **Automated Test Suite (`tests/test_crafting_categories_and_items.py`)**:
+  - 14 automated unit tests verifying category filtering, tab hitbox clicks, recipe counts, inventory deduction, station proximity requirements, consumable healing, paperdoll stats, and sprite generation.
+
+---
+
+### [v1.4.0] — Bullet-Hell Boss Barrages & Touhou Dodging Mechanics
 *Release Date: October 2026*
 
 #### Added

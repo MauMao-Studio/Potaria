@@ -436,8 +436,52 @@ class Player:
         elif item_id == "speed_potion":
             self.stats.bonus_speed = 1.0
             healed = True
+        elif item_id == "glazed_golden_tuber":
+            self.health += 100
+            self.stats.mp = min(self.stats.max_mp, self.stats.mp + 30)
+            self.stats.bonus_speed = max(getattr(self.stats, "bonus_speed", 0.0), 0.5)
+            healed = True
+        elif item_id == "gilded_russet":
+            self.health = self.max_health
+            self.stats.mp = self.stats.max_mp
+            self.stats.bonus_speed = max(getattr(self.stats, "bonus_speed", 0.0), 0.8)
+            healed = True
+        elif item_id == "hearty_root_stew":
+            self.health += 60
+            healed = True
+        elif item_id == "herbal_salve":
+            self.health += 35
+            healed = True
+        elif item_id == "smoked_spud_jerky":
+            self.health += 30
+            healed = True
+        elif item_id == "potato_bread":
+            self.health += 45
+            healed = True
+        elif item_id == "sweet_tuber_pie":
+            self.health += 70
+            self.stats.mp = min(self.stats.max_mp, self.stats.mp + 10)
+            healed = True
+        elif item_id == "night_gazer_elixir":
+            self.health += 20
+            self.stats.mp = min(self.stats.max_mp, self.stats.mp + 25)
+            healed = True
+        elif item_id == "zephyr_tonic":
+            self.health += 25
+            self.stats.mp = min(self.stats.max_mp, self.stats.mp + 15)
+            self.stats.bonus_speed = max(getattr(self.stats, "bonus_speed", 0.0), 1.0)
+            healed = True
+        else:
+            from src.ui.inventory import ITEM_REGISTRY
+            data = ITEM_REGISTRY.get(item_id, {})
+            if data.get("heal", 0) > 0:
+                self.health += data["heal"]
+                if data.get("mp", 0) > 0 and hasattr(self, "stats"):
+                    self.stats.mp = min(self.stats.max_mp, self.stats.mp + data["mp"])
+                healed = True
 
         if healed:
+            self.health = min(self.max_health, self.health)
             self.sound_manager.play("craft")
             return True
         return False
