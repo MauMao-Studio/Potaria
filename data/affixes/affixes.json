@@ -1,0 +1,204 @@
+{
+  "Vampiric": {
+    "id": "Vampiric",
+    "name": "Vampiric",
+    "type": "prefix",
+    "power_type": "physical",
+    "allowed_cats": ["weapon"],
+    "min_rarity": "rare",
+    "excludes": ["Blighted"],
+    "stat_mods": {"damage": 4, "hp": 15, "lifesteal": 3},
+    "stat_ranges": {
+      "damage": [3, 8],
+      "hp": [10, 25],
+      "lifesteal": [2, 6]
+    },
+    "desc": "Siphons life force from struck enemies, restoring health on hit."
+  },
+  "Burning": {
+    "id": "Burning",
+    "name": "Burning",
+    "type": "prefix",
+    "power_type": "elemental",
+    "allowed_cats": ["weapon"],
+    "min_rarity": "uncommon",
+    "excludes": ["Frozen"],
+    "stat_mods": {"damage": 6, "atk": 3},
+    "stat_ranges": {
+      "damage": [4, 10],
+      "atk": [2, 6]
+    },
+    "desc": "Ignites targets with searing elemental flames."
+  },
+  "Frozen": {
+    "id": "Frozen",
+    "name": "Frozen",
+    "type": "prefix",
+    "power_type": "elemental",
+    "allowed_cats": ["weapon"],
+    "min_rarity": "uncommon",
+    "excludes": ["Burning"],
+    "stat_mods": {"damage": 5, "crit": 3},
+    "stat_ranges": {
+      "damage": [3, 8],
+      "crit": [2, 5]
+    },
+    "desc": "Chills enemies on impact, slowing their movement and attack cadence."
+  },
+  "Swift": {
+    "id": "Swift",
+    "name": "Swift",
+    "type": "prefix",
+    "power_type": "physical",
+    "allowed_cats": ["weapon", "tool", "armor", "armor_legs", "accessory"],
+    "min_rarity": "common",
+    "excludes": ["Heavy"],
+    "stat_mods": {"speed": 12, "crit": 2},
+    "stat_ranges": {
+      "speed": [8, 18],
+      "crit": [1, 4]
+    },
+    "desc": "Lightens the item balance, increasing attack and movement velocity."
+  },
+  "Heavy": {
+    "id": "Heavy",
+    "name": "Heavy",
+    "type": "prefix",
+    "power_type": "physical",
+    "allowed_cats": ["weapon", "tool"],
+    "min_rarity": "common",
+    "excludes": ["Swift"],
+    "stat_mods": {"damage": 10, "atk": 4, "speed": -5},
+    "stat_ranges": {
+      "damage": [6, 15],
+      "atk": [3, 7],
+      "speed": [-6, -3]
+    },
+    "desc": "Reinforced with dense metal for crushing impact at the cost of swing speed."
+  },
+  "Piercing": {
+    "id": "Piercing",
+    "name": "Piercing",
+    "type": "prefix",
+    "power_type": "physical",
+    "allowed_cats": ["weapon"],
+    "min_rarity": "uncommon",
+    "excludes": [],
+    "stat_mods": {"damage": 5, "crit": 6},
+    "stat_ranges": {
+      "damage": [3, 9],
+      "crit": [4, 9]
+    },
+    "desc": "Honed to a razor point that penetrates enemy armor and boosts critical rate."
+  },
+  "Rootbound": {
+    "id": "Rootbound",
+    "name": "Rootbound",
+    "type": "prefix",
+    "power_type": "root",
+    "allowed_cats": ["weapon", "armor", "armor_head", "armor_chest", "armor_legs", "accessory"],
+    "min_rarity": "rare",
+    "excludes": ["Blighted"],
+    "stat_mods": {"hp": 25, "def": 4, "atk": 4},
+    "stat_ranges": {
+      "hp": [15, 40],
+      "def": [3, 8],
+      "atk": [3, 7]
+    },
+    "desc": "Infused with Heartroot vitality, bolstering health, defense, and natural growth."
+  },
+  "Astral": {
+    "id": "Astral",
+    "name": "Astral",
+    "type": "prefix",
+    "power_type": "celestial",
+    "allowed_cats": ["weapon", "armor", "armor_head", "armor_chest", "armor_legs", "accessory", "skillbook"],
+    "min_rarity": "epic",
+    "excludes": ["Blighted"],
+    "stat_mods": {"damage": 9, "mp": 30, "crit": 5, "mp_regen": 2},
+    "stat_ranges": {
+      "damage": [6, 14],
+      "mp": [20, 45],
+      "crit": [3, 8],
+      "mp_regen": [1, 3]
+    },
+    "desc": "Resonates with cosmic starlight, amplifying damage, mana pool, and critical strikes."
+  },
+  "Blighted": {
+    "id": "Blighted",
+    "name": "Blighted",
+    "type": "prefix",
+    "power_type": "blight",
+    "allowed_cats": ["weapon", "accessory"],
+    "min_rarity": "epic",
+    "excludes": ["Rootbound", "Astral", "Vampiric"],
+    "stat_mods": {"damage": 12, "atk": 6, "crit": 4},
+    "stat_ranges": {
+      "damage": [8, 18],
+      "atk": [4, 9],
+      "crit": [2, 6]
+    },
+    "desc": "Corrupted by forbidden Nether blight, dealing heavy decay damage."
+  },
+  "of the Root": {
+    "id": "of the Root",
+    "name": "of the Root",
+    "type": "suffix",
+    "power_type": "root",
+    "allowed_cats": ["weapon", "armor", "armor_head", "armor_chest", "armor_legs", "accessory"],
+    "min_rarity": "uncommon",
+    "excludes": ["of the Blight"],
+    "stat_mods": {"hp": 20, "def": 3},
+    "stat_ranges": {
+      "hp": [12, 30],
+      "def": [2, 6]
+    },
+    "desc": "Channels enduring earthen resilience from the ancient Root Network."
+  },
+  "of the Blight": {
+    "id": "of the Blight",
+    "name": "of the Blight",
+    "type": "suffix",
+    "power_type": "blight",
+    "allowed_cats": ["weapon", "accessory"],
+    "min_rarity": "rare",
+    "excludes": ["of the Root"],
+    "stat_mods": {"damage": 8, "crit": 4},
+    "stat_ranges": {
+      "damage": [5, 12],
+      "crit": [2, 6]
+    },
+    "desc": "Radiates corrosive shadow energy that weakens enemy defenses."
+  },
+  "of the Cosmos": {
+    "id": "of the Cosmos",
+    "name": "of the Cosmos",
+    "type": "suffix",
+    "power_type": "celestial",
+    "allowed_cats": ["weapon", "armor", "armor_head", "armor_chest", "armor_legs", "accessory", "skillbook"],
+    "min_rarity": "epic",
+    "excludes": [],
+    "stat_mods": {"mp": 35, "mp_regen": 2, "atk": 5},
+    "stat_ranges": {
+      "mp": [20, 50],
+      "mp_regen": [1, 4],
+      "atk": [3, 8]
+    },
+    "desc": "Draws boundless celestial mana from the upper vault of Sol-Rho."
+  },
+  "of the Vanguard": {
+    "id": "of the Vanguard",
+    "name": "of the Vanguard",
+    "type": "suffix",
+    "power_type": "physical",
+    "allowed_cats": ["armor", "armor_head", "armor_chest", "armor_legs", "accessory", "weapon"],
+    "min_rarity": "uncommon",
+    "excludes": [],
+    "stat_mods": {"def": 5, "hp": 15},
+    "stat_ranges": {
+      "def": [3, 8],
+      "hp": [10, 25]
+    },
+    "desc": "Forged for frontline defenders standing firm against boss barrages."
+  }
+}

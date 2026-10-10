@@ -3,9 +3,9 @@
 **Developer:** Kurados  
 **Engine:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)  
 **Architecture:** Host-Authoritative 2D Sandbox Action RPG (Smart OpenGL HAL with Safe Fallback)  
-**Test Suite Status:** 338 / 338 Tests Passing across 26 Test Suites (100% Green)  
-**Current Version:** v1.7.1  
-**Last Updated:** October 2026 (v1.7.1 Stage 2 Release)  
+**Test Suite Status:** 357 / 357 Tests Passing across 27 Test Suites (100% Green)  
+**Current Version:** v1.8.0  
+**Last Updated:** October 2026 (v1.8.0 Phase 1 Loot & Affix Release)  
 
 ---
 
@@ -173,7 +173,7 @@ All development must maintain zero regressions across the test suite:
 python -m unittest discover -s tests
 ```
 
-### Verified Test Suites (26 Suites):
+### Verified Test Suites (27 Suites):
 1. `tests/test_game.py` - Core engine integration and world loops.
 2. `tests/test_new_features.py` - Early gameplay expansion tests.
 3. `tests/test_lan_hud_mobs_scaling.py` - LAN networking and boss scaling.
@@ -200,3 +200,4 @@ python -m unittest discover -s tests
 24. `tests/test_traders_ui_and_torch_rules.py` - 3-block shield, shop hover UI, torch physics, and craftable asset folders.
 25. `tests/test_world_bleed_multiplayer_effects_assets.py` - World isolation and multiplayer state preservation.
 26. `tests/test_renderer_hal.py` - Renderer HAL, BaseRenderer, SurfaceRenderer, GLRenderer Stage 2 GLSL Bloom shader post-processing, projectile batching, single-log fallback deduplication, settings persistence, and mode switching.
+27. `tests/test_loot_and_affix_phase1.py` - Phase 1 Data-Driven Item Registry (1,461 items, 9 canonical categories), 4-layer item model, 9 canonical affixes, deterministic seeded rolling, mutual exclusion, 3-path loot acquisition, and Word/PDF visual item catalogs.

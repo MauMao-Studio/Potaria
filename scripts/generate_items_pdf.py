@@ -1,15 +1,8 @@
-"""
-Generate Potaria Items & Item Codes Catalog PDF with Asset Images
-Exports all 1,402 items with Pixel Art Asset Image, Item Code (ID), Name, Category, Rarity, Key Stats, and Description.
-"""
-
 import sys
 import os
 import io
-import html
-import base64
+import json
 
-# Ensure project root is in path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 
@@ -18,22 +11,23 @@ pygame.init()
 pygame.display.set_mode((1, 1), pygame.NOFRAME)
 
 from src.assets.asset_factory import AssetFactory
-from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
+from src.ui.inventory import ITEM_REGISTRY
+import src.ui.crafting  # Ensures all 129 craftable items are registered in ITEM_REGISTRY
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QTextDocument, QPageSize, QPageLayout
-from PySide6.QtCore import QSizeF, QMarginsF
+from PySide6.QtGui import QPainter, QFont, QImage, QColor
+from PySide6.QtCore import QRectF, QPointF, Qt
 from PySide6.QtPrintSupport import QPrinter
 
 RARITY_ORDER = ["common", "uncommon", "rare", "epic", "mythic", "legendary", "ancient"]
 RARITY_COLORS = {
-    "common": "#7f8c8d",
-    "uncommon": "#27ae60",
-    "rare": "#2980b9",
-    "epic": "#8e44ad",
-    "mythic": "#d35400",
-    "legendary": "#d4ac0d",
-    "ancient": "#c0392b"
+    "common": QColor(127, 140, 141),
+    "uncommon": QColor(39, 174, 96),
+    "rare": QColor(41, 128, 185),
+    "epic": QColor(142, 68, 173),
+    "mythic": QColor(211, 84, 0),
+    "legendary": QColor(212, 172, 13),
+    "ancient": QColor(192, 57, 43),
 }
 
 CATEGORY_NAMES = {
@@ -52,316 +46,239 @@ CATEGORY_NAMES = {
     "currency": "Currency & Coins",
 }
 
+
 def generate_pdf():
     app = QApplication.instance()
     if not app:
         app = QApplication(sys.argv)
 
-    print("Initializing AssetFactory...")
     af = AssetFactory()
 
-    # Pre-render all item images to base64 data URIs
-    print(f"Generating sprite icons for {len(ITEM_REGISTRY)} items...")
-    item_icons_b64 = {}
-    buf = io.BytesIO()
-
-    for item_id in ITEM_REGISTRY:
-        icon_surf = af.items.get(item_id)
-        if not icon_surf:
-            icon_surf = af.generate_item_icon(item_id)
-        
-        # Scale to crisp 28x28 if needed for high-res PDF rendering
-        if icon_surf.get_size() != (28, 28):
-            scaled_surf = pygame.transform.scale(icon_surf, (28, 28))
-        else:
-            scaled_surf = icon_surf
-
-        buf.seek(0)
-        buf.truncate()
-        pygame.image.save(scaled_surf, buf, 'png')
-        b64_str = base64.b64encode(buf.getvalue()).decode('ascii')
-        item_icons_b64[item_id] = b64_str
-
-    print("Grouping and sorting items...")
     items_by_cat = {}
     for item_id, item_data in ITEM_REGISTRY.items():
         cat = item_data.get("cat", "other")
         items_by_cat.setdefault(cat, []).append((item_id, item_data))
 
-    # Sort items within each category: by rarity order, then by name
-    for cat in items_by_cat:
+    cat_sequence = [
+        "tool", "weapon", "armor_head", "armor_chest", "armor_legs",
+        "accessory", "skillbook", "consumable", "material", "block",
+        "wall", "special", "currency",
+    ]
+    for c in items_by_cat.keys():
+        if c not in cat_sequence:
+            cat_sequence.append(c)
+
+    total_items = len(ITEM_REGISTRY)
+    output_pdf_path = os.path.join(BASE_DIR, "Potaria_Items_Catalog.pdf")
+
+    printer = QPrinter(QPrinter.HighResolution)
+    printer.setOutputFormat(QPrinter.PdfFormat)
+    printer.setOutputFileName(output_pdf_path)
+
+    painter = QPainter()
+    painter.begin(printer)
+
+    page_rect = printer.pageRect(QPrinter.DevicePixel)
+    width = page_rect.width()
+    height = page_rect.height()
+
+    margin = 300
+    content_top_y = margin + 200
+    content_bottom_y = height - margin - 240
+
+    page_num = 1
+
+    font_title = QFont("Segoe UI", 14, QFont.Bold)
+    font_cat = QFont("Segoe UI", 12, QFont.Bold)
+    font_header = QFont("Segoe UI", 9, QFont.Bold)
+    font_text = QFont("Segoe UI", 8)
+
+    current_cat_display = "Overview & Affix System"
+
+    def draw_header_footer():
+        # Strict Top Header Band (y: 120 .. 340)
+        painter.setFont(font_title)
+        painter.setPen(QColor(30, 35, 45))
+        title_text = "POTARIA: ROOT REALM - Official Item Catalog"
+        if current_cat_display:
+            title_text += f" | {current_cat_display}"
+        painter.drawText(QRectF(margin, 120, width - 2 * margin, 180), Qt.AlignLeft | Qt.AlignVCenter, title_text)
+        painter.setPen(QColor(160, 165, 175))
+        painter.drawLine(QPointF(margin, 330), QPointF(width - margin, 330))
+
+        # Strict Bottom Footer Band (y: height - 300 .. height - 120)
+        painter.setPen(QColor(160, 165, 175))
+        painter.drawLine(QPointF(margin, height - 300), QPointF(width - margin, height - 300))
+        painter.setFont(font_text)
+        painter.setPen(QColor(60, 65, 75))
+        footer_rect = QRectF(margin, height - 270, width - 2 * margin, 120)
+        painter.drawText(
+            footer_rect,
+            Qt.AlignLeft | Qt.AlignVCenter,
+            "Developer: Kurados | Potaria & Potaria: Root Realm Item & Affix Reference",
+        )
+        painter.drawText(
+            footer_rect,
+            Qt.AlignRight | Qt.AlignVCenter,
+            f"Page {page_num} | Total Registered Items: {total_items}",
+        )
+
+    col_widths = [0.08, 0.21, 0.21, 0.10, 0.18, 0.22]
+    w = width - 2 * margin
+    cols = [margin + w * sum(col_widths[:i]) for i in range(len(col_widths))]
+
+    def draw_table_header(y):
+        painter.setFont(font_header)
+        painter.fillRect(QRectF(margin, y, w, 120), QColor(44, 52, 64))
+        painter.setPen(QColor(255, 255, 255))
+        headers = ["Icon", "Item Code", "Item Name", "Rarity", "Stats", "Description"]
+        for i, text in enumerate(headers):
+            painter.drawText(
+                QRectF(cols[i] + 15, y, w * col_widths[i] - 30, 120),
+                Qt.AlignLeft | Qt.AlignVCenter,
+                text,
+            )
+        return y + 145
+
+    # Draw Page 1 Header & Data-Driven Affix Summary
+    draw_header_footer()
+    current_y = content_top_y
+
+    affixes_path = os.path.join(BASE_DIR, "data", "affixes", "affixes.json")
+    if os.path.exists(affixes_path):
+        with open(affixes_path, "r", encoding="utf-8") as f:
+            affixes_data = json.load(f)
+
+        painter.setFont(font_cat)
+        painter.setPen(QColor(25, 30, 40))
+        painter.drawText(
+            QRectF(margin, current_y, w, 140),
+            Qt.AlignLeft | Qt.AlignVCenter,
+            f"Data-Driven Multi-Affix Registry ({len(affixes_data)} Modifiers)",
+        )
+        current_y += 160
+
+        for aff_key, aff in affixes_data.items():
+            line_str = (
+                f"[{aff.get('type', 'prefix').upper()}] {aff.get('name', aff_key)} "
+                f"(Min Rarity: {aff.get('min_rarity', 'Uncommon')} | Power: {aff.get('power_type', 'stat')}) - "
+                f"{aff.get('desc', '')}"
+            )
+            painter.setFont(font_text)
+            painter.setPen(QColor(40, 45, 55))
+            painter.drawText(QRectF(margin + 20, current_y, w - 40, 100), Qt.AlignLeft | Qt.AlignVCenter, line_str)
+            current_y += 95
+
+        current_y += 80
+
+    # Render each item category with strict row-boundary pagination
+    for cat in cat_sequence:
+        if cat not in items_by_cat:
+            continue
+
+        items_list = items_by_cat[cat]
+
         def sort_key(item_tuple):
             iid, d = item_tuple
             rar = str(d.get("rarity", "common")).lower()
             rar_idx = RARITY_ORDER.index(rar) if rar in RARITY_ORDER else 99
             name = d.get("name", iid).lower()
             return (rar_idx, name)
-        items_by_cat[cat].sort(key=sort_key)
 
-    total_items = len(ITEM_REGISTRY)
+        items_list.sort(key=sort_key)
 
-    print("Building HTML document...")
-    html_lines = []
-    html_lines.append("""<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-    body {
-        font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-        color: #2c3e50;
-        margin: 0;
-        padding: 0;
-        font-size: 8pt;
-    }
-    .header {
-        text-align: center;
-        background-color: #1a1e29;
-        color: #ffffff;
-        padding: 16px 10px;
-        margin-bottom: 16px;
-        border-radius: 6px;
-    }
-    .header h1 {
-        margin: 0;
-        font-size: 19pt;
-        color: #f1c40f;
-        letter-spacing: 2px;
-    }
-    .header h2 {
-        margin: 4px 0 0 0;
-        font-size: 10.5pt;
-        color: #ecf0f1;
-        font-weight: normal;
-    }
-    .header p {
-        margin: 6px 0 0 0;
-        font-size: 8pt;
-        color: #bdc3c7;
-    }
-    .category-section {
-        margin-top: 16px;
-        margin-bottom: 14px;
-    }
-    .category-title {
-        font-size: 11pt;
-        font-weight: bold;
-        color: #1a252f;
-        border-bottom: 2px solid #34495e;
-        padding-bottom: 3px;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .category-count {
-        font-size: 8.5pt;
-        color: #7f8c8d;
-        font-weight: normal;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 10px;
-    }
-    th {
-        background-color: #2c3e50;
-        color: #ffffff;
-        text-align: left;
-        padding: 5px 6px;
-        font-size: 7.5pt;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    td {
-        padding: 4px 5px;
-        border-bottom: 1px solid #e2e8f0;
-        vertical-align: middle;
-        font-size: 7.5pt;
-    }
-    tr:nth-child(even) td {
-        background-color: #f8fafc;
-    }
-    .icon-cell {
-        text-align: center;
-        width: 34px;
-        padding: 2px 4px;
-    }
-    .icon-box {
-        background-color: #222736;
-        border-radius: 4px;
-        padding: 2px;
-        display: inline-block;
-    }
-    .code-cell {
-        font-family: 'Consolas', 'Courier New', monospace;
-        font-weight: bold;
-        color: #8e44ad;
-        font-size: 7.5pt;
-        white-space: nowrap;
-    }
-    .name-cell {
-        font-weight: 600;
-        color: #1e293b;
-        font-size: 8pt;
-    }
-    .rarity-badge {
-        font-weight: bold;
-        text-transform: uppercase;
-        font-size: 7pt;
-        letter-spacing: 0.3px;
-    }
-    .stats-cell {
-        font-size: 7pt;
-        color: #475569;
-    }
-    .desc-cell {
-        font-size: 7pt;
-        color: #4b5563;
-    }
-    .footer {
-        text-align: center;
-        font-size: 7pt;
-        color: #95a5a6;
-        margin-top: 18px;
-        padding-top: 6px;
-        border-top: 1px solid #dcdde1;
-    }
-</style>
-</head>
-<body>
-""")
-
-    # Cover / Header Banner
-    html_lines.append(f"""
-<div class="header">
-    <h1>POTARIA: ROOT REALM</h1>
-    <h2>Official Visual Item Catalog & Item Code Reference Guide</h2>
-    <p>Complete Reference: {total_items:,} Items with Asset Sprites &bull; 13 Categories &bull; 7 Rarity Tiers &bull; Developer: Kurados</p>
-</div>
-""")
-
-    # Preferred category sequence
-    cat_sequence = [
-        "tool", "weapon", "armor_head", "armor_chest", "armor_legs",
-        "accessory", "skillbook", "consumable", "material", "block",
-        "wall", "special", "currency"
-    ]
-    for c in items_by_cat.keys():
-        if c not in cat_sequence:
-            cat_sequence.append(c)
-
-    for cat in cat_sequence:
-        if cat not in items_by_cat:
-            continue
-        items_list = items_by_cat[cat]
         cat_display = CATEGORY_NAMES.get(cat, cat.replace("_", " ").title())
+        current_cat_display = cat_display
 
-        html_lines.append(f"""
-<div class="category-section">
-    <div class="category-title">{html.escape(cat_display)} <span class="category-count">({len(items_list)} items)</span></div>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 5%; text-align: center;">Icon</th>
-                <th style="width: 20%;">Item Code (ID)</th>
-                <th style="width: 20%;">Item Name</th>
-                <th style="width: 9%;">Rarity</th>
-                <th style="width: 18%;">Combat / Mining Stats</th>
-                <th style="width: 28%;">Description & Lore</th>
-            </tr>
-        </thead>
-        <tbody>
-""")
+        # Require enough vertical space for category header + table header + at least 1 row (680 px)
+        if current_y + 680 > content_bottom_y:
+            printer.newPage()
+            page_num += 1
+            draw_header_footer()
+            current_y = content_top_y
 
-        for item_id, d in items_list:
-            name = d.get("name", item_id)
-            rarity = str(d.get("rarity", "common")).lower()
-            rarity_color = RARITY_COLORS.get(rarity, "#7f8c8d")
+        painter.setFont(font_cat)
+        painter.setPen(QColor(25, 30, 40))
+        painter.drawText(
+            QRectF(margin, current_y, w, 160),
+            Qt.AlignLeft | Qt.AlignVCenter,
+            f"{cat_display} ({len(items_list)} items)",
+        )
+        current_y += 180
+        current_y = draw_table_header(current_y)
 
-            # Extract key stats
+        for row_idx, (item_id, d) in enumerate(items_list):
             stat_parts = []
-            if d.get("damage", 0) > 0:
-                if cat == "tool":
-                    stat_parts.append(f"Tool Dmg: {d['damage']}")
-                else:
-                    stat_parts.append(f"ATK: {d['damage']}")
-            if d.get("atk", 0) > 0:
-                stat_parts.append(f"+{d['atk']} ATK")
-            if d.get("def", 0) > 0:
-                stat_parts.append(f"+{d['def']} DEF")
-            if d.get("crit", 0) > 0:
-                stat_parts.append(f"+{d['crit']}% Crit")
-            if d.get("speed", 0) > 0:
-                stat_parts.append(f"+{d['speed']}% Spd")
-            if d.get("hp", 0) > 0:
-                stat_parts.append(f"+{d['hp']} HP")
-            if d.get("mp", 0) > 0:
-                stat_parts.append(f"+{d['mp']} MP")
-            if d.get("mp_regen", 0) > 0:
-                stat_parts.append(f"+{d['mp_regen']} MP/s")
-            if d.get("heal", 0) > 0:
-                stat_parts.append(f"Heals {d['heal']} HP")
-            if d.get("special"):
-                stat_parts.append(str(d["special"]))
+            for stat in ["damage", "atk", "def", "crit", "speed", "hp", "mp", "mp_regen", "heal", "special"]:
+                if d.get(stat, 0):
+                    stat_parts.append(f"{stat.upper()}: {d[stat]}")
+            stats_str = ", ".join(stat_parts) if stat_parts else "-"
+            desc = d.get("desc", "") or d.get("lore", "") or "-"
+            item_name = d.get("name", item_id)
 
-            stats_str = ", ".join(stat_parts) if stat_parts else "&mdash;"
+            painter.setFont(font_text)
+            flags = Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap
+            id_rect = painter.boundingRect(QRectF(0, 0, w * col_widths[1] - 30, 5000), flags, item_id)
+            name_rect = painter.boundingRect(QRectF(0, 0, w * col_widths[2] - 30, 5000), flags, item_name)
+            stats_rect = painter.boundingRect(QRectF(0, 0, w * col_widths[4] - 30, 5000), flags, stats_str)
+            desc_rect = painter.boundingRect(QRectF(0, 0, w * col_widths[5] - 30, 5000), flags, desc)
 
-            desc = d.get("desc", "") or ""
-            if not desc:
-                desc = d.get("lore", "") or ""
+            row_height = max(
+                185,
+                id_rect.height() + 50,
+                name_rect.height() + 50,
+                stats_rect.height() + 50,
+                desc_rect.height() + 50,
+            )
 
-            icon_b64 = item_icons_b64.get(item_id, "")
-            img_tag = f'<img src="data:image/png;base64,{icon_b64}" width="22" height="22" />' if icon_b64 else ""
+            # Page break check BEFORE drawing anything in this row
+            if current_y + row_height > content_bottom_y:
+                printer.newPage()
+                page_num += 1
+                draw_header_footer()
+                current_y = content_top_y
+                current_y = draw_table_header(current_y)
 
-            html_lines.append(f"""
-            <tr>
-                <td class="icon-cell">{img_tag}</td>
-                <td class="code-cell">{html.escape(item_id)}</td>
-                <td class="name-cell">{html.escape(name)}</td>
-                <td><span class="rarity-badge" style="color: {rarity_color};">{html.escape(rarity.upper())}</span></td>
-                <td class="stats-cell">{html.escape(stats_str)}</td>
-                <td class="desc-cell">{html.escape(desc)}</td>
-            </tr>
-""")
+            # Alternating subtle row shading
+            if row_idx % 2 == 1:
+                painter.fillRect(QRectF(margin, current_y - 10, w, row_height), QColor(246, 248, 250))
 
-        html_lines.append("""
-        </tbody>
-    </table>
-</div>
-""")
+            icon_surf = af.items.get(item_id)
+            if not icon_surf:
+                icon_surf = af.generate_item_icon(item_id)
+            # Crisp nearest-neighbor upscale so pixel art remains razor sharp
+            upscaled_surf = pygame.transform.scale(icon_surf, (64, 64))
 
-    # Footer
-    html_lines.append(f"""
-<div class="footer">
-    Potaria: Root Realm &bull; Official Visual Item Catalog &bull; Total Registered Items: {total_items:,} &bull; Page Reference
-</div>
-</body>
-</html>
-""")
+            buf = io.BytesIO()
+            pygame.image.save(upscaled_surf, buf, "png")
+            buf.seek(0)
+            img = QImage.fromData(buf.read())
 
-    full_html = "".join(html_lines)
+            icon_y = current_y + max(0, (row_height - 140) / 2 - 10)
+            painter.drawImage(QRectF(cols[0] + 15, icon_y, 140, 140), img)
 
-    output_pdf_path = os.path.join(BASE_DIR, "Potaria_Items_Catalog.pdf")
+            text_y = current_y + 15
+            painter.setFont(font_text)
+            painter.setPen(QColor(20, 20, 20))
+            painter.drawText(QRectF(cols[1] + 15, text_y, w * col_widths[1] - 30, row_height - 20), flags, item_id)
+            painter.drawText(QRectF(cols[2] + 15, text_y, w * col_widths[2] - 30, row_height - 20), flags, item_name)
 
-    print("Rendering PDF via Qt Print Engine...")
-    doc = QTextDocument()
-    doc.setHtml(full_html)
+            rarity = str(d.get("rarity", "common")).upper()
+            painter.setPen(RARITY_COLORS.get(rarity.lower(), QColor(0, 0, 0)))
+            painter.drawText(QRectF(cols[3] + 15, text_y, w * col_widths[3] - 30, row_height - 20), flags, rarity)
 
-    printer = QPrinter(QPrinter.HighResolution)
-    printer.setOutputFormat(QPrinter.PdfFormat)
-    printer.setOutputFileName(output_pdf_path)
+            painter.setPen(QColor(35, 35, 35))
+            painter.drawText(QRectF(cols[4] + 15, text_y, w * col_widths[4] - 30, row_height - 20), flags, stats_str)
+            painter.drawText(QRectF(cols[5] + 15, text_y, w * col_widths[5] - 30, row_height - 20), flags, desc)
 
-    layout = QPageLayout()
-    layout.setPageSize(QPageSize(QPageSize.Letter))
-    layout.setOrientation(QPageLayout.Portrait)
-    layout.setMargins(QMarginsF(10, 10, 10, 10))
-    printer.setPageLayout(layout)
+            current_y += row_height
+            painter.setPen(QColor(215, 220, 225))
+            painter.drawLine(QPointF(margin, current_y - 10), QPointF(width - margin, current_y - 10))
+            current_y += 15
 
-    doc.print_(printer)
+    painter.end()
+    print(f"Generated PDF at: {output_pdf_path} (Pages: {page_num}, Items: {total_items})")
 
-    print(f"Successfully generated PDF with asset images: {output_pdf_path}")
-    print(f"File size: {os.path.getsize(output_pdf_path):,} bytes")
-    return output_pdf_path
 
 if __name__ == "__main__":
     generate_pdf()

@@ -328,3 +328,30 @@ To deliver both boundless sandbox freedom and deep narrative storytelling withou
   - Branching story choices with permanent narrative consequences.
 - **Target Audience**: Fans of rich narrative RPGs, dungeon crawling adventures, and character-driven stories.
 
+---
+
+# 13. Data-Driven Loot, Rarity & Multi-Affix System (Phase 1)
+
+Potaria and *Potaria: Root Realm* share a unified, data-driven itemization engine (`src/loot/`) built around the **4-Layer Item Model**:
+
+```text
+BASE ITEM + AFFIXES + RARITY + OPTIONAL UNIQUE EFFECT
+```
+
+### 13.1 Standardized 1,461-Item Registry (`src/loot/item_registry.py`)
+- Maps all 1,461 items (including all 129 craftable recipes and 1,337+ droppable items) into canonical `ItemDefinition` schemas across 9 categories: `weapon`, `armor`, `accessory`, `consumable`, `material`, `ammunition`, `skillbook`, `quest_key`, and `relic`.
+- Preserves 100% compatibility with `ITEM_REGISTRY`, existing save files, and `/give` console commands.
+
+### 13.2 Canonical 7-Tier Rarity & Multi-Affix Engine (`src/loot/rarity_engine.py`, `src/loot/affix_engine.py`)
+- **Rarity Tiers & Affix Budgets**: `Common` (0), `Uncommon` (1), `Rare` (2), `Epic` (3), `Mythic` (4), `Legendary` (5), `Ancient` (6).
+- **9 Canonical Affixes (`data/affixes/affixes.json`)**: `Vampiric`, `Burning`, `Frozen`, `Swift`, `Heavy`, `Piercing`, `Rootbound`, `Astral`, `Blighted`, plus thematic suffixes (`of the Root`, `of the Blight`, `of the Cosmos`, `of the Vanguard`).
+- **Deterministic Seeded Rolls & Mutual Exclusion**: Uses local `random.Random(rng_seed)` instances with strict category eligibility, rarity gating, and mutual exclusion rules (`Burning` excludes `Frozen`, `Swift` excludes `Heavy`, `Rootbound` excludes `Blighted`).
+
+### 13.3 3-Path Loot Acquisition (`src/loot/loot_system.py`, `data/loot_tables/loot_tables.json`)
+1. **Random Drops**: Category and level-filtered world drops.
+2. **Targeted Drops**: Boss-specific (`lord_malus`, `ignis_colossus`, `cryo_spud`, `necro_tuber`, `sol_rho`) and biome-specific (`forest`, `desert`, `snow`, `corruption`, `mushroom`, `dungeon`) pools.
+3. **Guaranteed Milestone Drops**: Deterministic first-kill and progression milestone rewards (`first_boss`, `malus_first_kill`, `sol_rho_first_kill`, `keystone_forged`).
+
+### 13.4 Official Visual Item Catalogs (`.docx` & `.pdf`)
+- **`Potaria_Items_Catalog.docx`** (`scripts/generate_items_docx.py`): Microsoft Word Landscape document with OpenXML row-split protection (`w:cantSplit`) and repeating table headers (`w:tblHeader`).
+- **`Potaria_Items_Catalog.pdf`** (`scripts/generate_items_pdf.py`): High-resolution PDF rendered via direct `QPainter` row-height pagination, guaranteeing zero sliced text/icons and zero header/footer overlap across all 1,461 items.

@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.8.0** | October 2026 | *Phase 1 Data-Driven Loot & Multi-Affix System & Word/PDF Visual Catalogs* | Standardized 1,461-item `DataDrivenItemRegistry` across 9 canonical categories (including all 129 craftables), 4-layer item model (`BASE ITEM + AFFIXES + RARITY + OPTIONAL UNIQUE EFFECT`), 9 canonical affixes (`Vampiric`, `Burning`, `Frozen`, `Swift`, `Heavy`, `Piercing`, `Rootbound`, `Astral`, `Blighted`) + suffixes with deterministic seeded rolling and mutual exclusion, 3-path loot acquisition (`random`, `targeted`, `milestone`), `Potaria_Items_Catalog.docx` & layout-verified `Potaria_Items_Catalog.pdf` with zero header/footer clipping, and 357 tests passing across 27 suites (100% Green). |
 | **v1.7.1** | October 2026 | *Stage 2 Hardware Acceleration, GLSL Bloom Shaders & Projectile Batching* | Real GPU ModernGL 5.13 acceleration, GLSL Bloom post-processing fragment shader with dynamic luminance extraction and radiant pulse shimmer for Ancient gear and danmaku projectiles, high-density C-level projectile batch rendering (`draw_projectiles_batch`) integrated with boss danmaku barrages, single-log fallback deduplication eliminating startup warning spam, interactive in-game bloom toggle button (`[BLOOM SHADERS: ON / OFF]`) with `"bloom": true` persistence, state-preserving renderer switching, and 338 tests passing across 26 test suites (100% Green). |
 | **v1.7.0** | October 2026 | *Renderer Hardware Abstraction Layer (HAL), Smart OpenGL Architecture & Dual-Profile Franchise Model* | Modular `src/rendering/` architecture (BaseRenderer, SurfaceRenderer, GLRenderer, RendererManager), Smart OpenGL HAL with hardware-first ModernGL acceleration and automatic graceful fallback to Pygame-ce software rendering, in-game Video Settings toggle (Hardware ModernGL / Compatibility Software) with `saves/settings.json` persistence, ratified One Project Repository franchise model (Base Game Potaria + Flagship ARPG Potaria: Root Realm), and 328 tests passing across 26 test suites (100% Green). |
 | **v1.6.0** | October 2026 | *Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics* | 3 distinct animated traders (Wares, Enhance, Affix) with 4-frame animations & 64x64 portraits, single-trader existence & 15-35 tile distant spawn, 3-block turtle shield radius, 1 Gold repair, rich shop hover tooltips, dedicated craftable items catalog and asset directories, word-wrapped 6.0s auto-hiding command console, torch physical support rules, and 309 passing tests. |
@@ -34,7 +35,28 @@
 
 ## Detailed Version Logs
 
-### [v1.7.1] — Stage 2 Hardware Acceleration, GLSL Bloom Shaders & Projectile Batching (Current Release)
+### [v1.8.0] — Phase 1 Data-Driven Loot & Multi-Affix System & Word/PDF Visual Catalogs (Current Release)
+*Release Date: October 2026*
+
+#### Added
+- **Data-Driven Item Registry (`src/loot/item_registry.py`)**:
+  - Standardizes all 1,461 registered items (including all 129 craftable recipes from `src/ui/crafting.py` and 1,337+ droppable items) into canonical `ItemDefinition` schemas across 9 categories (`weapon`, `armor`, `accessory`, `consumable`, `material`, `ammunition`, `skillbook`, `quest_key`, `relic`).
+  - Preserves 100% compatibility with `ITEM_REGISTRY`, save files, and `/give`.
+- **4-Layer Item Model & Multi-Affix Engine (`src/loot/affix_engine.py`, `src/loot/rarity_engine.py`, `data/affixes/affixes.json`)**:
+  - Implements `BASE ITEM + AFFIXES + RARITY + OPTIONAL UNIQUE EFFECT`.
+  - Includes all 9 canonical affixes (`Vampiric`, `Burning`, `Frozen`, `Swift`, `Heavy`, `Piercing`, `Rootbound`, `Astral`, `Blighted`) plus 4 thematic suffixes (`of the Root`, `of the Blight`, `of the Cosmos`, `of the Vanguard`).
+  - Enforces category compatibility, rarity slot budgets (`Common: 0` through `Ancient: 6`), mutual exclusion (`Burning`/`Frozen`, `Swift`/`Heavy`, `Rootbound`/`Blighted`), deterministic seeded rolling (`rng_seed`), dynamic prefix/suffix naming, and stat merging.
+- **3-Path Loot Acquisition (`src/loot/loot_system.py`, `data/loot_tables/loot_tables.json`)**:
+  - Path 1: Random category/level-filtered drops (`roll_random_loot`).
+  - Path 2: Targeted boss and biome drop tables (`roll_targeted_loot`).
+  - Path 3: Guaranteed milestone drops (`get_guaranteed_milestone_loot`).
+- **Word (`.docx`) & Layout-Verified PDF (`.pdf`) Item Catalogs**:
+  - `scripts/generate_items_docx.py` generates `Potaria_Items_Catalog.docx` with OpenXML `w:cantSplit` and repeating `w:tblHeader` properties across all 1,461 items.
+  - `scripts/generate_items_pdf.py` generates `Potaria_Items_Catalog.pdf` (123 pages) using direct `QPainter` row-height calculation, preventing any row or icon from overflowing into the header/footer or being sliced across page breaks.
+- **Automated Verification (`tests/test_loot_and_affix_phase1.py`)**:
+  - Added 19 unit tests verifying Phase 1 itemization, affixes, loot tables, and generated catalogs (357 total tests passing across 27 suites).
+
+### [v1.7.1] — Stage 2 Hardware Acceleration, GLSL Bloom Shaders & Projectile Batching
 *Release Date: October 2026*
 
 #### Added

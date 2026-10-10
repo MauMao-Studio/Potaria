@@ -4,8 +4,8 @@
 **Engine:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
 **Rendering Architecture:** Smart OpenGL Hardware Abstraction Layer (HAL) with Safe Fallback  
-**Test Suite Status:** 338 Tests Passing across 26 Test Suites (100% Green)  
-**Current Version:** v1.7.1  
+**Test Suite Status:** 357 Tests Passing across 27 Test Suites (100% Green)  
+**Current Version:** v1.8.0  
 
 ---
 
@@ -90,6 +90,13 @@ All systems are fully verified, regression-tested, and operate completely offlin
 - **Profile 1 - Potaria (Base Game)**: Boundless sandbox, 129 crafting recipes, building, open-ended survival, casual LAN co-op, and LMS arena mode.
 - **Profile 2 - Potaria: Root Realm (Flagship ARPG)**: Episodic narrative chapters, Heartroot world transformation, POTAdex journal, and handcrafted puzzle dungeons.
 
+### 2.9 Data-Driven Loot, Rarity & Multi-Affix System (Phase 1) & Visual Catalogs
+- **Standardized Item Registry (`src/loot/item_registry.py`)**: Wraps all 1,461 registered items (including all 129 craftable recipes and 1,337+ droppable items) into canonical `ItemDefinition` schemas across 9 categories (`weapon`, `armor`, `accessory`, `consumable`, `material`, `ammunition`, `skillbook`, `quest_key`, `relic`) while maintaining 100% backward compatibility with `ITEM_REGISTRY`, world saves, and `/give`.
+- **4-Layer Item Model (`src/loot/affix_engine.py`, `src/loot/rarity_engine.py`)**: Constructs item instances via `BASE ITEM + AFFIXES + RARITY + OPTIONAL UNIQUE EFFECT`, supporting dynamic prefix/suffix naming (e.g., `Vampiric Swift Iron Broadsword`), deterministic seeded rolling (`rng_seed`), category compatibility, rarity gating, and mutual exclusion (`Burning` excludes `Frozen`, `Swift` excludes `Heavy`, `Rootbound` excludes `Blighted`).
+- **9 Canonical Affixes (`data/affixes/affixes.json`)**: `Vampiric`, `Burning`, `Frozen`, `Swift`, `Heavy`, `Piercing`, `Rootbound`, `Astral`, `Blighted`, plus thematic suffixes (`of the Root`, `of the Blight`, `of the Cosmos`, `of the Vanguard`).
+- **3-Path Loot Acquisition (`src/loot/loot_system.py`, `data/loot_tables/loot_tables.json`)**: Supports random category drops, targeted boss/biome drops, and guaranteed first-kill/milestone drops.
+- **Word (`.docx`) and PDF (`.pdf`) Visual Item Catalogs**: `Potaria_Items_Catalog.docx` (generated via `scripts/generate_items_docx.py` with OpenXML `w:cantSplit` and repeating `w:tblHeader`) and `Potaria_Items_Catalog.pdf` (generated via `scripts/generate_items_pdf.py` with direct `QPainter` row-height pagination) include all 1,461 items and crisp 64x64 pixel-art sprites with zero text/image slicing and zero header/footer overlap.
+
 ---
 
 ## 3. Performance & Optimization Verification
@@ -103,10 +110,10 @@ All systems are fully verified, regression-tested, and operate completely offlin
 
 ## 4. Quality Assurance & Test Coverage
 
-- **Total Test Suites**: 26 distinct suites in `tests/`.
-- **Total Automated Tests**: 338 tests passing with zero errors (100% Green).
+- **Total Test Suites**: 27 distinct suites in `tests/`.
+- **Total Automated Tests**: 357 tests passing with zero errors (100% Green).
 - **Headless CI/CD Compatibility**: All tests execute cleanly in dummy video/audio driver environments (`SDL_VIDEODRIVER=dummy`, `SDL_AUDIODRIVER=dummy`).
-- **Regression Protection**: Automated test coverage spans inventory safety, combat calculations, equipment set bonuses, procedural terrain, trader state machines, bullet-hell hitboxes, crafting categories, world persistence, renderer HAL abstraction, GLSL Bloom pipeline, and projectile batching.
+- **Regression Protection**: Automated test coverage spans inventory safety, combat calculations, equipment set bonuses, procedural terrain, trader state machines, bullet-hell hitboxes, crafting categories, world persistence, renderer HAL abstraction, GLSL Bloom pipeline, projectile batching, and the Phase 1 Data-Driven Loot & Affix System.
 
 ---
 
@@ -114,7 +121,7 @@ All systems are fully verified, regression-tested, and operate completely offlin
 
 1. **Stage 1 (Complete)**: Renderer Hardware Abstraction Layer (HAL) decoupling Pygame-ce software blitting from rendering backends, with safe fallback and in-game settings toggle.
 2. **Stage 2 (Complete)**: ModernGL / OpenGL hardware acceleration with GLSL lighting, bloom post-processing shaders, high-density projectile batch rendering, and single-log fallback deduplication.
-3. **Stage 3 (Next)**: Steam PC production packaging via Nuitka C-compilation and gamepad support.
-4. **Stage 4**: Google Play Android packaging with virtual touch controls, Buildozer APK/AAB builds, and lifecycle persistence.
-5. **Flagship Franchise Release**: *Potaria: Root Realm* (Narrative episodic adventure with Heartroot transformations and POTAdex).
-
+3. **Phase 1 Root Realm Expansion (Complete)**: Data-Driven Loot, Rarity & Multi-Affix System (`src/loot/`) and Complete Word/PDF Visual Item Catalogs (`Potaria_Items_Catalog.docx` & `Potaria_Items_Catalog.pdf`).
+4. **Stage 3 (Next)**: Steam PC production packaging via Nuitka C-compilation and gamepad support.
+5. **Stage 4**: Google Play Android packaging with virtual touch controls, Buildozer APK/AAB builds, and lifecycle persistence.
+6. **Flagship Franchise Release**: *Potaria: Root Realm* (Narrative episodic adventure with Heartroot transformations and POTAdex).

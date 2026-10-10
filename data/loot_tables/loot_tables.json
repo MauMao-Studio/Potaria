@@ -1,0 +1,25 @@
+{
+  "targeted": {
+    "lord_malus": ["nether_cleaver", "portal_shard", "shadow_cleaver", "warrior_charm", "affix_stone"],
+    "ignis_colossus": ["magma_greatsword", "magma_core", "portal_shard", "titans_ring", "affix_stone"],
+    "cryo_spud": ["frost_blade", "frost_core", "portal_shard", "talisman_of_vigor", "affix_stone"],
+    "necro_tuber": ["bone_scythe", "necro_essence", "portal_shard", "bone_bow", "affix_stone"],
+    "sol_rho": ["crown_of_potaria", "celestial_greatsword", "astral_wrath", "ancient_composite_bow", "eternal_catalyst"],
+    "forest": ["wood", "raw_potato", "wooden_sword", "healing_potion", "lucky_clover"],
+    "desert": ["sand_block", "cactus", "cactus_sword", "hermes_boots", "speed_potion"],
+    "snow": ["snow_block", "ice_block", "frost_core", "frost_blade", "frostburn_arrow"],
+    "corruption": ["blightstone_block", "shadow_cleaver", "blight_dread_cleaver", "necro_essence", "affix_stone"],
+    "mushroom": ["glowing_mushroom", "greater_healing_potion", "night_gazer_elixir"],
+    "dungeon": ["bone", "bone_bow", "bone_scythe", "portal_shard", "guardian_ring"]
+  },
+  "milestone": {
+    "first_boss": "portal_shard",
+    "malus_first_kill": "nether_cleaver",
+    "ignis_first_kill": "magma_greatsword",
+    "cryo_first_kill": "frost_blade",
+    "necro_first_kill": "bone_scythe",
+    "sol_rho_first_kill": "crown_of_potaria",
+    "keystone_forged": "celestial_keystone",
+    "ancient_awakening": "astral_wrath"
+  }
+}

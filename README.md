@@ -242,7 +242,7 @@ Potaria includes an automated regression test suite covering all gameplay mechan
 python -m unittest discover -s tests
 ```
 
-**Status:** **328 / 328 automated tests passing with zero errors across 26 test suites (100% Green).**
+**Status:** **357 / 357 automated tests passing with zero errors across 27 test suites (100% Green).**
 
 ### Key Test Coverage:
 1. Procedural generation & chunk baking (`test_game.py`).
@@ -261,6 +261,7 @@ python -m unittest discover -s tests
 14. Turtle shield, hover UI, torch physics & craftable assets (`test_traders_ui_and_torch_rules.py`).
 15. World isolation & multiplayer integrity (`test_world_bleed_multiplayer_effects_assets.py`).
 16. Renderer HAL, BaseRenderer, SurfaceRenderer, GLRenderer fallback, and Video Settings toggle (`test_renderer_hal.py`).
+17. Phase 1 Data-Driven Item Registry (1,461 items), 4-layer item model, 9 canonical affixes, 3-path loot tables, and Word/PDF visual item catalogs (`test_loot_and_affix_phase1.py`).
 
 ---
 
@@ -279,13 +280,15 @@ To release Potaria across PC (Steam) and mobile (Google Play Store) with maximum
    - GLSL bloom post-processing fragment shaders for Ancient weapon/armor radiant visual auras, celestial stars, and boss danmaku projectiles.
    - Interactive in-game Video Settings toggles: `Renderer: [Hardware (ModernGL) / Compatibility (Software)]` and `Bloom Shaders: [BLOOM SHADERS: ON / OFF]`.
    - Single-log fallback deduplication eliminating repetitive console warning spam.
-3. **Stage 3: Steam PC Production Packaging (Next)**:
+3. **Phase 1 Root Realm Expansion: Data-Driven Loot & Affix System (Complete)**:
+   - Standardized 1,461-item registry (`src/loot/item_registry.py`), 4-layer item model (`src/loot/affix_engine.py`, `src/loot/rarity_engine.py`), 9 canonical affixes (`data/affixes/affixes.json`), 3-path loot acquisition (`src/loot/loot_system.py`), and complete Word/PDF visual catalogs (`Potaria_Items_Catalog.docx`, `Potaria_Items_Catalog.pdf`).
+4. **Stage 3: Steam PC Production Packaging (Next)**:
    - Package standalone executable via Nuitka C-compilation.
    - Full Steam Deck and XInput/DirectInput gamepad controller integration.
-4. **Stage 4: Google Play Android Packaging**:
+5. **Stage 4: Google Play Android Packaging**:
    - Buildozer / python-for-android pipeline producing ARM64 APK and AAB bundles.
    - Integrated virtual touch controls with haptic feedback.
-5. **Franchise Expansion**:
+6. **Franchise Expansion**:
    - Flagship campaign release: *Potaria: Root Realm* (Narrative episodic adventure with Heartroot transformations and POTAdex).
 
 ---
