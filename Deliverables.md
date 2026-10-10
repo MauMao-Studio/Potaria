@@ -5,7 +5,7 @@
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
 **Rendering Architecture:** Smart OpenGL Hardware Abstraction Layer (HAL) with Safe Fallback  
 **Test Suite Status:** 416 Tests Passing across 38 Test Suites (100% Green)  
-**Current Version:** v1.9.0  
+**Current Version:** v0.2.0a (Alpha Prototype)  
 
 ---
 

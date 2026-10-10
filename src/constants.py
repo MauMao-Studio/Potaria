@@ -9,6 +9,7 @@ SCREEN_HEIGHT = 720
 FPS = 60
 TITLE = "Potaria - The Spudtastic Adventure"
 DEVELOPER = "Kurados"
+GAME_VERSION = "0.2.0a"
 SCALE = 2  # 16x16 tiles rendered at 32x32
 TILE_SIZE = 16
 SCALED_TILE = TILE_SIZE * SCALE  # 32 pixels

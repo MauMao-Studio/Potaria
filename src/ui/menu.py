@@ -10,7 +10,7 @@ import random
 import socket
 import pygame
 from src.constants import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DEVELOPER,
+    SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DEVELOPER, GAME_VERSION,
     STATE_MENU, STATE_STORY, STATE_CUTSCENE, STATE_CONTROLS, STATE_PLAYING,
     STATE_VICTORY, STATE_SETTINGS, STATE_GAME_OVER, STATE_WORLDS, STATE_NEW_WORLD,
     STATE_MODS, STATE_ACHIEVEMENTS,
@@ -1021,6 +1021,9 @@ class MenuManager:
 
         for btn in self.menu_buttons:
             btn.render(target_surf, self.font_btn)
+
+        ver_surf = self.font_sm.render(f"Potaria v{GAME_VERSION} (Alpha Prototype)", True, (160, 175, 205))
+        target_surf.blit(ver_surf, (SCREEN_WIDTH - ver_surf.get_width() - 16, SCREEN_HEIGHT - ver_surf.get_height() - 10))
 
     def _render_multiplayer_menu(self, target_surf):
         self._render_background(target_surf)
