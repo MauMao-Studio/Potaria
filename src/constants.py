@@ -90,6 +90,16 @@ TILE_BATHTUB = 47          # Enamel clawfoot bathtub with soothing bathwater
 TILE_SINK = 48             # Porcelain washbasin with faucet & vanity
 TILE_PAINTING = 49         # Gilded landscape wall painting
 TILE_WOOD_SHELF = 50       # Bracketed wooden shelf platform
+TILE_CARVED_TUBER_LANTERN = 51 # Hollowed glowing potato lantern (can hang from North ceiling)
+TILE_BRASS_LANTERN = 52        # Weatherproof brass oil lantern (can hang from North ceiling)
+TILE_SPECTRAL_LANTERN = 53     # Azure spectral lantern (can hang from North ceiling)
+
+LANTERN_TILES = (
+    TILE_CARVED_TUBER_LANTERN,
+    TILE_BRASS_LANTERN,
+    TILE_SPECTRAL_LANTERN,
+    TILE_CHANDELIER,
+)
 
 # Wall IDs (Background)
 WALL_AIR = 0
@@ -182,6 +192,9 @@ TILE_PROPS = {
     TILE_SINK: {"name": "Sink", "hardness": 20, "drop": "sink", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_PAINTING: {"name": "Painting", "hardness": 8, "drop": "painting", "solid": False, "platform": False, "light_emit": 1, "absorb": 0, "opaque": False},
     TILE_WOOD_SHELF: {"name": "Wood Shelf", "hardness": 10, "drop": "wood_shelf", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
+    TILE_CARVED_TUBER_LANTERN: {"name": "Carved Tuber Lantern", "hardness": 8, "drop": "carved_tuber_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
+    TILE_BRASS_LANTERN: {"name": "Brass Lantern", "hardness": 10, "drop": "brass_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
+    TILE_SPECTRAL_LANTERN: {"name": "Spectral Lantern", "hardness": 10, "drop": "spectral_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
 }
 
 # Item Rarity Tiers (7 Tiers)

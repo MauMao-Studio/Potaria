@@ -18,6 +18,7 @@ from src.constants import (
     TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
+    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, LANTERN_TILES,
     TILE_SAND, TILE_SNOW, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS, TILE_BLIGHTSTONE, TILE_EBONSTONE,
     WALL_AIR, WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_MUSHROOM,
@@ -369,15 +370,24 @@ class World:
                 return True, "wood", t_id
 
             self.set_tile(tx, ty, TILE_AIR)
-            # Check adjacent torches for loss of physical support
-            for ndx, ndy in ((0, -1), (1, 0), (-1, 0)):
+            # Check adjacent torches and lanterns for loss of physical support
+            for ndx, ndy in ((0, -1), (0, 1), (1, 0), (-1, 0)):
                 ntx, nty = tx + ndx, ty + ndy
-                if self.get_tile(ntx, nty) == TILE_TORCH:
+                nt_id = self.get_tile(ntx, nty)
+                if nt_id == TILE_TORCH:
                     has_wall = (self.get_wall(ntx, nty) != WALL_AIR)
                     base_solid = self.is_tile_solid(ntx, nty + 1)
                     left_solid = self.is_tile_solid(ntx - 1, nty)
                     right_solid = self.is_tile_solid(ntx + 1, nty)
                     if not (has_wall or base_solid or left_solid or right_solid):
+                        self.set_tile(ntx, nty, TILE_AIR)
+                        self.player_placed_tiles.discard((ntx, nty))
+                elif nt_id in LANTERN_TILES:
+                    north_solid = self.is_tile_solid(ntx, nty - 1)
+                    below_id = self.get_tile(ntx, nty + 1)
+                    base_solid = self.is_tile_solid(ntx, nty + 1) or TILE_PROPS.get(below_id, {}).get("platform", False)
+                    has_wall = (self.get_wall(ntx, nty) != WALL_AIR)
+                    if not (north_solid or base_solid or has_wall):
                         self.set_tile(ntx, nty, TILE_AIR)
                         self.player_placed_tiles.discard((ntx, nty))
             return True, drop, t_id
@@ -403,6 +413,19 @@ class World:
             left_solid = self.is_tile_solid(tx - 1, ty)
             right_solid = self.is_tile_solid(tx + 1, ty)
             if not (has_wall or base_solid or left_solid or right_solid):
+                return False
+
+        # Physical placement rules for lanterns (Carved Tuber Lantern, Brass Lantern, Spectral Lantern, Chandelier):
+        # Can be hung from the ceiling when there is a solid block to the North (ty - 1),
+        # or placed on a floor/platform block below (ty + 1), or mounted on a background wall.
+        if tile_id in LANTERN_TILES:
+            if cur == TILE_WATER or self.is_water(tx, ty):
+                return False
+            north_solid = self.is_tile_solid(tx, ty - 1)
+            below_id = self.get_tile(tx, ty + 1)
+            base_solid = self.is_tile_solid(tx, ty + 1) or TILE_PROPS.get(below_id, {}).get("platform", False)
+            has_wall = (self.get_wall(tx, ty) != WALL_AIR)
+            if not (north_solid or base_solid or has_wall):
                 return False
 
         # Adjacency check

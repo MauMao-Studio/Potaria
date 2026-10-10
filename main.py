@@ -37,6 +37,7 @@ from src.constants import (
     TILE_CORRUPT_GRASS, TILE_EBONSTONE, TILE_MUSHROOM_GRASS,
     TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_BARRIER,
     TILE_BED, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE, TILE_PROPS,
+    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, LANTERN_TILES,
     TILE_BEDROCK, TILE_WATER,
     CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL,
     PLAYER_WIDTH, PLAYER_HEIGHT
@@ -2063,6 +2064,13 @@ class PotariaGame:
                     msg = "Torches require a supporting block or background wall!"
                 if hasattr(self.hud, "add_chat_message"):
                     self.hud.add_chat_message("[NOTICE]", msg)
+            elif tile_id_to_place in LANTERN_TILES:
+                if self.world.is_water(tx, ty):
+                    msg = "Lanterns cannot be placed underwater!"
+                else:
+                    msg = "Lanterns require a ceiling block to the North, a floor below, or a background wall!"
+                if hasattr(self.hud, "add_chat_message"):
+                    self.hud.add_chat_message("[NOTICE]", msg)
 
     def update_gameplay(self, dt):
         self.playtime = getattr(self, "playtime", 0.0) + dt
@@ -2524,10 +2532,10 @@ class PotariaGame:
                 ))
             )
     
-            if has_helmet or has_radiance or (held_item and held_item.item_id == "torch"):
+            if has_helmet or has_radiance or (held_item and held_item.item_id in ("torch", "carved_tuber_lantern", "curved_tuber_lantern", "brass_lantern", "spectral_lantern")):
                 ptx = int(self.player.center_x // SCALED_TILE)
                 pty = int(self.player.center_y // SCALED_TILE)
-                intensity = 15 if (has_helmet or has_radiance) else 13
+                intensity = 15 if (has_helmet or has_radiance) else 14
                 extra_lights.append((ptx, pty, intensity))
     
             # Dynamic light emitted by falling celestial stars and glowing arrows

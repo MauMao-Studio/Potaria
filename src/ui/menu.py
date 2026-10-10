@@ -188,6 +188,13 @@ class MenuManager:
         # Worlds Menu Buttons
         self.saved_worlds = []
         self.world_entry_buttons = []
+        self.world_rename_buttons = []
+        self.renaming_world_target = None
+        self.rename_world_input = ""
+        self.rename_error_msg = ""
+        self.rename_box_rect = pygame.Rect(SCREEN_WIDTH // 2 - 180, 325, 360, 40)
+        self.rename_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 385, 130, 40, "SAVE NAME", "confirm_rename")
+        self.rename_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 385, 130, 40, "CANCEL", "cancel_rename")
         self.worlds_create_btn = Button(cx, 160, btn_w, btn_h, "[+] CREATE NEW WORLD", "open_new_world")
         self.worlds_quick_btn = Button(cx, 215, btn_w, btn_h, "QUICK PLAY (NORMAL INFINITE)", "quick_play")
         self.worlds_back_btn = Button(cx, SCREEN_HEIGHT - 85, btn_w, btn_h, "< BACK TO MENU", "menu")
@@ -380,12 +387,18 @@ class MenuManager:
             for btn in self.victory_buttons:
                 btn.update(mouse_pos)
         elif self.state == STATE_WORLDS:
-            self.worlds_create_btn.update(mouse_pos)
-            self.worlds_quick_btn.update(mouse_pos)
-            self.worlds_back_btn.update(mouse_pos)
-            for load_b, del_b, _ in self.world_entry_buttons:
-                load_b.update(mouse_pos)
-                del_b.update(mouse_pos)
+            if self.renaming_world_target is not None:
+                self.rename_confirm_btn.update(mouse_pos)
+                self.rename_cancel_btn.update(mouse_pos)
+            else:
+                self.worlds_create_btn.update(mouse_pos)
+                self.worlds_quick_btn.update(mouse_pos)
+                self.worlds_back_btn.update(mouse_pos)
+                for load_b, del_b, _ in self.world_entry_buttons:
+                    load_b.update(mouse_pos)
+                    del_b.update(mouse_pos)
+                for ren_b, _ in self.world_rename_buttons:
+                    ren_b.update(mouse_pos)
         elif self.state == STATE_NEW_WORLD:
             self.nw_btn_type.update(mouse_pos)
             self.nw_btn_diff.update(mouse_pos)
@@ -402,13 +415,38 @@ class MenuManager:
         except Exception:
             self.saved_worlds = []
         self.world_entry_buttons = []
+        self.world_rename_buttons = []
         bx = SCREEN_WIDTH // 2 - 250
         start_y = 280
         for i, winfo in enumerate(self.saved_worlds[:4]):
             entry_y = start_y + i * 62
-            load_b = Button(bx + 330, entry_y + 10, 90, 36, "PLAY", f"load_{i}")
-            del_b = Button(bx + 430, entry_y + 10, 60, 36, "DEL", f"del_{i}")
+            load_b = Button(bx + 265, entry_y + 10, 72, 36, "PLAY", f"load_{i}")
+            ren_b = Button(bx + 345, entry_y + 10, 78, 36, "RENAME", f"ren_{i}")
+            del_b = Button(bx + 430, entry_y + 10, 56, 36, "DEL", f"del_{i}")
             self.world_entry_buttons.append((load_b, del_b, winfo))
+            self.world_rename_buttons.append((ren_b, winfo))
+
+    def rename_saved_world(self, old_name, new_name):
+        """Attempts to rename `old_name` to `new_name`. Rejects if `new_name` is empty or already exists."""
+        try:
+            from src.world.save_manager import can_rename_world, rename_world
+            valid, msg = can_rename_world(old_name, new_name)
+            if not valid:
+                self.rename_error_msg = msg
+                return False
+            if rename_world(old_name, new_name):
+                self.renaming_world_target = None
+                self.rename_error_msg = ""
+                self._refresh_saved_worlds()
+                if self.sound_manager:
+                    self.sound_manager.play("craft")
+                return True
+            else:
+                self.rename_error_msg = "World name already exists!"
+                return False
+        except Exception as e:
+            self.rename_error_msg = f"Rename error: {e}"
+            return False
 
     def handle_click(self, mouse_pos, button=1):
         if self.state == STATE_MENU:
@@ -471,6 +509,15 @@ class MenuManager:
                 return None
 
         elif self.state == STATE_WORLDS:
+            if self.renaming_world_target is not None:
+                if self.rename_confirm_btn.rect.collidepoint(mouse_pos):
+                    self.rename_saved_world(self.renaming_world_target, self.rename_world_input)
+                elif self.rename_cancel_btn.rect.collidepoint(mouse_pos):
+                    self.sound_manager.play("place")
+                    self.renaming_world_target = None
+                    self.rename_error_msg = ""
+                return None
+
             if self.worlds_create_btn.rect.collidepoint(mouse_pos):
                 self.sound_manager.play("place")
                 self.state = STATE_NEW_WORLD
@@ -484,6 +531,14 @@ class MenuManager:
                 self.sound_manager.play("place")
                 self.state = STATE_MENU
                 return None
+
+            for ren_b, winfo in self.world_rename_buttons:
+                if ren_b.rect.collidepoint(mouse_pos):
+                    self.sound_manager.play("place")
+                    self.renaming_world_target = winfo["name"]
+                    self.rename_world_input = winfo["name"]
+                    self.rename_error_msg = ""
+                    return None
 
             for load_b, del_b, winfo in self.world_entry_buttons:
                 if load_b.rect.collidepoint(mouse_pos):
@@ -699,6 +754,23 @@ class MenuManager:
                 if self.bgm_manager:
                     self.bgm_manager.update(0.0, scene="menu")
             return res
+        if self.state == STATE_WORLDS and self.renaming_world_target is not None:
+            if event.key == pygame.K_ESCAPE:
+                self.renaming_world_target = None
+                self.rename_error_msg = ""
+                return True
+            elif event.key == pygame.K_BACKSPACE:
+                self.rename_world_input = self.rename_world_input[:-1]
+                self.rename_error_msg = ""
+                return True
+            elif event.key == pygame.K_RETURN:
+                self.rename_saved_world(self.renaming_world_target, self.rename_world_input)
+                return True
+            elif event.unicode and len(self.rename_world_input) < 22:
+                if event.unicode.isalnum() or event.unicode in (" ", "_", "-"):
+                    self.rename_world_input += event.unicode
+                    self.rename_error_msg = ""
+                return True
         if self.state == STATE_NEW_WORLD and self.typing_world_name:
             if event.key == pygame.K_BACKSPACE:
                 self.new_world_name = self.new_world_name[:-1]
@@ -1118,9 +1190,44 @@ class MenuManager:
                 target_surf.blit(time_surf, (bx + 14, entry_y + 36))
 
                 load_b.render(target_surf, self.font_btn)
+                if i < len(self.world_rename_buttons):
+                    self.world_rename_buttons[i][0].render(target_surf, self.font_btn)
                 del_b.render(target_surf, self.font_btn)
 
         self.worlds_back_btn.render(target_surf, self.font_btn)
+
+        # Render Rename World Modal if active
+        if self.renaming_world_target is not None:
+            dim = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            dim.fill((10, 12, 22, 185))
+            target_surf.blit(dim, (0, 0))
+
+            mw, mh = 440, 225
+            mx = SCREEN_WIDTH // 2 - mw // 2
+            my = 235
+            m_rect = pygame.Rect(mx, my, mw, mh)
+            pygame.draw.rect(target_surf, (26, 32, 52, 250), m_rect, border_radius=12)
+            pygame.draw.rect(target_surf, COLOR_GOLD, m_rect, 2, border_radius=12)
+
+            m_title = self.font_title.render("RENAME WORLD", True, COLOR_GOLD)
+            target_surf.blit(m_title, (SCREEN_WIDTH // 2 - m_title.get_width() // 2, my + 16))
+
+            m_sub = self.font_sm.render(f"Current Name: {self.renaming_world_target}", True, (185, 205, 235))
+            target_surf.blit(m_sub, (SCREEN_WIDTH // 2 - m_sub.get_width() // 2, my + 52))
+
+            pygame.draw.rect(target_surf, (45, 56, 88), self.rename_box_rect, border_radius=6)
+            pygame.draw.rect(target_surf, COLOR_GOLD, self.rename_box_rect, 2, border_radius=6)
+
+            cursor_ch = "_" if (pygame.time.get_ticks() % 800 < 400) else ""
+            inp_surf = self.font_btn.render(self.rename_world_input + cursor_ch, True, (255, 255, 255))
+            target_surf.blit(inp_surf, (self.rename_box_rect.x + 12, self.rename_box_rect.centery - inp_surf.get_height() // 2))
+
+            if self.rename_error_msg:
+                err_surf = self.font_sm.render(self.rename_error_msg, True, (255, 95, 95))
+                target_surf.blit(err_surf, (SCREEN_WIDTH // 2 - err_surf.get_width() // 2, my + 122))
+
+            self.rename_confirm_btn.render(target_surf, self.font_btn)
+            self.rename_cancel_btn.render(target_surf, self.font_btn)
 
     def _render_new_world_screen(self, target_surf):
         self._render_background(target_surf)

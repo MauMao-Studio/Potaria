@@ -503,3 +503,93 @@ def delete_world(world_name):
         print(f"[SaveManager] World '{world_name}' deleted.")
         return True
     return False
+
+
+def sanitize_world_name(world_name):
+    """Sanitizes a world name to safe alphanumeric, space, underscore, and hyphen characters."""
+    if not isinstance(world_name, str):
+        return ""
+    return "".join(c for c in world_name if c.isalnum() or c in (" ", "_", "-")).strip()
+
+
+def can_rename_world(old_name, new_name):
+    """
+    Validates whether `old_name` can be renamed to `new_name`.
+    Rejects empty names and strictly rejects any `new_name` that already exists.
+    Returns: (is_valid: bool, message: str)
+    """
+    ensure_saves_dir()
+    old_clean = sanitize_world_name(old_name)
+    new_clean = sanitize_world_name(new_name)
+
+    if not new_clean:
+        return False, "World name cannot be empty!"
+
+    old_dir = get_world_dir(old_clean) if old_clean else ""
+    saved = list_saved_worlds()
+    target_entry = None
+    for w in saved:
+        if w.get("name", "").strip() == str(old_name).strip() or w.get("folder", "").strip() == old_clean:
+            target_entry = w
+            old_dir = os.path.join(SAVES_DIR, w["folder"])
+            break
+
+    if not target_entry and (not old_dir or not os.path.exists(old_dir)):
+        return False, "World not found!"
+
+    # Check if the new name is identical or already exists in any saved world or directory (case-insensitive)
+    if old_clean.lower() == new_clean.lower():
+        return False, "World name already exists!"
+
+    for w in saved:
+        existing_name = str(w.get("name", "")).strip().lower()
+        existing_folder = str(w.get("folder", "")).strip().lower()
+        if new_clean.lower() in (existing_name, existing_folder):
+            return False, "World name already exists!"
+
+    new_dir = get_world_dir(new_clean)
+    if os.path.exists(new_dir):
+        return False, "World name already exists!"
+
+    return True, "OK"
+
+
+def rename_world(old_name, new_name):
+    """
+    Renames an existing saved world from `old_name` to `new_name`.
+    Cannot rename if `new_name` is empty or already exists in `saves/`.
+    Updates both the folder name in `saves/` and `world_name` inside `world.json`.
+    Returns True on success, False if invalid or name already exists.
+    """
+    valid, msg = can_rename_world(old_name, new_name)
+    if not valid:
+        print(f"[SaveManager] Cannot rename '{old_name}' to '{new_name}': {msg}")
+        return False
+
+    old_clean = sanitize_world_name(old_name)
+    new_clean = sanitize_world_name(new_name)
+    old_dir = get_world_dir(old_clean)
+    for w in list_saved_worlds():
+        if w.get("name", "").strip() == str(old_name).strip() or w.get("folder", "").strip() == old_clean:
+            old_dir = os.path.join(SAVES_DIR, w["folder"])
+            break
+
+    new_dir = get_world_dir(new_clean)
+    if os.path.exists(new_dir):
+        return False
+
+    try:
+        json_file = os.path.join(old_dir, "world.json")
+        if os.path.exists(json_file):
+            with open(json_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            data["world_name"] = new_clean
+            with open(json_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        os.rename(old_dir, new_dir)
+        print(f"[SaveManager] World '{old_name}' renamed to '{new_clean}'.")
+        return True
+    except Exception as e:
+        print(f"[SaveManager] Error renaming world '{old_name}' to '{new_clean}': {e}")
+        return False
+

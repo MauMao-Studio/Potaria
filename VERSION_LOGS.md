@@ -10,7 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v1.8.0** | October 2026 | *Phase 1 Data-Driven Loot & Multi-Affix System & Word/PDF Visual Catalogs* | Standardized 1,461-item `DataDrivenItemRegistry` across 9 canonical categories (including all 129 craftables), 4-layer item model (`BASE ITEM + AFFIXES + RARITY + OPTIONAL UNIQUE EFFECT`), 9 canonical affixes (`Vampiric`, `Burning`, `Frozen`, `Swift`, `Heavy`, `Piercing`, `Rootbound`, `Astral`, `Blighted`) + suffixes with deterministic seeded rolling and mutual exclusion, 3-path loot acquisition (`random`, `targeted`, `milestone`), `Potaria_Items_Catalog.docx` & layout-verified `Potaria_Items_Catalog.pdf` with zero header/footer clipping, and 357 tests passing across 27 suites (100% Green). |
+| **v1.8.0** | October 2026 | *Phase 1 Data-Driven Loot & Multi-Affix System, Lantern Ceiling Physics & World Rename* | Standardized 1,461-item `DataDrivenItemRegistry` across 9 canonical categories (including all 129 craftables), 4-layer item model (`BASE ITEM + AFFIXES + RARITY + OPTIONAL UNIQUE EFFECT`), 9 canonical affixes + suffixes with deterministic seeded rolling and mutual exclusion, 3-path loot acquisition (`random`, `targeted`, `milestone`), dedicated Carved Tuber Lantern / Brass Lantern / Spectral Lantern world tiles with North ceiling hanging physics, interactive World Rename in World Selection with duplicate-name protection, and 360 tests passing across 28 suites (100% Green). |
 | **v1.7.1** | October 2026 | *Stage 2 Hardware Acceleration, GLSL Bloom Shaders & Projectile Batching* | Real GPU ModernGL 5.13 acceleration, GLSL Bloom post-processing fragment shader with dynamic luminance extraction and radiant pulse shimmer for Ancient gear and danmaku projectiles, high-density C-level projectile batch rendering (`draw_projectiles_batch`) integrated with boss danmaku barrages, single-log fallback deduplication eliminating startup warning spam, interactive in-game bloom toggle button (`[BLOOM SHADERS: ON / OFF]`) with `"bloom": true` persistence, state-preserving renderer switching, and 338 tests passing across 26 test suites (100% Green). |
 | **v1.7.0** | October 2026 | *Renderer Hardware Abstraction Layer (HAL), Smart OpenGL Architecture & Dual-Profile Franchise Model* | Modular `src/rendering/` architecture (BaseRenderer, SurfaceRenderer, GLRenderer, RendererManager), Smart OpenGL HAL with hardware-first ModernGL acceleration and automatic graceful fallback to Pygame-ce software rendering, in-game Video Settings toggle (Hardware ModernGL / Compatibility Software) with `saves/settings.json` persistence, ratified One Project Repository franchise model (Base Game Potaria + Flagship ARPG Potaria: Root Realm), and 328 tests passing across 26 test suites (100% Green). |
 | **v1.6.0** | October 2026 | *Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics* | 3 distinct animated traders (Wares, Enhance, Affix) with 4-frame animations & 64x64 portraits, single-trader existence & 15-35 tile distant spawn, 3-block turtle shield radius, 1 Gold repair, rich shop hover tooltips, dedicated craftable items catalog and asset directories, word-wrapped 6.0s auto-hiding command console, torch physical support rules, and 309 passing tests. |
@@ -35,7 +35,7 @@
 
 ## Detailed Version Logs
 
-### [v1.8.0] — Phase 1 Data-Driven Loot & Multi-Affix System & Word/PDF Visual Catalogs (Current Release)
+### [v1.8.0] — Phase 1 Data-Driven Loot & Multi-Affix System, Lantern Ceiling Physics & World Rename (Current Release)
 *Release Date: October 2026*
 
 #### Added
@@ -50,11 +50,14 @@
   - Path 1: Random category/level-filtered drops (`roll_random_loot`).
   - Path 2: Targeted boss and biome drop tables (`roll_targeted_loot`).
   - Path 3: Guaranteed milestone drops (`get_guaranteed_milestone_loot`).
-- **Word (`.docx`) & Layout-Verified PDF (`.pdf`) Item Catalogs**:
-  - `scripts/generate_items_docx.py` generates `Potaria_Items_Catalog.docx` with OpenXML `w:cantSplit` and repeating `w:tblHeader` properties across all 1,461 items.
-  - `scripts/generate_items_pdf.py` generates `Potaria_Items_Catalog.pdf` (123 pages) using direct `QPainter` row-height calculation, preventing any row or icon from overflowing into the header/footer or being sliced across page breaks.
-- **Automated Verification (`tests/test_loot_and_affix_phase1.py`)**:
-  - Added 19 unit tests verifying Phase 1 itemization, affixes, loot tables, and generated catalogs (357 total tests passing across 27 suites).
+- **Dedicated Lantern World Tiles & North Ceiling Hanging Physics (`src/constants.py`, `src/assets/asset_factory.py`, `src/ui/inventory.py`, `src/world/world.py`)**:
+  - Assigned dedicated tile IDs (`TILE_CARVED_TUBER_LANTERN = 51`, `TILE_BRASS_LANTERN = 52`, `TILE_SPECTRAL_LANTERN = 53`) so placing a Carved Tuber Lantern (or Brass/Spectral Lantern) places the actual lantern tile sprite in the world and drops the lantern item back when mined, rather than placing a Torch (`TILE_TORCH`).
+  - Added ceiling hanging placement physics allowing lanterns (`LANTERN_TILES`) to be placed at the ceiling when there is a solid block to the North (`ty - 1`), on a floor/platform below (`ty + 1`), or on a background wall, automatically detaching if their supporting block is destroyed.
+- **Interactive World Rename in World Selection (`src/world/save_manager.py`, `src/ui/menu.py`)**:
+  - Added `rename_world(old_name, new_name)` and `can_rename_world(old_name, new_name)` in `src/world/save_manager.py` and interactive `RENAME` buttons + modal text input in the World Selection screen (`STATE_WORLDS`).
+  - Strictly blocks renaming if the target world name already exists (case-insensitive) or is empty, displaying a clear error notice in the UI while preserving existing worlds intact.
+- **Automated Verification (`tests/test_loot_and_affix_phase1.py`, `tests/test_lantern_and_world_rename.py`)**:
+  - Added unit and integration tests verifying Phase 1 itemization, affixes, loot tables, Carved Tuber Lantern ceiling placement/mining, and World Rename duplicate-name protection (360 total tests passing across 28 suites).
 
 ### [v1.7.1] — Stage 2 Hardware Acceleration, GLSL Bloom Shaders & Projectile Batching
 *Release Date: October 2026*

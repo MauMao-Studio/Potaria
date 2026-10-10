@@ -25,6 +25,7 @@ from src.constants import (
     TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
+    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
     WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_BLIGHTSTONE, WALL_MUSHROOM, WALL_GLASS,
     COLOR_POTATO_BODY, COLOR_POTATO_HIGHLIGHT, COLOR_POTATO_SHADOW, COLOR_SPROUT,
@@ -954,6 +955,22 @@ class AssetFactory:
 
     def _draw_lantern_sprite(self, surf, item_id, pal, rarity, h):
         id_lower = item_id.lower()
+        if "tuber" in id_lower or "carved" in id_lower or "curved" in id_lower:
+            # Hanging ring & leafy stem on top
+            pygame.draw.rect(surf, (115, 75, 35), (10, 1, 4, 3), 1)
+            pygame.draw.line(surf, (70, 185, 50), (12, 3), (14, 5), 2)
+            # Hollowed russet potato body
+            pygame.draw.ellipse(surf, (85, 45, 20), (4, 5, 16, 16))
+            pygame.draw.ellipse(surf, (205, 145, 75), (5, 6, 14, 14))
+            pygame.draw.ellipse(surf, (238, 185, 115), (7, 7, 10, 6))
+            # Glowing carved eyes and merry grin
+            pygame.draw.polygon(surf, (255, 220, 60), [(8, 10), (10, 8), (11, 10)])
+            pygame.draw.polygon(surf, (255, 220, 60), [(13, 10), (14, 8), (16, 10)])
+            surf.set_at((9, 9), (255, 255, 220))
+            surf.set_at((14, 9), (255, 255, 220))
+            pygame.draw.polygon(surf, (255, 195, 40), [(7, 13), (9, 15), (12, 14), (15, 15), (17, 13), (15, 17), (9, 17)])
+            pygame.draw.line(surf, (255, 245, 170), (9, 15), (15, 15), 1)
+            return
         frame_col = (75, 45, 20) if "brass" in id_lower else pal["outline"]
         metal_col = (235, 175, 50) if "brass" in id_lower else pal["primary"]
         # Handle & Cap
@@ -2002,6 +2019,46 @@ class AssetFactory:
         pygame.draw.rect(shelf, (190, 90, 45), (6, 3, 4, 3), border_radius=1)
         shelf.set_at((7, 2), (240, 230, 210))
         self.tiles[TILE_WOOD_SHELF] = shelf
+
+        # Carved Tuber Lantern (16x16 - Hanging from North ceiling at y=0 or sitting on base)
+        tuber_lantern = pygame.Surface((16, 16), pygame.SRCALPHA)
+        # Hanging iron chain & stem attached flush to North ceiling (y=0..3)
+        pygame.draw.rect(tuber_lantern, (110, 75, 40), (6, 0, 4, 3), 1)
+        pygame.draw.line(tuber_lantern, (70, 185, 50), (8, 2), (10, 3), 1)
+        # Carved russet potato body (y=3..15)
+        pygame.draw.ellipse(tuber_lantern, (85, 45, 20), (2, 3, 12, 13))
+        pygame.draw.ellipse(tuber_lantern, (205, 145, 75), (3, 4, 10, 11))
+        pygame.draw.ellipse(tuber_lantern, (238, 185, 115), (4, 5, 8, 4))
+        # Glowing carved eyes & merry grin
+        pygame.draw.rect(tuber_lantern, (255, 225, 65), (5, 7, 2, 2))
+        pygame.draw.rect(tuber_lantern, (255, 225, 65), (9, 7, 2, 2))
+        tuber_lantern.set_at((5, 7), (255, 255, 225))
+        tuber_lantern.set_at((9, 7), (255, 255, 225))
+        pygame.draw.polygon(tuber_lantern, (255, 195, 40), [(4, 10), (6, 12), (8, 11), (10, 12), (12, 10), (10, 13), (6, 13)])
+        pygame.draw.line(tuber_lantern, (255, 245, 175), (6, 11), (10, 11), 1)
+        self.tiles[TILE_CARVED_TUBER_LANTERN] = tuber_lantern
+
+        # Brass Lantern (16x16 - Ceiling hanging hook at y=0..2)
+        brass_lantern = pygame.Surface((16, 16), pygame.SRCALPHA)
+        pygame.draw.rect(brass_lantern, (95, 65, 25), (6, 0, 4, 3), 1)
+        pygame.draw.polygon(brass_lantern, (225, 175, 50), [(4, 3), (12, 3), (10, 5), (6, 5)])
+        pygame.draw.rect(brass_lantern, (20, 30, 45), (5, 5, 6, 8))
+        pygame.draw.rect(brass_lantern, (165, 120, 35), (5, 5, 6, 8), 1)
+        pygame.draw.circle(brass_lantern, (255, 215, 65), (8, 9), 2)
+        brass_lantern.set_at((8, 9), (255, 255, 255))
+        pygame.draw.rect(brass_lantern, (225, 175, 50), (4, 13, 8, 3))
+        self.tiles[TILE_BRASS_LANTERN] = brass_lantern
+
+        # Spectral Lantern (16x16 - Ceiling hanging hook at y=0..2)
+        spectral_lantern = pygame.Surface((16, 16), pygame.SRCALPHA)
+        pygame.draw.rect(spectral_lantern, (65, 95, 130), (6, 0, 4, 3), 1)
+        pygame.draw.polygon(spectral_lantern, (110, 175, 225), [(4, 3), (12, 3), (10, 5), (6, 5)])
+        pygame.draw.rect(spectral_lantern, (15, 25, 45), (5, 5, 6, 8))
+        pygame.draw.rect(spectral_lantern, (85, 145, 195), (5, 5, 6, 8), 1)
+        pygame.draw.circle(spectral_lantern, (100, 235, 255), (8, 9), 2)
+        spectral_lantern.set_at((8, 9), (255, 255, 255))
+        pygame.draw.rect(spectral_lantern, (110, 175, 225), (4, 13, 8, 3))
+        self.tiles[TILE_SPECTRAL_LANTERN] = spectral_lantern
 
     # ==========================================================================
     # 3. WALLS
@@ -3121,12 +3178,16 @@ class AssetFactory:
             (TILE_POTTED_PLANT, "potted_plant"), (TILE_DRESSER, "wooden_dresser"),
             (TILE_TAPESTRY, "wall_tapestry"), (TILE_BATHTUB, "bathtub"),
             (TILE_SINK, "sink"), (TILE_PAINTING, "painting"),
-            (TILE_WOOD_SHELF, "wood_shelf")
+            (TILE_WOOD_SHELF, "wood_shelf"),
+            (TILE_CARVED_TUBER_LANTERN, "carved_tuber_lantern"),
+            (TILE_BRASS_LANTERN, "brass_lantern"),
+            (TILE_SPECTRAL_LANTERN, "spectral_lantern")
         ]:
             b_surf = pygame.Surface((24, 24), pygame.SRCALPHA)
             scaled = pygame.transform.scale(self.tiles[tile_id], (14, 14))
             b_surf.blit(scaled, (5, 5))
             self.items[iname] = b_surf
+        self.items["curved_tuber_lantern"] = self.items["carved_tuber_lantern"]
 
         w_surf = pygame.Surface((24, 24), pygame.SRCALPHA)
         w_surf.blit(pygame.transform.scale(self.walls[WALL_WOOD], (14, 14)), (5, 5))

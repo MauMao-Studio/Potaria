@@ -24,6 +24,7 @@ from src.constants import (
     TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
+    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
     WALL_WOOD, WALL_STONE_BRICK, WALL_GLASS,
     RARITY_COMMON, RARITY_UNCOMMON, RARITY_RARE, RARITY_EPIC,
     RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, RARITY_HEX_COLORS, RARITY_COLORS
@@ -58,6 +59,7 @@ ITEM_ALIASES = {
     "celestial_shard": "portal_shard",
     "celestial_shards": "portal_shard",
     "portal_shards": "portal_shard",
+    "curved_tuber_lantern": "carved_tuber_lantern",
     "celestial_fragment": "portal_shard",
     "celestial_fragments": "portal_shard",
     "dirt": "dirt_block",
@@ -1691,13 +1693,13 @@ ITEM_REGISTRY = {
     },
     "brass_lantern": {
         "name": "Brass Lantern", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
-        "tile": TILE_TORCH, "rarity": RARITY_COMMON,
+        "tile": TILE_BRASS_LANTERN, "rarity": RARITY_COMMON,
         "desc": "Weatherproof brass oil lantern that burns steadily through heavy storms and downpours.",
         "lore": "", "effects": [], "special": "Steady Lantern Glow"
     },
     "spectral_lantern": {
         "name": "Spectral Lantern", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
-        "tile": TILE_TORCH, "rarity": RARITY_UNCOMMON,
+        "tile": TILE_SPECTRAL_LANTERN, "rarity": RARITY_UNCOMMON,
         "desc": "Chilled lantern casting an azure glow that illuminates cavern depths.",
         "lore": "", "effects": [], "special": "Azure Luminescence"
     },
@@ -1769,7 +1771,7 @@ ITEM_REGISTRY = {
     },
     "carved_tuber_lantern": {
         "name": "Carved Tuber Lantern", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
-        "tile": TILE_TORCH, "rarity": RARITY_COMMON,
+        "tile": TILE_CARVED_TUBER_LANTERN, "rarity": RARITY_COMMON,
         "desc": "Whimsically hollowed giant potato grinning merrily with a warm flame burning inside.",
         "lore": "'A smiling beacon that keeps night phantoms away from the doorstep.'",
         "effects": [], "special": "Festive Light"
