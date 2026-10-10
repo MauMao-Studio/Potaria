@@ -1536,7 +1536,7 @@ class GrandBossSolRho:
             fill_col = (165, 25, 225)
             hi_col = (240, 120, 255)
             ghost_col = (200, 70, 180)
-            crest_symbol = "🌑"
+            crest_symbol = "☾"
             crest_col = (220, 80, 255)
 
         # 1. Backing Plate with Drop Shadow

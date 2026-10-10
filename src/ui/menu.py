@@ -119,6 +119,7 @@ class MenuManager:
             "screen_shake": True,
             "touch_controls": "auto",
             "touch_opacity": 0.75,
+            "renderer": "hardware",
         }
 
         # Key Bindings / Input Mapping
@@ -141,18 +142,19 @@ class MenuManager:
 
         sx = SCREEN_WIDTH // 2
         self.settings_buttons = [
-            Button(sx - 160, 160, 38, 34, "-", "vol_master_down"),
-            Button(sx + 122, 160, 38, 34, "+", "vol_master_up"),
-            Button(sx - 160, 210, 38, 34, "-", "vol_bgm_down"),
-            Button(sx + 122, 210, 38, 34, "+", "vol_bgm_up"),
-            Button(sx - 160, 260, 38, 34, "-", "vol_sfx_down"),
-            Button(sx + 122, 260, 38, 34, "+", "vol_sfx_up"),
-            Button(sx - 130, 310, 260, 32, "DISPLAY: WINDOWED", "toggle_display"),
-            Button(sx - 130, 350, 260, 32, "SCREEN SHAKE: ON", "toggle_shake"),
-            Button(sx - 130, 390, 260, 32, "TOUCH CONTROLS: AUTO", "toggle_touch_controls"),
-            Button(sx - 130, 430, 260, 32, "TOUCH OPACITY: 75%", "toggle_touch_opacity"),
-            Button(sx - 130, 470, 260, 32, "INPUT MAPPING / KEYS >", "open_input_mapping"),
-            Button(sx - 100, 520, 200, 36, "<  BACK", "settings_back"),
+            Button(sx - 160, 160, 38, 38, "-", "vol_master_down"),
+            Button(sx + 122, 160, 38, 38, "+", "vol_master_up"),
+            Button(sx - 160, 210, 38, 38, "-", "vol_bgm_down"),
+            Button(sx + 122, 210, 38, 38, "+", "vol_bgm_up"),
+            Button(sx - 160, 260, 38, 38, "-", "vol_sfx_down"),
+            Button(sx + 122, 260, 38, 38, "+", "vol_sfx_up"),
+            Button(sx - 150, 304, 300, 30, "DISPLAY: WINDOWED", "toggle_display"),
+            Button(sx - 150, 338, 300, 30, "RENDERER: HARDWARE (MODERNGL)", "toggle_renderer"),
+            Button(sx - 150, 372, 300, 30, "SCREEN SHAKE: ON", "toggle_shake"),
+            Button(sx - 150, 406, 300, 30, "TOUCH CONTROLS: AUTO", "toggle_touch_controls"),
+            Button(sx - 150, 440, 300, 30, "TOUCH OPACITY: 75%", "toggle_touch_opacity"),
+            Button(sx - 150, 474, 300, 30, "INPUT MAPPING / KEYS >", "open_input_mapping"),
+            Button(sx - 100, 516, 200, 36, "<  BACK", "settings_back"),
         ]
 
         # Buttons for Input Mapping view
@@ -230,7 +232,7 @@ class MenuManager:
                     data = json.load(f)
                 if isinstance(data, dict):
                     saved_cfg = data.get("settings", {})
-                    for k in ("master_volume", "bgm_volume", "sfx_volume", "fullscreen", "screen_shake", "touch_controls", "touch_opacity"):
+                    for k in ("master_volume", "bgm_volume", "sfx_volume", "fullscreen", "screen_shake", "touch_controls", "touch_opacity", "renderer"):
                         if k in saved_cfg:
                             self.settings[k] = saved_cfg[k]
                     saved_keys = data.get("key_bindings", {})
@@ -270,9 +272,15 @@ class MenuManager:
     def _refresh_settings_button_labels(self):
         for btn in self.settings_buttons:
             if btn.action == "toggle_display":
-                btn.text = "DISPLAY: FULLSCREEN" if self.settings["fullscreen"] else "DISPLAY: WINDOWED"
+                btn.text = "DISPLAY: FULLSCREEN" if self.settings.get("fullscreen", False) else "DISPLAY: WINDOWED"
+            elif btn.action == "toggle_renderer":
+                cur_rend = str(self.settings.get("renderer", "hardware")).lower()
+                if cur_rend == "hardware":
+                    btn.text = "RENDERER: HARDWARE (MODERNGL)"
+                else:
+                    btn.text = "RENDERER: COMPATIBILITY (SOFTWARE)"
             elif btn.action == "toggle_shake":
-                btn.text = "SCREEN SHAKE: ON" if self.settings["screen_shake"] else "SCREEN SHAKE: OFF"
+                btn.text = "SCREEN SHAKE: ON" if self.settings.get("screen_shake", True) else "SCREEN SHAKE: OFF"
             elif btn.action == "toggle_touch_controls":
                 tc = str(self.settings.get("touch_controls", "auto")).upper()
                 btn.text = f"TOUCH CONTROLS: {tc}"
@@ -536,7 +544,8 @@ class MenuManager:
         elif self.state == STATE_SETTINGS:
             for btn in self.settings_buttons:
                 if btn.rect.collidepoint(mouse_pos):
-                    self.sound_manager.play("place")
+                    if self.sound_manager:
+                        self.sound_manager.play("place")
                     if btn.action == "vol_master_down":
                         self.settings["master_volume"] = max(0.0, round(self.settings["master_volume"] - 0.1, 2))
                     elif btn.action == "vol_master_up":
@@ -554,6 +563,13 @@ class MenuManager:
                         self._refresh_settings_button_labels()
                         self.save_settings()
                         return "toggle_fullscreen"
+                    elif btn.action == "toggle_renderer":
+                        cur = str(self.settings.get("renderer", "hardware")).lower()
+                        next_rend = "software" if cur == "hardware" else "hardware"
+                        self.settings["renderer"] = next_rend
+                        self._refresh_settings_button_labels()
+                        self.save_settings()
+                        return ("set_renderer", next_rend)
                     elif btn.action == "toggle_shake":
                         self.settings["screen_shake"] = not self.settings["screen_shake"]
                         self._refresh_settings_button_labels()
@@ -597,7 +613,8 @@ class MenuManager:
                     m_vol = self.settings["master_volume"]
                     s_vol = self.settings["sfx_volume"]
                     b_vol = self.settings["bgm_volume"]
-                    self.sound_manager.set_volumes(master=m_vol, sfx=s_vol)
+                    if self.sound_manager:
+                        self.sound_manager.set_volumes(master=m_vol, sfx=s_vol)
                     if self.bgm_manager:
                         self.bgm_manager.set_volumes(master=m_vol, bgm=b_vol)
                     self.save_settings()
@@ -742,9 +759,9 @@ class MenuManager:
     def _render_settings_screen(self, target_surf):
         self._render_background(target_surf)
 
-        pw, ph = 640, 535
+        pw, ph = 640, 540
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 48
+        py = 42
         pygame.draw.rect(target_surf, (30, 35, 52, 245), (px, py, pw, ph), border_radius=14)
         pygame.draw.rect(target_surf, COLOR_GOLD, (px, py, pw, ph), 2, border_radius=14)
 

@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.7.0** | October 2026 | *Renderer Hardware Abstraction Layer (HAL), Smart OpenGL Architecture & Dual-Profile Franchise Model* | Modular `src/rendering/` architecture (BaseRenderer, SurfaceRenderer, GLRenderer, RendererManager), Smart OpenGL HAL with hardware-first ModernGL acceleration and automatic graceful fallback to Pygame-ce software rendering, in-game Video Settings toggle (Hardware ModernGL / Compatibility Software) with `saves/settings.json` persistence, ratified One Project Repository franchise model (Base Game Potaria + Flagship ARPG Potaria: Root Realm), and 328 tests passing across 26 test suites (100% Green). |
 | **v1.6.0** | October 2026 | *Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics* | 3 distinct animated traders (Wares, Enhance, Affix) with 4-frame animations & 64x64 portraits, single-trader existence & 15-35 tile distant spawn, 3-block turtle shield radius, 1 Gold repair, rich shop hover tooltips, dedicated craftable items catalog and asset directories, word-wrapped 6.0s auto-hiding command console, torch physical support rules, and 309 passing tests. |
 | **v1.5.0** | October 2026 | *Minecraft-Style Crafting Categories & 56+ Craftable Arsenal* | 5-tab category filter system ([ALL], [BUILDING], [EQUIPMENT], [SURVIVAL], [FURNITURE]), mouse-wheel crafting pagination, zero-drop panel hitboxes, 56 new craftable items (114 total recipes), paperdoll shields & off-hands, dynamic consumable healing, and procedural pixel art sprites. |
 | **v1.4.0** | October 2026 | *Bullet-Hell Boss Barrages & Touhou Dodging Mechanics* | High-density geometric bullet patterns for all 4 Mini-Bosses & Grand Boss Sol-Rho (Phases 1 & 2), 52% fair lethal core hitbox, perimeter graze hitbox (+1 MP reward), 60+ FPS quantized surface caching (<1.2ms for 500 projectiles), authoritative LAN multiplayer bullet synchronization. |
@@ -32,7 +33,42 @@
 
 ## Detailed Version Logs
 
-### [v1.6.0] — Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics (Current Release)
+### [v1.7.0] — Renderer Hardware Abstraction Layer (HAL), Smart OpenGL Architecture & Dual-Profile Franchise Model (Current Release)
+*Release Date: October 2026*
+
+#### Added
+- **Renderer Hardware Abstraction Layer (HAL)**:
+  - Created modular rendering package `src/rendering/` decoupling high-level game logic from low-level display drivers.
+  - Implemented `BaseRenderer` abstract base class defining unified drawing contracts:
+    - `draw_sprite(surface, dest, area, special_flags)`
+    - `draw_surface(surface, dest, area, special_flags)`
+    - `draw_rect(color, rect, width, border_radius)`
+    - `draw_text(font, text, pos, color, antialias)`
+    - `draw_line(color, start_pos, end_pos, width)`
+    - `draw_circle(color, center, radius, width)`
+    - `clear(color)`
+    - `present()`
+    - `get_surface()`
+    - `set_mode(width, height, fullscreen)`
+  - Implemented `SurfaceRenderer`: wraps native Pygame-ce software blitting with 100% backward compatibility and exact visual parity.
+  - Implemented `GLRenderer`: hardware-accelerated OpenGL / ModernGL backend with safe context detection, texture caching, and automatic graceful fallback to `SurfaceRenderer` if GPU context fails or ModernGL/PyOpenGL is missing.
+  - Implemented `RendererManager`: centralized factory holding active renderer instance, managing runtime backend toggling, and reporting operational status.
+
+- **In-Game Video Settings & Settings Persistence**:
+  - Added renderer preference key `"renderer": "hardware" | "software"` to `saves/settings.json`.
+  - Added interactive toggle button in the Settings menu: `Renderer: [Hardware (ModernGL) / Compatibility (Software)]`.
+  - Real-time renderer switching without restarting the game or losing player session state.
+
+- **Franchise Architecture: One Project Repository (Dual-Profile)**:
+  - Ratified unified single repository structure housing both franchise profiles:
+    - **Potaria (The Base Game)**: Boundless 2D procedural sandbox, survival, digging, building, 129 crafting recipes, casual 1-5 player LAN co-op, and Last Man Standing (LMS) arena combat.
+    - **Potaria: Root Realm (The Flagship ARPG Franchise)**: Narrative-driven campaign chapters, Heartroot world transformation mechanics, POTAdex journal, curated puzzle dungeons, and dramatic boss encounters.
+
+- **Comprehensive Automated Regression Coverage**:
+  - Implemented `tests/test_renderer_hal.py` verifying BaseRenderer interface compliance, SurfaceRenderer drawing operations, GLRenderer fallback behavior, settings persistence, and renderer switching.
+  - Verified 100% green pass rate across all 26 test suites (328 tests).
+
+### [v1.6.0] — Animated Specialized Traders, Shop Tooltips, Crafting Directory, Auto-Hiding Console & Torch Physics
 *Release Date: October 2026*
 
 #### Added

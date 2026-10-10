@@ -75,12 +75,31 @@ from src.network.client import LANClient
 from src.environment.sky import DayNightCycle
 from src.rpg.achievements import AchievementManager
 from src.profiler import PotariaProfiler
+from src.rendering import (
+    BaseRenderer,
+    SurfaceRenderer,
+    GLRenderer,
+    RendererManager,
+    RENDERER_HARDWARE,
+    RENDERER_SOFTWARE,
+    get_renderer_manager,
+)
 
 class PotariaGame:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption(f"{TITLE}  |  By {DEVELOPER}")
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.DOUBLEBUF | pygame.SCALED)
+        # Initialize Renderer Hardware Abstraction Layer (HAL)
+        self.renderer_manager = get_renderer_manager()
+        self.renderer_manager.initialize(
+            width=SCREEN_WIDTH,
+            height=SCREEN_HEIGHT,
+            title=f"{TITLE}  |  By {DEVELOPER}",
+            fullscreen=False,
+            requested_type=RENDERER_HARDWARE,
+        )
+        self.renderer = self.renderer_manager.renderer
+        self.screen = self.renderer_manager.surface
         self.clock = pygame.time.Clock()
         self.running = True
         self.paused = False
@@ -145,6 +164,9 @@ class PotariaGame:
         self.menu = MenuManager(self.asset_factory, self.sound_manager, self.bgm, self.achievement_manager)
         if hasattr(self.menu, "settings"):
             self.camera.shake_enabled = self.menu.settings.get("screen_shake", True)
+            req_rend = self.menu.settings.get("renderer", RENDERER_HARDWARE)
+            if hasattr(self, "renderer_manager") and req_rend != self.renderer_manager.requested_type:
+                self.set_renderer_mode(req_rend)
             if self.menu.settings.get("fullscreen", False):
                 try:
                     self.toggle_fullscreen()
@@ -420,12 +442,12 @@ class PotariaGame:
             self.boost_mode = not getattr(self, "boost_mode", True)
             self.profiler.enabled = True
             stats = self.profiler.get_summary_line()
-            feedback = f"⚡ BOOST PIPELINE: {'ACTIVE (High-FPS Caching)' if self.boost_mode else 'DISABLED'}. {stats}"
+            feedback = f"BOOST PIPELINE: {'ACTIVE (High-FPS Caching)' if self.boost_mode else 'DISABLED'}. {stats}"
 
         elif cmd in ("profile", "profiler", "perf", "telemetry"):
             self.show_profiler = not getattr(self, "show_profiler", False)
             self.profiler.enabled = True
-            feedback = f"📊 Performance Profiler Overlay: {'VISIBLE (F3)' if self.show_profiler else 'HIDDEN'}"
+            feedback = f"Performance Profiler Overlay: {'VISIBLE (F3)' if self.show_profiler else 'HIDDEN'}"
 
         else:
             from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
@@ -598,6 +620,8 @@ class PotariaGame:
             self.client.disconnect()
         if self.server:
             self.server.stop()
+        if hasattr(self, "renderer_manager"):
+            self.renderer_manager.cleanup()
         if sys.platform == "win32":
             try:
                 import ctypes
@@ -612,7 +636,14 @@ class PotariaGame:
         self.fullscreen = not self.fullscreen
         self.menu.settings["fullscreen"] = self.fullscreen
         self.menu._refresh_settings_button_labels()
-        if self.fullscreen:
+        if hasattr(self, "renderer_manager"):
+            self.renderer_manager.switch_renderer(
+                self.renderer_manager.requested_type,
+                fullscreen=self.fullscreen,
+            )
+            self.renderer = self.renderer_manager.renderer
+            self.screen = self.renderer_manager.surface
+        elif self.fullscreen:
             try:
                 self.screen = pygame.display.set_mode(
                     (SCREEN_WIDTH, SCREEN_HEIGHT),
@@ -625,16 +656,10 @@ class PotariaGame:
                         pygame.FULLSCREEN | pygame.SCALED
                     )
                 except pygame.error:
-                    try:
-                        self.screen = pygame.display.set_mode(
-                            (SCREEN_WIDTH, SCREEN_HEIGHT),
-                            pygame.FULLSCREEN
-                        )
-                    except pygame.error:
-                        self.screen = pygame.display.set_mode(
-                            (SCREEN_WIDTH, SCREEN_HEIGHT),
-                            pygame.DOUBLEBUF
-                        )
+                    self.screen = pygame.display.set_mode(
+                        (SCREEN_WIDTH, SCREEN_HEIGHT),
+                        pygame.FULLSCREEN
+                    )
         else:
             try:
                 self.screen = pygame.display.set_mode(
@@ -642,13 +667,34 @@ class PotariaGame:
                     pygame.DOUBLEBUF | pygame.SCALED
                 )
             except pygame.error:
-                try:
-                    self.screen = pygame.display.set_mode(
-                        (SCREEN_WIDTH, SCREEN_HEIGHT),
-                        pygame.DOUBLEBUF
-                    )
-                except pygame.error:
-                    pass
+                self.screen = pygame.display.set_mode(
+                    (SCREEN_WIDTH, SCREEN_HEIGHT),
+                    pygame.DOUBLEBUF
+                )
+
+    def set_renderer_mode(self, mode: str):
+        """Switches the active renderer between hardware (ModernGL) and software via HAL."""
+        if hasattr(self, "renderer_manager"):
+            self.renderer_manager.switch_renderer(mode, fullscreen=self.fullscreen)
+            self.renderer = self.renderer_manager.renderer
+            self.screen = self.renderer_manager.surface
+            if hasattr(self.menu, "settings"):
+                self.menu.settings["renderer"] = self.renderer_manager.requested_type
+                self.menu._refresh_settings_button_labels()
+                if hasattr(self.menu, "save_settings"):
+                    self.menu.save_settings()
+
+    def toggle_renderer_mode(self):
+        """Toggles between hardware (ModernGL) and software renderer via HAL."""
+        if hasattr(self, "renderer_manager"):
+            self.renderer_manager.toggle_renderer(fullscreen=self.fullscreen)
+            self.renderer = self.renderer_manager.renderer
+            self.screen = self.renderer_manager.surface
+            if hasattr(self.menu, "settings"):
+                self.menu.settings["renderer"] = self.renderer_manager.requested_type
+                self.menu._refresh_settings_button_labels()
+                if hasattr(self.menu, "save_settings"):
+                    self.menu.save_settings()
 
     def return_to_main_menu(self):
         """Cleanly leaves active session and returns to Main Menu."""
@@ -805,6 +851,10 @@ class PotariaGame:
             self.join_lan_game(action[1])
         elif action == "toggle_fullscreen":
             self.toggle_fullscreen()
+        elif isinstance(action, tuple) and action[0] == "set_renderer":
+            self.set_renderer_mode(action[1])
+        elif action == "toggle_renderer":
+            self.toggle_renderer_mode()
         elif isinstance(action, tuple) and action[0] == "set_shake":
             self.camera.shake_enabled = action[1]
         elif isinstance(action, tuple) and action[0] == "set_touch_controls":
@@ -2500,7 +2550,10 @@ class PotariaGame:
     def render(self):
         if self.menu.state != STATE_PLAYING:
             self.menu.render(self.screen)
-            pygame.display.flip()
+            if hasattr(self, "renderer_manager"):
+                self.renderer_manager.present()
+            else:
+                pygame.display.flip()
             return
 
         # Layer 1: Parallax Sky & Celestial Bodies
@@ -2610,7 +2663,10 @@ class PotariaGame:
         if getattr(self, "show_profiler", False):
             self.profiler.render_overlay(self.screen, self.font)
 
-        pygame.display.flip()
+        if hasattr(self, "renderer_manager"):
+            self.renderer_manager.present()
+        else:
+            pygame.display.flip()
 
     def _render_debug_overlay(self):
         fps = int(self.clock.get_fps())

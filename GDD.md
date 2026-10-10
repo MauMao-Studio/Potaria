@@ -1,32 +1,35 @@
-# Potaria (Spud: Root Realm)
+# Potaria & Potaria: Root Realm
 ## Master Game Design Document (GDD)
 
 **Developer:** Kurados  
 **Genre:** 2D Sandbox Action RPG  
-**Subgenre:** Survival • Exploration • Crafting • Dungeon Crawler • Character Progression • Bullet-Hell Danmaku • Cooperative Multiplayer  
+**Subgenre:** Survival | Exploration | Crafting | Dungeon Crawler | Character Progression | Bullet-Hell Danmaku | Cooperative Multiplayer  
 **Perspective:** 2D Side-View  
-**Core Inspirations:** Terraria (world sandbox & building), Chroisen (paperdoll equipment & skill trees), Touhou Project (bullet-hell danmaku patterns)  
-**Target Platforms:** PC (Steam / Standalone) & Mobile (Google Play Android)  
-**Engine Architecture:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone, Hybrid OpenGL HAL)  
-**Player Modes:** Single-Player & 1–5 Player LAN Cooperative Multiplayer  
+**Core Inspirations:** Terraria (world sandbox and building), Chroisen (paperdoll equipment and skill trees), Touhou Project (bullet-hell danmaku patterns)  
+**Target Platforms:** PC (Steam / Standalone) and Mobile (Google Play Android)  
+**Engine Architecture:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone, Smart OpenGL HAL)  
+**Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
+**Player Modes:** Single-Player and 1-5 Player LAN Cooperative Multiplayer  
 **World Structure:** Infinite procedurally generated chunk-based open world + Subterranean Dungeon Arenas  
-**Document Version:** v1.6.0  
+**Document Version:** v1.7.0  
 
 ---
 
 # 1. Game Vision & Design Pillars
 
-**Potaria: Root Realm** is an open-ended 2D sandbox action RPG where players embody **Spud**, an ordinary potato who sprouted with an extraordinary destiny to cleanse the Root Realm of subterranean corruption and celestial blight.
+The Potaria franchise operates under a unified **One Project Repository** architecture with a dual-profile structure:
+- **Potaria (The Base Game)**: The boundless 2D sandbox survival and building experience where players explore infinite procedural terrain, harvest resources, craft across a 129-recipe catalog, construct modular settlements, and engage in casual LAN co-op and Last Man Standing (LMS) arenas.
+- **Potaria: Root Realm (The Future Flagship ARPG & Story Franchise)**: The narrative-driven campaign experience featuring structured episodic chapters, the Heartroot world transformation system, the comprehensive POTAdex journal, curated subterranean puzzle dungeons, and dramatic boss encounters.
 
-The game blends boundless procedural world exploration, resource gathering, modular base construction, and a 129-recipe crafting catalog with the deep progression systems of a classic action RPG: paperdoll armor slots, thematic set auras, weapon enhancements up to +7, affix slot carving, animated specialized traders, and bullet-hell boss encounters.
+In both profiles, players embody **Spud**, an ordinary potato who sprouted with an extraordinary destiny to cleanse the realm of subterranean corruption and celestial blight.
 
 ### Core Design Pillars:
-1. **Boundless Freedom**: Infinite multi-octave chunk generation without artificial boundary walls ($-\infty \leftarrow 0 \rightarrow +\infty$).
-2. **Deep RPG Progression**: 100-level character curve, dynamic enemy scaling, equipment enhancement, affix carving, and 40 skill abilities.
+1. **Boundless Freedom**: Infinite multi-octave chunk generation without artificial boundary walls (-infinity <-- 0 --> +infinity).
+2. **Deep RPG Progression**: 100-level character curve, dynamic enemy scaling, equipment enhancement up to +7, affix carving, and 40 skill abilities.
 3. **High-Stakes Combat & Danmaku Precision**: Single-target weapon enforcement paired with Touhou-inspired bullet-hell boss encounters, micro-dodging (52% fair lethal core), and perimeter grazing (+1 MP).
 4. **Vibrant Settlement & Nomadic Trading**: Specialized animated traders that roam the world, retreat into turtle shell defenses when threatened, and offer gear enhancements and 1-Gold repairs.
 5. **Categorized Crafting Depth**: Minecraft-inspired 5-category crafting interface supported by a dedicated asset pipeline isolating craftable gear from droppable items.
-6. **Cross-Platform Parity**: Seamless gameplay across PC (keyboard/mouse/gamepad) and Android mobile devices (virtual touch ergonomics) powered by a Hybrid Architecture.
+6. **Smart OpenGL Architecture**: Hardware-first OpenGL / ModernGL acceleration for shaders, bloom, and danmaku batching, with automatic safety fallback to Native Pygame-ce Software rendering if OpenGL is unavailable, plus an in-game Video Settings toggle.
 
 ---
 
@@ -258,50 +261,70 @@ Constructing the **Celestial Keystone** at a Work Bench (4 Portal Shards + 4 Gol
 
 ---
 
-# 11. Technical Architecture & Hybrid Engine Strategy
+# 11. Technical Architecture & Smart OpenGL HAL
 
-Potaria uses a **Hybrid Architecture** designed to maximize portability, performance, and cross-platform release capability:
+Potaria uses a modular **Smart OpenGL Hardware Abstraction Layer (HAL)** designed for high performance, portability, and zero-compromise cross-platform stability:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 Potaria Game Logic & Systems                │
-│       (Combat, World Chunks, Entities, RPG, Networking)     │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-               ┌───────────────┴───────────────┐
-               │  Renderer Hardware Abstraction│
-               │          Layer (HAL)          │
-               └───────┬───────────────┬───────┘
-                       │               │
-      ┌────────────────┴──────┐ ┌──────┴───────────────┐
-      │ SurfaceRenderer       │ │ GLRenderer           │
-      │ (Pygame-ce Software)  │ │ (ModernGL / OpenGL)  │
-      │ 100% Offline Fallback │ │ GPU Shaders & Bloom  │
-      └───────────────────────┘ └──────────────────────┘
++-------------------------------------------------------------+
+|                 Potaria Game Logic & Systems                |
+|       (Combat, World Chunks, Entities, RPG, Networking)     |
++------------------------------+------------------------------+
+                               |
+               +---------------+---------------+
+               |  Renderer Hardware Abstraction|
+               |          Layer (HAL)          |
+               |   (src/rendering/base_renderer) |
+               +-------+---------------+-------+
+                       |               |
+      +----------------+------+ +------+----------------------+
+      | SurfaceRenderer       | | GLRenderer                  |
+      | (Pygame-ce Software)  | | (ModernGL / OpenGL)         |
+      | 100% Offline Fallback | | Hardware Acceleration       |
+      | Compatibility Mode    | | Shaders, Bloom & Danmaku    |
+      +-----------------------+ +-----------------------------+
 ```
 
-1. **Host-Authoritative Simulation**: Pure Python 3.13 game state authority.
-2. **SurfaceRenderer (Stage 1)**: Native Pygame-ce software blitting with baked chunk surfaces. Runs everywhere out of the box with zero external drivers.
-3. **GLRenderer (Stage 2)**: Hardware-accelerated OpenGL / ModernGL backend featuring GPU sprite batching, GLSL lighting, bloom shaders, and high-density projectile rendering (144+ FPS).
-4. **Steam PC Packaging (Stage 3)**: Standalone executable compiled via Nuitka C-extension compilation.
-5. **Google Play Android Packaging (Stage 4)**: Buildozer / python-for-android packaging with virtual touch controls.
+### Architectural Principles:
+1. **Host-Authoritative Game State**: Pure Python 3.13 simulation logic completely decoupled from rendering internals.
+2. **Unified BaseRenderer Interface**:
+   - Standardized drawing primitives (`draw_sprite`, `draw_surface`, `draw_rect`, `draw_text`, `draw_line`, `draw_circle`, `clear`, `present`, `get_surface`).
+   - Enables seamless swapping of rendering backends at runtime without altering game logic.
+3. **Smart OpenGL HAL with Graceful Fallback**:
+   - **Hardware-First ModernGL Backend (`GLRenderer`)**: Leverages GPU shaders, bloom post-processing, and hardware batched projectile rendering for ultra-dense bullet-hell encounters.
+   - **Automatic Safety Fallback**: If ModernGL or PyOpenGL is missing, or if GPU context creation fails, the engine safely detects the failure, logs a diagnostic message, and automatically falls back to `SurfaceRenderer` with zero crashes or stalls.
+4. **In-Game Video Settings Toggle**:
+   - Players can toggle between `Renderer: [Hardware (ModernGL) / Compatibility (Software)]` directly in the Settings menu.
+   - Setting choice persists to disk in `saves/settings.json` (`"renderer": "hardware" | "software"`).
+5. **Cross-Platform Delivery Roadmap**:
+   - Stage 1: Renderer Hardware Abstraction Layer (HAL) with BaseRenderer, SurfaceRenderer, GLRenderer fallback, and Settings toggle.
+   - Stage 2: Hardware acceleration, ModernGL batching, GLSL lighting, and dynamic bloom shaders.
+   - Stage 3: Steam PC packaging with Nuitka C-compilation and full controller support.
+   - Stage 4: Google Play Android packaging with virtual touch controls and lifecycle state preservation.
 
 ---
 
-# 12. Dual-Franchise Roadmap: Root Realm vs. Story Edition
+# 12. Franchise Architecture: One Project Repository (Dual-Profile)
 
-To deliver both open-ended sandbox freedom and rich narrative storytelling, the Potaria franchise is divided into two distinct, complementary titles:
+To deliver both boundless sandbox freedom and deep narrative storytelling without splitting the community or codebase, the franchise is organized as **One Project Repository** featuring a dual-profile model:
 
-### Product A: Potaria: Root Realm (The Sandbox ARPG)
-- **Concept**: The boundless, open-ended survival action RPG (the current foundation).
-- **Focus**: Player agency, infinite chunk exploration, 129 crafting recipes, building, character customization, bullet-hell boss fights, and multiplayer cooperation.
-- **Target Audience**: Fans of Terraria, Minecraft, and Chroisen.
-
-### Product B: Potaria: Story Edition (The Narrative Companion)
-- **Concept**: A story-rich, episodic action-adventure companion (inspired by Minecraft: Story Mode).
+### Product Profile 1: Potaria (The Base Game)
+- **Concept**: The boundless 2D procedural sandbox survival and building adventure.
 - **Focus**:
-  - Chapter-based episodic narrative with voiced characters (Spud, Pip, Barnaby, Florencia, Russet).
-  - Branching dialogue trees and moral choices affecting the fate of the Root Realm.
-  - Scripted story set pieces, cinematic cutscenes, bespoke puzzle dungeons, and cinematic boss battles.
-  - Overhauled combat mechanics tailored for dramatic choreography.
-- **Target Audience**: Fans of narrative adventures, story RPGs, and episodic character dramas.
+  - Boundless multi-octave terrain exploration (-infinity <-- 0 --> +infinity).
+  - 129 categorized crafting recipes across building, tools, consumables, furniture, and materials.
+  - Mining, base construction, and settlement defense.
+  - 100-level character progression and Chroisen-style paperdoll gear customisation.
+  - Casual 1-5 player LAN cooperative multiplayer and Last Man Standing (LMS) PvP arenas.
+- **Target Audience**: Fans of open-ended sandbox survival and emergent building gameplay.
+
+### Product Profile 2: Potaria: Root Realm (The Flagship ARPG Franchise)
+- **Concept**: The epic narrative-driven action RPG and story campaign.
+- **Focus**:
+  - Structured narrative chapters with voiced character dialogue (Spud, Pip, Barnaby, Florencia, Russet).
+  - Heartroot world transformation mechanics where player choices reshape corrupted biomes into radiant sanctums.
+  - The comprehensive POTAdex journal cataloging biological flora, subterranean fauna, and ancient relics.
+  - Curated puzzle dungeons, bespoke trap gauntlets, and cinematic boss choreography.
+  - Branching story choices with permanent narrative consequences.
+- **Target Audience**: Fans of rich narrative RPGs, dungeon crawling adventures, and character-driven stories.
+

@@ -2,9 +2,10 @@
 
 **Developer:** Kurados  
 **Engine:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)  
-**Architecture:** Host-Authoritative 2D Sandbox Action RPG (Hybrid Native 2D / OpenGL HAL)  
-**Test Suite Status:** 309 / 309 Tests Passing across 25 Test Suites  
-**Last Updated:** October 2026 (v1.6.0 Baseline)  
+**Architecture:** Host-Authoritative 2D Sandbox Action RPG (Smart OpenGL HAL with Safe Fallback)  
+**Test Suite Status:** 328 / 328 Tests Passing across 26 Test Suites (100% Green)  
+**Current Version:** v1.7.0  
+**Last Updated:** October 2026 (v1.7.0 Release)  
 
 ---
 
@@ -95,22 +96,24 @@ The codebase is structured around modular, host-authoritative systems:
 
 ---
 
-## 3. Approved Hybrid Architecture & Cross-Platform Roadmap
+## 3. Approved Smart OpenGL Architecture & Cross-Platform Roadmap
 
-The approved technical strategy retains the 100% pure Python + Pygame-ce engine as the core simulation authority, layered with an optional OpenGL/ModernGL Hardware Abstraction Layer (HAL) for maximum cross-platform performance (PC Steam and Google Play Android).
+The approved technical strategy retains the 100% pure Python + Pygame-ce engine as the core simulation authority, layered with a Smart OpenGL / ModernGL Hardware Abstraction Layer (HAL) for maximum cross-platform performance (PC Steam and Google Play Android) with automatic fallback to software blitting.
 
 ### Stage 1: Renderer Hardware Abstraction Layer (HAL)
-- **Objective**: Decouple game logic from direct Pygame blitting without breaking existing systems.
+- **Objective**: Decouple game logic from direct Pygame blitting, provide hardware acceleration path with safe fallback, and persist renderer preferences.
 - **Tasks**:
-  - [ ] Implement abstract `BaseRenderer` interface (`draw_sprite`, `draw_rect`, `draw_text`, `present`).
-  - [ ] Wrap current Pygame software rendering as `SurfaceRenderer` (default, 100% backward compatible).
-  - [ ] Verify all 309 automated tests pass under `SurfaceRenderer`.
-  - [ ] Add configuration toggle in `saves/settings.json`: `"renderer": "software" | "hardware"`.
+  - [x] Implement abstract `BaseRenderer` interface (`draw_sprite`, `draw_surface`, `draw_rect`, `draw_text`, `draw_line`, `draw_circle`, `clear`, `present`, `get_surface`, etc.).
+  - [x] Implement `SurfaceRenderer` wrapping native Pygame-ce software blitting (default, 100% backward compatible).
+  - [x] Implement `GLRenderer` with safe initialization, ModernGL / OpenGL context detection, texture caching, and automatic fallback to `SurfaceRenderer` when hardware acceleration is unavailable.
+  - [x] Implement `RendererManager` holding active renderer, facilitating runtime switching, and wiring into `main.py`.
+  - [x] Add configuration toggle in `saves/settings.json`: `"renderer": "hardware" | "software"`.
+  - [x] Add in-game Video Settings toggle: `Renderer: [Hardware (ModernGL) / Compatibility (Software)]`.
+  - [x] Verify all automated tests pass under HAL (`tests/test_renderer_hal.py`).
 
 ### Stage 2: Hardware Acceleration & ModernGL Visuals
 - **Objective**: Harness desktop and mobile GPUs for high-density rendering, shaders, and visual effects.
 - **Tasks**:
-  - [ ] Implement `GLRenderer` using ModernGL / PyOpenGL.
   - [ ] Hardware sprite batching for bullet-hell danmaku patterns (thousands of projectiles at 144+ FPS).
   - [ ] GLSL post-processing shaders: dynamic bloom for Ancient auras, celestial stars, and chromatic aberration on boss phases.
   - [ ] GLSL smooth lighting pass replacing CPU software blitting.
@@ -134,25 +137,26 @@ The approved technical strategy retains the 100% pure Python + Pygame-ce engine 
 
 ---
 
-## 4. Dual-Product Vision: Sandbox vs. Story Edition
+## 4. Franchise Model: One Project Repository (Unified Codebase)
 
-To expand the Potaria universe while preserving the core sandbox identity, development will support two distinct titles sharing a common lore and engine foundation:
+The franchise development strategy centers on a unified **One Project Repository** architecture with a clean profile/mode structure:
 
-### Product A: Potaria: Root Realm (The Core Game)
+### Product Profile 1: Potaria (The Base Game)
 - **Genre**: Boundless 2D Sandbox Survival Action RPG.
 - **Inspirations**: Terraria, Starbound, Minecraft.
-- **Core Loop**: Procedural exploration, mining, building, crafting 129 items, boss progression, open-ended survival freedom, and LAN multiplayer.
+- **Core Loop**: Procedural exploration, mining, building, crafting 129 items, boss progression, open-ended survival freedom, casual LAN co-op, and Last Man Standing (LMS) PvP arena mode.
 - **Distribution**: Steam PC and Google Play Android.
 
-### Product B: Potaria: Story Edition (The Narrative Companion)
+### Product Profile 2: Potaria: Root Realm (The Flagship ARPG Franchise)
 - **Genre**: Story-Rich Narrative Action RPG Adventure.
 - **Inspirations**: Minecraft: Story Mode, Chrono Trigger, Undertale.
 - **Core Loop**:
   - Chapter-based episodic narrative following Spud, Pip the Guide, Barnaby the Merchant, Florencia the Nurse, and Russet the Blacksmith.
-  - Dialogue choices with branching narrative consequences.
+  - Heartroot world transformation mechanics reshaping corrupted zones into purified havens.
+  - Comprehensive POTAdex journal documenting flora, fauna, and relics.
   - Handcrafted cinematic story levels, custom puzzle dungeons, and dramatic boss encounters.
   - Overhauled combat mechanics tailored for narrative battles, scripted set pieces, and dynamic camera choreography.
-- **Distribution**: Standalone companion release on PC and mobile.
+- **Distribution**: Flagship ARPG campaign on PC and mobile.
 
 ---
 
@@ -165,7 +169,7 @@ All development must maintain zero regressions across the test suite:
 python -m unittest discover -s tests
 ```
 
-### Verified Test Suites (25 Suites, 309 Tests):
+### Verified Test Suites (26 Suites):
 1. `tests/test_game.py` - Core engine integration and world loops.
 2. `tests/test_new_features.py` - Early gameplay expansion tests.
 3. `tests/test_lan_hud_mobs_scaling.py` - LAN networking and boss scaling.
@@ -191,3 +195,4 @@ python -m unittest discover -s tests
 23. `tests/test_danmaku_bullet_hell.py` - Danmaku patterns, 52% hitbox core, and perimeter grazing.
 24. `tests/test_traders_ui_and_torch_rules.py` - 3-block shield, shop hover UI, torch physics, and craftable asset folders.
 25. `tests/test_world_bleed_multiplayer_effects_assets.py` - World isolation and multiplayer state preservation.
+26. `tests/test_renderer_hal.py` - Renderer HAL, BaseRenderer, SurfaceRenderer, GLRenderer fallback, settings persistence, and mode switching.

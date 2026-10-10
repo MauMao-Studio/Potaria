@@ -2,15 +2,20 @@
 
 **Developer:** Kurados  
 **Engine:** Pure Python 3.13 + Pygame Community Edition (`pygame-ce` 2.5.8+ with SDL 2.32, 100% Offline Standalone, Zero External Downloads)  
-**Architecture:** Host-Authoritative 2D Sandbox Action RPG (Hybrid Native 2D / OpenGL HAL)  
-**Test Suite Status:** 309 / 309 Tests Passing across 25 Test Suites  
-**Version:** v1.6.0  
+**Architecture:** Host-Authoritative 2D Sandbox Action RPG (Smart OpenGL HAL with Safe Fallback)  
+**Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
+**Test Suite Status:** 309+ Tests Passing across 26 Test Suites  
+**Version:** v1.7.0  
 
 ---
 
 ## 1. Overview
 
 Potaria is a boundless 2D sandbox action RPG developed by Kurados. You play as Spud, an ordinary potato who sprouted with an extraordinary destiny. Explore an infinite, boundary-free open world populated by diverse biomes, mine valuable ores, discover hidden underground treasure chests, level up your RPG character from Level 1 to 100, equip tiered armor, weapons, and accessories in a classic Chroisen-style paperdoll system, wield ballistic bows, staves, rods, scepters, and celestial blades, master devastating Skill Book spells, trade with nomadic animated merchants, enhance your gear up to +7, carve custom affix slots, dodge intricate bullet-hell danmaku patterns in boss gauntlets, and challenge the two-phase Grand Boss: SOL-RHO THE CELESTIAL TITAN — solo or in LAN Cooperative Multiplayer (1 to 5 Players).
+
+The franchise follows a **One Project Repository** architecture:
+- **Potaria (The Base Game)**: Boundless procedural sandbox, mining, building, 129 crafting recipes, casual LAN co-op, and Last Man Standing (LMS) arena combat.
+- **Potaria: Root Realm (The Flagship ARPG)**: Future flagship story campaign featuring narrative chapters, Heartroot world transformation mechanics, the POTAdex journal, and curated puzzle dungeons.
 
 ---
 
@@ -64,6 +69,12 @@ Potaria is a boundless 2D sandbox action RPG developed by Kurados. You play as S
 - **World Selection History**: Displays total accumulated playtime in hours and the exact timestamp of the last played session.
 - **Dedicated Coin Purse**: Currency stored independently of the 40-slot backpack (100 Copper = 1 Silver, 100 Silver = 1 Gold).
 - **Tool Tier Harvesting Speeds**: Progressive block breaking speeds based on tool tier, with bare-hand harvesting as an anti-softlock backup.
+
+### 2.7 Renderer Hardware Abstraction Layer (HAL) & Smart OpenGL
+- **Modular Renderer HAL**: Decoupled rendering architecture via abstract `BaseRenderer` interface with unified drawing operations (`draw_sprite`, `draw_surface`, `draw_rect`, `draw_text`, `draw_line`, `draw_circle`, `clear`, `present`, `get_surface`).
+- **SurfaceRenderer**: Native Pygame-ce software blitting engine guaranteeing 100% backward compatibility and exact visual parity.
+- **Smart OpenGL Fallback Engine (`GLRenderer`)**: Hardware-first ModernGL backend with safe context initialization, texture caching, and automatic fallback to `SurfaceRenderer` whenever OpenGL drivers or libraries are missing.
+- **In-Game Video Settings Toggle**: Interactive toggle (`Renderer: [Hardware (ModernGL) / Compatibility (Software)]`) in Settings with disk persistence in `saves/settings.json`.
 
 ---
 
@@ -229,7 +240,7 @@ Potaria includes an automated regression test suite covering all gameplay mechan
 python -m unittest discover -s tests
 ```
 
-**Status:** **309 / 309 automated tests passing with zero errors across 25 test suites.**
+**Status:** **328 / 328 automated tests passing with zero errors across 26 test suites (100% Green).**
 
 ### Key Test Coverage:
 1. Procedural generation & chunk baking (`test_game.py`).
@@ -247,28 +258,32 @@ python -m unittest discover -s tests
 13. Touhou bullet-hell danmaku, 52% core & grazing (`test_danmaku_bullet_hell.py`).
 14. Turtle shield, hover UI, torch physics & craftable assets (`test_traders_ui_and_torch_rules.py`).
 15. World isolation & multiplayer integrity (`test_world_bleed_multiplayer_effects_assets.py`).
+16. Renderer HAL, BaseRenderer, SurfaceRenderer, GLRenderer fallback, and Video Settings toggle (`test_renderer_hal.py`).
 
 ---
 
-## 12. Strategic Technical Roadmap (Hybrid Architecture)
+## 12. Strategic Technical Roadmap (Smart OpenGL Architecture)
 
 To release Potaria across PC (Steam) and mobile (Google Play Store) with maximum performance:
 
-1. **Stage 1: Renderer Hardware Abstraction Layer (HAL)**:
-   - Decouple game logic from Pygame software blitting via `BaseRenderer`.
-   - Wrap current Pygame software rendering as `SurfaceRenderer` (100% backward compatible).
-2. **Stage 2: Hardware Acceleration & ModernGL Visuals**:
-   - Implement `GLRenderer` using ModernGL / PyOpenGL.
+1. **Stage 1: Renderer Hardware Abstraction Layer (HAL) (Complete)**:
+   - Decoupled game logic from Pygame software blitting via abstract `BaseRenderer` interface.
+   - Wrapped native Pygame-ce software blitting in `SurfaceRenderer` (100% backward compatible).
+   - Implemented `GLRenderer` with safe ModernGL / OpenGL context detection, texture caching, and automatic fallback.
+   - Wired `RendererManager` into `main.py` and persistent settings (`saves/settings.json`).
+   - Integrated Video Settings toggle: `Renderer: [Hardware (ModernGL) / Compatibility (Software)]`.
+2. **Stage 2: Hardware Acceleration & ModernGL Visuals (In Progress)**:
    - GPU sprite batching for thousands of bullet-hell projectiles at 144+ FPS.
    - GLSL bloom shaders for Ancient auras, celestial stars, and dynamic lighting.
+   - ModernGL framebuffer post-processing pipelines.
 3. **Stage 3: Steam PC Production Packaging**:
    - Package standalone executable via Nuitka C-compilation.
    - Full Steam Deck and XInput/DirectInput gamepad controller integration.
 4. **Stage 4: Google Play Android Packaging**:
    - Buildozer / python-for-android pipeline producing ARM64 APK and AAB bundles.
    - Integrated virtual touch controls with haptic feedback.
-5. **Companion Franchise Project**:
-   - Development of *Potaria: Story Edition*, an episodic narrative-driven companion adventure featuring voiced character dialogue, branching moral choices, and cinematic set-piece battles.
+5. **Franchise Expansion**:
+   - Flagship campaign release: *Potaria: Root Realm* (Narrative episodic adventure with Heartroot transformations and POTAdex).
 
 ---
 
