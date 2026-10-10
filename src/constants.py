@@ -69,7 +69,6 @@ TILE_MUSHROOM_STEM = 26   # Giant mushroom stem
 TILE_MUSHROOM_CAP = 27    # Giant glowing mushroom cap (glows blue)
 TILE_CHEST = 28           # Underground treasure chest with rare loot!
 TILE_WOODEN_CHEST = 28    # Alias for TILE_CHEST
-TILE_IRON_CHEST = 28      # Storage chest variant alias for TILE_CHEST
 TILE_ROOF_TILES = 29       # Decorative red clay roof shingles
 TILE_WOOD_PLANKS = 30      # Sanded polished wooden floor & wall blocks
 TILE_GLASS = 31            # Transparent window glass block
@@ -95,6 +94,9 @@ TILE_WOOD_SHELF = 50       # Bracketed wooden shelf platform
 TILE_CARVED_TUBER_LANTERN = 51 # Hollowed glowing potato lantern (can hang from North ceiling)
 TILE_BRASS_LANTERN = 52        # Weatherproof brass oil lantern (can hang from North ceiling)
 TILE_SPECTRAL_LANTERN = 53     # Azure spectral lantern (can hang from North ceiling)
+TILE_SAPLING = 54              # Young tree sapling that grows daily in sunlight
+TILE_IRON_CHEST = 55           # Fortified silver iron storage chest (distinct from golden treasure chest)
+TILE_ROPE_RUNGS = 56           # Vertical climbable knotted fiber rope rungs
 
 LANTERN_TILES = (
     TILE_CARVED_TUBER_LANTERN,
@@ -148,7 +150,7 @@ TILE_PROPS = {
     TILE_GRASS: {"name": "Grass", "hardness": 18, "drop": "dirt_block", "solid": True, "platform": False, "light_emit": 0, "absorb": 3, "opaque": True},
     TILE_STONE: {"name": "Stone", "hardness": 35, "drop": "stone_block", "solid": True, "platform": False, "light_emit": 0, "absorb": 4, "opaque": True},
     TILE_WOOD: {"name": "Wood", "hardness": 20, "drop": "wood", "solid": True, "platform": False, "light_emit": 0, "absorb": 3, "opaque": True},
-    TILE_LEAVES: {"name": "Leaves", "hardness": 5, "drop": "wood", "solid": False, "platform": False, "light_emit": 0, "absorb": 1, "opaque": False},
+    TILE_LEAVES: {"name": "Leaves", "hardness": 5, "drop": "leaves", "solid": False, "platform": False, "light_emit": 0, "absorb": 1, "opaque": False},
     TILE_WOOD_TRUNK: {"name": "Wood Trunk", "hardness": 20, "drop": "wood", "solid": False, "platform": False, "light_emit": 0, "absorb": 2, "opaque": False},
     TILE_COPPER_ORE: {"name": "Copper Ore", "hardness": 40, "drop": "copper_ore", "solid": True, "platform": False, "light_emit": 0, "absorb": 4, "opaque": True},
     TILE_IRON_ORE: {"name": "Iron Ore", "hardness": 45, "drop": "iron_ore", "solid": True, "platform": False, "light_emit": 0, "absorb": 4, "opaque": True},
@@ -197,6 +199,9 @@ TILE_PROPS = {
     TILE_CARVED_TUBER_LANTERN: {"name": "Carved Tuber Lantern", "hardness": 8, "drop": "carved_tuber_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
     TILE_BRASS_LANTERN: {"name": "Brass Lantern", "hardness": 10, "drop": "brass_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
     TILE_SPECTRAL_LANTERN: {"name": "Spectral Lantern", "hardness": 10, "drop": "spectral_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
+    TILE_SAPLING: {"name": "Oak Sapling", "hardness": 5, "drop": "oak_sapling", "solid": False, "platform": False, "light_emit": 0, "absorb": 0, "opaque": False},
+    TILE_IRON_CHEST: {"name": "Iron Storage Chest", "hardness": 35, "drop": "iron_chest", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
+    TILE_ROPE_RUNGS: {"name": "Rope Rungs", "hardness": 10, "drop": "rope_rungs", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
 }
 
 # Item Rarity Tiers (7 Tiers)

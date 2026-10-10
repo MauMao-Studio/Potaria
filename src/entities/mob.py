@@ -186,6 +186,27 @@ class Mob:
             pygame.draw.rect(target_surf, (50, 220, 50), (sx, sy, int(bar_w * pct), bar_h))
             pygame.draw.rect(target_surf, (0, 0, 0), (sx, sy, bar_w, bar_h), 1)
 
+    def update_water_buoyancy(self, world):
+        """Checks water intersection and applies fluid buoyancy opposing gravity with fluid drag."""
+        water_rects = world.get_water_rects_in_bounds(self.rect) if hasattr(world, "get_water_rects_in_bounds") else []
+        self.in_water = len(water_rects) > 0
+        if self.in_water:
+            self.vy = max(-2.0, min(2.0, self.vy + GRAVITY * 0.25 - 0.20))
+            self.vx *= 0.88
+            self.vy *= 0.90
+            return True
+        return False
+
+    def apply_water_overlay(self, surf):
+        """Applies a blue translucent aquatic overlay when inside water."""
+        if getattr(self, "in_water", False):
+            tinted = surf.copy()
+            overlay = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
+            overlay.fill((30, 110, 200, 75))
+            tinted.blit(overlay, (0, 0))
+            return tinted
+        return surf
+
 # =============================================================================
 # 1. SLIMES (Jelly Bounce Physics & Animations)
 # =============================================================================
@@ -215,7 +236,8 @@ class SlimeMob(Mob):
         if self.hp_bar_timer > 0:
             self.hp_bar_timer -= dt
 
-        self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
+        if not self.update_water_buoyancy(world):
+            self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
 
         dist_x = player.center_x - self.center_x
         dist_y = player.center_y - self.center_y
@@ -322,6 +344,7 @@ class SlimeMob(Mob):
             tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
             cur_surf = tinted
 
+        cur_surf = self.apply_water_overlay(cur_surf)
         target_surf.blit(cur_surf, (sx, sy))
         self.render_health_bar(target_surf, camera)
 
@@ -378,7 +401,8 @@ class WalkerMob(Mob):
         if self.hp_bar_timer > 0:
             self.hp_bar_timer -= dt
 
-        self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
+        if not self.update_water_buoyancy(world):
+            self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
 
         dist_x = player.center_x - self.center_x
         dist_y = player.center_y - self.center_y
@@ -462,6 +486,7 @@ class WalkerMob(Mob):
             tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
             cur_surf = tinted
 
+        cur_surf = self.apply_water_overlay(cur_surf)
         target_surf.blit(cur_surf, (sx, sy))
         self.render_health_bar(target_surf, camera)
 
@@ -548,6 +573,8 @@ class DemonEye(Mob):
                 self.state = "hover"
                 self.state_timer = random.uniform(2.0, 3.5)
 
+        self.update_water_buoyancy(world)
+
         # Demon Eye ghost spectral flight (phases freely through solid blocks and walls)
         self.x += self.vx
         self.y += self.vy
@@ -568,6 +595,7 @@ class DemonEye(Mob):
             tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
             rotated = tinted
 
+        rotated = self.apply_water_overlay(rotated)
         target_surf.blit(rotated, rect.topleft)
         self.render_health_bar(target_surf, camera)
 
@@ -636,6 +664,8 @@ class BatMob(Mob):
                 self.vy = -self.vy * 0.5
                 break
 
+        self.update_water_buoyancy(world)
+
     def render(self, target_surf, camera):
         if self.is_dead:
             return
@@ -650,6 +680,7 @@ class BatMob(Mob):
             tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
             cur_surf = tinted
 
+        cur_surf = self.apply_water_overlay(cur_surf)
         target_surf.blit(cur_surf, (sx, sy))
         self.render_health_bar(target_surf, camera)
 
@@ -688,7 +719,8 @@ class CrawlerMob(Mob):
         if self.hp_bar_timer > 0:
             self.hp_bar_timer -= dt
 
-        self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
+        if not self.update_water_buoyancy(world):
+            self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
 
         dist_x = player.center_x - self.center_x
         dist_y = player.center_y - self.center_y
@@ -771,6 +803,7 @@ class CrawlerMob(Mob):
             tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
             cur_surf = tinted
 
+        cur_surf = self.apply_water_overlay(cur_surf)
         target_surf.blit(cur_surf, (sx, sy))
         self.render_health_bar(target_surf, camera)
 
@@ -859,6 +892,7 @@ class ShieldWeaver(Mob):
         self.vx = self.vx * 0.91 + (target_x - self.x) * 0.03
         self.vy = self.vy * 0.91 + (target_y - self.y) * 0.03
 
+        self.update_water_buoyancy(world)
         self.x += self.vx
         solids = world.get_solid_rects_in_bounds(self.rect)
         for tile_rect, is_platform in solids:
@@ -920,6 +954,7 @@ class ShieldWeaver(Mob):
             tinted = cur_surf.copy()
             tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
             cur_surf = tinted
+        cur_surf = self.apply_water_overlay(cur_surf)
         target_surf.blit(cur_surf, (sx, sy))
         self.render_health_bar(target_surf, camera)
 
@@ -965,6 +1000,7 @@ class DiggerMob(Mob):
 
         self.vx = self.vx * 0.88 + target_vx * 0.12
         self.vy = self.vy * 0.88 + target_vy * 0.12
+        self.update_water_buoyancy(world)
 
         # Horizontal movement and collision with house tiles
         self.x += self.vx
@@ -1021,6 +1057,7 @@ class DiggerMob(Mob):
             tinted = cur_surf.copy()
             tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
             cur_surf = tinted
+        cur_surf = self.apply_water_overlay(cur_surf)
         target_surf.blit(cur_surf, (sx, sy))
         self.render_health_bar(target_surf, camera)
 
@@ -1138,6 +1175,7 @@ class NightEliteMob(Mob):
 
         # AI & Movement
         if self.archetype == "demon_eye":
+            self.in_water = len(world.get_water_rects_in_bounds(self.rect)) > 0 if hasattr(world, "get_water_rects_in_bounds") else False
             # Flying swooping movement
             fly_speed = 7.0 if self.frenzy_timer > 0 else 4.5
             self.vy = min(fly_speed, max(-fly_speed, self.vy + (0.22 if dist_y > 0 else -0.22)))
@@ -1147,7 +1185,8 @@ class NightEliteMob(Mob):
             self.facing_right = (self.vx >= 0)
         else:
             # Ground humanoid / slime movement
-            self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
+            if not self.update_water_buoyancy(world):
+                self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
             move_dir = 1.0 if dist_x > 0 else -1.0
             self.facing_right = (dist_x >= 0)
 
@@ -1262,6 +1301,7 @@ class NightEliteMob(Mob):
             tinted = cur_surf.copy()
             tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
             cur_surf = tinted
+        cur_surf = self.apply_water_overlay(cur_surf)
         target_surf.blit(cur_surf, (sx, sy))
 
         # Elite Champion health bar & banner

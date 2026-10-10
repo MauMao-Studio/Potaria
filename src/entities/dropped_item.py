@@ -69,7 +69,14 @@ class DroppedItem:
             else:
                 self.on_ground = False
 
-        if not self.on_ground:
+        water_rects = world.get_water_rects_in_bounds(self.rect) if hasattr(world, "get_water_rects_in_bounds") else []
+        self.in_water = len(water_rects) > 0
+
+        if self.in_water:
+            self.vy = max(-2.0, min(1.5, self.vy + GRAVITY * 0.25 - 0.20))
+            self.vx *= 0.88
+            self.vy *= 0.90
+        elif not self.on_ground:
             self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
 
         # Horizontal movement
@@ -110,4 +117,10 @@ class DroppedItem:
         sw, sh = target_surf.get_width(), target_surf.get_height()
         if -32 <= sx <= sw + 32 and -32 <= sy <= sh + 32:
             if self.icon:
-                target_surf.blit(self.icon, (sx - 4, sy - 4))
+                draw_icon = self.icon
+                if getattr(self, "in_water", False):
+                    draw_icon = draw_icon.copy()
+                    aqua = pygame.Surface(draw_icon.get_size(), pygame.SRCALPHA)
+                    aqua.fill((30, 110, 200, 75))
+                    draw_icon.blit(aqua, (0, 0))
+                target_surf.blit(draw_icon, (sx - 4, sy - 4))

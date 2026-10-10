@@ -4,8 +4,8 @@
 **Engine:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
 **Rendering Architecture:** Smart OpenGL Hardware Abstraction Layer (HAL) with Safe Fallback  
-**Test Suite Status:** 400 Tests Passing across 37 Test Suites (100% Green)  
-**Current Version:** v1.8.2  
+**Test Suite Status:** 416 Tests Passing across 38 Test Suites (100% Green)  
+**Current Version:** v1.9.0  
 
 ---
 

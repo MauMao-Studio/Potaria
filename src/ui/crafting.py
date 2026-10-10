@@ -177,6 +177,46 @@ RECIPES = [
         "ingredients": [("raw_potato", 2), ("spud_sap", 2), ("wood", 1)]
     },
     {
+        "result": "cooked_bangus", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_bangus", 1)]
+    },
+    {
+        "result": "cooked_tilapia", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_tilapia", 1)]
+    },
+    {
+        "result": "cooked_galunggong", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_galunggong", 1)]
+    },
+    {
+        "result": "cooked_maya_maya", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_maya_maya", 1)]
+    },
+    {
+        "result": "cooked_tanigue", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_tanigue", 1)]
+    },
+    {
+        "result": "cooked_tambakol", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_tambakol", 1)]
+    },
+    {
+        "result": "cooked_lapu_lapu", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_lapu_lapu", 1)]
+    },
+    {
+        "result": "cooked_hito", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_hito", 1)]
+    },
+    {
+        "result": "cooked_dilis", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_dilis", 1)]
+    },
+    {
+        "result": "cooked_dalagang_bukid", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_dalagang_bukid", 1)]
+    },
+    {
         "result": "iron_cauldron", "count": 1, "station": "furnace", "category": CRAFT_CAT_FURNITURE,
         "ingredients": [("iron_bar", 7)]
     },
@@ -368,6 +408,10 @@ RECIPES = [
     # =========================================================================
     # 5. Work Bench — Tools, Weapons, Armor & Combat Equipment
     # =========================================================================
+    {
+        "result": "fishing_rod", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
+        "ingredients": [("wood", 8), ("spud_sap", 4)]
+    },
     {
         "result": "wood_bow", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
         "ingredients": [("wood", 10)]
@@ -586,6 +630,10 @@ def load_craftable_recipes():
                     "ingredients": [(ing["item"], ing["count"]) for ing in item.get("ingredients", [])]
                 })
             if loaded:
+                existing_results = {r.get("result") for r in loaded}
+                for r in RECIPES:
+                    if r.get("result") not in existing_results:
+                        loaded.append(r)
                 return loaded
         except Exception as e:
             print(f"[Crafting ERROR] Failed to load {json_path}: {e}")

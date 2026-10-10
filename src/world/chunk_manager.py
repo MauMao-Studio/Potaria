@@ -119,7 +119,7 @@ class ChunkSection:
 
                 # 2. Foreground Tiles
                 if t_id != TILE_AIR:
-                    if t_id == TILE_TORCH or t_id == TILE_WATER:
+                    if t_id in (TILE_TORCH, TILE_WATER, TILE_SAPLING):
                         self.animated_tiles.append((local_px, local_py, t_id))
                     elif t_id == TILE_WOOD_TRUNK:
                         below_id = tiles_col[ty + 1] if ty + 1 < world.height else TILE_BEDROCK

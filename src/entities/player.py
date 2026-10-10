@@ -193,6 +193,10 @@ class Player:
     def max_health(self):
         return self.stats.max_hp
 
+    @max_health.setter
+    def max_health(self, val):
+        self.stats.max_hp = val
+
     @property
     def current_anim(self):
         """Current 12 FPS animation state for networking and sprites."""
@@ -502,39 +506,42 @@ class Player:
                     return True
         return False
 
-    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=-3.0):
+    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=-3.0, ignore_defense=False):
         if self.i_frame_timer > 0 or self.is_dead:
             return False
 
-        # Evasion Step: 15% Chance to evade incoming strikes
-        if self.has_effect("evasion step"):
-            import random
-            if random.random() < 0.15:
-                self.i_frame_timer = 0.3
-                self.sound_manager.play("jump")
-                return False
+        if ignore_defense:
+            actual_damage = max(1, int(amount))
+        else:
+            # Evasion Step: 15% Chance to evade incoming strikes
+            if self.has_effect("evasion step"):
+                import random
+                if random.random() < 0.15:
+                    self.i_frame_timer = 0.3
+                    self.sound_manager.play("jump")
+                    return False
 
-        # Titan's Resolve: Triples defense when below 30% HP
-        effective_def = self.stats.total_def
-        if self.has_effect("titan's resolve") and (self.health < self.max_health * 0.3):
-            effective_def *= 3
+            # Titan's Resolve: Triples defense when below 30% HP
+            effective_def = self.stats.total_def
+            if self.has_effect("titan's resolve") and (self.health < self.max_health * 0.3):
+                effective_def *= 3
 
-        # Apply DEF mitigation formula from GDD!
-        actual_damage = max(1, amount - effective_def)
+            # Apply DEF mitigation formula from GDD!
+            actual_damage = max(1, amount - effective_def)
 
-        # Damage Mitigation: -25% Total Damage Mitigation
-        if self.has_effect("damage mitigation") or self.has_effect("-25%"):
-            actual_damage = max(1, int(actual_damage * 0.75))
+            # Damage Mitigation: -25% Total Damage Mitigation
+            if self.has_effect("damage mitigation") or self.has_effect("-25%"):
+                actual_damage = max(1, int(actual_damage * 0.75))
 
-        # Radiant Shield: Absorbs 40 damage every 15s
-        if self.has_effect("radiant shield") and self.radiant_shield_hp > 0:
-            absorb = min(self.radiant_shield_hp, actual_damage)
-            self.radiant_shield_hp -= absorb
-            actual_damage -= int(absorb)
-            if actual_damage <= 0:
-                self.i_frame_timer = 0.35
-                self.sound_manager.play("hit_block")
-                return False
+            # Radiant Shield: Absorbs 40 damage every 15s
+            if self.has_effect("radiant shield") and self.radiant_shield_hp > 0:
+                absorb = min(self.radiant_shield_hp, actual_damage)
+                self.radiant_shield_hp -= absorb
+                actual_damage -= int(absorb)
+                if actual_damage <= 0:
+                    self.i_frame_timer = 0.35
+                    self.sound_manager.play("hit_block")
+                    return False
 
         # Deep Roots: Immunity to knockback while grounded
         if self.has_effect("deep roots") and self.on_ground:
@@ -695,9 +702,10 @@ class Player:
             self.submerged_duration += dt
             if self.oxygen <= 0:
                 self.drown_timer += dt
-                if self.drown_timer >= 1.2:
+                if self.drown_timer >= 1.0:
                     self.drown_timer = 0.0
-                    self.take_damage(10)
+                    heart_damage = max(1, self.stats.max_hp // 10)
+                    self.take_damage(heart_damage, ignore_defense=True)
         else:
             self.oxygen = min(self.max_oxygen, self.oxygen + 40.0 * dt)
             self.drown_timer = 0.0
@@ -810,6 +818,12 @@ class Player:
 
         if not self.facing_right:
             base_sprite = pygame.transform.flip(base_sprite, True, False)
+
+        if getattr(self, "in_water", False) or getattr(self, "is_submerged", False):
+            aqua_overlay = pygame.Surface(base_sprite.get_size(), pygame.SRCALPHA)
+            aqua_overlay.fill((30, 110, 200, 75))
+            base_sprite = base_sprite.copy()
+            base_sprite.blit(aqua_overlay, (0, 0))
 
         target_surf.blit(base_sprite, (sx, draw_sy))
 

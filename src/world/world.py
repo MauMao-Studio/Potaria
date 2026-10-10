@@ -20,6 +20,7 @@ from src.constants import (
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, LANTERN_TILES,
     TILE_SAND, TILE_SNOW, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS, TILE_BLIGHTSTONE, TILE_EBONSTONE,
+    TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     WALL_AIR, WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_MUSHROOM,
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT, BIOME_MUSHROOM, BIOME_DUNGEON,
@@ -162,6 +163,20 @@ class World:
         self.mystic_trader_timer = 0.0
         self.mystic_trader_interval = 240.0
         self.chests = {}  # (tx, ty) -> StorageChest
+        
+        # Individual Tree Harvesting & Sapling Ecosystem
+        self.tree_cascade_felling = False  # Changed to False per user request
+        self.planted_saplings = {}        # (tx, ty) -> {"growth_days": int, "sapling_type": str}
+        self.wild_sapling_timer = 0.0
+        self.last_bonus_drop = None
+        raw_sapling_frames = getattr(asset_factory, "sapling_frames", [asset_factory.tiles.get(TILE_SAPLING)])
+        self.scaled_sapling_frames = [
+            pygame.transform.scale(f, (self.scaled_tile, self.scaled_tile))
+            for f in raw_sapling_frames if f
+        ]
+        self.plant_anim_timer = 0.0
+        self.plant_frame_idx = 0
+        self.growth_animations = []
 
     def get_biome_spawn(self, player_idx=1):
         """Returns surface spawn coordinates in different biomes for LMS / PvP mode."""
@@ -183,10 +198,51 @@ class World:
             if self.scaled_water_frames:
                 self.water_frame_idx = (self.water_frame_idx + 1) % len(self.scaled_water_frames)
 
+        self.plant_anim_timer += dt
+        if self.plant_anim_timer >= 0.25:
+            self.plant_anim_timer = 0.0
+            if self.scaled_sapling_frames:
+                self.plant_frame_idx = (self.plant_frame_idx + 1) % len(self.scaled_sapling_frames)
+
+        if self.growth_animations:
+            for anim in self.growth_animations:
+                anim["timer"] -= dt
+            self.growth_animations = [a for a in self.growth_animations if a["timer"] > 0]
+
         self.damage_decay_timer += dt
         if self.damage_decay_timer > 3.0 and self.tile_damage:
             self.tile_damage.clear()
             self.damage_decay_timer = 0
+
+        # Bare ground wild sapling regeneration on natural surface grass
+        self.wild_sapling_timer += dt
+        if self.wild_sapling_timer >= 20.0:
+            self.wild_sapling_timer = 0.0
+            if hasattr(self.chunk_manager, "chunks") and self.chunk_manager.chunks:
+                loaded_cxs = list(self.chunk_manager.chunks.keys())
+                if loaded_cxs:
+                    cx = random.choice(loaded_cxs)
+                    lx = random.randint(0, CHUNK_WIDTH - 1)
+                    tx = cx * CHUNK_WIDTH + lx
+                    surf_y = self.get_surface_height(tx)
+                    if self.get_tile(tx, surf_y) == TILE_GRASS and self.get_tile(tx, surf_y - 1) == TILE_AIR:
+                        has_tree = any(
+                            self.get_tile(tx + dx, surf_y - 1) in (TILE_WOOD_TRUNK, TILE_WOOD, TILE_SAPLING) or
+                            self.get_tile(tx + dx, surf_y) in (TILE_WOOD_TRUNK, TILE_WOOD, TILE_SAPLING)
+                            for dx in range(-4, 5)
+                        )
+                        if not has_tree:
+                            biome = self.get_biome_at(tx, surf_y) if hasattr(self, "get_biome_at") else "forest"
+                            if biome == "snow":
+                                w_sap = "pine_sapling"
+                            elif biome == "desert":
+                                w_sap = "palm_sapling"
+                            elif biome in ("the_blight", "corruption"):
+                                w_sap = "blight_sapling"
+                            else:
+                                w_sap = "oak_sapling"
+                            self.set_tile(tx, surf_y - 1, TILE_SAPLING)
+                            self.planted_saplings[(tx, surf_y - 1)] = {"growth_days": 0, "sapling_type": w_sap}
 
     def get_tile(self, tx, ty):
         return self.chunk_manager.get_tile(tx, ty)
@@ -335,14 +391,112 @@ class World:
         self.last_felled_trunks = list(felled_trunks)
         return len(felled_trunks), felled_leaves
 
+    def grow_plants_daily(self):
+        """Called once per day at dawn/daylight transition: grows planted/wild saplings in sunlight into full trees."""
+        sapling_coords = list(self.planted_saplings.keys())
+        for tx, ty in sapling_coords:
+            if self.get_tile(tx, ty) != TILE_SAPLING:
+                self.planted_saplings.pop((tx, ty), None)
+                continue
+
+            # Check sunlight: must have vertical clearance to the sky
+            has_sunlight = True
+            for check_y in range(max(0, ty - 12), ty):
+                ct = self.get_tile(tx, check_y)
+                if ct not in (TILE_AIR, TILE_LEAVES):
+                    has_sunlight = False
+                    break
+
+            if not has_sunlight:
+                continue
+
+            sap_data = self.planted_saplings.get((tx, ty), {})
+            growth_days = sap_data.get("growth_days", 0) + 1
+            sap_data["growth_days"] = growth_days
+
+            # Mature into full tree after 1 day of sunlight
+            if growth_days >= 1:
+                self.planted_saplings.pop((tx, ty), None)
+                self.set_tile(tx, ty, TILE_AIR)
+                self.player_placed_tiles.discard((tx, ty))
+
+                sap_type = str(sap_data.get("sapling_type", "oak_sapling"))
+
+                if "palm" in sap_type:
+                    # Tropical Palm Tree
+                    trunk_h = random.randint(6, 8)
+                    crown_cy = ty - trunk_h
+                    for y in range(crown_cy, ty + 1):
+                        self.set_tile(tx, y, TILE_WOOD_TRUNK)
+                    if crown_cy - 1 >= 0:
+                        self.set_tile(tx, crown_cy - 1, TILE_LEAVES)
+                    for dx in (-3, -2, -1, 1, 2, 3):
+                        drop = 1 if abs(dx) == 3 else (0 if abs(dx) == 2 else -1)
+                        if self.get_tile(tx + dx, crown_cy + drop) == TILE_AIR:
+                            self.set_tile(tx + dx, crown_cy + drop, TILE_LEAVES)
+                        if abs(dx) <= 2 and self.get_tile(tx + dx, crown_cy) == TILE_AIR:
+                            self.set_tile(tx + dx, crown_cy, TILE_LEAVES)
+
+                elif "pine" in sap_type:
+                    # Alpine Frosted Pine Conifer
+                    trunk_h = random.randint(7, 9)
+                    crown_cy = ty - trunk_h
+                    for y in range(crown_cy, ty + 1):
+                        self.set_tile(tx, y, TILE_WOOD_TRUNK)
+                    pine_tiers = [
+                        (-2, 1.0),
+                        (-1, 1.6),
+                        (0, 2.2),
+                        (1, 2.8),
+                        (2, 3.2),
+                        (3, 2.6)
+                    ]
+                    for d_lvl, rad in pine_tiers:
+                        leaf_y = crown_cy + d_lvl
+                        irad = int(rad)
+                        for cx in range(tx - irad, tx + irad + 1):
+                            if cx == tx and leaf_y >= crown_cy:
+                                continue
+                            if abs(cx - tx) <= rad and self.get_tile(cx, leaf_y) == TILE_AIR:
+                                self.set_tile(cx, leaf_y, TILE_LEAVES)
+
+                else:
+                    # Forest Oak / Blight Tree
+                    trunk_h = random.randint(5, 7)
+                    crown_cy = ty - trunk_h
+                    for y in range(crown_cy, ty + 1):
+                        self.set_tile(tx, y, TILE_WOOD_TRUNK)
+
+                    # Rounded foliage canopy
+                    for cx in range(tx - 3, tx + 4):
+                        for cy in range(crown_cy - 3, crown_cy + 2):
+                            if cx == tx and cy >= crown_cy:
+                                continue
+                            dx = (cx - tx) / 2.9
+                            dy = (cy - (crown_cy - 0.5)) / 2.3
+                            if dx * dx + dy * dy <= 1.05:
+                                if self.get_tile(cx, cy) == TILE_AIR:
+                                    self.set_tile(cx, cy, TILE_LEAVES)
+
+                self.growth_animations.append({
+                    "tx": tx,
+                    "ty": ty,
+                    "crown_y": crown_cy,
+                    "trunk_h": trunk_h,
+                    "sap_type": sap_type,
+                    "timer": 1.5,
+                    "max_timer": 1.5,
+                })
+
     def damage_tile_at(self, tx, ty, power):
         t_id = self.get_tile(tx, ty)
         if t_id == TILE_AIR or t_id == TILE_BEDROCK or t_id == TILE_WATER:
             return False, None, t_id
 
-        # Foliage protection: Player can only destroy wood, never bush/leaves directly!
+        # Foliage protection: Player can only destroy wood, never bush/leaves directly when tree_cascade_felling is True
         if t_id == TILE_LEAVES:
-            return False, None, t_id
+            if getattr(self, "tree_cascade_felling", True):
+                return False, None, t_id
 
         prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
         max_health = prop.get("hardness", 20)
@@ -358,16 +512,36 @@ class World:
             is_player_placed = (tx, ty) in self.player_placed_tiles
             self.player_placed_tiles.discard((tx, ty))
             drop = prop.get("drop")
-            if t_id == TILE_CHEST and (tx, ty) in self.chests:
+            if t_id == TILE_LEAVES:
+                biome = self.get_biome_at(tx, ty) if hasattr(self, "get_biome_at") else "forest"
+                if biome == "snow":
+                    sap_drop = "pine_sapling"
+                elif biome == "desert":
+                    sap_drop = "palm_sapling"
+                elif biome in ("the_blight", "corruption"):
+                    sap_drop = "blight_sapling"
+                else:
+                    sap_drop = "oak_sapling"
+                self.last_bonus_drop = sap_drop if random.random() < 0.25 else None
+            elif t_id == TILE_SAPLING:
+                sap_data = self.planted_saplings.pop((tx, ty), None)
+                drop = sap_data.get("sapling_type", "oak_sapling") if sap_data else "oak_sapling"
+            elif t_id in (TILE_CHEST, TILE_IRON_CHEST) and (tx, ty) in self.chests:
                 broken_chest = self.chests.pop((tx, ty))
                 if broken_chest and getattr(broken_chest, "chest_type", None):
                     drop = broken_chest.chest_type
+                elif t_id == TILE_IRON_CHEST:
+                    drop = "iron_chest"
 
-            # Felling only cascades for natural tree trunks or unplaced tree wood, NOT player-placed structures
+            # Felling only cascades for natural tree trunks or unplaced tree wood when tree_cascade_felling is True
             if (t_id in (TILE_WOOD_TRUNK, TILE_WOOD)) and not is_player_placed:
-                felled_count, leaf_coords = self.fell_tree(tx, ty)
-                self.last_felled_tree = (felled_count, leaf_coords)
-                return True, "wood", t_id
+                if getattr(self, "tree_cascade_felling", True):
+                    felled_count, leaf_coords = self.fell_tree(tx, ty)
+                    self.last_felled_tree = (felled_count, leaf_coords)
+                    return True, "wood", t_id
+                else:
+                    self.set_tile(tx, ty, TILE_AIR)
+                    return True, "wood", t_id
 
             self.set_tile(tx, ty, TILE_AIR)
             # Check adjacent torches and lanterns for loss of physical support
@@ -405,9 +579,6 @@ class World:
             if cur == TILE_WATER or self.is_water(tx, ty):
                 return False
             # 2. Torches cannot float in open air; they require support:
-            #    - A background wall behind it (self.get_wall(tx, ty) != WALL_AIR)
-            #    - A solid block beneath it (self.is_tile_solid(tx, ty + 1))
-            #    - An adjacent solid block to left or right (self.is_tile_solid(tx - 1, ty) or self.is_tile_solid(tx + 1, ty))
             has_wall = (self.get_wall(tx, ty) != WALL_AIR)
             base_solid = self.is_tile_solid(tx, ty + 1)
             left_solid = self.is_tile_solid(tx - 1, ty)
@@ -415,9 +586,7 @@ class World:
             if not (has_wall or base_solid or left_solid or right_solid):
                 return False
 
-        # Physical placement rules for lanterns (Carved Tuber Lantern, Brass Lantern, Spectral Lantern, Chandelier):
-        # Can be hung from the ceiling when there is a solid block to the North (ty - 1),
-        # or placed on a floor/platform block below (ty + 1), or mounted on a background wall.
+        # Physical placement rules for lanterns:
         if tile_id in LANTERN_TILES:
             if cur == TILE_WATER or self.is_water(tx, ty):
                 return False
@@ -428,8 +597,15 @@ class World:
             if not (north_solid or base_solid or has_wall):
                 return False
 
+        # Physical placement rules for saplings:
+        if tile_id == TILE_SAPLING:
+            if cur == TILE_WATER or self.is_water(tx, ty):
+                return False
+            if not self.is_tile_solid(tx, ty + 1):
+                return False
+
         # Adjacency check
-        has_neighbor = (self.get_wall(tx, ty) != WALL_AIR)
+        has_neighbor = (self.get_wall(tx, ty) != WALL_AIR) or (tile_id == TILE_SAPLING and self.is_tile_solid(tx, ty + 1))
         for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
             if self.get_tile(tx + dx, ty + dy) not in (TILE_AIR, TILE_WATER):
                 has_neighbor = True
@@ -441,9 +617,12 @@ class World:
         placed = self.set_tile(tx, ty, tile_id)
         if placed:
             self.player_placed_tiles.add((tx, ty))
-            if tile_id == TILE_CHEST:
+            if tile_id in (TILE_CHEST, TILE_IRON_CHEST):
                 from src.world.storage_chest import StorageChest
-                self.chests[(tx, ty)] = StorageChest(tx, ty, chest_type=chest_type)
+                self.chests[(tx, ty)] = StorageChest(tx, ty, chest_type="iron_chest" if tile_id == TILE_IRON_CHEST else chest_type)
+            elif tile_id == TILE_SAPLING:
+                sap_type = chest_type if "sapling" in str(chest_type) else "oak_sapling"
+                self.planted_saplings[(tx, ty)] = {"growth_days": 0, "sapling_type": sap_type}
         return placed
 
     def toggle_door(self, tx, ty, player_rect=None):
@@ -869,7 +1048,7 @@ class World:
                 if random.random() < 0.08:
                     particle_system.spawn_sparks(wx + random.randint(-3, 3), wy + 6, color=(255, 140, 40), count=1)
 
-    def render(self, target_surf, camera):
+    def render(self, target_surf, camera, draw_water=True):
         # Precise integer rounding eliminates any 1px subpixel seams between adjacent blocks/chunks
         cam_x = int(round(camera.x - camera.shake_offset_x))
         cam_y = int(round(camera.y - camera.shake_offset_y))
@@ -917,7 +1096,7 @@ class World:
             if t_id == TILE_TORCH:
                 if torch_frame:
                     target_surf.blit(torch_frame, (spx, spy))
-            elif t_id == TILE_WATER:
+            elif t_id == TILE_WATER and draw_water:
                 gx = cx * CHUNK_WIDTH + (lpx // self.scaled_tile)
                 gy = sy * SECTION_HEIGHT + (lpy // self.scaled_tile)
                 above_id = self.get_tile(gx, gy - 1) if gy > 0 else TILE_AIR
@@ -929,6 +1108,26 @@ class World:
                     w_tex = self.scaled_tiles.get(t_id)
                 if w_tex:
                     target_surf.blit(w_tex, (spx, spy))
+            elif t_id == TILE_SAPLING:
+                if self.scaled_sapling_frames:
+                    target_surf.blit(self.scaled_sapling_frames[self.plant_frame_idx % len(self.scaled_sapling_frames)], (spx, spy))
+                else:
+                    s_tex = self.scaled_tiles.get(t_id)
+                    if s_tex:
+                        target_surf.blit(s_tex, (spx, spy))
+
+        # Dynamic overlay: shimmering animated plant and tree growth
+        if hasattr(self, "growth_animations") and self.growth_animations:
+            for anim in self.growth_animations:
+                atx = anim["tx"]
+                aty = anim["ty"]
+                acrown = anim.get("crown_y", aty - 6)
+                prog = 1.0 - (anim["timer"] / max(0.01, anim.get("max_timer", 1.5)))
+                asx = atx * self.scaled_tile - cam_x
+                ring_y = int(aty * self.scaled_tile - prog * ((aty - acrown) * self.scaled_tile)) - cam_y
+                ring_r = int(8 + math.sin(prog * math.pi) * 14)
+                pygame.draw.circle(target_surf, (80, 235, 90), (asx + self.scaled_tile // 2, ring_y), ring_r, 2)
+                pygame.draw.circle(target_surf, (255, 230, 80), (asx + self.scaled_tile // 2, ring_y), max(2, ring_r - 4), 1)
 
         # Dynamic overlay: mining damage cracks
         if self.tile_damage:
@@ -939,3 +1138,34 @@ class World:
                     max_h = max(1, prop.get("hardness", 20))
                     stage = min(3, int((cur / max_h) * 4))
                     target_surf.blit(self.scaled_cracks[stage], (tx * self.scaled_tile - cam_x, ty * self.scaled_tile - cam_y))
+
+    def render_water(self, target_surf, camera):
+        """Renders foreground aquatic animated water surfaces and transparent submerged volume pass."""
+        cam_x = int(round(camera.x - camera.shake_offset_x))
+        cam_y = int(round(camera.y - camera.shake_offset_y))
+        sw, sh = target_surf.get_width(), target_surf.get_height()
+
+        min_tx = int(cam_x // self.scaled_tile) - 1
+        max_tx = int((cam_x + sw) // self.scaled_tile) + 1
+        min_ty = max(0, int(cam_y // self.scaled_tile) - 1)
+        max_ty = min(self.height - 1, int((cam_y + sh) // self.scaled_tile) + 1)
+
+        self.chunk_manager.ensure_chunks_in_range(min_tx, max_tx)
+
+        water_frames_len = len(self.scaled_water_frames) if self.scaled_water_frames else 0
+        water_sub_len = len(self.scaled_water_submerged) if self.scaled_water_submerged else 0
+
+        for tx in range(min_tx, max_tx + 1):
+            for ty in range(min_ty, max_ty + 1):
+                if self.get_tile(tx, ty) == TILE_WATER:
+                    spx = tx * self.scaled_tile - cam_x
+                    spy = ty * self.scaled_tile - cam_y
+                    above_id = self.get_tile(tx, ty - 1) if ty > 0 else TILE_AIR
+                    if above_id == TILE_AIR and water_frames_len > 0:
+                        w_tex = self.scaled_water_frames[self.water_frame_idx % water_frames_len]
+                    elif water_sub_len > 0:
+                        w_tex = self.scaled_water_submerged[self.water_frame_idx % water_sub_len]
+                    else:
+                        w_tex = self.scaled_tiles.get(TILE_WATER)
+                    if w_tex:
+                        target_surf.blit(w_tex, (spx, spy))

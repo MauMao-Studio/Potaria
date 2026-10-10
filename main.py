@@ -39,6 +39,7 @@ from src.constants import (
     TILE_BED, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE, TILE_PROPS,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, LANTERN_TILES,
     TILE_BEDROCK, TILE_WATER,
+    TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL,
     PLAYER_WIDTH, PLAYER_HEIGHT
 )
@@ -136,6 +137,8 @@ class PotariaGame:
 
         # 4. Generate Procedural World with a Random Seed
         self.world = World(self.asset_factory, seed=None)
+        self.world.tree_cascade_felling = False
+        self.fishing_bobber = None
 
         # 5. Spud the Potato Hero
         spawn_x, spawn_y = self.world.spawn_point
@@ -150,6 +153,7 @@ class PotariaGame:
         # 6. Lighting & Sky
         self.lighting = LightingEngine(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.sky = DayNightCycle(self.asset_factory)
+        self.current_day = int(self.sky.time // max(1.0, self.sky.cycle_duration))
 
         # 7. Inventory, Crafting, HUD, Character Panel & Menu
         self.inventory = Inventory(self.asset_factory)
@@ -997,6 +1001,7 @@ class PotariaGame:
                     if self.inventory.is_open:
                         drop_btn = self.inventory.get_drop_button_rect()
                         recycle_btn = self.inventory.get_recycle_button_rect()
+                        organize_btn = self.inventory.get_organize_button_rect() if hasattr(self.inventory, "get_organize_button_rect") else None
                         if drop_btn.collidepoint((px, py)):
                             self.drop_selected_or_held(mouse_pos=(px, py))
                         elif recycle_btn.collidepoint((px, py)):
@@ -1005,6 +1010,9 @@ class PotariaGame:
                                 self.sound_manager.play("dig_dirt")
                                 self.particle_system.spawn_debris(px, py, (180, 50, 50), count=10)
                                 self.achievement_manager.unlock("clean_freak")
+                        elif organize_btn and organize_btn.collidepoint((px, py)):
+                            self.inventory.organize_inventory()
+                            self.sound_manager.play("craft")
                         elif self.crafting.handle_click(px, py, self.inventory):
                             self.crafting.update_recipes(self.inventory, self.world, self.player)
                             self.achievement_manager.unlock("master_crafter")
@@ -1254,6 +1262,7 @@ class PotariaGame:
                 if not ui_consumed and self.inventory.is_open:
                     drop_btn = self.inventory.get_drop_button_rect()
                     recycle_btn = self.inventory.get_recycle_button_rect()
+                    organize_btn = self.inventory.get_organize_button_rect() if hasattr(self.inventory, "get_organize_button_rect") else None
                     if is_left_click and drop_btn.collidepoint(mouse_x, mouse_y):
                         self.drop_selected_or_held(mouse_pos=(mouse_x, mouse_y))
                         ui_consumed = True
@@ -1274,6 +1283,10 @@ class PotariaGame:
                                 self.achievement_manager.unlock("recycle_master_2")
                             if total_rec >= 100:
                                 self.achievement_manager.unlock("recycle_master_3")
+                        ui_consumed = True
+                    elif is_left_click and organize_btn and organize_btn.collidepoint(mouse_x, mouse_y):
+                        self.inventory.organize_inventory()
+                        self.sound_manager.play("craft")
                         ui_consumed = True
                     elif self.crafting.handle_click(mouse_x, mouse_y, self.inventory):
                         self.crafting.update_recipes(self.inventory, self.world, self.player)
@@ -1322,6 +1335,7 @@ class PotariaGame:
 
     def _open_or_break_chest(self, tx, ty, world_x, world_y):
         """Rolls high-value loot for naturally discovered or drops stored items from placed chests."""
+        cur_t = self.world.get_tile(tx, ty) if hasattr(self.world, "get_tile") else TILE_CHEST
         if hasattr(self.world, "chests") and (tx, ty) in self.world.chests:
             chest = self.world.chests.pop((tx, ty))
             self.world.set_tile(tx, ty, TILE_AIR)
@@ -1338,10 +1352,11 @@ class PotariaGame:
                     DroppedItem(itm.item_id, itm.count, world_x + random.randint(4, 12), world_y - random.randint(4, 16), self.asset_factory)
                 )
             # Drop the chest container itself
-            drop_chest_id = chest.chest_type if getattr(chest, "chest_type", None) in ("iron_chest", "chest") else "chest"
+            drop_chest_id = chest.chest_type if getattr(chest, "chest_type", None) in ("iron_chest", "chest") else ("iron_chest" if cur_t == TILE_IRON_CHEST else "chest")
             self.combat.dropped_items.append(DroppedItem(drop_chest_id, 1, world_x + 8, world_y - 8, self.asset_factory))
             return
 
+        chest_drop = "iron_chest" if cur_t == TILE_IRON_CHEST else "chest"
         self.world.set_tile(tx, ty, TILE_AIR)
         self.block_deltas[(tx, ty)] = TILE_AIR
         if self.client and self.client.connected:
@@ -1352,7 +1367,7 @@ class PotariaGame:
         self.particle_system.spawn_debris(world_x + 16, world_y + 16, (180, 130, 70), count=10)
 
         # 1. Guaranteed Chest Item + Bars + Potions
-        self.combat.dropped_items.append(DroppedItem("chest", 1, world_x + 4, world_y - 10, self.asset_factory))
+        self.combat.dropped_items.append(DroppedItem(chest_drop, 1, world_x + 4, world_y - 10, self.asset_factory))
         self.combat.dropped_items.append(DroppedItem(random.choice(["gold_bar", "iron_bar"]), random.randint(3, 7), world_x + 8, world_y - 8, self.asset_factory))
         self.combat.dropped_items.append(DroppedItem(random.choice(["greater_healing_potion", "healing_potion", "speed_potion"]), random.randint(2, 4), world_x + 12, world_y - 8, self.asset_factory))
 
@@ -1417,8 +1432,8 @@ class PotariaGame:
                         self.achievement_manager.unlock("home_sweet_home")
                     return
 
-            # 0b. Open / Break Treasure Chest
-            if t_id == TILE_CHEST:
+            # 0b. Open / Break Treasure Chest or Iron Chest
+            if t_id in (TILE_CHEST, TILE_IRON_CHEST):
                 if hasattr(self.world, "chests") and (tx, ty) in self.world.chests:
                     self.chest_ui.open(self.world.chests[(tx, ty)], self.player, self.inventory)
                     return
@@ -1687,8 +1702,78 @@ class PotariaGame:
         cooldown = max(0.08, base_time / max(0.2, atk_speed_mult))
         return cooldown
 
+    def handle_fishing_action(self, mouse_x, mouse_y):
+        mouse_wx, mouse_wy = self.camera.screen_to_world(mouse_x, mouse_y)
+        tx, ty = int(mouse_wx // SCALED_TILE), int(mouse_wy // SCALED_TILE)
+
+        if not getattr(self, "fishing_bobber", None):
+            is_water = (
+                self.world.get_tile(tx, ty) == TILE_WATER or
+                self.world.get_tile(tx, ty + 1) == TILE_WATER or
+                self.world.get_tile(tx, ty - 1) == TILE_WATER
+            )
+            if not is_water:
+                if hasattr(self.inventory, "notify"):
+                    self.inventory.notify("Cast your fishing rod into the water!")
+                return False
+
+            bob_x = tx * SCALED_TILE + 16
+            bob_y = ty * SCALED_TILE + 16
+            dist = math.hypot(self.player.center_x - bob_x, self.player.center_y - bob_y)
+            if dist > 350.0:
+                if hasattr(self.inventory, "notify"):
+                    self.inventory.notify("Too far away to cast!")
+                return False
+
+            self.fishing_bobber = {
+                "x": bob_x,
+                "y": bob_y,
+                "state": "waiting",
+                "timer": random.uniform(2.0, 4.0),
+                "bite_timer": 0.0,
+            }
+            self.sound_manager.play("swing")
+            self.particle_system.spawn_debris(bob_x, bob_y, (60, 140, 240), count=6)
+            return True
+        else:
+            bob = self.fishing_bobber
+            if bob.get("state") == "bite":
+                pinoy_fishes = [
+                    "raw_bangus", "raw_tilapia", "raw_galunggong", "raw_maya_maya",
+                    "raw_tanigue", "raw_tambakol", "raw_lapu_lapu", "raw_hito",
+                    "raw_dilis", "raw_dalagang_bukid"
+                ]
+                rare_loot = [
+                    "gold_coin", "silver_coin", "iron_ore", "copper_ore",
+                    "healing_potion", "speed_potion"
+                ]
+                if random.random() < 0.85:
+                    caught_item = random.choice(pinoy_fishes)
+                    caught_count = random.randint(2, 5) if caught_item == "raw_dilis" else 1
+                else:
+                    caught_item = random.choice(rare_loot)
+                    caught_count = random.randint(1, 3)
+
+                self.combat.dropped_items.append(
+                    DroppedItem(caught_item, caught_count, self.player.center_x, self.player.center_y - 20, self.asset_factory)
+                )
+                item_name = ITEM_REGISTRY.get(caught_item, {}).get("name", caught_item)
+                if hasattr(self.hud, "add_chat_message"):
+                    self.hud.add_chat_message(f"Caught {item_name} x{caught_count}!", (100, 230, 255))
+                if hasattr(self.inventory, "notify"):
+                    self.inventory.notify(f"Caught {item_name}!")
+                self.sound_manager.play("craft")
+                self.particle_system.spawn_sparks(bob["x"], bob["y"], (100, 220, 255), count=15)
+            else:
+                self.sound_manager.play("dig_dirt")
+
+            self.fishing_bobber = None
+            return True
+
     def handle_primary_action(self, mouse_x, mouse_y):
         active = self.inventory.get_active_item()
+        if active and active.item_id == "fishing_rod":
+            return self.handle_fishing_action(mouse_x, mouse_y)
         if active and getattr(active, "is_broken", False):
             if hasattr(self.inventory, "notify"):
                 self.inventory.notify("This weapon is broken! Repair it at the Mystic Trader.")
@@ -1937,7 +2022,7 @@ class PotariaGame:
             self.sound_manager.play("dig_wood")
 
         if broken:
-            if tile_id == TILE_CHEST or drop_id == "chest":
+            if tile_id in (TILE_CHEST, TILE_IRON_CHEST) or drop_id in ("chest", "iron_chest"):
                 self._open_or_break_chest(tx, ty, tile_world_x, tile_world_y)
             else:
                 self.block_deltas[(tx, ty)] = TILE_AIR
@@ -1946,6 +2031,12 @@ class PotariaGame:
                 if drop_id:
                     self.combat.dropped_items.append(
                         DroppedItem(drop_id, 1, tile_world_x + 8, tile_world_y + 4, self.asset_factory)
+                    )
+                bonus_drop = getattr(self.world, "last_bonus_drop", None)
+                if bonus_drop:
+                    self.world.last_bonus_drop = None
+                    self.combat.dropped_items.append(
+                        DroppedItem(bonus_drop, 1, tile_world_x + 12, tile_world_y + 4, self.asset_factory)
                     )
                 # Tree Felling overhaul & Timber achievement
                 if tile_id in (TILE_WOOD, TILE_WOOD_TRUNK) or drop_id == "wood":
@@ -1992,6 +2083,9 @@ class PotariaGame:
             TILE_GOLD_ORE: (255, 215, 0),
             TILE_TORCH: (255, 180, 40),
             TILE_CHEST: (185, 130, 70),
+            TILE_IRON_CHEST: (200, 205, 215),
+            TILE_SAPLING: (70, 180, 50),
+            TILE_ROPE_RUNGS: (160, 120, 70),
             TILE_SAND: (225, 200, 140),
             TILE_SANDSTONE: (195, 165, 110),
             TILE_CACTUS: (50, 150, 60),
@@ -2042,7 +2136,7 @@ class PotariaGame:
         if is_solid and target_rect.colliderect(self.player.rect):
             return
 
-        chest_type = active.item_id if active and active.item_id in ("chest", "iron_chest") else "chest"
+        chest_type = active.item_id if active and (active.item_id in ("chest", "iron_chest") or "sapling" in active.item_id) else "chest"
         placed = self.world.place_tile(tx, ty, tile_id_to_place, chest_type=chest_type)
         if placed:
             self.block_deltas[(tx, ty)] = tile_id_to_place
@@ -2087,6 +2181,25 @@ class PotariaGame:
         # Update Touch Controller states & dynamic button cooldowns/badges
         if hasattr(self, "touch_controller"):
             self.touch_controller.update(dt, player=self.player, inventory=self.inventory)
+
+        # Update Fishing Bobber state
+        if getattr(self, "fishing_bobber", None):
+            bob = self.fishing_bobber
+            p_dist = math.hypot(self.player.center_x - bob["x"], self.player.center_y - bob["y"])
+            if p_dist > 400.0:
+                self.fishing_bobber = None
+            elif bob.get("state") == "waiting":
+                bob["timer"] -= dt
+                if bob["timer"] <= 0:
+                    bob["state"] = "bite"
+                    bob["bite_timer"] = 2.5
+                    self.sound_manager.play("hit")
+                    self.particle_system.spawn_debris(bob["x"], bob["y"], (80, 180, 255), count=8)
+            elif bob.get("state") == "bite":
+                bob["bite_timer"] -= dt
+                if bob["bite_timer"] <= 0:
+                    bob["state"] = "waiting"
+                    bob["timer"] = random.uniform(3.0, 5.0)
 
         # 1. Continuous Mining & Continuous Attacking / Block Placing (Paced by Fire Rate & Mining Rate)
         is_attack_active = (
@@ -2294,6 +2407,12 @@ class PotariaGame:
         # 6. Day/Night Environment
         self.profiler.start_section("update_other")
         self.sky.update(dt)
+        current_day = int(self.sky.time // max(1.0, self.sky.cycle_duration))
+        if not hasattr(self, "current_day"):
+            self.current_day = current_day
+        elif current_day > self.current_day:
+            self.current_day = current_day
+            self.world.grow_plants_daily()
 
         # Sleeping fast-forwards through night until morning
         if getattr(self.player, "is_resting", False):
@@ -2580,7 +2699,7 @@ class PotariaGame:
 
         # Layer 2: World Tiles & Background Walls
         with self.profiler.section("render_world"):
-            self.world.render(self.screen, self.camera)
+            self.world.render(self.screen, self.camera, draw_water=False)
 
         # Layer 3: Particles & Debris
         with self.profiler.section("render_particles"):
@@ -2602,6 +2721,25 @@ class PotariaGame:
         active_item = self.inventory.get_active_item()
         held_icon = self.asset_factory.items.get(active_item.item_id) if active_item else None
         self.player.render(self.screen, self.camera, held_item_icon=held_icon, held_item=active_item)
+
+        # Layer 5.1: Fishing Line & Bobber
+        if getattr(self, "fishing_bobber", None):
+            bob = self.fishing_bobber
+            bsx, bsy = self.camera.world_to_screen(bob["x"], bob["y"])
+            psx, psy = self.camera.world_to_screen(self.player.center_x + (10 if self.player.facing_right else -10), self.player.center_y - 2)
+            pygame.draw.line(self.screen, (220, 220, 220), (psx, psy), (bsx, bsy), 1)
+            bob_r = 4
+            pygame.draw.circle(self.screen, (240, 240, 240), (bsx, bsy + 2), bob_r)
+            pygame.draw.circle(self.screen, (220, 40, 40), (bsx, bsy - 2), bob_r)
+            pygame.draw.circle(self.screen, (20, 20, 20), (bsx, bsy), bob_r + 1, 1)
+            if bob.get("state") == "bite":
+                pygame.draw.circle(self.screen, (100, 200, 255), (bsx, bsy), bob_r + 5, 1)
+                if self.font:
+                    ex_surf = self.font.render("!", True, (255, 230, 60))
+                    self.screen.blit(ex_surf, (bsx - ex_surf.get_width() // 2, bsy - 20))
+
+        # Layer 5.2: Aquatic Foreground Water Pass
+        self.world.render_water(self.screen, self.camera)
 
         # Layer 5.5: Grand Animated Visual Effects (Skills, Ancient Slashes, Explosions)
         if hasattr(self, "vfx_manager") and self.vfx_manager:

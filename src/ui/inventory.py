@@ -25,6 +25,7 @@ from src.constants import (
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
+    TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     WALL_WOOD, WALL_STONE_BRICK, WALL_GLASS,
     RARITY_COMMON, RARITY_UNCOMMON, RARITY_RARE, RARITY_EPIC,
     RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, RARITY_HEX_COLORS, RARITY_COLORS
@@ -32,12 +33,21 @@ from src.constants import (
 
 # Backwards compatibility and anti-plagiarism alias mapping
 ITEM_ALIASES = {
+    "treasure_chest": "chest",
+    "leaf_block": "leaves",
+    "sapling": "oak_sapling",
+    "tree_sapling": "oak_sapling",
+    "palm_tree_sapling": "palm_sapling",
+    "pine_tree_sapling": "pine_sapling",
+    "blight_tree_sapling": "blight_sapling",
+    "iron_storage_chest": "iron_chest",
     "starfury": "astral_wrath",
     "hermes_boots": "zephyr_striders",
     "gel": "spud_sap",
     "mana_flower": "arcane_orchid",
     "band_of_regeneration": "talisman_of_vigor",
     "ebonstone_block": "blightstone_block",
+    "corrupt_grass": "blight_grass",
     "bed": "wooden_bed",
     "fireplace": "stone_fireplace",
     "hearth": "stone_fireplace",
@@ -834,6 +844,41 @@ ITEM_REGISTRY = {
         "lore": "'A carpenter's fundamental resource.'",
         "special": "Crafting & Building"
     },
+    "leaves": {
+        "name": "Leaves", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_LEAVES,
+        "rarity": RARITY_COMMON,
+        "desc": "Lush foliage blocks harvested from tree canopies. Can be placed for verdant decoration.",
+        "lore": "'Fresh leaves whispering in the gentle canopy breeze.'",
+        "special": "Decorative Foliage Block"
+    },
+    "oak_sapling": {
+        "name": "Oak Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING,
+        "rarity": RARITY_COMMON,
+        "desc": "A young tree sapling. Plant in soil under open sunlight to grow a magnificent oak tree.",
+        "lore": "'Great forests slumber within small seeds.'",
+        "special": "Grows into Tree Daily in Sunlight"
+    },
+    "palm_sapling": {
+        "name": "Palm Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING,
+        "rarity": RARITY_COMMON,
+        "desc": "A tropical coastal palm sapling. Plant in sandy ground under sunlight to grow into a palm tree.",
+        "lore": "'Brought by oceanic trade winds.'",
+        "special": "Grows into Tree Daily in Sunlight"
+    },
+    "pine_sapling": {
+        "name": "Pine Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING,
+        "rarity": RARITY_COMMON,
+        "desc": "Hardy evergreen needle sapling. Thrives in alpine permafrost soil under sunlight.",
+        "lore": "'Resilient against sub-zero mountain gales.'",
+        "special": "Grows into Tree Daily in Sunlight"
+    },
+    "blight_sapling": {
+        "name": "Blight Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "An otherworldly sapling with corrupted violet veins. Grows into a twisted nether tree in sunlight.",
+        "lore": "'Infused with abyssal nether spores.'",
+        "special": "Grows into Tree Daily in Sunlight"
+    },
     "wood_platform": {
         "name": "Wood Platform", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_WOOD_PLATFORM,
         "rarity": RARITY_COMMON,
@@ -968,7 +1013,7 @@ ITEM_REGISTRY = {
         "special": "Storage Container"
     },
     "iron_chest": {
-        "name": "Iron Storage Chest", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CHEST,
+        "name": "Iron Storage Chest", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_IRON_CHEST,
         "rarity": RARITY_UNCOMMON,
         "desc": "Heavy reinforced chest for storing 20 items safely. Right-click to open or manage items.",
         "lore": "'Forged from iron bands to preserve keepsakes across expeditions.'",
@@ -1311,6 +1356,156 @@ ITEM_REGISTRY = {
         "lore": "'Handle with care. Packed with explosive blasting powder.'",
         "special": "Excavation Explosive"
     },
+    # ----------------------------------------------------
+    # Fishing Gear & Authentic Pinoy Fishes
+    # ----------------------------------------------------
+    "fishing_rod": {
+        "name": "Bamboo Fishing Rod", "cat": CAT_TOOL, "power": 10, "damage": 2, "max_stack": 1, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "A flexible bamboo pole fitted with strong fiber line. Cast into water to catch Pinoy fish.",
+        "lore": "'Patience brings the ocean's bounty.'",
+        "special": "Fishing Tool"
+    },
+    "raw_bangus": {
+        "name": "Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "National silvery fish of Potaria, prized for its tender belly. Best cooked before eating.",
+        "lore": "'Known as the milkfish, glistening with silver scales.'",
+        "special": "Raw Fish (Restores 15 HP)"
+    },
+    "raw_tilapia": {
+        "name": "Tilapia", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Freshwater cichlid with hardy scales, thriving in inland streams. Cook over fire.",
+        "lore": "'Hardy and abundant in freshwater streams.'",
+        "special": "Raw Fish (Restores 12 HP)"
+    },
+    "raw_galunggong": {
+        "name": "Galunggong", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 10, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Round scad, the beloved everyday staple fish with rich flavor.",
+        "lore": "'The people's fish, found schooling across coastal reefs.'",
+        "special": "Raw Fish (Restores 10 HP)"
+    },
+    "raw_maya_maya": {
+        "name": "Maya-Maya", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 20, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Vibrant red snapper found patrolling deep rocky reefs.",
+        "lore": "'Fiery crimson snapper prized in traditional stews.'",
+        "special": "Raw Fish (Restores 20 HP)"
+    },
+    "raw_tanigue": {
+        "name": "Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Sleek Spanish mackerel with firm, prized steaks.",
+        "lore": "'Swift pelagic predator of open azure waters.'",
+        "special": "Raw Fish (Restores 25 HP)"
+    },
+    "raw_tambakol": {
+        "name": "Tambakol", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 22, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Yellowfin tuna relative with deep crimson flesh and powerful fins.",
+        "lore": "'Powerful ocean swimmer with rich, meaty loins.'",
+        "special": "Raw Fish (Restores 22 HP)"
+    },
+    "raw_lapu_lapu": {
+        "name": "Lapu-Lapu", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 28, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Esteemed spotted reef grouper named after the brave chieftain warrior.",
+        "lore": "'King of coral reefs, renowned for delicate white meat.'",
+        "special": "Raw Fish (Restores 28 HP)"
+    },
+    "raw_hito": {
+        "name": "Hito", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 16, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Whiskered freshwater catfish dwelling in muddy bottoms and waterways.",
+        "lore": "'Slippery bottom-dweller with keen barbels.'",
+        "special": "Raw Fish (Restores 16 HP)"
+    },
+    "raw_dilis": {
+        "name": "Dilis", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 8, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Tiny anchovies swimming in shimmering schools along shores.",
+        "lore": "'Small yet bursting with mineral flavor when dried or fried.'",
+        "special": "Raw Fish (Restores 8 HP)"
+    },
+    "raw_dalagang_bukid": {
+        "name": "Dalagang Bukid", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Yellowtail fusilier with radiant crimson-gold scales.",
+        "lore": "'Named maiden of the field for its vibrant colorful robes.'",
+        "special": "Raw Fish (Restores 15 HP)"
+    },
+    "cooked_bangus": {
+        "name": "Inihaw na Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 65, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Charcoal-grilled milkfish stuffed with tomatoes and onions. Restores 65 HP.",
+        "lore": "'Succulent belly grilled over coconut charcoal.'",
+        "special": "Restores 65 Health"
+    },
+    "cooked_tilapia": {
+        "name": "Pritong Tilapia", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 50, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Crispy fried whole tilapia seasoned with sea salt. Restores 50 HP.",
+        "lore": "'Crisp, crunchy skin with steaming tender flakes.'",
+        "special": "Restores 50 Health"
+    },
+    "cooked_galunggong": {
+        "name": "Pritong Galunggong", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 45, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Deep-fried round scad paired with spicy vinegar dipping. Restores 45 HP.",
+        "lore": "'The golden fried staple of everyday adventurers.'",
+        "special": "Restores 45 Health"
+    },
+    "cooked_maya_maya": {
+        "name": "Sinigang na Maya-Maya", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 80, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Tamarind-sour savory soup with red snapper. Restores 80 HP.",
+        "lore": "'Invigorating sour broth that cures fatigue instantly.'",
+        "special": "Restores 80 Health"
+    },
+    "cooked_tanigue": {
+        "name": "Kinilaw na Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 90, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Citrus and coconut vinegar cured Spanish mackerel ceviche. Restores 90 HP.",
+        "lore": "'Infused with ginger and calamansi for peak vigor.'",
+        "special": "Restores 90 Health"
+    },
+    "cooked_tambakol": {
+        "name": "Inihaw na Tambakol", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 85, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Flame-broiled yellowfin steaks basted in sweet soy glaze. Restores 85 HP.",
+        "lore": "'Dense hearty tuna steak with rich smokiness.'",
+        "special": "Restores 85 Health"
+    },
+    "cooked_lapu_lapu": {
+        "name": "Pasingaw na Lapu-Lapu", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
+        "rarity": RARITY_EPIC,
+        "desc": "Ginger-steamed grouper dressed in sesame soy sauce. Restores 110 HP.",
+        "lore": "'Royalty-grade feast that fortifies the body.'",
+        "special": "Restores 110 Health"
+    },
+    "cooked_hito": {
+        "name": "Adobong Hito", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 70, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Catfish simmered in garlic, vinegar, and black peppercorns. Restores 70 HP.",
+        "lore": "'Savory adobo sauce tenderizes rich catfish.'",
+        "special": "Restores 70 Health"
+    },
+    "cooked_dilis": {
+        "name": "Pritong Dilis", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Glazed crunchy sweet-and-spicy dried anchovies. Restores 35 HP.",
+        "lore": "'Irresistible crunchy snack for long cavern treks.'",
+        "special": "Restores 35 Health"
+    },
+    "cooked_dalagang_bukid": {
+        "name": "Pritong Dalagang Bukid", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 60, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Crispy pan-fried yellowtail fusilier with golden crust. Restores 60 HP.",
+        "lore": "'Golden savory fish loved at every gathering.'",
+        "special": "Restores 60 Health"
+    },
     "dungeon_rune": {
         "name": "Dungeon Teleporter Rune", "cat": CAT_SPECIAL, "power": 0, "damage": 0, "max_stack": 10, "tile": None,
         "rarity": RARITY_EPIC,
@@ -1539,7 +1734,7 @@ ITEM_REGISTRY = {
     },
     "rope_rungs": {
         "name": "Rope Rungs", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
-        "tile": TILE_WOOD_PLATFORM, "rarity": RARITY_COMMON,
+        "tile": TILE_ROPE_RUNGS, "rarity": RARITY_COMMON,
         "desc": "Knotted fiber ladder rungs for swiftly ascending vertical cliffs and shafts.",
         "lore": "", "effects": [], "special": "Climbable Platform"
     },
@@ -2321,6 +2516,46 @@ class Inventory:
         start_y = 20
         rows = INV_ROWS if self.is_open else 1
         return pygame.Rect(start_x + 326, start_y + rows * (SLOT_SIZE + SLOT_PADDING) + 4, 76, 22)
+
+    def get_organize_button_rect(self):
+        """Returns the screen Rect for the UI [ORGANIZE] button to fill gaps."""
+        start_x = 20
+        start_y = 20
+        rows = INV_ROWS if self.is_open else 1
+        return pygame.Rect(start_x + 410, start_y + rows * (SLOT_SIZE + SLOT_PADDING) + 4, 82, 22)
+
+    def organize_inventory(self, include_hotbar=True):
+        """
+        Compacts inventory items forward in current sequential order to fill all missing slots (None)
+        without sorting by item type, category, or rarity.
+        Combines matching partial stacks of identical items and removes gaps.
+        """
+        target_slots = self.slots if include_hotbar else self.slots[HOTBAR_SLOTS:]
+        compacted = []
+        for s in target_slots:
+            if s is not None:
+                merged = False
+                for existing in compacted:
+                    if (existing.item_id == s.item_id and
+                        getattr(existing, "enhancement_level", 0) == getattr(s, "enhancement_level", 0) and
+                        not getattr(existing, "is_broken", False) and not getattr(s, "is_broken", False)):
+                        space = existing.max_stack - existing.count
+                        if space > 0:
+                            take = min(space, s.count)
+                            existing.count += take
+                            s.count -= take
+                            if s.count <= 0:
+                                merged = True
+                                break
+                if not merged and s.count > 0:
+                    compacted.append(s)
+
+        new_slots = compacted + [None] * (len(target_slots) - len(compacted))
+        if include_hotbar:
+            self.slots = new_slots
+        else:
+            self.slots[HOTBAR_SLOTS:] = new_slots
+        return True
 
     def recycle_selected_or_held(self):
         """Permanently disposes of the held item or currently selected item.

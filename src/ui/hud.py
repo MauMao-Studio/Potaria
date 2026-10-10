@@ -335,6 +335,25 @@ class HUD:
                 pygame.draw.rect(target_surf, (220, 60, 60), tt_bg, 1, border_radius=4)
                 target_surf.blit(tt_surf, (tt_bg.x + 5, tt_bg.y + 3))
 
+            # Interactive ORGANIZE button
+            if hasattr(inventory, "get_organize_button_rect"):
+                org_rect = inventory.get_organize_button_rect()
+                is_org_hover = org_rect.collidepoint(mouse_x, mouse_y)
+                org_bg = (40, 110, 70) if is_org_hover else (25, 75, 48)
+                org_border = (120, 255, 160) if is_org_hover else (60, 160, 100)
+                pygame.draw.rect(target_surf, org_bg, org_rect, border_radius=4)
+                pygame.draw.rect(target_surf, org_border, org_rect, 1, border_radius=4)
+                o_txt = self.font_sm.render("ORGANIZE", True, (235, 255, 235) if not is_org_hover else (200, 255, 200))
+                target_surf.blit(o_txt, (org_rect.centerx - o_txt.get_width() // 2, org_rect.centery - o_txt.get_height() // 2))
+
+                if is_org_hover:
+                    tt_text = "Compacts items forward to fill empty gaps"
+                    tt_surf = self.font_sm.render(tt_text, True, (220, 255, 220))
+                    tt_bg = pygame.Rect(mouse_x + 10, mouse_y + 12, tt_surf.get_width() + 10, tt_surf.get_height() + 6)
+                    pygame.draw.rect(target_surf, (15, 40, 25, 230), tt_bg, border_radius=4)
+                    pygame.draw.rect(target_surf, (60, 200, 100), tt_bg, 1, border_radius=4)
+                    target_surf.blit(tt_surf, (tt_bg.x + 5, tt_bg.y + 3))
+
         return hovered
 
     def _render_party_hud(self, target_surf, lan_client, inventory=None, crafting_system=None):

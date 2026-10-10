@@ -29,6 +29,7 @@ from src.constants import (
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
+    TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_BLIGHTSTONE, WALL_MUSHROOM, WALL_GLASS,
     COLOR_POTATO_BODY, COLOR_POTATO_HIGHLIGHT, COLOR_POTATO_SHADOW, COLOR_SPROUT,
@@ -324,6 +325,205 @@ class AssetFactory:
             "accent": shift_col(chosen.get("accent", chosen["secondary"])),
         }
 
+    def _draw_sapling_sprite(self, surf, item_id, h):
+        """Draws unique saplings: oak, palm, pine, blight"""
+        id_lower = item_id.lower()
+        if "palm" in id_lower:
+            trunk_col = (180, 150, 100)
+            leaf_col = (50, 180, 70)
+            pygame.draw.line(surf, trunk_col, (12, 20), (14, 14), 2)
+            pygame.draw.line(surf, (150, 120, 80), (14, 14), (16, 9), 2)
+            for pt in [(12, 7), (18, 5), (20, 9), (14, 11), (11, 10)]:
+                pygame.draw.line(surf, leaf_col, (16, 9), pt, 2)
+                pygame.draw.circle(surf, (70, 200, 90), pt, 1)
+        elif "pine" in id_lower:
+            trunk_col = (100, 70, 40)
+            leaf_col = (30, 110, 50)
+            pygame.draw.rect(surf, trunk_col, (11, 16, 2, 6))
+            pygame.draw.polygon(surf, leaf_col, [(12, 4), (7, 12), (17, 12)])
+            pygame.draw.polygon(surf, leaf_col, [(12, 8), (6, 17), (18, 17)])
+            surf.set_at((12, 6), (40, 140, 70))
+            surf.set_at((10, 14), (40, 140, 70))
+            surf.set_at((14, 15), (40, 140, 70))
+        elif "blight" in id_lower:
+            trunk_col = (50, 30, 60)
+            bud_col = (180, 70, 220)
+            pygame.draw.line(surf, trunk_col, (12, 21), (10, 16), 2)
+            pygame.draw.line(surf, trunk_col, (10, 16), (14, 10), 2)
+            pygame.draw.line(surf, trunk_col, (14, 10), (12, 6), 2)
+            surf.set_at((9, 14), (30, 15, 40))
+            surf.set_at((15, 12), (30, 15, 40))
+            pygame.draw.circle(surf, bud_col, (12, 5), 3)
+            pygame.draw.circle(surf, (220, 120, 255), (12, 5), 1)
+        else:
+            trunk_col = (120, 80, 40)
+            leaf_col = (60, 160, 60)
+            pygame.draw.rect(surf, trunk_col, (11, 14, 2, 8))
+            pygame.draw.circle(surf, leaf_col, (12, 10), 6)
+            pygame.draw.circle(surf, (40, 120, 40), (10, 12), 4)
+            pygame.draw.circle(surf, (80, 190, 80), (14, 8), 3)
+
+        # Removed noise pixel
+
+    def _draw_fishing_rod_sprite(self, surf):
+        for i in range(18):
+            px = 3 + i
+            py = 21 - i
+            col = (140, 105, 50) if (i % 4 == 0) else (195, 165, 85)
+            surf.set_at((px, py), col)
+            surf.set_at((px + 1, py), (170, 140, 70))
+        surf.set_at((21, 2), (210, 215, 225))
+        for ly in range(3, 16):
+            surf.set_at((21, ly), (230, 230, 235))
+        pygame.draw.circle(surf, (225, 40, 40), (21, 16), 2)
+        pygame.draw.circle(surf, (245, 245, 250), (21, 18), 2)
+        surf.set_at((21, 16), (255, 120, 120))
+        pygame.draw.circle(surf, (160, 170, 185), (6, 18), 2)
+        surf.set_at((6, 18), (220, 230, 240))
+
+    def _draw_pinoy_fish(self, surf, item_id, h):
+        fish_key = item_id.replace("raw_", "")
+        if fish_key == "bangus":
+            body_col, back_col, belly_col = (195, 205, 220), (95, 120, 145), (235, 240, 250)
+            fin_col = (175, 190, 205)
+            pygame.draw.ellipse(surf, body_col, (4, 8, 14, 8))
+            pygame.draw.arc(surf, back_col, (4, 7, 14, 8), 0.2, 3.0, 2)
+            pygame.draw.line(surf, belly_col, (6, 14), (16, 14), 2)
+            pygame.draw.polygon(surf, fin_col, [(17, 12), (22, 7), (20, 12), (22, 17)])
+            pygame.draw.polygon(surf, fin_col, [(10, 8), (12, 5), (14, 8)])
+            pygame.draw.polygon(surf, fin_col, [(8, 13), (10, 16), (11, 13)])
+            surf.set_at((6, 10), (25, 30, 40))
+            surf.set_at((6, 9), (255, 255, 255))
+            pygame.draw.arc(surf, (120, 140, 160), (7, 9, 3, 6), -1.5, 1.5, 1)
+        elif fish_key == "tilapia":
+            body_col, back_col = (120, 145, 115), (75, 95, 70)
+            pygame.draw.ellipse(surf, body_col, (4, 7, 13, 10))
+            pygame.draw.arc(surf, back_col, (4, 6, 13, 9), 0.2, 3.0, 2)
+            for bx in (8, 11, 14):
+                pygame.draw.line(surf, (60, 80, 55), (bx, 9), (bx, 14), 1)
+            pygame.draw.polygon(surf, (90, 115, 85), [(8, 7), (12, 4), (16, 7)])
+            pygame.draw.polygon(surf, (90, 115, 85), [(16, 12), (21, 9), (21, 15)])
+            surf.set_at((6, 10), (20, 25, 20))
+        elif fish_key == "galunggong":
+            pygame.draw.ellipse(surf, (140, 160, 180), (3, 9, 15, 6))
+            pygame.draw.line(surf, (65, 95, 135), (4, 9), (17, 9), 2)
+            pygame.draw.polygon(surf, (230, 200, 60), [(17, 12), (22, 8), (20, 12), (22, 16)])
+            surf.set_at((5, 11), (20, 30, 45))
+            surf.set_at((5, 10), (255, 255, 255))
+        elif fish_key == "maya_maya":
+            pygame.draw.ellipse(surf, (220, 65, 65), (4, 7, 14, 10))
+            pygame.draw.arc(surf, (160, 35, 35), (4, 6, 14, 10), 0.2, 3.0, 2)
+            pygame.draw.polygon(surf, (190, 45, 45), [(9, 7), (13, 4), (16, 7)])
+            pygame.draw.polygon(surf, (190, 45, 45), [(17, 12), (22, 8), (20, 12), (22, 16)])
+            surf.set_at((6, 10), (255, 215, 70))
+            surf.set_at((6, 11), (30, 10, 10))
+        elif fish_key == "tanigue":
+            pygame.draw.ellipse(surf, (170, 185, 205), (2, 9, 17, 6))
+            pygame.draw.line(surf, (70, 95, 120), (3, 9), (18, 9), 1)
+            for mx in (7, 10, 13):
+                surf.set_at((mx, 11), (110, 130, 150))
+            pygame.draw.polygon(surf, (110, 130, 155), [(18, 12), (23, 7), (21, 12), (23, 17)])
+            surf.set_at((4, 11), (25, 35, 45))
+        elif fish_key == "tambakol":
+            pygame.draw.ellipse(surf, (45, 75, 130), (3, 8, 15, 9))
+            pygame.draw.arc(surf, (25, 45, 85), (3, 7, 15, 9), 0.2, 3.0, 2)
+            for fx in (13, 15, 17):
+                surf.set_at((fx, 8), (245, 200, 50))
+                surf.set_at((fx, 15), (245, 200, 50))
+            pygame.draw.polygon(surf, (235, 190, 45), [(17, 12), (23, 7), (20, 12), (23, 17)])
+            surf.set_at((5, 11), (255, 240, 150))
+            surf.set_at((5, 12), (20, 20, 40))
+        elif fish_key == "lapu_lapu":
+            pygame.draw.ellipse(surf, (175, 85, 60), (3, 7, 15, 11))
+            pygame.draw.arc(surf, (120, 50, 35), (3, 6, 15, 11), 0.2, 3.0, 2)
+            for spot in [(7, 9), (10, 11), (13, 10), (9, 13), (12, 14)]:
+                surf.set_at(spot, (235, 205, 175))
+            pygame.draw.polygon(surf, (140, 65, 45), [(17, 12), (22, 9), (22, 15)])
+            surf.set_at((5, 10), (30, 15, 10))
+        elif fish_key == "hito":
+            pygame.draw.ellipse(surf, (55, 60, 70), (4, 9, 14, 7))
+            pygame.draw.line(surf, (110, 115, 125), (6, 14), (16, 14), 1)
+            pygame.draw.line(surf, (35, 40, 45), (4, 11), (1, 9), 1)
+            pygame.draw.line(surf, (35, 40, 45), (4, 13), (1, 15), 1)
+            pygame.draw.polygon(surf, (45, 50, 60), [(17, 12), (21, 10), (21, 14)])
+            surf.set_at((5, 11), (220, 220, 100))
+        elif fish_key == "dilis":
+            for ox, oy in [(2, 7), (4, 11), (3, 15)]:
+                pygame.draw.ellipse(surf, (210, 230, 245), (ox, oy, 14, 4))
+                pygame.draw.line(surf, (130, 195, 235), (ox + 1, oy + 2), (ox + 12, oy + 2), 1)
+                surf.set_at((ox + 2, oy + 1), (30, 45, 65))
+        elif fish_key == "dalagang_bukid":
+            pygame.draw.ellipse(surf, (230, 80, 105), (3, 8, 15, 8))
+            pygame.draw.line(surf, (250, 215, 60), (4, 8), (17, 8), 2)
+            pygame.draw.polygon(surf, (245, 205, 55), [(17, 12), (22, 7), (20, 12), (22, 17)])
+            surf.set_at((5, 11), (255, 255, 255))
+            surf.set_at((5, 12), (30, 15, 25))
+        surf.set_at((1 + (h[0] % 2), 22), (h[1], h[2], h[3], 255))
+
+    def _draw_pinoy_cooked_fish(self, surf, item_id, h):
+        fish_key = item_id.replace("cooked_", "")
+        leaf_col = (55, 135, 50)
+        clay_col = (185, 110, 65)
+        if fish_key == "bangus":
+            pygame.draw.ellipse(surf, leaf_col, (2, 5, 20, 14))
+            pygame.draw.ellipse(surf, (180, 120, 65), (4, 7, 16, 10))
+            for gx in (7, 11, 15):
+                pygame.draw.line(surf, (55, 30, 15), (gx, 8), (gx, 16), 1)
+            surf.set_at((9, 11), (225, 45, 45))
+            surf.set_at((11, 12), (245, 245, 235))
+            surf.set_at((13, 10), (225, 45, 45))
+            surf.set_at((14, 13), (85, 195, 75))
+        elif fish_key == "tilapia":
+            pygame.draw.rect(surf, (225, 220, 205), (2, 6, 20, 12), border_radius=2)
+            pygame.draw.ellipse(surf, (190, 135, 50), (4, 7, 16, 9))
+            for fx in (8, 12):
+                pygame.draw.line(surf, (130, 80, 25), (fx, 8), (fx + 2, 14), 1)
+            surf.set_at((17, 9), (195, 220, 50))
+        elif fish_key == "galunggong":
+            pygame.draw.ellipse(surf, leaf_col, (2, 6, 20, 13))
+            pygame.draw.ellipse(surf, (175, 115, 55), (4, 9, 14, 6))
+            pygame.draw.circle(surf, (240, 240, 245), (18, 14), 3)
+            surf.set_at((18, 14), (210, 40, 40))
+        elif fish_key == "maya_maya":
+            pygame.draw.circle(surf, clay_col, (12, 12), 9)
+            pygame.draw.circle(surf, (225, 185, 95), (12, 12), 7)
+            pygame.draw.ellipse(surf, (215, 80, 80), (8, 9, 8, 5))
+            surf.set_at((11, 14), (75, 160, 60))
+        elif fish_key == "tanigue":
+            pygame.draw.circle(surf, (140, 95, 55), (12, 12), 9)
+            pygame.draw.circle(surf, (240, 245, 250), (12, 12), 7)
+            for cx, cy in [(10, 10), (14, 11), (11, 14)]:
+                surf.set_at((cx, cy), (225, 45, 45))
+            surf.set_at((13, 13), (195, 225, 60))
+        elif fish_key == "tambakol":
+            pygame.draw.rect(surf, (215, 210, 195), (3, 6, 18, 13), border_radius=2)
+            pygame.draw.ellipse(surf, (130, 70, 40), (5, 8, 14, 8))
+            pygame.draw.line(surf, (45, 20, 15), (7, 9), (16, 9), 1)
+            pygame.draw.line(surf, (45, 20, 15), (7, 13), (16, 13), 1)
+            surf.set_at((10, 11), (255, 240, 180))
+        elif fish_key == "lapu_lapu":
+            pygame.draw.ellipse(surf, (240, 245, 255), (2, 5, 20, 14))
+            pygame.draw.ellipse(surf, (215, 205, 190), (4, 7, 16, 9))
+            pygame.draw.line(surf, (245, 225, 120), (8, 10), (14, 10), 1)
+            pygame.draw.line(surf, (75, 185, 80), (7, 12), (15, 12), 1)
+        elif fish_key == "hito":
+            pygame.draw.circle(surf, (70, 45, 30), (12, 12), 9)
+            pygame.draw.circle(surf, (95, 55, 30), (12, 12), 7)
+            pygame.draw.ellipse(surf, (110, 70, 40), (7, 9, 10, 6))
+            surf.set_at((12, 13), (245, 235, 205))
+            surf.set_at((9, 11), (20, 15, 10))
+        elif fish_key == "dilis":
+            pygame.draw.ellipse(surf, (230, 225, 210), (3, 6, 18, 13))
+            for dx, dy in [(6, 9), (10, 8), (14, 10), (8, 12), (12, 13), (15, 12)]:
+                pygame.draw.line(surf, (185, 125, 45), (dx, dy), (dx + 3, dy + 1), 1)
+                surf.set_at((dx + 1, dy), (220, 45, 40))
+        elif fish_key == "dalagang_bukid":
+            pygame.draw.ellipse(surf, leaf_col, (2, 5, 20, 14))
+            pygame.draw.ellipse(surf, (210, 145, 60), (4, 7, 16, 9))
+            pygame.draw.line(surf, (235, 95, 115), (5, 10), (17, 10), 1)
+            surf.set_at((16, 13), (185, 220, 50))
+        surf.set_at((1 + (h[0] % 2), 22), (h[1], h[2], h[3], 255))
+
     def generate_item_icon(self, item_id):
         """Generates a unique, beautifully shaded 24x24 pixel art icon for any item."""
         item_id = str(getattr(item_id, "item_id", item_id))
@@ -341,6 +541,81 @@ class AssetFactory:
         surf = pygame.Surface((24, 24), pygame.SRCALPHA)
         id_lower = item_id.lower()
         combined = f"{id_lower} {name_lower}"
+
+        if "sapling" in id_lower:
+            self._draw_sapling_sprite(surf, item_id, h)
+            return surf
+
+        # 0. Natural Placeable Blocks & Visual Parity Items
+        NATURAL_BLOCK_TILES = {
+            "dirt_block": TILE_DIRT,
+            "dirt": TILE_DIRT,
+            "sand_block": TILE_SAND,
+            "sand": TILE_SAND,
+            "stone_block": TILE_STONE,
+            "stone": TILE_STONE,
+            "wood": TILE_WOOD,
+            "wood_block": TILE_WOOD,
+            "wood_blocks": TILE_WOOD,
+            "tile_wood": TILE_WOOD,
+            "leaves": TILE_LEAVES,
+            "leaf_block": TILE_LEAVES,
+            "snow_block": TILE_SNOW,
+            "snow": TILE_SNOW,
+            "ice_block": TILE_ICE,
+            "ice": TILE_ICE,
+            "copper_ore": TILE_COPPER_ORE,
+            "iron_ore": TILE_IRON_ORE,
+            "gold_ore": TILE_GOLD_ORE,
+            "sandstone_block": TILE_SANDSTONE,
+            "sandstone": TILE_SANDSTONE,
+            "blightstone_block": TILE_BLIGHTSTONE,
+            "ebonstone_block": TILE_BLIGHTSTONE,
+            "rope_rungs": TILE_ROPE_RUNGS,
+            "iron_chest": TILE_IRON_CHEST,
+            "iron_storage_chest": TILE_IRON_CHEST,
+
+            "cactus": TILE_CACTUS,
+            "blight_grass": TILE_BLIGHT_GRASS,
+            "corrupt_grass": TILE_BLIGHT_GRASS,
+            "mushroom_grass": TILE_MUSHROOM_GRASS,
+            "dungeon_brick": TILE_DUNGEON_BRICK,
+        }
+        target_tile = NATURAL_BLOCK_TILES.get(id_lower)
+        if target_tile is None:
+            try:
+                from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
+                resolved = ITEM_ALIASES.get(id_lower, id_lower)
+                if resolved in NATURAL_BLOCK_TILES:
+                    target_tile = NATURAL_BLOCK_TILES[resolved]
+                else:
+                    reg_item = ITEM_REGISTRY.get(resolved)
+                    if reg_item and reg_item.get("tile") is not None:
+                        from src.ui.crafting import load_craftable_recipes
+                        crafting_ids = {r["result"] for r in load_craftable_recipes()}
+                        if resolved not in crafting_ids:
+                            target_tile = reg_item.get("tile")
+            except Exception:
+                pass
+
+        if target_tile is not None and target_tile in self.tiles:
+            base_surf = pygame.transform.scale(self.tiles[target_tile], (24, 24))
+            surf.blit(base_surf, (0, 0))
+            # Removed noise pixel
+            return surf
+
+        if id_lower == "fishing_rod":
+            self._draw_fishing_rod_sprite(surf)
+            return surf
+        elif id_lower.startswith("raw_") and any(id_lower == f"raw_{k}" for k in ("bangus", "tilapia", "galunggong", "maya_maya", "tanigue", "tambakol", "lapu_lapu", "hito", "dilis", "dalagang_bukid")):
+            self._draw_pinoy_fish(surf, id_lower, h)
+            return surf
+        elif id_lower.startswith("cooked_") and any(id_lower == f"cooked_{k}" for k in ("bangus", "tilapia", "galunggong", "maya_maya", "tanigue", "tambakol", "lapu_lapu", "hito", "dilis", "dalagang_bukid")):
+            self._draw_pinoy_cooked_fish(surf, id_lower, h)
+            return surf
+        elif "sapling" in id_lower:
+            self._draw_sapling_sprite(surf, item_id, h)
+            return surf
 
         # 1. Bespoke Real-World & Iconic Item Renderers (Priority 1)
         if id_lower in (
@@ -3873,6 +4148,61 @@ class AssetFactory:
         pygame.draw.rect(spectral_lantern, (110, 175, 225), (4, 13, 8, 3))
         self.tiles[TILE_SPECTRAL_LANTERN] = spectral_lantern
 
+        # Oak Sapling (16x16 - Living plant with animated wind sway and sunlight glints)
+        self.sapling_frames = []
+        for s_idx in range(4):
+            sap = pygame.Surface((16, 16), pygame.SRCALPHA)
+            sway_dx = 1 if s_idx == 1 else (-1 if s_idx == 3 else 0)
+            pygame.draw.line(sap, (115, 75, 40), (8, 9), (8, 15), 2)
+            pygame.draw.line(sap, (140, 95, 55), (8, 11), (6 + sway_dx, 13), 1)
+            pygame.draw.line(sap, (140, 95, 55), (8, 10), (10 + sway_dx, 12), 1)
+            for cx, cy, rad, col in [
+                (8 + sway_dx, 6, 4, (55, 165, 50)),
+                (5 + sway_dx, 7, 3, (65, 185, 60)),
+                (11 + sway_dx, 7, 3, (65, 185, 60)),
+                (8 + sway_dx, 4, 3, (90, 215, 80)),
+            ]:
+                pygame.draw.circle(sap, col, (cx, cy), rad)
+            glint = (255, 255, 220) if s_idx == 2 else (160, 245, 130)
+            sap.set_at((8 + sway_dx, 3), glint)
+            sap.set_at((6 + sway_dx, 5), (140, 235, 110))
+            self.sapling_frames.append(sap)
+        self.tiles[TILE_SAPLING] = self.sapling_frames[0]
+        self.tiles["sapling_frames"] = self.sapling_frames
+
+        # Fortified Iron Storage Chest (16x16 - Silver steel plating, iron rivets & padlock)
+        iron_chest = pygame.Surface((16, 16), pygame.SRCALPHA)
+        pygame.draw.rect(iron_chest, (140, 150, 165), (1, 3, 14, 11), border_radius=2)
+        pygame.draw.rect(iron_chest, (55, 65, 80), (1, 3, 14, 11), 1, border_radius=2)
+        pygame.draw.line(iron_chest, (200, 210, 225), (3, 3), (12, 3), 1)
+        pygame.draw.line(iron_chest, (45, 52, 65), (1, 7), (14, 7), 1)
+        for sx in (3, 11):
+            pygame.draw.rect(iron_chest, (85, 95, 110), (sx, 3, 2, 11))
+            pygame.draw.line(iron_chest, (180, 190, 205), (sx, 3), (sx, 6), 1)
+            iron_chest.set_at((sx, 4), (225, 235, 245))
+            iron_chest.set_at((sx, 11), (225, 235, 245))
+        pygame.draw.rect(iron_chest, (185, 195, 210), (6, 6, 4, 3), border_radius=1)
+        pygame.draw.rect(iron_chest, (45, 52, 65), (6, 6, 4, 3), 1)
+        iron_chest.set_at((7, 7), (35, 40, 50))
+        iron_chest.set_at((8, 7), (35, 40, 50))
+        self.tiles[TILE_IRON_CHEST] = iron_chest
+
+        # Rope Rungs (16x16 - Climbable vertical ladder with knotted fiber ropes & wood steps)
+        rope = pygame.Surface((16, 16), pygame.SRCALPHA)
+        for rx in (3, 12):
+            for ry in range(0, 16, 2):
+                col = (185, 140, 75) if (ry % 4 == 0) else (140, 95, 45)
+                pygame.draw.rect(rope, col, (rx, ry, 2, 2))
+                pygame.draw.rect(rope, (85, 55, 25), (rx, ry, 2, 2), 1)
+        for step_y in (4, 10):
+            pygame.draw.rect(rope, (165, 115, 60), (3, step_y, 11, 2))
+            pygame.draw.line(rope, (215, 165, 105), (4, step_y), (12, step_y), 1)
+            pygame.draw.line(rope, (95, 60, 30), (3, step_y + 1), (13, step_y + 1), 1)
+            for knot_x in (2, 12):
+                pygame.draw.rect(rope, (205, 160, 90), (knot_x, step_y - 1, 3, 4), 1)
+                rope.set_at((knot_x + 1, step_y), (230, 190, 120))
+        self.tiles[TILE_ROPE_RUNGS] = rope
+
     # ==========================================================================
     # 3. WALLS
     # ==========================================================================
@@ -6317,6 +6647,22 @@ class AssetFactory:
                 pygame.draw.circle(surf, (255, 220, 80, fa), (32, 32), fr + 3, 2)
             self.animated_effects["weapon_charge_burst"].append(surf)
 
+        # Guarantee all registered craftable items exist on disk in assets/craftable_items/
+        c_dir = os.path.join("assets", "craftable_items")
+        if os.path.exists(c_dir):
+            try:
+                from src.ui.crafting import load_craftable_recipes
+                for r in load_craftable_recipes():
+                    res = r.get("result")
+                    if res:
+                        c_path = os.path.join(c_dir, f"{res}.png")
+                        if not os.path.exists(c_path):
+                            c_surf = self.items.get(res)
+                            if c_surf:
+                                pygame.image.save(c_surf, c_path)
+            except Exception:
+                pass
+
     # ==========================================================================
     # 9. DISK EXPORT ENGINE & UNIQUE ASSETS CHECKPOINT TRACKER
     # ==========================================================================
@@ -6334,7 +6680,15 @@ class AssetFactory:
             and os.path.exists(os.path.join(proj_dir, "scepter_pulse.png"))
         )
         has_effects = os.path.exists(os.path.join(eff_dir, "ancient_slash_0.png")) and len(os.listdir(eff_dir)) >= 100 if os.path.exists(eff_dir) else False
-        has_craftable = os.path.exists(craftable_dir) and len(os.listdir(craftable_dir)) >= 120 and os.path.exists(craftable_sample)
+        from src.ui.crafting import load_craftable_recipes
+        craftable_recipes = load_craftable_recipes()
+        crafting_item_ids = {r["result"] for r in craftable_recipes}
+        has_craftable = (
+            os.path.exists(craftable_dir)
+            and len(os.listdir(craftable_dir)) >= len(crafting_item_ids)
+            and os.path.exists(craftable_sample)
+            and all(os.path.exists(os.path.join(craftable_dir, f"{cid}.png")) for cid in crafting_item_ids)
+        )
         if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects:
             return
 
@@ -6343,6 +6697,12 @@ class AssetFactory:
             os.makedirs(os.path.join(target_dir, subdir), exist_ok=True)
 
         for tid, surf in self.tiles.items():
+            if tid == 54:
+                old_file = os.path.join(target_dir, "tiles", f"tile_{tid}.png")
+                if os.path.exists(old_file):
+                    try: os.remove(old_file)
+                    except OSError: pass
+                continue
             if isinstance(surf, pygame.Surface):
                 pygame.image.save(surf, os.path.join(target_dir, "tiles", f"tile_{tid}.png"))
             elif isinstance(surf, list):
@@ -6353,11 +6713,6 @@ class AssetFactory:
             if isinstance(surf, pygame.Surface):
                 pygame.image.save(surf, os.path.join(target_dir, "walls", f"wall_{wid}.png"))
 
-        # Obtain all craftable recipe item IDs
-        from src.ui.crafting import load_craftable_recipes
-        craftable_recipes = load_craftable_recipes()
-        crafting_item_ids = {r["result"] for r in craftable_recipes}
-
         # Export dedicated craftable items to assets/craftable_items/
         for cname in sorted(crafting_item_ids):
             surf = self.items[cname]
@@ -6365,9 +6720,9 @@ class AssetFactory:
                 pygame.image.save(surf, os.path.join(craftable_dir, f"{cname}.png"))
 
         # Export droppable items to assets/items/
-        from src.ui.inventory import ITEM_REGISTRY
+        from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
         for iname in sorted(ITEM_REGISTRY.keys()):
-            if iname in crafting_item_ids:
+            if iname in crafting_item_ids or iname in ITEM_ALIASES:
                 old_file = os.path.join(target_dir, "items", f"{iname}.png")
                 if os.path.exists(old_file):
                     try:

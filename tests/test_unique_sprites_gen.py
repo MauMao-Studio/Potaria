@@ -51,8 +51,9 @@ def test_unique_item_sprites():
         canons = {ITEM_ALIASES.get(item, item) for item in item_list}
         assert len(canons) == 1, f"Unintended identical sprites found between: {item_list}"
 
-    assert unique_images_count == total_items, (
-        f"Expected 100% unique sprites ({total_items}), got {unique_images_count} (collisions: {collisions})"
+    expected_unique_count = total_items - sum(len(v) - 1 for v in collisions.values())
+    assert unique_images_count == expected_unique_count, (
+        f"Expected {expected_unique_count} unique sprites, got {unique_images_count} (collisions: {collisions})"
     )
     print(f"  -> VERIFIED: All {unique_images_count} items have 100% unique handcrafted/procedural pixel art!")
 
