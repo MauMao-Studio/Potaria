@@ -221,6 +221,34 @@ class TestLatestFixes(unittest.TestCase):
         self.assertEqual(self.world.get_tile(tx, ty - 1), TILE_AIR)
         self.assertEqual(self.world.get_tile(tx, ty - 2), TILE_AIR)
 
+    def test_natural_grounded_tree_decay_when_chopped(self):
+        self.world.tree_cascade_felling = False
+        # Tree standing on solid dirt/grass ground
+        gx, gy = 30, 50
+        self.world.set_tile(gx, gy + 1, TILE_GRASS)  # Solid ground beneath
+        self.world.set_tile(gx, gy, TILE_WOOD_TRUNK)    # Base trunk
+        self.world.set_tile(gx, gy - 1, TILE_WOOD_TRUNK) # Mid trunk
+        self.world.set_tile(gx, gy - 2, TILE_WOOD_TRUNK) # Top trunk
+        self.world.set_tile(gx, gy - 3, TILE_LEAVES)     # Canopy leaf
+
+        # Chop base trunk at (gx, gy)
+        broken, drop, tid = self.world.damage_tile_at(gx, gy, 100)
+        self.assertTrue(broken)
+        self.assertEqual(self.world.get_tile(gx, gy), TILE_AIR)
+
+        # Severed mid and top trunks must be decaying even though solid grass is at gy + 1
+        self.assertIn((gx, gy - 1), self.world.decaying_blocks)
+        self.assertIn((gx, gy - 2), self.world.decaying_blocks)
+        self.assertIn((gx, gy - 3), self.world.decaying_blocks)
+
+        # Chop leaves directly
+        leaf_x, leaf_y = 40, 50
+        self.world.set_tile(leaf_x, leaf_y, TILE_LEAVES)
+        broken, drop, tid = self.world.damage_tile_at(leaf_x, leaf_y, 100)
+        self.assertTrue(broken)
+        self.assertEqual(drop, "leaves")
+        self.assertEqual(self.world.get_tile(leaf_x, leaf_y), TILE_AIR)
+
 
 if __name__ == "__main__":
     unittest.main()

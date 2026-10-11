@@ -581,6 +581,8 @@ class World:
                 self.decaying_blocks.pop((tx, ty), None)
 
             self.set_tile(tx, ty, TILE_AIR)
+            if t_id == TILE_LEAVES:
+                self._check_tree_decay(tx, ty)
             # Check adjacent torches and lanterns for loss of physical support
             for ndx, ndy in ((0, -1), (0, 1), (1, 0), (-1, 0)):
                 ntx, nty = tx + ndx, ty + ndy
@@ -606,23 +608,38 @@ class World:
         return False, None, t_id
 
     def _check_tree_decay(self, tx, ty):
-        """Scans for unsupported trunk blocks and canopy leaves above a broken trunk and starts their decay."""
+        """Scans for unsupported trunk blocks and canopy leaves after a tree block is broken, starting their decay."""
         if not hasattr(self, "decaying_blocks"):
             self.decaying_blocks = {}
 
+        # 1. Check for severed trunk blocks above the broken tile (or nearby connected branches)
+        # An upper trunk block (tx, uy) is supported only if it has a continuous un-decayed solid/trunk path to ground.
         severed_trunks = []
-        for dy in range(1, 25):
+        for dy in range(1, 30):
             uy = ty - dy
             tid = self.get_tile(tx, uy)
             if tid in (TILE_WOOD_TRUNK, TILE_WOOD):
-                # Check if this trunk block has any solid support beneath it
-                has_support_below = False
-                for sy in range(uy + 1, uy + 20):
-                    stid = self.get_tile(tx, sy)
-                    if stid != TILE_AIR and stid != TILE_WATER:
-                        has_support_below = True
+                # Verify whether (tx, uy) is grounded:
+                # Trace downwards from uy + 1: every block until solid ground must be an intact, non-decaying trunk.
+                is_grounded = True
+                curr_y = uy + 1
+                while True:
+                    cur_tid = self.get_tile(tx, curr_y)
+                    if (tx, curr_y) in self.decaying_blocks or cur_tid in (TILE_AIR, TILE_WATER):
+                        is_grounded = False
                         break
-                if not has_support_below:
+                    if cur_tid in (TILE_WOOD_TRUNK, TILE_WOOD):
+                        curr_y += 1
+                        continue
+                    # Hit ground tile (dirt, grass, stone, etc.)
+                    if self.is_tile_solid(tx, curr_y):
+                        is_grounded = True
+                        break
+                    # Hit non-solid tile that is not air/water/trunk
+                    is_grounded = False
+                    break
+
+                if not is_grounded:
                     severed_trunks.append((tx, uy))
                     if (tx, uy) not in self.decaying_blocks:
                         self.decaying_blocks[(tx, uy)] = {
@@ -631,28 +648,52 @@ class World:
                             "type": tid
                         }
             elif tid == TILE_AIR:
-                if dy > 5 and all(self.get_tile(tx, ty - k) == TILE_AIR for k in range(dy - 3, dy + 1)):
+                # If there's air, check if there's any more trunk within 2 blocks above
+                if all(self.get_tile(tx, uy - k) not in (TILE_WOOD_TRUNK, TILE_WOOD) for k in range(1, 4)):
                     break
+            elif tid == TILE_LEAVES:
+                # Canopy leaves directly above trunk column, continue checking
+                continue
             else:
                 break
 
-        # Check for canopy leaves around the broken trunk and any severed trunks
+        # 2. Check for canopy leaves around the broken tile and severed trunks
         check_origins = [(tx, ty)] + severed_trunks
         for cx, cy in check_origins:
-            for ldx in range(-4, 5):
-                for ldy in range(-5, 4):
+            for ldx in range(-5, 6):
+                for ldy in range(-6, 5):
                     lx = cx + ldx
                     ly = cy + ldy
                     if (lx, ly) in self.decaying_blocks:
                         continue
                     if self.get_tile(lx, ly) == TILE_LEAVES:
+                        # Check if this leaf block is within reach of an intact, non-decaying, grounded trunk block
                         has_grounded_trunk = False
-                        for tdx in range(-3, 4):
-                            for tdy in range(-3, 4):
-                                check_t = self.get_tile(lx + tdx, ly + tdy)
-                                if check_t in (TILE_WOOD_TRUNK, TILE_WOOD) and (lx + tdx, ly + tdy) not in self.decaying_blocks:
-                                    has_grounded_trunk = True
-                                    break
+                        for tdx in range(-4, 5):
+                            for tdy in range(-4, 5):
+                                tx_cand = lx + tdx
+                                ty_cand = ly + tdy
+                                cand_tid = self.get_tile(tx_cand, ty_cand)
+                                if cand_tid in (TILE_WOOD_TRUNK, TILE_WOOD) and (tx_cand, ty_cand) not in self.decaying_blocks:
+                                    # Verify cand_tid is grounded
+                                    cand_grounded = True
+                                    gy = ty_cand + 1
+                                    while True:
+                                        gtid = self.get_tile(tx_cand, gy)
+                                        if (tx_cand, gy) in self.decaying_blocks or gtid in (TILE_AIR, TILE_WATER):
+                                            cand_grounded = False
+                                            break
+                                        if gtid in (TILE_WOOD_TRUNK, TILE_WOOD):
+                                            gy += 1
+                                            continue
+                                        if self.is_tile_solid(tx_cand, gy):
+                                            cand_grounded = True
+                                            break
+                                        cand_grounded = False
+                                        break
+                                    if cand_grounded:
+                                        has_grounded_trunk = True
+                                        break
                             if has_grounded_trunk:
                                 break
                         if not has_grounded_trunk:
