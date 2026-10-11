@@ -1229,12 +1229,12 @@ class PotariaGame:
 
                 # G Key or Backspace Key: Drop selected item from hotbar, held item, or hovered slot
                 if event.key in (pygame.K_g, pygame.K_BACKSPACE):
-                    self.drop_selected_or_held(mouse_pos=pygame.mouse.get_pos())
+                    self.drop_selected_or_held(mouse_pos=self.get_mouse_pos())
                     continue
 
                 # Q Key: Drop hovered item when inventory is open (otherwise Skill Q when closed)
                 if event.key == pygame.K_q and self.inventory.is_open:
-                    self.drop_selected_or_held(mouse_pos=pygame.mouse.get_pos())
+                    self.drop_selected_or_held(mouse_pos=self.get_mouse_pos())
                     continue
 
                 # In-Game Configurable Hotkeys

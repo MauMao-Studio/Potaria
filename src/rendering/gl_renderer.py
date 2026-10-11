@@ -58,9 +58,6 @@ class GLRenderer(BaseRenderer):
     uniform int u_vignette_enabled;
     uniform float u_vignette_intensity;
 
-    uniform int u_water_distortion_enabled;
-    uniform float u_water_distortion_intensity;
-
     uniform int u_color_grading_mode;
     uniform float u_saturation;
     uniform float u_contrast;
@@ -182,7 +179,7 @@ class GLRenderer(BaseRenderer):
     in vec2 v_text;
     out vec4 f_color;
     void main() {
-        f_color = texture(u_fbo_texture, v_text);
+        f_color = texture(u_fbo_texture, vec2(v_text.x, 1.0 - v_text.y));
     }
     """
 
@@ -444,7 +441,8 @@ class GLRenderer(BaseRenderer):
             try:
                 win_w, win_h = pygame.display.get_window_size()
             except Exception:
-                win_w, win_h = self.display_width, self.display_height
+                win_w = getattr(self, "display_width", self.width)
+                win_h = getattr(self, "display_height", self.height)
         else:
             win_w = getattr(self, "display_width", self.width)
             win_h = getattr(self, "display_height", self.height)
@@ -910,8 +908,12 @@ class GLRenderer(BaseRenderer):
         self.width = width
         self.height = height
         self.fullscreen = fullscreen
-        self.display_width = width
-        self.display_height = height
+        if (width, height) != (1280, 720):
+            self.display_width = width
+            self.display_height = height
+        else:
+            self.display_width = getattr(self, "display_width", width)
+            self.display_height = getattr(self, "display_height", height)
         if self._using_fallback and self.fallback_renderer:
             return self.fallback_renderer.set_mode(width, height, fullscreen)
         return self._apply_display_mode()

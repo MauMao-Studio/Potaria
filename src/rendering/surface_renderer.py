@@ -178,7 +178,14 @@ class SurfaceRenderer(BaseRenderer):
         fs = self.fullscreen if fullscreen is None else fullscreen
         self.display_width = width
         self.display_height = height
-        return self.set_mode(self.width, self.height, fullscreen=fs)
+        self.fullscreen = fs
+        try:
+            win = pygame.window.Window.from_display_module()
+            if not fs:
+                win.size = (width, height)
+            return True
+        except Exception:
+            return self.set_mode(self.width, self.height, fullscreen=fs)
 
     def is_hardware_accelerated(self) -> bool:
         """SurfaceRenderer uses CPU-side software blitting."""

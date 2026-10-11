@@ -141,6 +141,130 @@ class TestOpenGLShaderPipeline(unittest.TestCase):
         self.assertEqual(params2["particle_density"], "ultra")
         manager.cleanup()
 
+    def test_fbo_fragment_shader_inversion_and_water_cleanup(self):
+        """Verifies FBO fragment shader inverts Y coordinate to keep game world upright and cleans up water uniforms."""
+        self.assertIn("1.0 - v_text.y", GLRenderer.FBO_FRAGMENT_SHADER)
+        self.assertNotIn("u_water_distortion", GLRenderer.FRAGMENT_SHADER)
+
+    def test_gl_renderer_coordinate_mapping(self):
+        """Tests window_to_virtual_pos on arbitrary display sizes and letterboxing."""
+        from unittest.mock import MagicMock, patch
+        renderer = GLRenderer(width=1280, height=720)
+        renderer.ctx = MagicMock()
+        renderer.viewport_rect = (0, 0, 1920, 1080)
+        with patch("pygame.display.get_window_size", return_value=(1920, 1080)):
+            self.assertEqual(renderer.window_to_virtual_pos((960, 540)), (640, 360))
+            self.assertEqual(renderer.window_to_virtual_pos((0, 0)), (0, 0))
+            self.assertEqual(renderer.window_to_virtual_pos((1920, 1080)), (1279, 719))
+
+        renderer.viewport_rect = (0, 60, 1920, 1080)
+        with patch("pygame.display.get_window_size", return_value=(1920, 1200)):
+            self.assertEqual(renderer.window_to_virtual_pos((960, 60)), (640, 0))
+            self.assertEqual(renderer.window_to_virtual_pos((960, 1140)), (640, 719))
+
+    def test_gl_real_pixel_orientation_and_ui_dual_surface(self):
+        """Uses standalone ModernGL context to verify pixel-level upright world and UI rendering."""
+        try:
+            import moderngl
+            ctx = moderngl.create_context(standalone=True)
+        except Exception:
+            return
+
+        import array
+        w, h = 64, 64
+        quad_data = array.array("f", [
+            -1.0,  1.0, 0.0, 0.0,
+            -1.0, -1.0, 0.0, 1.0,
+             1.0,  1.0, 1.0, 0.0,
+             1.0, -1.0, 1.0, 1.0,
+        ])
+        vbo = ctx.buffer(quad_data)
+        prog_world = ctx.program(vertex_shader=GLRenderer.VERTEX_SHADER, fragment_shader=GLRenderer.FRAGMENT_SHADER)
+        vao_world = ctx.simple_vertex_array(prog_world, vbo, "in_vert", "in_text")
+
+        prog_fbo = ctx.program(vertex_shader=GLRenderer.VERTEX_SHADER, fragment_shader=GLRenderer.FBO_FRAGMENT_SHADER)
+        vao_fbo = ctx.simple_vertex_array(prog_fbo, vbo, "in_vert", "in_text")
+
+        prog_ui = ctx.program(vertex_shader=GLRenderer.UI_VERTEX_SHADER, fragment_shader=GLRenderer.UI_FRAGMENT_SHADER)
+        vao_ui = ctx.simple_vertex_array(prog_ui, vbo, "in_vert", "in_text")
+
+        world_surf = pygame.Surface((w, h))
+        world_surf.fill((255, 0, 0), (0, 0, w, h // 2))
+        world_surf.fill((0, 0, 255), (0, h // 2, w, h // 2))
+
+        ui_surf = pygame.Surface((w, h), pygame.SRCALPHA)
+        ui_surf.fill((0, 255, 0, 255), (0, 0, 10, 10))
+
+        tex_world = ctx.texture((w, h), 4, pygame.image.tobytes(world_surf, "RGBA"))
+        tex_fbo = ctx.texture((w, h), 4)
+        fbo_world = ctx.framebuffer(color_attachments=[tex_fbo])
+
+        tex_ui = ctx.texture((w, h), 4, pygame.image.tobytes(ui_surf, "RGBA"))
+        tex_screen = ctx.texture((w, h), 4)
+        fbo_screen = ctx.framebuffer(color_attachments=[tex_screen])
+
+        fbo_world.use()
+        tex_world.use(location=0)
+        vao_world.render(moderngl.TRIANGLE_STRIP)
+
+        fbo_screen.use()
+        tex_fbo.use(location=0)
+        prog_fbo["u_fbo_texture"].value = 0
+        vao_fbo.render(moderngl.TRIANGLE_STRIP)
+
+        ctx.enable(moderngl.BLEND)
+        ctx.blend_func = moderngl.DEFAULT_BLENDING
+        tex_ui.use(location=0)
+        prog_ui["u_ui_texture"].value = 0
+        vao_ui.render(moderngl.TRIANGLE_STRIP)
+
+        data = fbo_screen.read(components=4)
+        bottom_right = list(data[(w - 5) * 4 : (w - 5) * 4 + 3])
+        top_right_idx = (h - 1) * w * 4 + (w - 5) * 4
+        top_right = list(data[top_right_idx : top_right_idx + 3])
+        top_left_idx = (h - 1) * w * 4 + 2 * 4
+        top_left = list(data[top_left_idx : top_left_idx + 3])
+
+        self.assertEqual(top_left, [0, 255, 0])
+        self.assertEqual(top_right, [255, 0, 0])
+        self.assertEqual(bottom_right, [0, 0, 255])
+
+        fbo_world.release()
+        fbo_screen.release()
+        tex_world.release()
+        tex_fbo.release()
+        tex_ui.release()
+        tex_screen.release()
+        vbo.release()
+        vao_world.release()
+        vao_fbo.release()
+        vao_ui.release()
+        prog_world.release()
+        prog_fbo.release()
+        prog_ui.release()
+        ctx.release()
+
+    def test_renderer_manager_resolution_preservation(self):
+        """Tests that custom resolution is preserved across renderer switches."""
+        manager = RendererManager()
+        manager.initialize(width=1280, height=720, requested_type=RENDERER_SOFTWARE)
+        manager.set_display_resolution(1600, 900)
+        self.assertEqual(manager.display_width, 1600)
+        self.assertEqual(manager.display_height, 900)
+
+        manager.switch_renderer(RENDERER_HARDWARE)
+        self.assertEqual(manager.display_width, 1600)
+        self.assertEqual(manager.display_height, 900)
+        self.assertEqual(manager.renderer.display_width, 1600)
+        self.assertEqual(manager.renderer.display_height, 900)
+
+        manager.switch_renderer(RENDERER_SOFTWARE)
+        self.assertEqual(manager.display_width, 1600)
+        self.assertEqual(manager.display_height, 900)
+        self.assertEqual(manager.renderer.display_width, 1600)
+        self.assertEqual(manager.renderer.display_height, 900)
+        manager.cleanup()
+
 
 class TestTabbedSettingsMenu(unittest.TestCase):
     def setUp(self):

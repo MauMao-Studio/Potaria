@@ -106,6 +106,8 @@ class RendererManager:
             self.active_renderer.set_contrast(self.contrast)
             self.active_renderer.set_lighting_quality(self.lighting_quality)
             self.active_renderer.set_particle_density(self.particle_density)
+        if hasattr(self.active_renderer, "set_display_resolution") and (self.display_width != self.width or self.display_height != self.height or self.fullscreen):
+            self.active_renderer.set_display_resolution(self.display_width, self.display_height, fullscreen=self.fullscreen)
         return self.active_renderer
 
     def switch_renderer(
@@ -123,7 +125,10 @@ class RendererManager:
         if norm_type == self.requested_type and self.active_renderer and self.active_renderer.initialized:
             if fullscreen is not None and fullscreen != self.fullscreen:
                 self.fullscreen = fullscreen
-                self.active_renderer.set_mode(self.width, self.height, fullscreen=self.fullscreen)
+                if hasattr(self.active_renderer, "set_display_resolution"):
+                    self.active_renderer.set_display_resolution(self.display_width, self.display_height, fullscreen=self.fullscreen)
+                else:
+                    self.active_renderer.set_mode(self.width, self.height, fullscreen=self.fullscreen)
             return self.active_renderer
 
         return self.initialize(

@@ -11,13 +11,14 @@
     "bloom": true,
     "shaders": true,
     "vignette": true,
-    "water_effects": true,
-    "color_grade": "cinematic",
+    "water_effects": false,
+    "resolution": "1920x1080",
+    "color_grade": "vibrant",
     "lighting_quality": "high",
     "particle_density": "high",
     "boost_mode": true,
     "damage_numbers": true,
-    "tooltips": "compact"
+    "tooltips": "detailed"
   },
   "key_bindings": {
     "Move Left": 97,

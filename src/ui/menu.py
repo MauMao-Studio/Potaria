@@ -428,6 +428,7 @@ class MenuManager:
         self.mods_toggle_lms_btn.text = "DISABLE" if lms_on else "ENABLE"
 
     def update(self, dt, mouse_pos):
+        self.last_mouse_pos = mouse_pos
         # Update Menu BGM if in any menu-related state
         if self.bgm_manager and self.state in (
             STATE_MENU, STATE_SETTINGS, STATE_INPUT_MAPPING, STATE_MULTIPLAYER,
@@ -1036,7 +1037,8 @@ class MenuManager:
         elif self.state == STATE_SETTINGS:
             self._render_settings_screen(target_surf)
         elif self.state == STATE_INPUT_MAPPING:
-            self._render_input_mapping(target_surf, pygame.mouse.get_pos())
+            mpos = getattr(self, "last_mouse_pos", None) or pygame.mouse.get_pos()
+            self._render_input_mapping(target_surf, mpos)
         elif self.state == STATE_MULTIPLAYER:
             self._render_multiplayer_menu(target_surf)
         elif self.state in (STATE_STORY, STATE_CUTSCENE):
@@ -1050,9 +1052,11 @@ class MenuManager:
         elif self.state == STATE_NEW_WORLD:
             self._render_new_world_screen(target_surf)
         elif self.state == STATE_MODS:
-            self._render_mods_screen(target_surf, pygame.mouse.get_pos())
+            mpos = getattr(self, "last_mouse_pos", None) or pygame.mouse.get_pos()
+            self._render_mods_screen(target_surf, mpos)
         elif self.state == STATE_ACHIEVEMENTS:
-            self._render_achievements_screen(target_surf, pygame.mouse.get_pos())
+            mpos = getattr(self, "last_mouse_pos", None) or pygame.mouse.get_pos()
+            self._render_achievements_screen(target_surf, mpos)
         elif self.state == STATE_GAME_OVER:
             self._render_game_over_screen(target_surf)
 
