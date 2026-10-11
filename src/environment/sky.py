@@ -74,37 +74,44 @@ class DayNightCycle:
     def is_night(self):
         """Returns True if it is currently nighttime."""
         t = self.time_of_day
-        return 0.52 <= t <= 0.95
+        # Philippine night cycle: ~6:28 PM to 5:00 AM (at 5:00 AM dawn starts)
+        return 0.52 <= t < (23.0 / 24.0)
 
     @property
     def ambient_sunlight(self):
         """Calculates 2D light intensity (3 to 15) for the lighting engine."""
         t = self.time_of_day
-        if 0.04 <= t <= 0.48:
+        t_5am = 23.0 / 24.0
+        if 0.02 <= t <= 0.48:
             return 15  # Morning & Daytime full warm sunlight
-        elif 0.58 <= t <= 0.92:
+        elif 0.53 <= t <= t_5am:
             return 3   # Night darkness
-        elif t < 0.04:
-            # Quick dawn rise (3 -> 15 by 7:00 AM)
-            frac = t / 0.04
-            return min(15, max(3, int(3 + frac * 12)))
+        elif t < 0.02:
+            # 6:00 AM to 6:30 AM: Dawn light completes rise to 15
+            frac = t / 0.02
+            return min(15, max(3, int(10 + frac * 5)))
+        elif t > t_5am:
+            # 5:00 AM to 6:00 AM: Starts to not be pitch black (light rises 3 -> 10)
+            frac = (t - t_5am) / (1.0 - t_5am)
+            return min(15, max(3, int(3 + frac * 7)))
         else:
-            # Sunset transition (15 -> 3 from 0.48 to 0.58)
-            frac = (t - 0.48) / 0.10
+            # 5:30 PM to 6:43 PM: Sunset and dusk transition (15 -> 3)
+            frac = (t - 0.48) / 0.05
             return min(15, max(3, int(15 - frac * 12)))
 
     @property
     def atmospheric_tint(self):
         """Returns (r_mult, g_mult, b_mult) color grading based on celestial time."""
         t = self.time_of_day
-        if (0.0 <= t < 0.08) or (0.48 <= t < 0.56):
-            # Dawn / Sunset: Glowing warm golden amber
+        t_5am = 23.0 / 24.0
+        if (t >= t_5am or t < 0.02) or (0.48 <= t < 0.53):
+            # Dawn (5:00 AM - 6:30 AM) & Sunset (5:30 PM - 6:43 PM): Glowing warm golden amber
             return (1.20, 1.05, 0.85)
-        elif 0.58 <= t <= 0.92:
-            # Moonlit Night: Deep sapphire blue
+        elif 0.53 <= t < t_5am:
+            # Moonlit Night (6:43 PM to 5:00 AM): Deep sapphire blue
             return (0.75, 0.88, 1.22)
         else:
-            # Daytime: Crisp radiant warm sunlight
+            # Daytime (6:30 AM to 5:30 PM): Crisp radiant warm sunlight
             return (1.08, 1.04, 0.98)
 
     def update(self, dt):
@@ -113,7 +120,7 @@ class DayNightCycle:
     def get_time_string(self):
         """Returns user-friendly in-game celestial time (e.g. '12:00 PM (Day)')."""
         t = self.time_of_day
-        # 0.0 is 6:00 AM (Dawn), 0.25 is 12:00 PM (Noon), 0.5 is 6:00 PM (Dusk), 0.75 is 12:00 AM (Midnight)
+        # 0.0 is 6:00 AM (Dawn/Sunrise), 0.25 is 12:00 PM (Noon), 0.5 is 6:00 PM (Dusk/Sunset), 0.75 is 12:00 AM (Midnight)
         total_hours = (t * 24.0 + 6.0) % 24.0
         hour = int(total_hours) % 24
         minute = int((total_hours * 60) % 60)
@@ -148,22 +155,37 @@ class DayNightCycle:
         c_dawn_top = (60, 50, 90)
         c_dawn_bot = (245, 155, 110)
 
-        if t < 0.12:
-            frac = t / 0.12
-            return self._lerp_color(c_night_top, c_dawn_top, frac), self._lerp_color(c_night_bot, c_dawn_bot, frac)
-        elif t < 0.22:
-            frac = (t - 0.12) / 0.10
+        # Philippines celestial progression:
+        # - 5:00 AM (t = 23/24 ~ 0.9583): Night ends, dawn begins; starts to not be pitch black
+        # - 6:00 AM (t = 0.0): Sunrise (start of the sun); sky transitions to morning daylight
+        # - 6:30 AM to 5:30 PM (0.02 <= t < 0.48): Daytime
+        # - 5:30 PM to 6:00 PM (0.48 <= t < 0.50): Sunset / dusk
+        # - 6:00 PM to 6:43 PM (0.50 <= t < 0.53): Dusk fades into night
+        # - 6:43 PM to 5:00 AM (0.53 <= t < 23/24): Deep night (pitch black sky)
+        t_5am = 23.0 / 24.0
+
+        if t < 0.02:
+            # 6:00 AM to 6:30 AM: Dawn into full morning daylight
+            frac = t / 0.02
             return self._lerp_color(c_dawn_top, c_day_top, frac), self._lerp_color(c_dawn_bot, c_day_bot, frac)
         elif t < 0.48:
+            # 6:30 AM to 5:30 PM: Full daytime
             return c_day_top, c_day_bot
-        elif t < 0.56:
-            frac = (t - 0.48) / 0.08
+        elif t < 0.50:
+            # 5:30 PM to 6:00 PM: Daytime into sunset dusk
+            frac = (t - 0.48) / 0.02
             return self._lerp_color(c_day_top, c_dusk_top, frac), self._lerp_color(c_day_bot, c_dusk_bot, frac)
-        elif t < 0.65:
-            frac = (t - 0.56) / 0.09
+        elif t < 0.53:
+            # 6:00 PM to ~6:43 PM: Dusk fades into night darkness
+            frac = (t - 0.50) / 0.03
             return self._lerp_color(c_dusk_top, c_night_top, frac), self._lerp_color(c_dusk_bot, c_night_bot, frac)
-        else:
+        elif t < t_5am:
+            # 6:43 PM to 5:00 AM: Deep night (pitch black)
             return c_night_top, c_night_bot
+        else:
+            # 5:00 AM to 6:00 AM: Starts to not be pitch black; night illuminates into dawn
+            frac = (t - t_5am) / (1.0 - t_5am)
+            return self._lerp_color(c_night_top, c_dawn_top, frac), self._lerp_color(c_night_bot, c_dawn_bot, frac)
 
     def get_altitude_sky_colors(self, camera_y_tile):
         """
@@ -279,11 +301,24 @@ class DayNightCycle:
         target_surf.blit(self._cached_sky_surf, (0, 0))
 
         # 2. Twinkling Stars (Active during night or when high in the atmosphere/space)
-        show_stars = in_space or self.is_night or self.time_of_day > 0.52 or cam_y_tile < 0
+        show_stars = in_space or self.is_night or cam_y_tile < 0 or (0.50 <= self.time_of_day < (23.5 / 24.0))
         if show_stars:
             frame_idx = (now_ticks // 220) % len(self.star_frames)
-            for sx, sy, star_c in self.star_frames[frame_idx]:
-                target_surf.set_at((sx, sy), star_c)
+            star_mult = 1.0
+            if not in_space and cam_y_tile >= 0:
+                t_day = self.time_of_day
+                if 0.50 <= t_day < 0.53:
+                    star_mult = (t_day - 0.50) / 0.03
+                elif t_day >= (23.0 / 24.0):
+                    # Fade out between 5:00 AM and 5:30 AM
+                    star_mult = max(0.0, 1.0 - (t_day - (23.0 / 24.0)) / (0.5 / 24.0))
+            if star_mult > 0.05:
+                for sx, sy, star_c in self.star_frames[frame_idx]:
+                    if star_mult < 0.98:
+                        sc = (int(star_c[0] * star_mult), int(star_c[1] * star_mult), int(star_c[2] * star_mult))
+                    else:
+                        sc = star_c
+                    target_surf.set_at((sx, sy), sc)
 
         # 3. Deep Space Nebula & Constellations (Fades in as player ascends into the mesosphere/space)
         if cam_y_tile < 20:
@@ -294,16 +329,24 @@ class DayNightCycle:
                 target_surf.blit(self.space_nebula_surf, (nebula_offset - sw, 0))
                 target_surf.blit(self.space_nebula_surf, (nebula_offset, 0))
 
-        # 4. Celestial Orbit (Sun & Moon Arc)
+        # 4. Celestial Orbit (Sun & Moon Arc - Philippine timing)
+        # 6:00 AM (t = 0.0) is the start of the sun rising; sets at 6:00 PM (t = 0.50)
         t = self.time_of_day
-        if t < 0.55 and not in_space:
-            sun_t = t / 0.55
+        if t <= 0.51 and not in_space:
+            sun_t = min(1.0, t / 0.50)
             sun_x = sun_t * sw
             sun_y = sh * 0.7 - math.sin(sun_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.sun_surf, (sun_x - 20, sun_y - 20))
 
-        if t >= 0.48 or in_space:
-            moon_t = (t - 0.48) / 0.52 if not in_space else 0.5
+        if (t >= 0.49 or t < 0.02) or in_space:
+            if not in_space:
+                if t >= 0.49:
+                    moon_t = (t - 0.49) / 0.53
+                else:
+                    moon_t = (t + 1.0 - 0.49) / 0.53
+                moon_t = max(0.0, min(1.0, moon_t))
+            else:
+                moon_t = 0.5
             moon_x = moon_t * sw
             moon_y = sh * 0.7 - math.sin(moon_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.moon_surf, (moon_x - 16, moon_y - 16))
@@ -320,11 +363,7 @@ class DayNightCycle:
             # Locked horizon Y position prevents horizon distortion during flight
             horizon_y = 0
 
-            # Layer 1: High Sky Clouds (speed = 0.04)
-            clouds_offset = int(-(cam_x * 0.04 + now_ticks * 0.015) % sw)
-            self.clouds_surf.set_alpha(int(alpha_int * 0.8))
-            target_surf.blit(self.clouds_surf, (clouds_offset - sw, horizon_y))
-            target_surf.blit(self.clouds_surf, (clouds_offset, horizon_y))
+            # Layer 1: High Sky Clouds removed to optimize render sky performance (eliminates 4.89ms full-screen alpha blits)
 
             # Layer 2: Far Misty Mountains (speed = 0.08)
             mount_offset = int(-(cam_x * 0.08) % sw)
