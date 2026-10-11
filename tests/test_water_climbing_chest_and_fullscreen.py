@@ -237,6 +237,23 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
                 f"Item icon '{item_id}' has opaque square box corners {corners} instead of transparent background"
             )
 
+        # Also verify that when an enemy (e.g., SandSlime) dies, multiple dropped items scatter horizontally
+        # instead of stacking at the exact same (x, y) pixel with vx=0.0
+        from src.combat.combat_system import CombatManager
+        from src.entities.mob import SandSlime
+        from src.camera import Camera
+        class DummyParticles:
+            def spawn_sparks(self, *args, **kwargs):
+                pass
+        cm = CombatManager(self.factory, self.sound, DummyParticles(), Camera(1280, 720))
+        sand_slime = SandSlime(300, 200, self.factory)
+        cm._drop_mob_loot(sand_slime)
+        self.assertGreaterEqual(len(cm.dropped_items), 3)
+        xs = {round(d.x, 4) for d in cm.dropped_items}
+        vxs = {round(d.vx, 4) for d in cm.dropped_items}
+        self.assertGreater(len(xs), 1, "Multiple mob loot drops must scatter across distinct x coordinates")
+        self.assertGreater(len(vxs), 1, "Multiple mob loot drops must have scattered horizontal velocities")
+
     def test_05_rope_rungs_and_scaffolding_climbing_top_landing_and_jumping(self):
         """Verifies player can climb up, climb down, cling, rest stably on top, and jump off TILE_ROPE_RUNGS and TILE_WOOD_PLATFORM."""
         from src.constants import SCALED_TILE, TILE_ROPE_RUNGS, TILE_WOOD_PLATFORM, TILE_STONE, PLAYER_JUMP_FORCE

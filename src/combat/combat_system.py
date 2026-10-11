@@ -1208,34 +1208,43 @@ class CombatManager:
                 if not is_ancient:
                     return
 
+    def _spawn_loot_drop(self, item_id, count, mx, my):
+        """Spawns a DroppedItem with natural horizontal scatter so multiple drops spread apart."""
+        ox = mx + random.uniform(-6.0, 6.0)
+        vx = random.uniform(-2.2, 2.2)
+        vy = random.uniform(-3.8, -2.4)
+        self.dropped_items.append(
+            DroppedItem(item_id, count, ox, my, self.asset_factory, vx=vx, vy=vy)
+        )
+
     def _drop_mob_loot(self, mob):
         mx, my = mob.center_x, mob.center_y
         
         # 1. Base Guaranteed Mob Drop
         m_name = getattr(mob, "name", "")
         if "Slime" in m_name:
-            self.dropped_items.append(DroppedItem("spud_sap", random.randint(1, 3), mx, my, self.asset_factory))
+            self._spawn_loot_drop("spud_sap", random.randint(1, 3), mx, my)
             if "Frost" in m_name:
-                self.dropped_items.append(DroppedItem("frost_core", 1, mx, my, self.asset_factory))
+                self._spawn_loot_drop("frost_core", 1, mx, my)
             elif "Sand" in m_name:
-                self.dropped_items.append(DroppedItem("sand_block", random.randint(2, 4), mx, my, self.asset_factory))
+                self._spawn_loot_drop("sand_block", random.randint(2, 4), mx, my)
         elif "Zombie" in m_name or "Mummy" in m_name:
-            self.dropped_items.append(DroppedItem("copper_ore", random.randint(2, 5), mx, my, self.asset_factory))
+            self._spawn_loot_drop("copper_ore", random.randint(2, 5), mx, my)
             if "Frozen" in m_name:
-                self.dropped_items.append(DroppedItem("frost_core", 1, mx, my, self.asset_factory))
+                self._spawn_loot_drop("frost_core", 1, mx, my)
         elif "Skeleton" in m_name:
-            self.dropped_items.append(DroppedItem("bone", random.randint(2, 4), mx, my, self.asset_factory))
-            self.dropped_items.append(DroppedItem("iron_ore", random.randint(1, 3), mx, my, self.asset_factory))
+            self._spawn_loot_drop("bone", random.randint(2, 4), mx, my)
+            self._spawn_loot_drop("iron_ore", random.randint(1, 3), mx, my)
         elif "Bat" in m_name:
-            self.dropped_items.append(DroppedItem("torch", random.randint(1, 3), mx, my, self.asset_factory))
+            self._spawn_loot_drop("torch", random.randint(1, 3), mx, my)
             if "Ice" in m_name:
-                self.dropped_items.append(DroppedItem("frost_core", 1, mx, my, self.asset_factory))
+                self._spawn_loot_drop("frost_core", 1, mx, my)
         elif "Scorpion" in m_name:
-            self.dropped_items.append(DroppedItem("cactus", random.randint(2, 5), mx, my, self.asset_factory))
+            self._spawn_loot_drop("cactus", random.randint(2, 5), mx, my)
         elif "Crawler" in m_name or "Corrupt" in m_name or "Blight" in m_name:
-            self.dropped_items.append(DroppedItem("blightstone_block", random.randint(1, 3), mx, my, self.asset_factory))
+            self._spawn_loot_drop("blightstone_block", random.randint(1, 3), mx, my)
         else:
-            self.dropped_items.append(DroppedItem("torch", random.randint(2, 4), mx, my, self.asset_factory))
+            self._spawn_loot_drop("torch", random.randint(2, 4), mx, my)
 
         # 1b. Currency Coin Drops (Potaria Economy)
         if "Slime" in m_name:
@@ -1247,9 +1256,9 @@ class CombatManager:
         else:
             c_amount = random.randint(8, 24)
 
-        self.dropped_items.append(DroppedItem("copper_coin", c_amount, mx, my, self.asset_factory))
+        self._spawn_loot_drop("copper_coin", c_amount, mx, my)
         if random.random() < 0.12:
-            self.dropped_items.append(DroppedItem("silver_coin", 1, mx, my, self.asset_factory))
+            self._spawn_loot_drop("silver_coin", 1, mx, my)
 
         # Build Rarity Catalog Pools for dynamic drops
         if not hasattr(self, "_catalog_rarity_pools"):
@@ -1266,14 +1275,14 @@ class CombatManager:
         # 2. Common Roll (40% chance): Potato or Potion
         roll = random.random()
         if roll < 0.25:
-            self.dropped_items.append(DroppedItem("raw_potato", 1, mx, my, self.asset_factory))
+            self._spawn_loot_drop("raw_potato", 1, mx, my)
         elif roll < 0.40:
-            self.dropped_items.append(DroppedItem("healing_potion", 1, mx, my, self.asset_factory))
+            self._spawn_loot_drop("healing_potion", 1, mx, my)
 
         # 3. Uncommon Equipment Roll (3.5% chance - 1 in ~28):
         if random.random() < 0.035 and self._catalog_rarity_pools.get("uncommon"):
             unc_item = random.choice(self._catalog_rarity_pools["uncommon"])
-            self.dropped_items.append(DroppedItem(unc_item, 1, mx, my, self.asset_factory))
+            self._spawn_loot_drop(unc_item, 1, mx, my)
 
         # 4. Rare Roll (1.5% chance - 1 in ~67): Skill Books, Accessories, Biome Weapons, Rare Gear
         if random.random() < 0.015:
@@ -1287,7 +1296,7 @@ class CombatManager:
                 drop_id = random.choice(self._catalog_rarity_pools["rare"])
             else:
                 drop_id = random.choice(rare_pool)
-            self.dropped_items.append(DroppedItem(drop_id, 1, mx, my, self.asset_factory))
+            self._spawn_loot_drop(drop_id, 1, mx, my)
 
         # 5. Epic Roll (0.50% chance - 1 in 200):
         if random.random() < 0.005:
@@ -1296,13 +1305,13 @@ class CombatManager:
                 drop_id = random.choice(self._catalog_rarity_pools["epic"])
             else:
                 drop_id = random.choice(epic_pool)
-            self.dropped_items.append(DroppedItem(drop_id, 1, mx, my, self.asset_factory))
+            self._spawn_loot_drop(drop_id, 1, mx, my)
 
         # 6. MYTHIC ROLL (0.15% chance - 1 in ~667):
         if random.random() < 0.0015 and self._catalog_rarity_pools.get("mythic"):
             m_item = random.choice(self._catalog_rarity_pools["mythic"])
             print(f"[LOOT] MYTHIC DROP! {m_item} has dropped from a defeated monster!")
-            self.dropped_items.append(DroppedItem(m_item, 1, mx, my, self.asset_factory))
+            self._spawn_loot_drop(m_item, 1, mx, my)
             self.particle_system.spawn_sparks(mx, my, (255, 152, 0), count=30)
 
         # 7. LEGENDARY ROLL (0.05% chance - 1 in 2,000):
@@ -1312,7 +1321,7 @@ class CombatManager:
             else:
                 leg_item = random.choice(self._catalog_rarity_pools["legendary"])
             print(f"[LOOT] LEGENDARY DROP! {leg_item} has dropped from a defeated monster!")
-            self.dropped_items.append(DroppedItem(leg_item, 1, mx, my, self.asset_factory))
+            self._spawn_loot_drop(leg_item, 1, mx, my)
             self.particle_system.spawn_sparks(mx, my, (255, 215, 0), count=45)
 
         # 8. ANCIENT ROLL (0.01% chance from regular mobs - 1 in 10,000):
@@ -1325,7 +1334,7 @@ class CombatManager:
         from src.ui.inventory import ITEM_REGISTRY
         name = ITEM_REGISTRY.get(anc_item, {}).get("name", anc_item.replace("_", " ").title())
         print(f"[LOOT] *** ANCIENT RELIC DISCOVERED! {name} has fallen! ***")
-        self.dropped_items.append(DroppedItem(anc_item, 1, mx, my, self.asset_factory))
+        self._spawn_loot_drop(anc_item, 1, mx, my)
         self.ancient_drop_banner = {
             "item_id": anc_item,
             "name": name,
