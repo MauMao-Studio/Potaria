@@ -2,10 +2,10 @@
 
 ## 1. Executive Checkpoint Summary
 
-- **Checkpoint Status**: ALL_COMPLETED (2001 / 2001 assets generated and verified)
-- **Last Processed Asset**: `assets/walls/wall_9.png` (Index #2001 of 2001)
-- **Total Unique PNG Assets on Disk**: 2001
-- **Unique SHA-256 Pixel Signatures**: 2001 / 2001 (0 duplicate collisions)
+- **Checkpoint Status**: ALL_COMPLETED (2008 / 2008 assets generated and verified)
+- **Last Processed Asset**: `assets/walls/wall_9.png` (Index #2008 of 2008)
+- **Total Unique PNG Assets on Disk**: 2008
+- **Unique SHA-256 Pixel Signatures**: 2008 / 2008 (0 duplicate collisions)
 - **Gemini Text / Orchestration Model**: `gemini-3.8-flash` (`client.interactions.create`)
 - **Gemini Image Generation Model**: `gemini-3.1-flash-image` (`client.interactions.create`)
 - **Synthesis Pipeline Mode**: Procedural High-Art Pixel Engine + Gemini API Ready
@@ -27,9 +27,9 @@
 | `assets/player` | 18 | COMPLETED |
 | `assets/projectiles` | 18 | COMPLETED |
 | `assets/story` | 24 | COMPLETED |
-| `assets/tiles` | 92 | COMPLETED |
+| `assets/tiles` | 96 | COMPLETED |
 | `assets/ui` | 15 | COMPLETED |
-| `assets/walls` | 10 | COMPLETED |
+| `assets/walls` | 13 | COMPLETED |
 
 ## 3. Iconic Real-World and Bespoke Silhouette Highlights
 
@@ -164,7 +164,7 @@
 | 112 | `iron_axe` | `assets/craftable_items/iron_axe.png` | tool | uncommon | `05984193dd49` | COMPLETED |
 | 113 | `iron_bar` | `assets/craftable_items/iron_bar.png` | material | uncommon | `f85b7c552e15` | COMPLETED |
 | 114 | `iron_cauldron` | `assets/craftable_items/iron_cauldron.png` | block | common | `fd3dc3c545f8` | COMPLETED |
-| 115 | `iron_chest` | `assets/craftable_items/iron_chest.png` | block | uncommon | `faf9c5f34aaa` | COMPLETED |
+| 115 | `iron_chest` | `assets/craftable_items/iron_chest.png` | block | uncommon | `4bd075d18644` | COMPLETED |
 | 116 | `iron_pickaxe` | `assets/craftable_items/iron_pickaxe.png` | tool | uncommon | `96085a5549a1` | COMPLETED |
 | 117 | `iron_reinforced_door` | `assets/craftable_items/iron_reinforced_door.png` | block | common | `3758b01ffb86` | COMPLETED |
 | 118 | `iron_shovel` | `assets/craftable_items/iron_shovel.png` | tool | uncommon | `d88815cdf180` | COMPLETED |
@@ -183,7 +183,7 @@
 | 131 | `pyrite_sparker` | `assets/craftable_items/pyrite_sparker.png` | tool | common | `f13739f8a4f3` | COMPLETED |
 | 132 | `reinforced_slate_slab` | `assets/craftable_items/reinforced_slate_slab.png` | block | uncommon | `1ebd6bc5163f` | COMPLETED |
 | 133 | `roof_tiles` | `assets/craftable_items/roof_tiles.png` | block | common | `1edff6a5ba76` | COMPLETED |
-| 134 | `rope_rungs` | `assets/craftable_items/rope_rungs.png` | block | common | `d9de96de4308` | COMPLETED |
+| 134 | `rope_rungs` | `assets/craftable_items/rope_rungs.png` | block | common | `0c9c4014df9a` | COMPLETED |
 | 135 | `sink` | `assets/craftable_items/sink.png` | block | uncommon | `28940d1cf006` | COMPLETED |
 | 136 | `smithing_anvil` | `assets/craftable_items/smithing_anvil.png` | block | common | `55ed97617eeb` | COMPLETED |
 | 137 | `smoked_spud_jerky` | `assets/craftable_items/smoked_spud_jerky.png` | consumable | common | `1345f0dd9c07` | COMPLETED |
@@ -540,7 +540,7 @@
 | 488 | `blight_gloom_glaive` | `assets/items/blight_gloom_glaive.png` | weapon | uncommon | `bd72c238ae21` | COMPLETED |
 | 489 | `blight_gloom_mace` | `assets/items/blight_gloom_mace.png` | weapon | epic | `4c3684847794` | COMPLETED |
 | 490 | `blight_gloom_pathfinders` | `assets/items/blight_gloom_pathfinders.png` | armor_legs | rare | `b9923f387009` | COMPLETED |
-| 491 | `blight_grass` | `assets/items/blight_grass.png` | block | uncommon | `e709a0c922cd` | COMPLETED |
+| 491 | `blight_grass` | `assets/items/blight_grass.png` | block | uncommon | `e924933721f0` | COMPLETED |
 | 492 | `blight_nether_blade` | `assets/items/blight_nether_blade.png` | weapon | common | `9f0d23864932` | COMPLETED |
 | 493 | `blight_nether_cutlass` | `assets/items/blight_nether_cutlass.png` | weapon | rare | `11f4a6ce50d4` | COMPLETED |
 | 494 | `blight_nether_tunic` | `assets/items/blight_nether_tunic.png` | armor_chest | epic | `96a3387be2e1` | COMPLETED |
@@ -568,7 +568,7 @@
 | 516 | `blight_wither_greatsword` | `assets/items/blight_wither_greatsword.png` | weapon | rare | `9fa687c64950` | COMPLETED |
 | 517 | `blight_wither_helmet` | `assets/items/blight_wither_helmet.png` | armor_head | uncommon | `0e6f84346289` | COMPLETED |
 | 518 | `blight_wither_pathfinders` | `assets/items/blight_wither_pathfinders.png` | armor_legs | uncommon | `3359ebd5ecf2` | COMPLETED |
-| 519 | `blightstone_block` | `assets/items/blightstone_block.png` | block | uncommon | `a341b1b626c8` | COMPLETED |
+| 519 | `blightstone_block` | `assets/items/blightstone_block.png` | block | uncommon | `04740dbdcf77` | COMPLETED |
 | 520 | `blizzard_aegis` | `assets/items/blizzard_aegis.png` | armor_chest | rare | `28f7017a05b1` | COMPLETED |
 | 521 | `blizzard_crossbow` | `assets/items/blizzard_crossbow.png` | weapon | legendary | `e174b1a9e610` | COMPLETED |
 | 522 | `blizzard_greaves` | `assets/items/blizzard_greaves.png` | armor_legs | common | `3e0122b54b71` | COMPLETED |
@@ -603,7 +603,7 @@
 | 551 | `briar_emblem` | `assets/items/briar_emblem.png` | accessory | common | `2749b8e61efe` | COMPLETED |
 | 552 | `briar_rapier_of_the_vale` | `assets/items/briar_rapier_of_the_vale.png` | weapon | rare | `a8c04c326224` | COMPLETED |
 | 553 | `briar_wand_of_the_spud` | `assets/items/briar_wand_of_the_spud.png` | weapon | common | `445f9423b2ff` | COMPLETED |
-| 554 | `cactus` | `assets/items/cactus.png` | block | common | `89f54b1ccfdb` | COMPLETED |
+| 554 | `cactus` | `assets/items/cactus.png` | block | common | `445057b442dd` | COMPLETED |
 | 555 | `canopy_cowl_of_the_zephyr` | `assets/items/canopy_cowl_of_the_zephyr.png` | armor_head | epic | `2072de9db525` | COMPLETED |
 | 556 | `canopy_emblem_of_the_spud` | `assets/items/canopy_emblem_of_the_spud.png` | accessory | rare | `5545d10d809d` | COMPLETED |
 | 557 | `canopy_overcoat` | `assets/items/canopy_overcoat.png` | armor_chest | rare | `6dd61af2320a` | COMPLETED |
@@ -653,7 +653,7 @@
 | 601 | `copper_greathelm_of_the_eclipse` | `assets/items/copper_greathelm_of_the_eclipse.png` | armor_head | rare | `d399d896f6bb` | COMPLETED |
 | 602 | `copper_greaves` | `assets/items/copper_greaves.png` | armor_legs | common | `7904b328a60d` | COMPLETED |
 | 603 | `copper_helmet` | `assets/items/copper_helmet.png` | armor_head | common | `d79233abec36` | COMPLETED |
-| 604 | `copper_ore` | `assets/items/copper_ore.png` | material | common | `e5cfb48ab3b4` | COMPLETED |
+| 604 | `copper_ore` | `assets/items/copper_ore.png` | material | common | `468e554af995` | COMPLETED |
 | 605 | `copper_warhammer` | `assets/items/copper_warhammer.png` | weapon | mythic | `aa247f0935a4` | COMPLETED |
 | 606 | `cosmic_parka_of_the_blight` | `assets/items/cosmic_parka_of_the_blight.png` | armor_chest | common | `97b963ba0750` | COMPLETED |
 | 607 | `crown_of_potaria` | `assets/items/crown_of_potaria.png` | armor_head | legendary | `60cb32b25150` | COMPLETED |
@@ -691,7 +691,7 @@
 | 639 | `desert_scepter` | `assets/items/desert_scepter.png` | weapon | legendary | `711428914a31` | COMPLETED |
 | 640 | `desert_spear_of_the_tempest` | `assets/items/desert_spear_of_the_tempest.png` | weapon | rare | `fa2ea12c30d3` | COMPLETED |
 | 641 | `desert_treads` | `assets/items/desert_treads.png` | armor_legs | uncommon | `df1abd1c6179` | COMPLETED |
-| 642 | `dirt_block` | `assets/items/dirt_block.png` | block | common | `0c2d1420a3e7` | COMPLETED |
+| 642 | `dirt_block` | `assets/items/dirt_block.png` | block | common | `bec754652d12` | COMPLETED |
 | 643 | `dread_blaze_seal` | `assets/items/dread_blaze_seal.png` | accessory | rare | `ed339efc8ba5` | COMPLETED |
 | 644 | `dread_celestial_cutlass` | `assets/items/dread_celestial_cutlass.png` | weapon | rare | `2560b51c0ae3` | COMPLETED |
 | 645 | `dread_celestial_dagger` | `assets/items/dread_celestial_dagger.png` | weapon | legendary | `f9d0cb883330` | COMPLETED |
@@ -766,7 +766,7 @@
 | 714 | `dune_sirocco_overcoat` | `assets/items/dune_sirocco_overcoat.png` | armor_chest | common | `985720c1dbef` | COMPLETED |
 | 715 | `dune_sirocco_shortbow` | `assets/items/dune_sirocco_shortbow.png` | weapon | uncommon | `d5568ca5fc15` | COMPLETED |
 | 716 | `dune_sirocco_staff` | `assets/items/dune_sirocco_staff.png` | weapon | rare | `e9f1fedb4edd` | COMPLETED |
-| 717 | `dungeon_brick` | `assets/items/dungeon_brick.png` | block | rare | `c43890718ea4` | COMPLETED |
+| 717 | `dungeon_brick` | `assets/items/dungeon_brick.png` | block | rare | `b0a40a9677c1` | COMPLETED |
 | 718 | `dust_bow_of_the_eclipse` | `assets/items/dust_bow_of_the_eclipse.png` | weapon | rare | `915ab24ab270` | COMPLETED |
 | 719 | `dust_hood_of_genesis` | `assets/items/dust_hood_of_genesis.png` | armor_head | legendary | `efed6f82d94f` | COMPLETED |
 | 720 | `dust_pendant` | `assets/items/dust_pendant.png` | accessory | epic | `328f7ae98e50` | COMPLETED |
@@ -960,7 +960,7 @@
 | 908 | `gloom_glaive_of_the_spud` | `assets/items/gloom_glaive_of_the_spud.png` | weapon | rare | `ddc32beb38f2` | COMPLETED |
 | 909 | `gloom_harness` | `assets/items/gloom_harness.png` | armor_chest | legendary | `3cce5b92c9f5` | COMPLETED |
 | 910 | `gloom_tunic_of_the_blight` | `assets/items/gloom_tunic_of_the_blight.png` | armor_chest | common | `5d916a1b588d` | COMPLETED |
-| 911 | `glowing_mushroom` | `assets/items/glowing_mushroom.png` | block | uncommon | `42a8f5b0f3aa` | COMPLETED |
+| 911 | `glowing_mushroom` | `assets/items/glowing_mushroom.png` | block | uncommon | `e2762a38706d` | COMPLETED |
 | 912 | `gold_chestplate` | `assets/items/gold_chestplate.png` | armor_chest | rare | `638dda9e5f28` | COMPLETED |
 | 913 | `gold_cleaver` | `assets/items/gold_cleaver.png` | weapon | rare | `73acbc3b6078` | COMPLETED |
 | 914 | `gold_coif_of_sol_rho` | `assets/items/gold_coif_of_sol_rho.png` | armor_head | common | `9ffd651beb37` | COMPLETED |
@@ -969,7 +969,7 @@
 | 917 | `gold_helmet` | `assets/items/gold_helmet.png` | armor_head | rare | `1fd726d69961` | COMPLETED |
 | 918 | `gold_helmet_of_genesis` | `assets/items/gold_helmet_of_genesis.png` | armor_head | common | `97a7766d48a6` | COMPLETED |
 | 919 | `gold_longbow_of_genesis` | `assets/items/gold_longbow_of_genesis.png` | weapon | legendary | `d05c5d059f86` | COMPLETED |
-| 920 | `gold_ore` | `assets/items/gold_ore.png` | material | rare | `80657f589dc3` | COMPLETED |
+| 920 | `gold_ore` | `assets/items/gold_ore.png` | material | rare | `ec6908cb5337` | COMPLETED |
 | 921 | `gold_sabatons` | `assets/items/gold_sabatons.png` | armor_legs | mythic | `9bd00c2cf3a6` | COMPLETED |
 | 922 | `gold_sword_of_the_eclipse` | `assets/items/gold_sword_of_the_eclipse.png` | weapon | uncommon | `51055708a68d` | COMPLETED |
 | 923 | `gold_token` | `assets/items/gold_token.png` | accessory | uncommon | `288fd7a204a0` | COMPLETED |
@@ -1066,7 +1066,7 @@
 | 1014 | `hoarfrost_saber` | `assets/items/hoarfrost_saber.png` | weapon | common | `6997d1f04c81` | COMPLETED |
 | 1015 | `hoarfrost_staff` | `assets/items/hoarfrost_staff.png` | weapon | uncommon | `74aeb2a7ac2c` | COMPLETED |
 | 1016 | `hoarfrost_tracers` | `assets/items/hoarfrost_tracers.png` | armor_legs | mythic | `2b325758801c` | COMPLETED |
-| 1017 | `ice_block` | `assets/items/ice_block.png` | block | common | `b86470c389af` | COMPLETED |
+| 1017 | `ice_block` | `assets/items/ice_block.png` | block | common | `10ed1444227b` | COMPLETED |
 | 1018 | `ignis_cuirass` | `assets/items/ignis_cuirass.png` | armor_chest | epic | `2238266d2bfc` | COMPLETED |
 | 1019 | `ignis_cutlass` | `assets/items/ignis_cutlass.png` | weapon | common | `e0ca85137133` | COMPLETED |
 | 1020 | `ignis_cutlass_2` | `assets/items/ignis_cutlass_2.png` | weapon | uncommon | `277f9817aba0` | COMPLETED |
@@ -1089,7 +1089,7 @@
 | 1037 | `iron_greaves` | `assets/items/iron_greaves.png` | armor_legs | uncommon | `8f0c3185b16d` | COMPLETED |
 | 1038 | `iron_helmet` | `assets/items/iron_helmet.png` | armor_head | uncommon | `b7d0055c8480` | COMPLETED |
 | 1039 | `iron_mail` | `assets/items/iron_mail.png` | armor_chest | rare | `ee30022f1c58` | COMPLETED |
-| 1040 | `iron_ore` | `assets/items/iron_ore.png` | material | common | `6fcf0db0d444` | COMPLETED |
+| 1040 | `iron_ore` | `assets/items/iron_ore.png` | material | common | `3b36f3f2485e` | COMPLETED |
 | 1041 | `iron_robe` | `assets/items/iron_robe.png` | armor_chest | common | `c4f9dfb69243` | COMPLETED |
 | 1042 | `iron_saber` | `assets/items/iron_saber.png` | weapon | rare | `918b5e1d8310` | COMPLETED |
 | 1043 | `iron_scepter_of_the_spud` | `assets/items/iron_scepter_of_the_spud.png` | weapon | epic | `ed2b7ee0161b` | COMPLETED |
@@ -1101,7 +1101,7 @@
 | 1049 | `khamsin_rod` | `assets/items/khamsin_rod.png` | weapon | common | `2985b9372be3` | COMPLETED |
 | 1050 | `khamsin_signet_of_the_blight` | `assets/items/khamsin_signet_of_the_blight.png` | accessory | rare | `0fdcd627c184` | COMPLETED |
 | 1051 | `khamsin_wand` | `assets/items/khamsin_wand.png` | weapon | epic | `c3d53fbe3fb2` | COMPLETED |
-| 1052 | `leaves` | `assets/items/leaves.png` | block | common | `f4d3ef573d22` | COMPLETED |
+| 1052 | `leaves` | `assets/items/leaves.png` | block | common | `0acaf28106dd` | COMPLETED |
 | 1053 | `lightning_cutlass` | `assets/items/lightning_cutlass.png` | weapon | epic | `11da921238ad` | COMPLETED |
 | 1054 | `lightning_diadem` | `assets/items/lightning_diadem.png` | armor_head | ancient | `ef9d7921b8c4` | COMPLETED |
 | 1055 | `lightning_gaiters_of_the_zephyr` | `assets/items/lightning_gaiters_of_the_zephyr.png` | armor_legs | common | `825d74a8103c` | COMPLETED |
@@ -1205,7 +1205,7 @@
 | 1153 | `moss_coif_of_genesis` | `assets/items/moss_coif_of_genesis.png` | armor_head | rare | `fded90d78cb7` | COMPLETED |
 | 1154 | `moss_mail` | `assets/items/moss_mail.png` | armor_chest | legendary | `46d2014f4823` | COMPLETED |
 | 1155 | `moss_striders` | `assets/items/moss_striders.png` | armor_legs | uncommon | `c0bac7bf05d5` | COMPLETED |
-| 1156 | `mushroom_grass` | `assets/items/mushroom_grass.png` | block | uncommon | `8f4e66236907` | COMPLETED |
+| 1156 | `mushroom_grass` | `assets/items/mushroom_grass.png` | block | uncommon | `fc6735064b77` | COMPLETED |
 | 1157 | `mythic_carapace_of_the_caverns` | `assets/items/mythic_carapace_of_the_caverns.png` | armor_chest | rare | `3f35be0de64c` | COMPLETED |
 | 1158 | `mythic_hauberk` | `assets/items/mythic_hauberk.png` | armor_chest | mythic | `61821b1b0e61` | COMPLETED |
 | 1159 | `mythic_pathfinders_of_fortitude` | `assets/items/mythic_pathfinders_of_fortitude.png` | armor_legs | epic | `175bd90624e2` | COMPLETED |
@@ -1431,8 +1431,8 @@
 | 1379 | `sacred_void_choker` | `assets/items/sacred_void_choker.png` | accessory | common | `98a20c147ac4` | COMPLETED |
 | 1380 | `sacred_wither_rapier` | `assets/items/sacred_wither_rapier.png` | weapon | uncommon | `a496e56ddf0b` | COMPLETED |
 | 1381 | `sacred_yukon_hauberk` | `assets/items/sacred_yukon_hauberk.png` | armor_chest | epic | `bc88760ff2f5` | COMPLETED |
-| 1382 | `sand_block` | `assets/items/sand_block.png` | block | common | `b033442dda2b` | COMPLETED |
-| 1383 | `sandstone_block` | `assets/items/sandstone_block.png` | block | common | `21935eca2abd` | COMPLETED |
+| 1382 | `sand_block` | `assets/items/sand_block.png` | block | common | `74952b100afc` | COMPLETED |
+| 1383 | `sandstone_block` | `assets/items/sandstone_block.png` | block | common | `723d37781f0e` | COMPLETED |
 | 1384 | `sandstorm_bascinet` | `assets/items/sandstorm_bascinet.png` | armor_head | mythic | `20f25ae08ea5` | COMPLETED |
 | 1385 | `sandstorm_dagger_of_the_spud` | `assets/items/sandstorm_dagger_of_the_spud.png` | weapon | common | `ffbecdc3a231` | COMPLETED |
 | 1386 | `sandstorm_focus_of_genesis` | `assets/items/sandstorm_focus_of_genesis.png` | weapon | mythic | `d234495f4ccf` | COMPLETED |
@@ -1485,7 +1485,7 @@
 | 1433 | `smolder_saber` | `assets/items/smolder_saber.png` | weapon | uncommon | `c89e0d559a7b` | COMPLETED |
 | 1434 | `smolder_scythe_of_the_blight` | `assets/items/smolder_scythe_of_the_blight.png` | weapon | uncommon | `60693f129d8c` | COMPLETED |
 | 1435 | `smolder_shortbow` | `assets/items/smolder_shortbow.png` | weapon | mythic | `8134fe184d37` | COMPLETED |
-| 1436 | `snow_block` | `assets/items/snow_block.png` | block | common | `81a8077e2b99` | COMPLETED |
+| 1436 | `snow_block` | `assets/items/snow_block.png` | block | common | `e42c2a4bdcc5` | COMPLETED |
 | 1437 | `sol_rho_aegis_of_the_blight` | `assets/items/sol_rho_aegis_of_the_blight.png` | armor_chest | uncommon | `e2552a953e55` | COMPLETED |
 | 1438 | `sol_rho_band_of_the_zephyr` | `assets/items/sol_rho_band_of_the_zephyr.png` | accessory | common | `67d3e7dfda1a` | COMPLETED |
 | 1439 | `sol_rho_boots_of_the_caverns` | `assets/items/sol_rho_boots_of_the_caverns.png` | armor_legs | epic | `02dcc6bfae13` | COMPLETED |
@@ -1555,7 +1555,7 @@
 | 1503 | `stellar_crossbow_of_the_eclipse` | `assets/items/stellar_crossbow_of_the_eclipse.png` | weapon | common | `99ed793809ca` | COMPLETED |
 | 1504 | `stellar_parka_of_the_blight` | `assets/items/stellar_parka_of_the_blight.png` | armor_chest | uncommon | `b293509b9931` | COMPLETED |
 | 1505 | `stellar_staff_of_the_tempest` | `assets/items/stellar_staff_of_the_tempest.png` | weapon | common | `08472a9e1e19` | COMPLETED |
-| 1506 | `stone_block` | `assets/items/stone_block.png` | block | common | `2b9d8f258ef7` | COMPLETED |
+| 1506 | `stone_block` | `assets/items/stone_block.png` | block | common | `f46c727d3bf9` | COMPLETED |
 | 1507 | `storm_choker` | `assets/items/storm_choker.png` | accessory | epic | `832a2fb5509d` | COMPLETED |
 | 1508 | `storm_greave_guards_of_the_zephyr` | `assets/items/storm_greave_guards_of_the_zephyr.png` | armor_legs | common | `6e34c368d704` | COMPLETED |
 | 1509 | `storm_grimoire_of_the_blight` | `assets/items/storm_grimoire_of_the_blight.png` | weapon | rare | `888a736b8d15` | COMPLETED |
@@ -1720,7 +1720,7 @@
 | 1668 | `wither_hood_of_the_spud` | `assets/items/wither_hood_of_the_spud.png` | armor_head | uncommon | `309d314d606e` | COMPLETED |
 | 1669 | `wither_plate` | `assets/items/wither_plate.png` | armor_chest | common | `4228bb12b680` | COMPLETED |
 | 1670 | `wither_saber` | `assets/items/wither_saber.png` | weapon | uncommon | `51fc5e7bdcbe` | COMPLETED |
-| 1671 | `wood` | `assets/items/wood.png` | block | common | `3eb80a52da75` | COMPLETED |
+| 1671 | `wood` | `assets/items/wood.png` | block | common | `0b914c434edc` | COMPLETED |
 | 1672 | `yukon_choker` | `assets/items/yukon_choker.png` | accessory | rare | `0f056addcc2b` | COMPLETED |
 | 1673 | `yukon_circlet_of_the_spud` | `assets/items/yukon_circlet_of_the_spud.png` | armor_head | uncommon | `ef7df37c19a2` | COMPLETED |
 | 1674 | `yukon_jerkin_of_the_spud` | `assets/items/yukon_jerkin_of_the_spud.png` | armor_chest | uncommon | `9d6c96a77f73` | COMPLETED |
@@ -1941,7 +1941,7 @@
 | 1889 | `tile_13` | `assets/tiles/tile_13.png` | tiles | Standard | `9fba12bd58a8` | COMPLETED |
 | 1890 | `tile_14` | `assets/tiles/tile_14.png` | tiles | Standard | `c9dc1dd599da` | COMPLETED |
 | 1891 | `tile_15` | `assets/tiles/tile_15.png` | tiles | Standard | `6c8e18f15103` | COMPLETED |
-| 1892 | `tile_16` | `assets/tiles/tile_16.png` | tiles | Standard | `e9d8a65b5839` | COMPLETED |
+| 1892 | `tile_16` | `assets/tiles/tile_16.png` | tiles | Standard | `c31a931ef14f` | COMPLETED |
 | 1893 | `tile_17` | `assets/tiles/tile_17.png` | tiles | Standard | `f446df3fd75d` | COMPLETED |
 | 1894 | `tile_18` | `assets/tiles/tile_18.png` | tiles | Standard | `709ad87293b1` | COMPLETED |
 | 1895 | `tile_19` | `assets/tiles/tile_19.png` | tiles | Standard | `ebe5c5616eaf` | COMPLETED |
@@ -1985,69 +1985,76 @@
 | 1933 | `tile_53` | `assets/tiles/tile_53.png` | tiles | Standard | `aff8cc9d5585` | COMPLETED |
 | 1934 | `tile_55` | `assets/tiles/tile_55.png` | tiles | Standard | `505b39fdb2b9` | COMPLETED |
 | 1935 | `tile_56` | `assets/tiles/tile_56.png` | tiles | Standard | `d29ed8e8f27f` | COMPLETED |
-| 1936 | `tile_6` | `assets/tiles/tile_6.png` | tiles | Standard | `90a4eb6be68f` | COMPLETED |
-| 1937 | `tile_7` | `assets/tiles/tile_7.png` | tiles | Standard | `ca5a4ecbf3b5` | COMPLETED |
-| 1938 | `tile_8` | `assets/tiles/tile_8.png` | tiles | Standard | `7305f73be8ec` | COMPLETED |
-| 1939 | `tile_9` | `assets/tiles/tile_9.png` | tiles | Standard | `b2f62a32c259` | COMPLETED |
-| 1940 | `tile_autumn_leaves` | `assets/tiles/tile_autumn_leaves.png` | tiles | Standard | `6c00d2d883e1` | COMPLETED |
-| 1941 | `tile_blight_leaves` | `assets/tiles/tile_blight_leaves.png` | tiles | Standard | `677b7d898bc0` | COMPLETED |
-| 1942 | `tile_palm_leaves` | `assets/tiles/tile_palm_leaves.png` | tiles | Standard | `c583956bf2ed` | COMPLETED |
-| 1943 | `tile_sapling_frames_0` | `assets/tiles/tile_sapling_frames_0.png` | tiles | Standard | `92541ab0a1c5` | COMPLETED |
-| 1944 | `tile_sapling_frames_1` | `assets/tiles/tile_sapling_frames_1.png` | tiles | Standard | `c520a3794ab7` | COMPLETED |
-| 1945 | `tile_sapling_frames_2` | `assets/tiles/tile_sapling_frames_2.png` | tiles | Standard | `fdf75337a049` | COMPLETED |
-| 1946 | `tile_sapling_frames_3` | `assets/tiles/tile_sapling_frames_3.png` | tiles | Standard | `47d036d07508` | COMPLETED |
-| 1947 | `tile_snow_leaves` | `assets/tiles/tile_snow_leaves.png` | tiles | Standard | `cf87bf40b03d` | COMPLETED |
-| 1948 | `tile_trunk_base` | `assets/tiles/tile_trunk_base.png` | tiles | Standard | `f3191fcc32a5` | COMPLETED |
-| 1949 | `tile_trunk_branch_l` | `assets/tiles/tile_trunk_branch_l.png` | tiles | Standard | `2cfb671a2f19` | COMPLETED |
-| 1950 | `tile_trunk_branch_l_blight` | `assets/tiles/tile_trunk_branch_l_blight.png` | tiles | Standard | `5a33e73803f7` | COMPLETED |
-| 1951 | `tile_trunk_branch_l_palm` | `assets/tiles/tile_trunk_branch_l_palm.png` | tiles | Standard | `aad6ce58aa38` | COMPLETED |
-| 1952 | `tile_trunk_branch_l_snow` | `assets/tiles/tile_trunk_branch_l_snow.png` | tiles | Standard | `4e832e31c266` | COMPLETED |
-| 1953 | `tile_trunk_branch_r` | `assets/tiles/tile_trunk_branch_r.png` | tiles | Standard | `e4211371b9a0` | COMPLETED |
-| 1954 | `tile_trunk_branch_r_blight` | `assets/tiles/tile_trunk_branch_r_blight.png` | tiles | Standard | `0cc25179ea23` | COMPLETED |
-| 1955 | `tile_trunk_branch_r_palm` | `assets/tiles/tile_trunk_branch_r_palm.png` | tiles | Standard | `2630b588d599` | COMPLETED |
-| 1956 | `tile_trunk_branch_r_snow` | `assets/tiles/tile_trunk_branch_r_snow.png` | tiles | Standard | `0aa618a536c9` | COMPLETED |
-| 1957 | `tile_trunk_crown` | `assets/tiles/tile_trunk_crown.png` | tiles | Standard | `5ab09b3383e2` | COMPLETED |
-| 1958 | `tile_trunk_crown_blight` | `assets/tiles/tile_trunk_crown_blight.png` | tiles | Standard | `94c4da3eb607` | COMPLETED |
-| 1959 | `tile_trunk_crown_palm` | `assets/tiles/tile_trunk_crown_palm.png` | tiles | Standard | `d61e27302361` | COMPLETED |
-| 1960 | `tile_trunk_crown_snow` | `assets/tiles/tile_trunk_crown_snow.png` | tiles | Standard | `85973b8f2c15` | COMPLETED |
-| 1961 | `tile_water_frames_0` | `assets/tiles/tile_water_frames_0.png` | tiles | Standard | `e4fe34ffa4d9` | COMPLETED |
-| 1962 | `tile_water_frames_1` | `assets/tiles/tile_water_frames_1.png` | tiles | Standard | `be2627f4167c` | COMPLETED |
-| 1963 | `tile_water_frames_2` | `assets/tiles/tile_water_frames_2.png` | tiles | Standard | `d345742355bb` | COMPLETED |
-| 1964 | `tile_water_frames_3` | `assets/tiles/tile_water_frames_3.png` | tiles | Standard | `1de7a14f6296` | COMPLETED |
-| 1965 | `tile_water_frames_4` | `assets/tiles/tile_water_frames_4.png` | tiles | Standard | `79f82e74bb0f` | COMPLETED |
-| 1966 | `tile_water_frames_5` | `assets/tiles/tile_water_frames_5.png` | tiles | Standard | `a4a7c7d8c754` | COMPLETED |
-| 1967 | `tile_water_frames_6` | `assets/tiles/tile_water_frames_6.png` | tiles | Standard | `99f605d6c100` | COMPLETED |
-| 1968 | `tile_water_frames_7` | `assets/tiles/tile_water_frames_7.png` | tiles | Standard | `7030cce3510f` | COMPLETED |
-| 1969 | `tile_water_submerged_frames_0` | `assets/tiles/tile_water_submerged_frames_0.png` | tiles | Standard | `6f327e120b84` | COMPLETED |
-| 1970 | `tile_water_submerged_frames_1` | `assets/tiles/tile_water_submerged_frames_1.png` | tiles | Standard | `80da4a21f117` | COMPLETED |
-| 1971 | `tile_water_submerged_frames_2` | `assets/tiles/tile_water_submerged_frames_2.png` | tiles | Standard | `ecabf1cddd9f` | COMPLETED |
-| 1972 | `tile_water_submerged_frames_3` | `assets/tiles/tile_water_submerged_frames_3.png` | tiles | Standard | `eb82c4c1b47d` | COMPLETED |
-| 1973 | `tile_water_submerged_frames_4` | `assets/tiles/tile_water_submerged_frames_4.png` | tiles | Standard | `c6b4a7e256f3` | COMPLETED |
-| 1974 | `tile_water_submerged_frames_5` | `assets/tiles/tile_water_submerged_frames_5.png` | tiles | Standard | `3a26c48fac60` | COMPLETED |
-| 1975 | `tile_water_submerged_frames_6` | `assets/tiles/tile_water_submerged_frames_6.png` | tiles | Standard | `9745d9620b24` | COMPLETED |
-| 1976 | `tile_water_submerged_frames_7` | `assets/tiles/tile_water_submerged_frames_7.png` | tiles | Standard | `a727ce238edc` | COMPLETED |
-| 1977 | `achievement_banner` | `assets/ui/achievement_banner.png` | ui | Standard | `853fee3cf9f6` | COMPLETED |
-| 1978 | `achievement_toast` | `assets/ui/achievement_toast.png` | ui | Standard | `061fff059567` | COMPLETED |
-| 1979 | `bubble_empty` | `assets/ui/bubble_empty.png` | ui | Standard | `43281778850a` | COMPLETED |
-| 1980 | `bubble_full` | `assets/ui/bubble_full.png` | ui | Standard | `dd9a3f38aa41` | COMPLETED |
-| 1981 | `bubble_pop` | `assets/ui/bubble_pop.png` | ui | Standard | `5c68dae9cfd7` | COMPLETED |
-| 1982 | `cracks_0` | `assets/ui/cracks_0.png` | ui | Standard | `ac3f084e1097` | COMPLETED |
-| 1983 | `cracks_1` | `assets/ui/cracks_1.png` | ui | Standard | `7b50f5dcd026` | COMPLETED |
-| 1984 | `cracks_2` | `assets/ui/cracks_2.png` | ui | Standard | `621bc075b028` | COMPLETED |
-| 1985 | `cracks_3` | `assets/ui/cracks_3.png` | ui | Standard | `d5b61f80ef49` | COMPLETED |
-| 1986 | `heart_empty` | `assets/ui/heart_empty.png` | ui | Standard | `02c2148e4726` | COMPLETED |
-| 1987 | `heart_full` | `assets/ui/heart_full.png` | ui | Standard | `0b6267815447` | COMPLETED |
-| 1988 | `mana_star` | `assets/ui/mana_star.png` | ui | Standard | `f50ebd71de78` | COMPLETED |
-| 1989 | `reticle` | `assets/ui/reticle.png` | ui | Standard | `0990740867d1` | COMPLETED |
-| 1990 | `slot_frame` | `assets/ui/slot_frame.png` | ui | Standard | `04133a923d69` | COMPLETED |
-| 1991 | `slot_selected` | `assets/ui/slot_selected.png` | ui | Standard | `ae0b3b78cefc` | COMPLETED |
-| 1992 | `wall_1` | `assets/walls/wall_1.png` | walls | Standard | `580ea23f9f4e` | COMPLETED |
-| 1993 | `wall_10` | `assets/walls/wall_10.png` | walls | Standard | `18555b30dac2` | COMPLETED |
-| 1994 | `wall_2` | `assets/walls/wall_2.png` | walls | Standard | `ebecf8773f09` | COMPLETED |
-| 1995 | `wall_3` | `assets/walls/wall_3.png` | walls | Standard | `8e56d61bd777` | COMPLETED |
-| 1996 | `wall_4` | `assets/walls/wall_4.png` | walls | Standard | `f703f806c7d9` | COMPLETED |
-| 1997 | `wall_5` | `assets/walls/wall_5.png` | walls | Standard | `10cb6e802426` | COMPLETED |
-| 1998 | `wall_6` | `assets/walls/wall_6.png` | walls | Standard | `6dbd8a0e18a2` | COMPLETED |
-| 1999 | `wall_7` | `assets/walls/wall_7.png` | walls | Standard | `7d6fa269a925` | COMPLETED |
-| 2000 | `wall_8` | `assets/walls/wall_8.png` | walls | Standard | `a7761e4e9512` | COMPLETED |
-| 2001 | `wall_9` | `assets/walls/wall_9.png` | walls | Standard | `ecb23740972a` | COMPLETED |
+| 1936 | `tile_57` | `assets/tiles/tile_57.png` | tiles | Standard | `ff264246c8e5` | COMPLETED |
+| 1937 | `tile_58` | `assets/tiles/tile_58.png` | tiles | Standard | `dad8db4df93f` | COMPLETED |
+| 1938 | `tile_59` | `assets/tiles/tile_59.png` | tiles | Standard | `e41e3b320a2a` | COMPLETED |
+| 1939 | `tile_6` | `assets/tiles/tile_6.png` | tiles | Standard | `90a4eb6be68f` | COMPLETED |
+| 1940 | `tile_60` | `assets/tiles/tile_60.png` | tiles | Standard | `2b70620cfeb0` | COMPLETED |
+| 1941 | `tile_7` | `assets/tiles/tile_7.png` | tiles | Standard | `ca5a4ecbf3b5` | COMPLETED |
+| 1942 | `tile_8` | `assets/tiles/tile_8.png` | tiles | Standard | `7305f73be8ec` | COMPLETED |
+| 1943 | `tile_9` | `assets/tiles/tile_9.png` | tiles | Standard | `b2f62a32c259` | COMPLETED |
+| 1944 | `tile_autumn_leaves` | `assets/tiles/tile_autumn_leaves.png` | tiles | Standard | `6c00d2d883e1` | COMPLETED |
+| 1945 | `tile_blight_leaves` | `assets/tiles/tile_blight_leaves.png` | tiles | Standard | `677b7d898bc0` | COMPLETED |
+| 1946 | `tile_palm_leaves` | `assets/tiles/tile_palm_leaves.png` | tiles | Standard | `c583956bf2ed` | COMPLETED |
+| 1947 | `tile_sapling_frames_0` | `assets/tiles/tile_sapling_frames_0.png` | tiles | Standard | `92541ab0a1c5` | COMPLETED |
+| 1948 | `tile_sapling_frames_1` | `assets/tiles/tile_sapling_frames_1.png` | tiles | Standard | `c520a3794ab7` | COMPLETED |
+| 1949 | `tile_sapling_frames_2` | `assets/tiles/tile_sapling_frames_2.png` | tiles | Standard | `fdf75337a049` | COMPLETED |
+| 1950 | `tile_sapling_frames_3` | `assets/tiles/tile_sapling_frames_3.png` | tiles | Standard | `47d036d07508` | COMPLETED |
+| 1951 | `tile_snow_leaves` | `assets/tiles/tile_snow_leaves.png` | tiles | Standard | `cf87bf40b03d` | COMPLETED |
+| 1952 | `tile_trunk_base` | `assets/tiles/tile_trunk_base.png` | tiles | Standard | `f3191fcc32a5` | COMPLETED |
+| 1953 | `tile_trunk_branch_l` | `assets/tiles/tile_trunk_branch_l.png` | tiles | Standard | `2cfb671a2f19` | COMPLETED |
+| 1954 | `tile_trunk_branch_l_blight` | `assets/tiles/tile_trunk_branch_l_blight.png` | tiles | Standard | `5a33e73803f7` | COMPLETED |
+| 1955 | `tile_trunk_branch_l_palm` | `assets/tiles/tile_trunk_branch_l_palm.png` | tiles | Standard | `aad6ce58aa38` | COMPLETED |
+| 1956 | `tile_trunk_branch_l_snow` | `assets/tiles/tile_trunk_branch_l_snow.png` | tiles | Standard | `4e832e31c266` | COMPLETED |
+| 1957 | `tile_trunk_branch_r` | `assets/tiles/tile_trunk_branch_r.png` | tiles | Standard | `e4211371b9a0` | COMPLETED |
+| 1958 | `tile_trunk_branch_r_blight` | `assets/tiles/tile_trunk_branch_r_blight.png` | tiles | Standard | `0cc25179ea23` | COMPLETED |
+| 1959 | `tile_trunk_branch_r_palm` | `assets/tiles/tile_trunk_branch_r_palm.png` | tiles | Standard | `2630b588d599` | COMPLETED |
+| 1960 | `tile_trunk_branch_r_snow` | `assets/tiles/tile_trunk_branch_r_snow.png` | tiles | Standard | `0aa618a536c9` | COMPLETED |
+| 1961 | `tile_trunk_crown` | `assets/tiles/tile_trunk_crown.png` | tiles | Standard | `5ab09b3383e2` | COMPLETED |
+| 1962 | `tile_trunk_crown_blight` | `assets/tiles/tile_trunk_crown_blight.png` | tiles | Standard | `94c4da3eb607` | COMPLETED |
+| 1963 | `tile_trunk_crown_palm` | `assets/tiles/tile_trunk_crown_palm.png` | tiles | Standard | `d61e27302361` | COMPLETED |
+| 1964 | `tile_trunk_crown_snow` | `assets/tiles/tile_trunk_crown_snow.png` | tiles | Standard | `85973b8f2c15` | COMPLETED |
+| 1965 | `tile_water_frames_0` | `assets/tiles/tile_water_frames_0.png` | tiles | Standard | `e4fe34ffa4d9` | COMPLETED |
+| 1966 | `tile_water_frames_1` | `assets/tiles/tile_water_frames_1.png` | tiles | Standard | `be2627f4167c` | COMPLETED |
+| 1967 | `tile_water_frames_2` | `assets/tiles/tile_water_frames_2.png` | tiles | Standard | `d345742355bb` | COMPLETED |
+| 1968 | `tile_water_frames_3` | `assets/tiles/tile_water_frames_3.png` | tiles | Standard | `1de7a14f6296` | COMPLETED |
+| 1969 | `tile_water_frames_4` | `assets/tiles/tile_water_frames_4.png` | tiles | Standard | `79f82e74bb0f` | COMPLETED |
+| 1970 | `tile_water_frames_5` | `assets/tiles/tile_water_frames_5.png` | tiles | Standard | `a4a7c7d8c754` | COMPLETED |
+| 1971 | `tile_water_frames_6` | `assets/tiles/tile_water_frames_6.png` | tiles | Standard | `99f605d6c100` | COMPLETED |
+| 1972 | `tile_water_frames_7` | `assets/tiles/tile_water_frames_7.png` | tiles | Standard | `7030cce3510f` | COMPLETED |
+| 1973 | `tile_water_submerged_frames_0` | `assets/tiles/tile_water_submerged_frames_0.png` | tiles | Standard | `6f327e120b84` | COMPLETED |
+| 1974 | `tile_water_submerged_frames_1` | `assets/tiles/tile_water_submerged_frames_1.png` | tiles | Standard | `80da4a21f117` | COMPLETED |
+| 1975 | `tile_water_submerged_frames_2` | `assets/tiles/tile_water_submerged_frames_2.png` | tiles | Standard | `ecabf1cddd9f` | COMPLETED |
+| 1976 | `tile_water_submerged_frames_3` | `assets/tiles/tile_water_submerged_frames_3.png` | tiles | Standard | `eb82c4c1b47d` | COMPLETED |
+| 1977 | `tile_water_submerged_frames_4` | `assets/tiles/tile_water_submerged_frames_4.png` | tiles | Standard | `c6b4a7e256f3` | COMPLETED |
+| 1978 | `tile_water_submerged_frames_5` | `assets/tiles/tile_water_submerged_frames_5.png` | tiles | Standard | `3a26c48fac60` | COMPLETED |
+| 1979 | `tile_water_submerged_frames_6` | `assets/tiles/tile_water_submerged_frames_6.png` | tiles | Standard | `9745d9620b24` | COMPLETED |
+| 1980 | `tile_water_submerged_frames_7` | `assets/tiles/tile_water_submerged_frames_7.png` | tiles | Standard | `a727ce238edc` | COMPLETED |
+| 1981 | `achievement_banner` | `assets/ui/achievement_banner.png` | ui | Standard | `853fee3cf9f6` | COMPLETED |
+| 1982 | `achievement_toast` | `assets/ui/achievement_toast.png` | ui | Standard | `061fff059567` | COMPLETED |
+| 1983 | `bubble_empty` | `assets/ui/bubble_empty.png` | ui | Standard | `43281778850a` | COMPLETED |
+| 1984 | `bubble_full` | `assets/ui/bubble_full.png` | ui | Standard | `dd9a3f38aa41` | COMPLETED |
+| 1985 | `bubble_pop` | `assets/ui/bubble_pop.png` | ui | Standard | `5c68dae9cfd7` | COMPLETED |
+| 1986 | `cracks_0` | `assets/ui/cracks_0.png` | ui | Standard | `ac3f084e1097` | COMPLETED |
+| 1987 | `cracks_1` | `assets/ui/cracks_1.png` | ui | Standard | `7b50f5dcd026` | COMPLETED |
+| 1988 | `cracks_2` | `assets/ui/cracks_2.png` | ui | Standard | `621bc075b028` | COMPLETED |
+| 1989 | `cracks_3` | `assets/ui/cracks_3.png` | ui | Standard | `d5b61f80ef49` | COMPLETED |
+| 1990 | `heart_empty` | `assets/ui/heart_empty.png` | ui | Standard | `02c2148e4726` | COMPLETED |
+| 1991 | `heart_full` | `assets/ui/heart_full.png` | ui | Standard | `0b6267815447` | COMPLETED |
+| 1992 | `mana_star` | `assets/ui/mana_star.png` | ui | Standard | `f50ebd71de78` | COMPLETED |
+| 1993 | `reticle` | `assets/ui/reticle.png` | ui | Standard | `0990740867d1` | COMPLETED |
+| 1994 | `slot_frame` | `assets/ui/slot_frame.png` | ui | Standard | `04133a923d69` | COMPLETED |
+| 1995 | `slot_selected` | `assets/ui/slot_selected.png` | ui | Standard | `ae0b3b78cefc` | COMPLETED |
+| 1996 | `wall_1` | `assets/walls/wall_1.png` | walls | Standard | `580ea23f9f4e` | COMPLETED |
+| 1997 | `wall_10` | `assets/walls/wall_10.png` | walls | Standard | `18555b30dac2` | COMPLETED |
+| 1998 | `wall_11` | `assets/walls/wall_11.png` | walls | Standard | `d5ab0742b06a` | COMPLETED |
+| 1999 | `wall_12` | `assets/walls/wall_12.png` | walls | Standard | `3a5feaaa1bf3` | COMPLETED |
+| 2000 | `wall_13` | `assets/walls/wall_13.png` | walls | Standard | `b3a6d39da627` | COMPLETED |
+| 2001 | `wall_2` | `assets/walls/wall_2.png` | walls | Standard | `ebecf8773f09` | COMPLETED |
+| 2002 | `wall_3` | `assets/walls/wall_3.png` | walls | Standard | `8e56d61bd777` | COMPLETED |
+| 2003 | `wall_4` | `assets/walls/wall_4.png` | walls | Standard | `f703f806c7d9` | COMPLETED |
+| 2004 | `wall_5` | `assets/walls/wall_5.png` | walls | Standard | `06a341a61123` | COMPLETED |
+| 2005 | `wall_6` | `assets/walls/wall_6.png` | walls | Standard | `6dbd8a0e18a2` | COMPLETED |
+| 2006 | `wall_7` | `assets/walls/wall_7.png` | walls | Standard | `7d6fa269a925` | COMPLETED |
+| 2007 | `wall_8` | `assets/walls/wall_8.png` | walls | Standard | `a7761e4e9512` | COMPLETED |
+| 2008 | `wall_9` | `assets/walls/wall_9.png` | walls | Standard | `ecb23740972a` | COMPLETED |

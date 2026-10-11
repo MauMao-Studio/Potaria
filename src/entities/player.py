@@ -11,7 +11,8 @@ import pygame
 from src.constants import (
     SCALED_TILE, GRAVITY, TERMINAL_VELOCITY, PLAYER_SPEED,
     PLAYER_ACCEL, PLAYER_FRICTION, PLAYER_JUMP_FORCE, PLAYER_DROP_THROUGH_TIME,
-    PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT
+    PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT,
+    TILE_ROPE_RUNGS, TILE_WOOD_PLATFORM
 )
 from src.rpg.stats import PlayerStats
 from src.rpg.equipment import Equipment, ARMOR_DATA
@@ -133,6 +134,11 @@ class Player:
         # State & 12 FPS Animation System
         self.facing_right = True
         self.on_ground = False
+        self.on_rope_rungs = False
+        self.on_scaffolding = False
+        self.on_climbable = False
+        self._climb_up_input = False
+        self._climb_down_input = False
         self.anim_timer = 0.0
         self.walk_frame_idx = 0
         self.idle_frame_idx = 0
@@ -209,7 +215,33 @@ class Player:
         else:
             return "idle"
 
-    def handle_input(self, keys, mouse_world_x, mouse_world_y, key_bindings=None):
+    def check_climbable(self, world):
+        """Checks if the player's hitbox overlaps rope rungs or scaffolding/platforms."""
+        if world is None or not hasattr(world, "get_tile"):
+            self.on_rope_rungs = False
+            self.on_scaffolding = False
+            self.on_climbable = False
+            return False
+        min_tx = int((self.rect.left + 4) // SCALED_TILE)
+        max_tx = int((self.rect.right - 5) // SCALED_TILE)
+        min_ty = int((self.rect.top + 2) // SCALED_TILE)
+        max_ty = int(self.rect.bottom // SCALED_TILE)
+        body_max_ty = int((self.rect.bottom - 1) // SCALED_TILE)
+        found_rope = False
+        found_scaffold = False
+        for tx in range(min_tx, max_tx + 1):
+            for ty in range(min_ty, max_ty + 1):
+                tid = world.get_tile(tx, ty)
+                if tid == TILE_ROPE_RUNGS:
+                    found_rope = True
+                elif tid == TILE_WOOD_PLATFORM and ty <= body_max_ty:
+                    found_scaffold = True
+        self.on_rope_rungs = found_rope
+        self.on_scaffolding = found_scaffold
+        self.on_climbable = found_rope or found_scaffold
+        return self.on_climbable
+
+    def handle_input(self, keys, mouse_world_x, mouse_world_y, key_bindings=None, world=None):
         if self.is_dead:
             return
 
@@ -243,7 +275,15 @@ class Player:
             self.vx = min(speed_cap, self.vx + PLAYER_ACCEL)
             moving = True
 
-        if moving or is_down(k_jump) or is_down(k_drop) or is_down(pygame.K_UP) or is_down(pygame.K_DOWN):
+        up_held = bool(is_down(k_jump) or is_down(pygame.K_UP) or is_down(pygame.K_w))
+        down_held = bool(is_down(k_drop) or is_down(pygame.K_DOWN) or is_down(pygame.K_s))
+        self._climb_up_input = up_held
+        self._climb_down_input = down_held
+
+        if world is not None:
+            self.check_climbable(world)
+
+        if moving or up_held or down_held:
             self.is_resting = False
 
         if not moving and self.dash_timer <= 0:
@@ -252,14 +292,32 @@ class Player:
             elif self.vx < 0:
                 self.vx = min(0.0, self.vx + PLAYER_FRICTION)
 
-        if self.in_water:
+        if self.on_rope_rungs:
+            if up_held:
+                self.vy = -3.8
+                self.on_ground = False
+            elif down_held:
+                self.vy = 3.2
+                self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
+                self.on_ground = False
+            else:
+                self.vy = 0.0
+        elif self.on_scaffolding and (up_held or down_held):
+            if up_held:
+                self.vy = -3.8
+                self.on_ground = False
+            elif down_held:
+                self.vy = max(self.vy, 3.2)
+                self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
+                self.on_ground = False
+        elif self.in_water:
             # Water swimming controls: paddling up with Jump/Up/W, diving with Drop/Down/S
-            if is_down(k_jump) or is_down(pygame.K_UP) or is_down(pygame.K_w):
+            if up_held:
                 if self.vy > 0:
                     self.vy = -1.8
                 else:
                     self.vy = max(-3.6, self.vy - 1.4)
-            if is_down(k_drop) or is_down(pygame.K_DOWN) or is_down(pygame.K_s):
+            if down_held:
                 if self.vy < 0:
                     self.vy = 1.2
                 else:
@@ -703,8 +761,14 @@ class Player:
         if len(self.fireballs) > 30:
             self.fireballs = self.fireballs[-30:]
 
-        # Water Contact & Swimming Physics
-        water_rects = world.get_water_rects_in_bounds(self.rect) if hasattr(world, "get_water_rects_in_bounds") else []
+        # Water Contact & Swimming Physics (requires lower-body submersion)
+        lower_body_rect = pygame.Rect(
+            int(self.rect.x + 2),
+            int(self.rect.centery),
+            max(1, int(self.rect.width - 4)),
+            max(1, int(self.rect.bottom - self.rect.centery)),
+        )
+        water_rects = world.get_water_rects_in_bounds(lower_body_rect) if hasattr(world, "get_water_rects_in_bounds") else []
         self.in_water = len(water_rects) > 0
 
         # Check if head is submerged for oxygen / breath meter
@@ -724,8 +788,30 @@ class Player:
             self.drown_timer = 0.0
             self.submerged_duration = 0.0
 
-        # Gravity & Fluid Drag
-        if self.in_water:
+        # Climbable Rope Rungs & Scaffolding Detection
+        self.check_climbable(world)
+
+        # Gravity, Climbing & Fluid Drag
+        if self.on_rope_rungs:
+            if self._climb_up_input:
+                self.vy = -3.8
+                self.on_ground = False
+            elif self._climb_down_input:
+                self.vy = 3.2
+                self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
+                self.on_ground = False
+            else:
+                if self.vy > 0:
+                    self.vy = 0.0
+        elif self.on_scaffolding and (self._climb_up_input or self._climb_down_input):
+            if self._climb_up_input:
+                self.vy = -3.8
+                self.on_ground = False
+            elif self._climb_down_input:
+                self.vy = max(self.vy, 3.2)
+                self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
+                self.on_ground = False
+        elif self.in_water:
             self.vy = min(2.5, self.vy + GRAVITY * 0.25)
             self.vx *= 0.88
             self.vy *= 0.90
@@ -772,6 +858,12 @@ class Player:
                         self.y = tile_rect.bottom
                         self.vy = 0.0
                     break
+
+        if self.on_rope_rungs and not self._climb_up_input and not self._climb_down_input and self.vy == 0.0:
+            self.on_ground = True
+
+        self._climb_up_input = False
+        self._climb_down_input = False
 
         # 3. 12 FPS Smooth Animation Timing (0.0833s per frame)
         FRAME_DURATION = 1.0 / 12.0
@@ -831,12 +923,6 @@ class Player:
 
         if not self.facing_right:
             base_sprite = pygame.transform.flip(base_sprite, True, False)
-
-        if getattr(self, "in_water", False) or getattr(self, "is_submerged", False):
-            aqua_overlay = pygame.Surface(base_sprite.get_size(), pygame.SRCALPHA)
-            aqua_overlay.fill((30, 110, 200, 75))
-            base_sprite = base_sprite.copy()
-            base_sprite.blit(aqua_overlay, (0, 0))
 
         target_surf.blit(base_sprite, (sx, draw_sy))
 

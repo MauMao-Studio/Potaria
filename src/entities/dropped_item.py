@@ -117,10 +117,4 @@ class DroppedItem:
         sw, sh = target_surf.get_width(), target_surf.get_height()
         if -32 <= sx <= sw + 32 and -32 <= sy <= sh + 32:
             if self.icon:
-                draw_icon = self.icon
-                if getattr(self, "in_water", False):
-                    draw_icon = draw_icon.copy()
-                    aqua = pygame.Surface(draw_icon.get_size(), pygame.SRCALPHA)
-                    aqua.fill((30, 110, 200, 75))
-                    draw_icon.blit(aqua, (0, 0))
-                target_surf.blit(draw_icon, (sx - 4, sy - 4))
+                target_surf.blit(self.icon, (sx - 4, sy - 4))

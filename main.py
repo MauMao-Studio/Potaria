@@ -636,7 +636,7 @@ class PotariaGame:
         return raw_pos
 
     def toggle_fullscreen(self):
-        """Toggles fullscreen display mode across all game states."""
+        """Toggles borderless fullscreen display mode across all game states (prevents screenshot / Win+Shift+S blackout)."""
         self.fullscreen = not self.fullscreen
         self.menu.settings["fullscreen"] = self.fullscreen
         self.menu._refresh_settings_button_labels()
@@ -649,23 +649,25 @@ class PotariaGame:
             self.screen = self.renderer_manager.surface
             self.ui_screen = self.renderer_manager.ui_surface
         elif self.fullscreen:
+            os.environ["SDL_VIDEO_WINDOW_POS"] = "0,0"
             try:
                 self.screen = pygame.display.set_mode(
                     (SCREEN_WIDTH, SCREEN_HEIGHT),
-                    pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN
+                    pygame.DOUBLEBUF | pygame.SCALED | pygame.NOFRAME
                 )
             except pygame.error:
                 try:
                     self.screen = pygame.display.set_mode(
                         (SCREEN_WIDTH, SCREEN_HEIGHT),
-                        pygame.FULLSCREEN | pygame.SCALED
+                        pygame.NOFRAME | pygame.SCALED
                     )
                 except pygame.error:
                     self.screen = pygame.display.set_mode(
                         (SCREEN_WIDTH, SCREEN_HEIGHT),
-                        pygame.FULLSCREEN
+                        pygame.NOFRAME
                     )
         else:
+            os.environ["SDL_VIDEO_WINDOW_POS"] = "centered"
             try:
                 self.screen = pygame.display.set_mode(
                     (SCREEN_WIDTH, SCREEN_HEIGHT),
@@ -731,7 +733,7 @@ class PotariaGame:
         if hasattr(self, "inventory"):
             self.inventory.tooltip_mode = settings.get("tooltips", "detailed")
 
-        if settings.get("fullscreen", False):
+        if bool(settings.get("fullscreen", False)) != self.fullscreen:
             try:
                 self.toggle_fullscreen()
             except Exception:
@@ -1124,6 +1126,10 @@ class PotariaGame:
 
                     if hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
                         if self.npc_dialogue.handle_click(px, py, self.player, self.inventory, self.world, self.combat):
+                            continue
+
+                    if hasattr(self, "chest_ui") and self.chest_ui.is_open:
+                        if self.chest_ui.handle_click(px, py, False, self.player, self.inventory):
                             continue
 
                     if self.character_panel.is_open:
@@ -2962,6 +2968,10 @@ class PotariaGame:
             # Layer 9.7: Storage Chest Window
             if hasattr(self, "chest_ui") and self.chest_ui.is_open:
                 self.chest_ui.render(ui_surf, self.inventory, mouse_x, mouse_y)
+
+            # Layer 9.75: Foreground Dragged Item (Always above Chest UI, Character Panel, and NPC Shop)
+            if hasattr(self.hud, "render_dragged_item"):
+                self.hud.render_dragged_item(ui_surf, self.inventory, mouse_x, mouse_y)
 
             # Layer 9.8: PvP Last Man Standing Victory Banner
             if self.pvp_victor_banner:

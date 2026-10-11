@@ -7,6 +7,7 @@ Engine: Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)
 
 from typing import Optional, Tuple, Union, Dict
 import array
+import os
 import pygame
 
 from src.rendering.base_renderer import (
@@ -246,6 +247,18 @@ class GLRenderer(BaseRenderer):
         """Indicates whether this GLRenderer has fallen back to software blitting."""
         return self._using_fallback
 
+    def _get_desktop_resolution(self) -> Tuple[int, int]:
+        """Returns the primary monitor desktop resolution for borderless fullscreen."""
+        desktop_sizes = getattr(pygame.display, "get_desktop_sizes", lambda: [])()
+        if desktop_sizes:
+            return desktop_sizes[0]
+        info = pygame.display.Info()
+        w = getattr(info, "current_w", 0)
+        h = getattr(info, "current_h", 0)
+        if w > 0 and h > 0:
+            return (w, h)
+        return (1920, 1080)
+
     def initialize(self) -> bool:
         """
         Attempts to initialize a ModernGL hardware context.
@@ -266,20 +279,17 @@ class GLRenderer(BaseRenderer):
 
         flags = pygame.OPENGL | pygame.DOUBLEBUF
         if self.fullscreen:
-            desktop_sizes = getattr(pygame.display, "get_desktop_sizes", lambda: [])()
-            if desktop_sizes:
-                target_w, target_h = desktop_sizes[0]
-            else:
-                info = pygame.display.Info()
-                target_w = getattr(info, "current_w", 1920)
-                target_h = getattr(info, "current_h", 1080)
-            flags |= pygame.FULLSCREEN
+            os.environ["SDL_VIDEO_WINDOW_POS"] = "0,0"
+            target_w, target_h = self._get_desktop_resolution()
+            flags |= pygame.NOFRAME
         else:
+            os.environ["SDL_VIDEO_WINDOW_POS"] = "centered"
             target_w = getattr(self, "display_width", self.width)
             target_h = getattr(self, "display_height", self.height)
 
         try:
             pygame.display.set_mode((target_w, target_h), flags)
+            self._sync_window_frame_and_pos()
             self.ctx = moderngl.create_context()
         except Exception as e:
             self._engage_fallback(f"OpenGL context creation failed: {e}")
@@ -918,24 +928,37 @@ class GLRenderer(BaseRenderer):
             return self.fallback_renderer.set_mode(width, height, fullscreen)
         return self._apply_display_mode()
 
+    def _sync_window_frame_and_pos(self):
+        """Synchronizes SDL2 window borderless frame and position for runtime fullscreen toggling."""
+        try:
+            win_cls = getattr(getattr(pygame, "window", None), "Window", None)
+            if win_cls and hasattr(win_cls, "from_display_module"):
+                win = win_cls.from_display_module()
+                if self.fullscreen:
+                    win.borderless = True
+                    win.position = (0, 0)
+                else:
+                    win.borderless = False
+                    if hasattr(pygame, "WINDOWPOS_CENTERED"):
+                        win.position = (pygame.WINDOWPOS_CENTERED, pygame.WINDOWPOS_CENTERED)
+        except Exception:
+            pass
+
     def _apply_display_mode(self) -> bool:
         """Applies windowed or borderless fullscreen display mode smoothly without monitor stalling."""
         flags = pygame.OPENGL | pygame.DOUBLEBUF
         if self.fullscreen:
-            desktop_sizes = getattr(pygame.display, "get_desktop_sizes", lambda: [])()
-            if desktop_sizes:
-                target_w, target_h = desktop_sizes[0]
-            else:
-                info = pygame.display.Info()
-                target_w = getattr(info, "current_w", 1920)
-                target_h = getattr(info, "current_h", 1080)
-            flags |= pygame.FULLSCREEN
+            os.environ["SDL_VIDEO_WINDOW_POS"] = "0,0"
+            target_w, target_h = self._get_desktop_resolution()
+            flags |= pygame.NOFRAME
         else:
+            os.environ["SDL_VIDEO_WINDOW_POS"] = "centered"
             target_w = getattr(self, "display_width", self.width)
             target_h = getattr(self, "display_height", self.height)
 
         try:
             pygame.display.set_mode((target_w, target_h), flags)
+            self._sync_window_frame_and_pos()
             if not self.ctx:
                 self.ctx = moderngl.create_context()
                 self._init_gl_pipeline()

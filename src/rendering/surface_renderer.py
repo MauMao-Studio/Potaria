@@ -6,6 +6,7 @@ Engine: Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)
 """
 
 from typing import Optional, Tuple, Union
+import os
 import pygame
 from src.rendering.base_renderer import BaseRenderer, RENDERER_SOFTWARE
 
@@ -55,16 +56,19 @@ class SurfaceRenderer(BaseRenderer):
 
         flags = pygame.DOUBLEBUF | pygame.SCALED
         if self.fullscreen:
-            flags |= pygame.FULLSCREEN
+            os.environ["SDL_VIDEO_WINDOW_POS"] = "0,0"
+            flags |= pygame.NOFRAME
+        else:
+            os.environ["SDL_VIDEO_WINDOW_POS"] = "centered"
 
         try:
             self.surface = pygame.display.set_mode((self.width, self.height), flags)
         except pygame.error:
-            # Fallback for environments where SCALED or FULLSCREEN might fail (e.g., dummy driver)
+            # Fallback for environments where SCALED or NOFRAME might fail (e.g., dummy driver)
             try:
                 fallback_flags = pygame.DOUBLEBUF
                 if self.fullscreen:
-                    fallback_flags |= pygame.FULLSCREEN
+                    fallback_flags |= pygame.NOFRAME
                 self.surface = pygame.display.set_mode((self.width, self.height), fallback_flags)
             except pygame.error:
                 self.surface = pygame.display.set_mode((self.width, self.height))
@@ -175,14 +179,21 @@ class SurfaceRenderer(BaseRenderer):
 
     def set_display_resolution(self, width: int, height: int, fullscreen: Optional[bool] = None) -> bool:
         """Sets target display resolution mode."""
+        prev_fs = self.fullscreen
         fs = self.fullscreen if fullscreen is None else fullscreen
         self.display_width = width
         self.display_height = height
         self.fullscreen = fs
+        if fs != prev_fs:
+            return self.set_mode(self.width, self.height, fullscreen=fs)
         try:
             win = pygame.window.Window.from_display_module()
             if not fs:
+                win.borderless = False
                 win.size = (width, height)
+            else:
+                win.borderless = True
+                win.position = (0, 0)
             return True
         except Exception:
             return self.set_mode(self.width, self.height, fullscreen=fs)

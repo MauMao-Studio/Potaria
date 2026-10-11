@@ -269,6 +269,16 @@ class ChestStorageWindow:
         if hovered_item:
             self.render_tooltip(target_surf, hovered_item, mouse_x, mouse_y)
 
+        # Foreground Dragged Item (ensures dragged items appear on top of the chest panel)
+        if inventory and getattr(inventory, "held_item", None):
+            held = inventory.held_item
+            icon = self.asset_factory.items.get(held.item_id) if hasattr(self.asset_factory, "items") else None
+            if icon:
+                target_surf.blit(icon, (mouse_x - 12, mouse_y - 12))
+            if getattr(held, "count", 1) > 1:
+                cnt_txt = self.font_btn.render(str(held.count), True, (255, 255, 255))
+                target_surf.blit(cnt_txt, (mouse_x + 4, mouse_y + 4))
+
     def render_tooltip(self, target_surf, item, mx, my):
         """Renders rich item tooltip for chest slots."""
         if not item:

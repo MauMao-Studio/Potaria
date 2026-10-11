@@ -91,13 +91,7 @@ class HUD:
             self._render_tooltip(target_surf, mouse_x, mouse_y, hovered_slot)
 
         # 8. Held Dragging Item
-        if inventory.held_item:
-            icon = self.asset_factory.items.get(inventory.held_item.item_id)
-            if icon:
-                target_surf.blit(icon, (mouse_x - 12, mouse_y - 12))
-            if inventory.held_item.count > 1:
-                cnt_txt = self.font.render(str(inventory.held_item.count), True, (255, 255, 255))
-                target_surf.blit(cnt_txt, (mouse_x + 4, mouse_y + 4))
+        self.render_dragged_item(target_surf, inventory, mouse_x, mouse_y)
 
         # 9. LAN Multiplayer Party HUD & Chat / Cheat Console
         if lan_client and (lan_client.connected or lan_client.remote_players):
@@ -113,6 +107,16 @@ class HUD:
 
         # 10. Reticle & Attack Recharge Gauge & Mining Progress
         self._render_reticle(target_surf, player, camera, mouse_x, mouse_y, inventory=inventory, world=world)
+
+    def render_dragged_item(self, target_surf, inventory, mouse_x, mouse_y):
+        """Renders the currently dragged item at the cursor in the foreground."""
+        if inventory and getattr(inventory, "held_item", None):
+            icon = self.asset_factory.items.get(inventory.held_item.item_id)
+            if icon:
+                target_surf.blit(icon, (mouse_x - 12, mouse_y - 12))
+            if inventory.held_item.count > 1:
+                cnt_txt = self.font.render(str(inventory.held_item.count), True, (255, 255, 255))
+                target_surf.blit(cnt_txt, (mouse_x + 4, mouse_y + 4))
 
     def _render_notification_banner(self, target_surf, message):
         """Displays a prominent banner across top-center when learning skills or completing feats."""

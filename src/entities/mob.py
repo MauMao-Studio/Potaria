@@ -7,7 +7,13 @@ Includes health bars, knockback, damage numbers, and loot drops.
 import math
 import random
 import pygame
-from src.constants import GRAVITY, TERMINAL_VELOCITY, SCALED_TILE, TILE_BARRIER
+from src.constants import GRAVITY, TERMINAL_VELOCITY, SCALED_TILE, TILE_BARRIER, TILE_WATER
+
+
+def _is_solid(world, tx, ty):
+    if hasattr(world, "is_tile_solid"):
+        return world.is_tile_solid(tx, ty)
+    return world.get_tile(tx, ty) not in (0, TILE_WATER)
 
 class RockProjectile:
     """Ballistic boulder thrown by RockZombie."""
@@ -187,24 +193,24 @@ class Mob:
             pygame.draw.rect(target_surf, (0, 0, 0), (sx, sy, bar_w, bar_h), 1)
 
     def update_water_buoyancy(self, world):
-        """Checks water intersection and applies fluid buoyancy opposing gravity with fluid drag."""
-        water_rects = world.get_water_rects_in_bounds(self.rect) if hasattr(world, "get_water_rects_in_bounds") else []
+        """Checks lower-body water intersection and applies half buoyancy (slow sinking) with fluid drag."""
+        lower_body_rect = pygame.Rect(
+            int(self.rect.x + 2),
+            int(self.rect.centery),
+            max(1, int(self.rect.width - 4)),
+            max(1, int(self.rect.bottom - self.rect.centery)),
+        )
+        water_rects = world.get_water_rects_in_bounds(lower_body_rect) if hasattr(world, "get_water_rects_in_bounds") else []
         self.in_water = len(water_rects) > 0
         if self.in_water:
-            self.vy = max(-2.0, min(2.0, self.vy + GRAVITY * 0.25 - 0.20))
+            self.vy = max(-3.5, min(1.5, self.vy + GRAVITY * 0.25 - 0.05))
             self.vx *= 0.88
             self.vy *= 0.90
             return True
         return False
 
     def apply_water_overlay(self, surf):
-        """Applies a blue translucent aquatic overlay when inside water."""
-        if getattr(self, "in_water", False):
-            tinted = surf.copy()
-            overlay = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
-            overlay.fill((30, 110, 200, 75))
-            tinted.blit(overlay, (0, 0))
-            return tinted
+        """Returns sprite surface directly without tinting transparent bounding-box pixels blue."""
         return surf
 
 # =============================================================================
@@ -243,10 +249,11 @@ class SlimeMob(Mob):
         dist_y = player.center_y - self.center_y
         dist = math.hypot(dist_x, dist_y)
 
-        if self.on_ground:
-            self.vx *= 0.8
-            if abs(self.vx) < 0.1:
-                self.vx = 0.0
+        if self.on_ground or (self.in_water and self.vy >= 0):
+            if self.on_ground:
+                self.vx *= 0.8
+                if abs(self.vx) < 0.1:
+                    self.vx = 0.0
 
             if self.state == "jumping":
                 self.state = "idle"
@@ -264,8 +271,8 @@ class SlimeMob(Mob):
                     self.state = "jumping"
                     jump_dir = 1 if dist_x > 0 else -1
                     speed_x = min(4.2, max(2.0, abs(dist_x) * 0.016)) * self.speed_mult
-                    self.vx = jump_dir * speed_x
-                    self.vy = -7.0 * math.sqrt(self.speed_mult)
+                    self.vx = jump_dir * (speed_x * 0.7 if self.in_water else speed_x)
+                    self.vy = (-3.4 if self.in_water else -7.0) * math.sqrt(self.speed_mult)
                     self.on_ground = False
 
         self.anim_timer += dt
@@ -276,8 +283,8 @@ class SlimeMob(Mob):
         # Anti-cheese: if slime is obstructed by a wall or unable to reach player
         jump_dir = 1 if dist_x > 0 else -1
         check_x = self.x + (self.width + 4 if jump_dir > 0 else -4)
-        wall_front = (world.get_tile(int(check_x // SCALED_TILE), int((self.y + self.height - 8) // SCALED_TILE)) != 0)
-        wall_high = (world.get_tile(int(check_x // SCALED_TILE), int(self.y // SCALED_TILE)) != 0)
+        wall_front = _is_solid(world, int(check_x // SCALED_TILE), int((self.y + self.height - 8) // SCALED_TILE))
+        wall_high = _is_solid(world, int(check_x // SCALED_TILE), int(self.y // SCALED_TILE))
 
         if (wall_front or wall_high) and abs(dist_x) > 12:
             self.stuck_timer += dt
@@ -287,8 +294,8 @@ class SlimeMob(Mob):
         if self.stuck_timer >= 0.8:
             self.stuck_timer = 0.0
             self.state = "jumping"
-            self.vy = -11.0
-            self.vx = jump_dir * 5.2 * self.speed_mult
+            self.vy = -4.2 if self.in_water else -11.0
+            self.vx = jump_dir * (3.2 if self.in_water else 5.2) * self.speed_mult
             self.on_ground = False
             if dist < 350.0:
                 from src.entities.projectile import MobSpitProjectile
@@ -409,25 +416,31 @@ class WalkerMob(Mob):
         dist = math.hypot(dist_x, dist_y)
         move_dir = 1 if dist_x > 0 else -1
         self.facing_right = (move_dir > 0)
-        self.vx = move_dir * self.speed
+        self.vx = move_dir * (self.speed * 0.75 if self.in_water else self.speed)
 
         check_x = self.x + (self.width + 4 if move_dir > 0 else -4)
-        wall_front = world.get_tile(int(check_x // SCALED_TILE), int((self.y + self.height - 8) // SCALED_TILE))
-        wall_high = world.get_tile(int(check_x // SCALED_TILE), int((self.y + 4) // SCALED_TILE))
+        wall_front = _is_solid(world, int(check_x // SCALED_TILE), int((self.y + self.height - 8) // SCALED_TILE))
+        wall_high = _is_solid(world, int(check_x // SCALED_TILE), int((self.y + 4) // SCALED_TILE))
 
-        if wall_front != 0 and self.on_ground:
-            if wall_high != 0:
+        if wall_front and (self.on_ground or (self.in_water and self.vy >= 0)):
+            if wall_high:
                 self.stuck_timer += dt
             else:
-                self.vy = -6.5
+                self.vy = -3.4 if self.in_water else -6.5
+                self.on_ground = False
+        elif self.in_water and dist_y < -16 and self.vy >= 0:
+            self.water_jump_timer = getattr(self, "water_jump_timer", 0.0) + dt
+            if self.water_jump_timer >= 0.85:
+                self.water_jump_timer = 0.0
+                self.vy = -3.4
                 self.on_ground = False
         else:
             self.stuck_timer = max(0.0, self.stuck_timer - dt * 0.4)
 
         if self.stuck_timer >= 0.8:
             self.stuck_timer = 0.0
-            self.vy = -10.5
-            self.vx = move_dir * (self.speed * 2.5)
+            self.vy = -4.2 if self.in_water else -10.5
+            self.vx = move_dir * (self.speed * (1.5 if self.in_water else 2.5))
             self.on_ground = False
             if dist < 350.0:
                 from src.entities.projectile import MobSpitProjectile
@@ -730,22 +743,29 @@ class CrawlerMob(Mob):
         self.vx = move_dir * self.speed
 
         check_x = self.x + (self.width + 4 if move_dir > 0 else -4)
-        wall_front = world.get_tile(int(check_x // SCALED_TILE), int((self.y + self.height - 8) // SCALED_TILE))
-        wall_high = world.get_tile(int(check_x // SCALED_TILE), int((self.y + 2) // SCALED_TILE))
+        front_ty = int((self.y + self.height - 8) // SCALED_TILE)
+        wall_front = _is_solid(world, int(check_x // SCALED_TILE), front_ty)
+        wall_high = _is_solid(world, int(check_x // SCALED_TILE), front_ty - 1)
 
-        if wall_front != 0 and self.on_ground:
-            if wall_high != 0:
+        if wall_front and (self.on_ground or (self.in_water and self.vy >= 0)):
+            if wall_high:
                 self.stuck_timer += dt
             else:
-                self.vy = -7.2
+                self.vy = -3.5 if self.in_water else -7.2
+                self.on_ground = False
+        elif self.in_water and dist_y < -16 and self.vy >= 0:
+            self.water_jump_timer = getattr(self, "water_jump_timer", 0.0) + dt
+            if self.water_jump_timer >= 0.85:
+                self.water_jump_timer = 0.0
+                self.vy = -3.4
                 self.on_ground = False
         else:
             self.stuck_timer = max(0.0, self.stuck_timer - dt * 0.4)
 
         if self.stuck_timer >= 0.8:
             self.stuck_timer = 0.0
-            self.vy = -10.5
-            self.vx = move_dir * (self.speed * 2.0)
+            self.vy = -4.2 if self.in_water else -10.5
+            self.vx = move_dir * (self.speed * (1.4 if self.in_water else 2.0))
             self.on_ground = False
             if dist < 350.0:
                 from src.entities.projectile import MobSpitProjectile
@@ -1175,7 +1195,13 @@ class NightEliteMob(Mob):
 
         # AI & Movement
         if self.archetype == "demon_eye":
-            self.in_water = len(world.get_water_rects_in_bounds(self.rect)) > 0 if hasattr(world, "get_water_rects_in_bounds") else False
+            lower_body_rect = pygame.Rect(
+                int(self.rect.x + 2),
+                int(self.rect.centery),
+                max(1, int(self.rect.width - 4)),
+                max(1, int(self.rect.bottom - self.rect.centery)),
+            )
+            self.in_water = len(world.get_water_rects_in_bounds(lower_body_rect)) > 0 if hasattr(world, "get_water_rects_in_bounds") else False
             # Flying swooping movement
             fly_speed = 7.0 if self.frenzy_timer > 0 else 4.5
             self.vy = min(fly_speed, max(-fly_speed, self.vy + (0.22 if dist_y > 0 else -0.22)))
@@ -1192,13 +1218,13 @@ class NightEliteMob(Mob):
 
             base_speed = 4.8 if self.frenzy_timer > 0 else 2.2
             if not self.leap_slam_active:
-                self.vx = move_dir * base_speed
+                self.vx = move_dir * (base_speed * 0.75 if self.in_water else base_speed)
 
             # Obstacle hopping
             front_tile_x = int((self.center_x + move_dir * (self.width / 2 + 8)) // SCALED_TILE)
             front_tile_y = int((self.y + self.height - 4) // SCALED_TILE)
-            if hasattr(world, "is_tile_solid") and world.is_tile_solid(front_tile_x, front_tile_y) and self.on_ground:
-                self.vy = -6.5
+            if hasattr(world, "is_tile_solid") and world.is_tile_solid(front_tile_x, front_tile_y) and (self.on_ground or (self.in_water and self.vy >= 0)):
+                self.vy = -3.5 if self.in_water else -6.5
                 self.on_ground = False
 
         # One Signature Special Skill Trigger

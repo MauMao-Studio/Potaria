@@ -548,64 +548,6 @@ class AssetFactory:
             self._draw_sapling_sprite(surf, item_id, h)
             return surf
 
-        # 0. Natural Placeable Blocks & Visual Parity Items
-        NATURAL_BLOCK_TILES = {
-            "dirt_block": TILE_DIRT,
-            "dirt": TILE_DIRT,
-            "sand_block": TILE_SAND,
-            "sand": TILE_SAND,
-            "stone_block": TILE_STONE,
-            "stone": TILE_STONE,
-            "wood": TILE_WOOD,
-            "wood_block": TILE_WOOD,
-            "wood_blocks": TILE_WOOD,
-            "tile_wood": TILE_WOOD,
-            "leaves": TILE_LEAVES,
-            "leaf_block": TILE_LEAVES,
-            "snow_block": TILE_SNOW,
-            "snow": TILE_SNOW,
-            "ice_block": TILE_ICE,
-            "ice": TILE_ICE,
-            "copper_ore": TILE_COPPER_ORE,
-            "iron_ore": TILE_IRON_ORE,
-            "gold_ore": TILE_GOLD_ORE,
-            "sandstone_block": TILE_SANDSTONE,
-            "sandstone": TILE_SANDSTONE,
-            "blightstone_block": TILE_BLIGHTSTONE,
-            "ebonstone_block": TILE_BLIGHTSTONE,
-            "rope_rungs": TILE_ROPE_RUNGS,
-            "iron_chest": TILE_IRON_CHEST,
-            "iron_storage_chest": TILE_IRON_CHEST,
-
-            "cactus": TILE_CACTUS,
-            "blight_grass": TILE_BLIGHT_GRASS,
-            "corrupt_grass": TILE_BLIGHT_GRASS,
-            "mushroom_grass": TILE_MUSHROOM_GRASS,
-            "dungeon_brick": TILE_DUNGEON_BRICK,
-        }
-        target_tile = NATURAL_BLOCK_TILES.get(id_lower)
-        if target_tile is None:
-            try:
-                from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
-                resolved = ITEM_ALIASES.get(id_lower, id_lower)
-                if resolved in NATURAL_BLOCK_TILES:
-                    target_tile = NATURAL_BLOCK_TILES[resolved]
-                else:
-                    reg_item = ITEM_REGISTRY.get(resolved)
-                    if reg_item and reg_item.get("tile") is not None:
-                        from src.ui.crafting import load_craftable_recipes
-                        crafting_ids = {r["result"] for r in load_craftable_recipes()}
-                        if resolved not in crafting_ids:
-                            target_tile = reg_item.get("tile")
-            except Exception:
-                pass
-
-        if target_tile is not None and target_tile in self.tiles:
-            base_surf = pygame.transform.scale(self.tiles[target_tile], (24, 24))
-            surf.blit(base_surf, (0, 0))
-            # Removed noise pixel
-            return surf
-
         if id_lower == "fishing_rod":
             self._draw_fishing_rod_sprite(surf)
             return surf
@@ -3161,6 +3103,20 @@ class AssetFactory:
             pygame.draw.ellipse(surf, (225, 182, 115), (5, 5, 14, 6))
             pygame.draw.ellipse(surf, (168, 118, 62), (8, 6, 8, 4), 1)
             surf.set_at((12, 8), (115, 72, 35))
+        elif id_lower in ("leaves", "leaf_block"):
+            # Contoured lush rounded foliage canopy cluster with blossom/berry accents (no square box)
+            for cx, cy, cr, col in [
+                (9, 13, 6, (28, 82, 22)),
+                (15, 13, 6, (28, 82, 22)),
+                (12, 9, 6, (28, 82, 22)),
+                (9, 13, 5, (42, 130, 36)),
+                (15, 13, 5, (50, 150, 42)),
+                (12, 9, 5, (68, 185, 58)),
+                (10, 11, 4, (82, 205, 70)),
+            ]:
+                pygame.draw.circle(surf, col, (cx, cy), cr)
+            surf.set_at((10, 9), (255, 110, 130))
+            surf.set_at((14, 12), (255, 230, 90))
         elif id_lower == "wood_planks":
             # Joined carpenter wood planks with dovetail seams & iron nail heads
             pygame.draw.rect(surf, (48, 28, 14), (3, 4, 18, 16), border_radius=2)
