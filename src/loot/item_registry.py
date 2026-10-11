@@ -12,6 +12,7 @@ from typing import Dict, Any, Optional, List, Union
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
+import src.rpg.equipment  # Ensure equipment catalog populates ITEM_REGISTRY
 from src.ui.crafting import load_craftable_recipes
 
 CANONICAL_CATEGORIES = (

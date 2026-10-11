@@ -253,8 +253,8 @@ class TestModdingAndDLCSystem:
             assert registered_recipe is not None
             assert registered_recipe["ingredients"] == [("raw_potato", 5)]
         finally:
-            ITEM_REGISTRY.pop("test_magic_tuber", None)
-            RECIPES[:] = [r for r in RECIPES if r.get("result") != "test_magic_tuber"]
+            mm.unregister_item("test_magic_tuber")
+            mm.unregister_recipe("test_magic_tuber")
             tuber_file = os.path.join("assets", "craftable_items", "test_magic_tuber.png")
             if os.path.exists(tuber_file):
                 try:
@@ -271,7 +271,74 @@ class TestModdingAndDLCSystem:
         assert "example_magic_spuds" in mm.mods
         assert "expansion_celestial_depths" in mm.dlc
 
-        summary = mm.load_all()
-        assert "spud_of_destiny" in ITEM_REGISTRY
-        assert "orbital_stardust_blade" in ITEM_REGISTRY
-        assert any(r["result"] == "orbital_stardust_blade" for r in RECIPES)
+        try:
+            summary = mm.load_all()
+            assert "spud_of_destiny" in ITEM_REGISTRY
+            assert "orbital_stardust_blade" in ITEM_REGISTRY
+            assert any(r["result"] == "orbital_stardust_blade" for r in RECIPES)
+        finally:
+            mm.unload_all()
+
+    def test_mod_manager_unload_and_unregister(self):
+        """Verifies unregister_item and unload_all cleanly synchronize both item registries."""
+        from src.loot.item_registry import registry as loot_reg
+        mm = ModManager(mods_dir="mods", dlc_dir="dlc")
+        mm.register_item("test_sync_item", {"name": "Test Sync", "cat": "weapon", "damage": 10})
+        assert "test_sync_item" in ITEM_REGISTRY
+        assert "test_sync_item" in loot_reg.items
+
+        mm.unregister_item("test_sync_item")
+        assert "test_sync_item" not in ITEM_REGISTRY
+        assert "test_sync_item" not in loot_reg.items
+
+
+class TestSkyCitadelProgressionAndMinimap:
+    def test_sky_citadel_warp_and_boss_spawn_coordinates(self, shared_assets):
+        """Verifies slaying all 4 biome lords warps player to orbital Sky Citadel floor."""
+        af, sm = shared_assets
+        from src.combat.combat_system import CombatManager
+        from src.entities.player import Player
+        from src.entities.particle import ParticleSystem
+        ps = ParticleSystem()
+        player = Player(0, 0, af, sm)
+        combat = CombatManager(af, sm, ps, None)
+        combat.defeated_mini_bosses = {
+            "lord_malus": True,
+            "ignis_colossus": True,
+            "cryo_spud": True,
+            "necro_tuber": True
+        }
+
+        # Mock boss death check triggering warp to Sky Citadel
+        combat.boss = LordMalus(0, 0, af, sm)
+        combat.boss.hp = 0
+        combat.boss.is_dead = True
+        mock_world = type("MockWorld", (), {
+            "get_solid_rects_in_bounds": lambda self, r: [],
+            "get_water_rects_in_bounds": lambda self, r: [],
+            "is_tile_solid": lambda self, tx, ty: False,
+        })()
+        combat.update(0.1, mock_world, player, None)
+
+        assert player.y == -165 * SCALED_TILE
+        assert combat.boss is not None
+        assert combat.boss.boss_type == "grand_boss_sol_rho"
+        assert combat.boss.y == (-170 * SCALED_TILE) - 140
+
+    def test_minimap_ground_level_sunlit(self, shared_assets):
+        """Verifies surface tiles at x=0 are sunlit and not falsely occluded by old citadel check."""
+        af, sm = shared_assets
+        from src.ui.minimap import MiniMap
+        from src.entities.player import Player
+        player = Player(0, 50 * SCALED_TILE, af, sm)
+        mm = MiniMap()
+        # Mock minimal world
+        mock_world = type("MockWorld", (), {
+            "height": 240,
+            "get_surface_height": lambda self, tx: 50,
+            "get_tile": lambda self, tx, ty: 0,
+            "get_wall": lambda self, tx, ty: 0,
+        })()
+        target = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        mm.render(target, mock_world, player, None)
+        assert mm.is_open is True

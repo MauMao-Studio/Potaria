@@ -180,9 +180,9 @@ class TestGrandDungeonsAndBossBalancing(unittest.TestCase):
                 self.assertTrue(all(combat.defeated_mini_bosses.values()))
                 self.assertIsNotNone(combat.boss)
                 self.assertEqual(combat.boss.boss_type, "grand_boss_sol_rho")
-                # Player warped to Sky Citadel (y = 28 * SCALED_TILE)
+                # Player warped to Sky Citadel (y = -165 * SCALED_TILE)
                 self.assertEqual(player.x, 0.0)
-                self.assertEqual(player.y, 28 * SCALED_TILE)
+                self.assertEqual(player.y, -165 * SCALED_TILE)
 
     # =========================================================================
     # 5. DEATH PENALTY BY BOSS

@@ -181,8 +181,7 @@ class MiniMap:
                         continue
 
                     # Fog of War Light Check: Tile must be illuminated by sunlight, player light, or placed torches
-                    is_sky_citadel = (ty <= 42 and abs(tx) <= 32)
-                    is_sunlit = (ty < surf_y) and not is_sky_citadel
+                    is_sunlit = (ty < surf_y)
                     is_player_lit = ((tx - ptx) * (tx - ptx) + (ty - pty) * (ty - pty) <= p_reach_sq)
                     is_emitter_lit = False
                     if not is_sunlit and not is_player_lit and local_emitters:

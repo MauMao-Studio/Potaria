@@ -439,11 +439,11 @@ class TouchController:
         self.opacity = 0.75        # 0.50, 0.75, 1.00
         self.has_touch_input = False
 
-        # Fonts
-        pygame.font.init()
-        self.font = pygame.font.SysFont("Arial", 14, bold=True)
-        self.font_sm = pygame.font.SysFont("Arial", 11, bold=True)
-        self.font_xs = pygame.font.SysFont("Arial", 9, bold=True)
+        # Fonts (Centralized Typography Theme)
+        from src.ui.theme import font_semibold, font_compact
+        self.font = font_semibold(14)
+        self.font_sm = font_compact(11)
+        self.font_xs = font_compact(9)
 
         # 1. Virtual Joystick (Bottom Left)
         self.joystick = VirtualJoystick(center_x=140, center_y=SCREEN_HEIGHT - 130, radius_base=66, radius_knob=28)

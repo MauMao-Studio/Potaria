@@ -19,8 +19,9 @@ class AchievementToast:
         self.slide_time = 0.4
         self.width = 420
         self.height = 64
-        self._font_head = pygame.font.SysFont("Arial", 14, bold=True)
-        self._font_body = pygame.font.SysFont("Arial", 12)
+        from src.ui.theme import font_bold, font_regular
+        self._font_head = font_bold(14)
+        self._font_body = font_regular(12)
 
     def update(self, dt):
         self.timer += dt
@@ -184,11 +185,12 @@ class AchievementManager:
         pygame.draw.rect(target_surf, (24, 28, 46, 250), panel_rect, border_radius=14)
         pygame.draw.rect(target_surf, COLOR_GOLD, panel_rect, 2, border_radius=14)
 
-        # Title
-        font_header = pygame.font.SysFont("Arial", 26, bold=True)
-        font_card_t = pygame.font.SysFont("Arial", 16, bold=True)
-        font_card_d = pygame.font.SysFont("Arial", 13)
-        font_badge = pygame.font.SysFont("Arial", 11, bold=True)
+        # Title (Centralized Typography Theme)
+        from src.ui.theme import font_title, font_bold, font_regular, font_compact
+        font_header = font_title(24)
+        font_card_t = font_bold(16)
+        font_card_d = font_regular(13)
+        font_badge = font_compact(11)
 
         title = font_header.render("POTARIA ACHIEVEMENTS", True, COLOR_GOLD)
         target_surf.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 18))

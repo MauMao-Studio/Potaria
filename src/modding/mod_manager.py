@@ -339,34 +339,31 @@ class ModManager:
             if item_id not in self.registered_items:
                 self.registered_items.append(item_id)
 
-            # Sync with DataDrivenItemRegistry if initialized
+            # Sync with DataDrivenItemRegistry
             try:
-                import sys
-                if "src.loot.item_registry" in sys.modules:
-                    loot_reg = sys.modules["src.loot.item_registry"]
-                    if hasattr(loot_reg, "registry") and hasattr(loot_reg, "ItemDefinition"):
-                        c_cat = loot_reg.map_to_canonical_category(item_id, entry)
-                        d_data = {
-                            "id": item_id,
-                            "name": entry["name"],
-                            "category": c_cat,
-                            "legacy_category": entry["cat"],
-                            "slot": "accessory" if entry["cat"] == CAT_ACCESSORY else ("hand" if entry["cat"] in (CAT_WEAPON, CAT_TOOL) else None),
-                            "base_stats": {"damage": entry["damage"], "power": entry["power"]},
-                            "weapon_behavior": "melee" if entry["cat"] == CAT_WEAPON else None,
-                            "sprite": f"assets/items/{item_id}.png",
-                            "rarity": entry["rarity"],
-                            "rarity_rules": {"allow_upgrade": c_cat in ("weapon", "armor", "accessory")},
-                            "affix_rules": {"allow_affixes": c_cat in ("weapon", "armor", "accessory")},
-                            "unique_effect": entry.get("special"),
-                            "lore": entry.get("lore", ""),
-                            "desc": entry.get("desc", ""),
-                            "drop_sources": [],
-                            "craft_recipe": None,
-                            "craftable": False,
-                            "collection_id": f"potadex_{item_id}",
-                        }
-                        loot_reg.registry.items[item_id] = loot_reg.ItemDefinition(d_data)
+                from src.loot.item_registry import registry as loot_reg, ItemDefinition, map_to_canonical_category
+                c_cat = map_to_canonical_category(item_id, entry)
+                d_data = {
+                    "id": item_id,
+                    "name": entry["name"],
+                    "category": c_cat,
+                    "legacy_category": entry["cat"],
+                    "slot": "accessory" if entry["cat"] == CAT_ACCESSORY else ("hand" if entry["cat"] in (CAT_WEAPON, CAT_TOOL) else None),
+                    "base_stats": {"damage": entry["damage"], "power": entry["power"]},
+                    "weapon_behavior": "melee" if entry["cat"] == CAT_WEAPON else None,
+                    "sprite": f"assets/items/{item_id}.png",
+                    "rarity": entry["rarity"],
+                    "rarity_rules": {"allow_upgrade": c_cat in ("weapon", "armor", "accessory")},
+                    "affix_rules": {"allow_affixes": c_cat in ("weapon", "armor", "accessory")},
+                    "unique_effect": entry.get("special"),
+                    "lore": entry.get("lore", ""),
+                    "desc": entry.get("desc", ""),
+                    "drop_sources": [],
+                    "craft_recipe": None,
+                    "craftable": False,
+                    "collection_id": f"potadex_{item_id}",
+                }
+                loot_reg.items[item_id] = ItemDefinition(d_data)
             except Exception:
                 pass
 
@@ -374,6 +371,20 @@ class ModManager:
         except Exception as e:
             print(f"[ModManager ERROR] Failed to register item '{item_id}': {e}")
             return False
+
+    def unregister_item(self, item_id: str) -> bool:
+        """Removes an item from ITEM_REGISTRY and data-driven registry."""
+        if item_id in ITEM_REGISTRY:
+            del ITEM_REGISTRY[item_id]
+        if item_id in self.registered_items:
+            self.registered_items.remove(item_id)
+        try:
+            from src.loot.item_registry import registry as loot_reg
+            if item_id in loot_reg.items:
+                del loot_reg.items[item_id]
+        except Exception:
+            pass
+        return True
 
     def register_recipe(self, recipe_data: Dict[str, Any], crafting_system=None) -> bool:
         """
@@ -412,16 +423,13 @@ class ModManager:
             RECIPES.append(recipe_entry)
             self.registered_recipes.append(recipe_entry)
 
-            # Sync with DataDrivenItemRegistry if initialized
+            # Sync with DataDrivenItemRegistry
             try:
-                import sys
-                if "src.loot.item_registry" in sys.modules:
-                    loot_reg = sys.modules["src.loot.item_registry"]
-                    if hasattr(loot_reg, "registry"):
-                        if result in loot_reg.registry.items:
-                            loot_reg.registry.items[result].craftable = True
-                            loot_reg.registry.items[result].craft_recipe = recipe_entry
-                        loot_reg.registry.recipes_by_item[result] = recipe_entry
+                from src.loot.item_registry import registry as loot_reg
+                if result in loot_reg.items:
+                    loot_reg.items[result].craftable = True
+                    loot_reg.items[result].craft_recipe = recipe_entry
+                loot_reg.recipes_by_item[result] = recipe_entry
             except Exception:
                 pass
 
@@ -432,6 +440,36 @@ class ModManager:
         except Exception as e:
             print(f"[ModManager ERROR] Failed to register recipe for '{recipe_data.get('result')}': {e}")
             return False
+
+    def unregister_recipe(self, recipe_or_result, crafting_system=None) -> bool:
+        """Removes a crafting recipe from RECIPES and data-driven registry."""
+        target_res = recipe_or_result if isinstance(recipe_or_result, str) else recipe_or_result.get("result")
+        RECIPES[:] = [r for r in RECIPES if r.get("result") != target_res]
+        self.registered_recipes = [r for r in self.registered_recipes if r.get("result") != target_res]
+        if crafting_system and hasattr(crafting_system, "recipes"):
+            crafting_system.recipes[:] = [r for r in crafting_system.recipes if r.get("result") != target_res]
+        try:
+            from src.loot.item_registry import registry as loot_reg
+            if target_res in loot_reg.recipes_by_item:
+                del loot_reg.recipes_by_item[target_res]
+            if target_res in loot_reg.items:
+                loot_reg.items[target_res].craftable = False
+                loot_reg.items[target_res].craft_recipe = None
+        except Exception:
+            pass
+        return True
+
+    def unload_all(self, asset_factory=None, crafting_system=None) -> None:
+        """Unloads all registered items, recipes, and textures from mods and DLCs."""
+        for item_id in list(self.registered_items):
+            self.unregister_item(item_id)
+        for recipe in list(self.registered_recipes):
+            self.unregister_recipe(recipe, crafting_system=crafting_system)
+        if asset_factory:
+            for key in list(self.registered_textures.keys()):
+                if hasattr(asset_factory, "items") and key in asset_factory.items:
+                    del asset_factory.items[key]
+        self.registered_textures.clear()
 
     def register_texture(self, category: str, key: str, image_path: str, asset_factory=None) -> bool:
         """

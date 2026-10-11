@@ -55,10 +55,11 @@ class FishingBattleMiniGame:
         self.x = (SCREEN_WIDTH - self.width) // 2
         self.y = (SCREEN_HEIGHT - self.height) // 2 - 20
 
-        # Fonts
-        self.font_title = pygame.font.Font(None, 24)
-        self.font_main = pygame.font.Font(None, 20)
-        self.font_sm = pygame.font.Font(None, 16)
+        # Fonts (Centralized Typography Theme)
+        from src.ui.theme import font_bold, font_semibold, font_compact
+        self.font_title = font_bold(20)
+        self.font_main = font_semibold(16)
+        self.font_sm = font_compact(12)
 
     def start(self, fish_id=None, caught_count=1):
         """Initializes and begins the fishing tug-of-war battle."""

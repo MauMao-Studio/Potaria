@@ -410,19 +410,19 @@ class CombatManager:
                         if hasattr(world, "chunk_manager"):
                             world.chunk_manager.ensure_chunks_in_range(-3, 3)
                         player.x = 0.0
-                        player.y = 28 * SCALED_TILE
+                        player.y = -165 * SCALED_TILE
                         player.vx = 0.0
                         player.vy = 0.0
                         if self.camera:
                             self.camera.set_target(player.center_x, player.center_y, instant=True)
-                        self.spawn_grand_boss(0.0, 24 * SCALED_TILE, player=player)
+                        self.spawn_grand_boss(0.0, -170 * SCALED_TILE, player=player)
 
                         # Rematch Duo Battle: If rematch cycle >= 1, summon one mini-boss alongside Sol-Rho!
                         if self.rematch_cycle >= 1:
                             from src.entities.boss import LordMalus, IgnisColossus, CryoSpud, NecroTuber
                             miniboss_choices = [LordMalus, IgnisColossus, CryoSpud, NecroTuber]
                             sub_cls = miniboss_choices[(self.rematch_cycle - 1) % len(miniboss_choices)]
-                            self.secondary_boss = sub_cls(-180, 24 * SCALED_TILE, self.asset_factory, self.sound_manager)
+                            self.secondary_boss = sub_cls(-180, -170 * SCALED_TILE, self.asset_factory, self.sound_manager)
                             if hasattr(self.secondary_boss, "scale_to_player"):
                                 self.secondary_boss.scale_to_player(player.stats.level, getattr(player.stats, "total_atk", 0), rematch_multiplier=self.rematch_multiplier)
                             print(f"[Combat] REMATCH CYCLE {self.rematch_cycle}: DUO-BOSS SUMMONED! {self.secondary_boss.name} aids Sol-Rho!")

@@ -33,8 +33,8 @@ class LANClient:
         self.latest_mob_sync = None
         self.pending_mob_damages = []
 
-        pygame.font.init()
-        self.name_font = pygame.font.SysFont("Arial", 11, bold=True)
+        from src.ui.theme import font_compact
+        self.name_font = font_compact(11)
 
     def connect(self, host_ip, port=25565, player_name="Spud"):
         try:

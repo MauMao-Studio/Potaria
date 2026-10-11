@@ -299,22 +299,22 @@ class TestSixOverhaulsAndFixes(unittest.TestCase):
     # 6. SKY GRAND BOSS DUNGEON & MINIMAP FOG OF WAR
     # =========================================================================
     def test_sky_citadel_minimap_fog_of_war_and_starry_night(self):
-        """Verifies Sky Citadel (ty <= 42, abs(tx) <= 32) is shrouded in Fog of War and has starry background."""
+        """Verifies Sky Citadel (ty <= -150, abs(tx) <= 32) is shrouded in Fog of War and has starry background."""
         world = World(self.asset_factory, seed=77)
         minimap = MiniMap()
-        player = Player(0, 25 * SCALED_TILE, self.asset_factory, self.sound_manager)
+        player = Player(0, -165 * SCALED_TILE, self.asset_factory, self.sound_manager)
         test_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         minimap.render(test_surf, world, player, None)
 
-        # Sky Citadel tile at lx=2, ly=2 (tx=-30, ty=5): within Sky Citadel (ty <= 42, abs(tx) <= 32)
-        # Must be pitch black (0, 0, 0) in Fog of War rather than daylight/sky
+        # Sky Citadel tile far outside player light radius
+        # lx=2, ly=2 corresponds to min_tx + 2, min_ty + 2 where min_ty = -165 - 17 = -182 (well within citadel ty <= -150)
         pixel_col = minimap.map_surf.get_at((2, 2))[:3]
         self.assertEqual(pixel_col, (0, 0, 0), "Sky Citadel tiles outside player light must be shrouded in Pitch Black Fog of War")
 
-        # Celestial background trigger: when camera.y <= 42 * SCALED_TILE
+        # Celestial background trigger: when camera.y is at Sky Citadel altitude
         sky = DayNightCycle(self.asset_factory)
         cam_sky = Camera()
-        cam_sky.y = 25 * SCALED_TILE
+        cam_sky.y = -165 * SCALED_TILE
         cam_ground = Camera()
         cam_ground.y = 75 * SCALED_TILE
 

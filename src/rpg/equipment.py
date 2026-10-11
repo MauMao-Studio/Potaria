@@ -204,6 +204,35 @@ def load_equipment_catalog():
                     "effects": eq_data.get("effects", []),
                     "special": " • ".join(eq_data.get("effects", [])),
                 }
+                try:
+                    import sys
+                    if "src.loot.item_registry" in sys.modules:
+                        loot_reg = sys.modules["src.loot.item_registry"]
+                        if hasattr(loot_reg, "registry") and hasattr(loot_reg, "ItemDefinition"):
+                            c_cat = loot_reg.map_to_canonical_category(eq_id, ITEM_REGISTRY[eq_id])
+                            d_data = {
+                                "id": eq_id,
+                                "name": ITEM_REGISTRY[eq_id]["name"],
+                                "category": c_cat,
+                                "legacy_category": ITEM_REGISTRY[eq_id]["cat"],
+                                "slot": c,
+                                "base_stats": {"damage": ITEM_REGISTRY[eq_id]["damage"], "power": ITEM_REGISTRY[eq_id]["power"]},
+                                "weapon_behavior": None,
+                                "sprite": f"assets/items/{eq_id}.png",
+                                "rarity": rarity,
+                                "rarity_rules": {"allow_upgrade": True},
+                                "affix_rules": {"allow_affixes": True},
+                                "unique_effect": ITEM_REGISTRY[eq_id].get("special"),
+                                "lore": ITEM_REGISTRY[eq_id].get("lore", ""),
+                                "desc": ITEM_REGISTRY[eq_id].get("desc", ""),
+                                "drop_sources": [],
+                                "craft_recipe": None,
+                                "craftable": False,
+                                "collection_id": f"potadex_{eq_id}",
+                            }
+                            loot_reg.registry.items[eq_id] = loot_reg.ItemDefinition(d_data)
+                except Exception:
+                    pass
     except Exception:
         pass
 
