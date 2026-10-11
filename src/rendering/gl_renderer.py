@@ -449,13 +449,9 @@ class GLRenderer(BaseRenderer):
         """Calculates and sets the OpenGL viewport to fit/fill the window while preserving aspect ratio."""
         if not self.ctx or not hasattr(self.ctx, "viewport"):
             return
-        if self.fullscreen:
-            try:
-                win_w, win_h = pygame.display.get_window_size()
-            except Exception:
-                win_w = getattr(self, "display_width", self.width)
-                win_h = getattr(self, "display_height", self.height)
-        else:
+        try:
+            win_w, win_h = pygame.display.get_window_size()
+        except Exception:
             win_w = getattr(self, "display_width", self.width)
             win_h = getattr(self, "display_height", self.height)
 
@@ -914,6 +910,34 @@ class GLRenderer(BaseRenderer):
         self.display_height = height
         if self._using_fallback and self.fallback_renderer:
             return self.fallback_renderer.set_display_resolution(width, height, self.fullscreen)
+        if self.initialized and self.ctx:
+            try:
+                win_cls = getattr(getattr(pygame, "window", None), "Window", None)
+                if win_cls and hasattr(win_cls, "from_display_module"):
+                    win = win_cls.from_display_module()
+                    desk_w, desk_h = self._get_desktop_resolution()
+                    if self.fullscreen:
+                        win.borderless = True
+                        win.resizable = False
+                        win.size = (desk_w, desk_h)
+                        win.position = (0, 0)
+                    else:
+                        win.borderless = False
+                        win.resizable = True
+                        if width >= desk_w or height >= desk_h:
+                            win_w = min(1600, max(1024, desk_w - 120))
+                            win_h = min(900, max(600, desk_h - 140))
+                        else:
+                            win_w = width
+                            win_h = height
+                        win.size = (win_w, win_h)
+                        pos_x = max(20, (desk_w - win_w) // 2)
+                        pos_y = max(30, (desk_h - win_h) // 2 - 20)
+                        win.position = (pos_x, pos_y)
+                    self._update_viewport()
+                    return True
+            except Exception:
+                pass
         return self._apply_display_mode()
 
     def set_mode(self, width: int, height: int, fullscreen: bool = False) -> bool:
@@ -936,18 +960,27 @@ class GLRenderer(BaseRenderer):
             win_cls = getattr(getattr(pygame, "window", None), "Window", None)
             if win_cls and hasattr(win_cls, "from_display_module"):
                 win = win_cls.from_display_module()
+                desk_w, desk_h = self._get_desktop_resolution()
                 if self.fullscreen:
                     win.borderless = True
-                    win.size = self._get_desktop_resolution()
+                    win.resizable = False
+                    win.size = (desk_w, desk_h)
                     win.position = (0, 0)
                 else:
                     win.borderless = False
-                    win.size = (
-                        getattr(self, "display_width", self.width),
-                        getattr(self, "display_height", self.height),
-                    )
-                    if hasattr(pygame, "WINDOWPOS_CENTERED"):
-                        win.position = (pygame.WINDOWPOS_CENTERED, pygame.WINDOWPOS_CENTERED)
+                    win.resizable = True
+                    target_w = getattr(self, "display_width", self.width)
+                    target_h = getattr(self, "display_height", self.height)
+                    if target_w >= desk_w or target_h >= desk_h:
+                        win_w = min(1600, max(1024, desk_w - 120))
+                        win_h = min(900, max(600, desk_h - 140))
+                    else:
+                        win_w = target_w
+                        win_h = target_h
+                    win.size = (win_w, win_h)
+                    pos_x = max(20, (desk_w - win_w) // 2)
+                    pos_y = max(30, (desk_h - win_h) // 2 - 20)
+                    win.position = (pos_x, pos_y)
         except Exception:
             pass
 

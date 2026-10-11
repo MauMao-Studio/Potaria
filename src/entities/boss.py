@@ -244,7 +244,8 @@ class DungeonMiniBoss:
                     particle_system.spawn_sparks(player.center_x, player.center_y, self._trail_color(), 8)
                     camera.add_shake(4.0, 0.2)
                     if combat and hasattr(combat, "spawn_damage_number"):
-                        combat.spawn_damage_number(player.center_x, player.y - 10, p.damage, color=(255, 50, 50))
+                        dmg_val = getattr(player, "last_damage_taken", p.damage)
+                        combat.spawn_damage_number(player.center_x, player.y - 10, dmg_val, color=(255, 50, 50))
                 else:
                     particle_system.spawn_sparks(p.x, p.y, (255, 255, 255), count=4)
             elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
@@ -337,7 +338,8 @@ class DungeonMiniBoss:
                     if camera:
                         camera.add_shake(4.0, 0.2)
                     if combat and hasattr(combat, "spawn_damage_number"):
-                        combat.spawn_damage_number(player.center_x, player.y - 10, p.damage, color=(255, 50, 50))
+                        dmg_val = getattr(player, "last_damage_taken", p.damage)
+                        combat.spawn_damage_number(player.center_x, player.y - 10, dmg_val, color=(255, 50, 50))
                 else:
                     if particle_system:
                         particle_system.spawn_sparks(p.x, p.y, (255, 255, 255), count=4)
@@ -1227,7 +1229,8 @@ class GrandBossSolRho:
                     particle_system.spawn_sparks(player.center_x, player.center_y, (255, 60, 160), 10)
                     camera.add_shake(5.0, 0.25)
                     if combat and hasattr(combat, "spawn_damage_number"):
-                        combat.spawn_damage_number(player.center_x, player.y - 10, p.damage, color=(255, 50, 50))
+                        dmg_val = getattr(player, "last_damage_taken", p.damage)
+                        combat.spawn_damage_number(player.center_x, player.y - 10, dmg_val, color=(255, 50, 50))
                 else:
                     particle_system.spawn_sparks(p.x, p.y, (255, 255, 255), count=4)
             elif getattr(p, "grazed", False) and not getattr(p, "_graze_sparked", False):
@@ -1528,7 +1531,8 @@ class GrandBossSolRho:
                     if camera:
                         camera.add_shake(5.0, 0.25)
                     if combat and hasattr(combat, "spawn_damage_number"):
-                        combat.spawn_damage_number(player.center_x, player.y - 10, p.damage, color=(255, 50, 50))
+                        dmg_val = getattr(player, "last_damage_taken", p.damage)
+                        combat.spawn_damage_number(player.center_x, player.y - 10, dmg_val, color=(255, 50, 50))
                 else:
                     if particle_system:
                         particle_system.spawn_sparks(p.x, p.y, (255, 255, 255), count=4)

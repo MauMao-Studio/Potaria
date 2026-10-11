@@ -63,6 +63,7 @@ class HUD:
         self.chat_active = False
         self.chat_input_text = ""
         self.local_chat_history = []
+        self.tooltip_mode = "detailed"
 
     def render(self, target_surf, player, inventory, crafting_system, camera, mouse_x, mouse_y, world=None, combat=None, lan_client=None, render_dragged=True):
         # 1. Health & Mana (Top Right)
@@ -577,6 +578,7 @@ class HUD:
         rarity = data.get("rarity", RARITY_COMMON)
         r_color = RARITY_COLORS.get(rarity, (220, 220, 220))
 
+        is_compact = getattr(self, "tooltip_mode", "detailed") == "compact"
         lines = []
         # 1. Item Name in Rarity Color
         lines.append((name, r_color, self.font))
@@ -585,70 +587,85 @@ class HUD:
         badge = f"[{rarity.upper()} {cat.upper()}]"
         lines.append((badge, r_color, self.font_sm))
 
-        # 3. Numeric Combat & Mining Stats
-        if data.get("damage", 0) > 0:
-            if data.get("cat") == CAT_TOOL or data.get("cat") == "tool":
-                lines.append((f"Tool Damage: {data['damage']}", (190, 205, 225), self.font_sm))
-            else:
-                lines.append((f"Weapon Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
-        if data.get("cat") == "weapon" or (data.get("damage", 0) > 0 and data.get("cat") != CAT_TOOL):
+        if is_compact:
+            if data.get("damage", 0) > 0:
+                if data.get("cat") == CAT_TOOL or data.get("cat") == "tool":
+                    lines.append((f"Tool Damage: {data['damage']}", (190, 205, 225), self.font_sm))
+                else:
+                    lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+            elif data.get("atk", 0) > 0:
+                lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
+            if data.get("def", 0) > 0:
+                lines.append((f"Defense: +{data['def']}", (140, 230, 140), self.font_sm))
+            if data.get("hp", 0) > 0:
+                lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
+            if data.get("heal", 0) > 0:
+                lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
+        else:
+            # 3. Detailed Numeric Combat & Mining Stats
+            if data.get("damage", 0) > 0:
+                if data.get("cat") == CAT_TOOL or data.get("cat") == "tool":
+                    lines.append((f"Tool Damage: {data['damage']}", (190, 205, 225), self.font_sm))
+                else:
+                    lines.append((f"Weapon Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+            if data.get("cat") == "weapon" or (data.get("damage", 0) > 0 and data.get("cat") != CAT_TOOL):
+                iid = item.item_id.lower()
+                if any(w in iid for w in ("dagger", "shortsword", "knife", "stiletto")):
+                    speed_str = "Very Fast Speed (0.22s)"
+                elif any(w in iid for w in ("greatsword", "cleaver", "hammer", "scythe", "titan", "colossus")):
+                    speed_str = "Slow, Heavy Speed (0.46s)"
+                elif "bow" in iid:
+                    speed_str = "Average Speed (0.36s)"
+                elif any(w in iid for w in ("staff", "wand", "scepter", "rod")):
+                    speed_str = "Average Speed (0.34s)"
+                elif any(w in iid for w in ("katana", "saber", "rapier", "spear")):
+                    speed_str = "Fast Speed (0.26s)"
+                else:
+                    speed_str = "Fast Speed (0.32s)"
+                lines.append((f"Use Speed: {speed_str}", (240, 230, 160), self.font_sm))
+
+            if data.get("def", 0) > 0:
+                lines.append((f"+{data['def']} Defense", (140, 230, 140), self.font_sm))
+            if data.get("atk", 0) > 0:
+                lines.append((f"+{data['atk']} Attack", (255, 205, 110), self.font_sm))
+            if data.get("crit", 0) > 0:
+                lines.append((f"+{data['crit']}% Critical Strike Chance", (255, 175, 80), self.font_sm))
+            if data.get("speed", 0) > 0:
+                if data.get("cat") == "weapon":
+                    lines.append((f"+{int(data['speed'] * 100)}% Attack Speed", (255, 235, 140), self.font_sm))
+                else:
+                    lines.append((f"+{data['speed']}% Movement Speed", (200, 210, 255), self.font_sm))
+            if data.get("hp", 0) > 0:
+                lines.append((f"+{data['hp']} Max HP", (255, 120, 120), self.font_sm))
+            if data.get("mp", 0) > 0:
+                lines.append((f"+{data['mp']} Max MP", (100, 180, 255), self.font_sm))
+            if data.get("mp_regen", 0) > 0:
+                lines.append((f"+{data['mp_regen']:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
+            if data.get("heal", 0) > 0:
+                lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
+
+            # 4. Special Effects (Bulleted for upper rarities: Epic, Mythic, Legendary, Ancient)
+            effects = data.get("effects", [])
             iid = item.item_id.lower()
-            if any(w in iid for w in ("dagger", "shortsword", "knife", "stiletto")):
-                speed_str = "Very Fast Speed (0.22s)"
-            elif any(w in iid for w in ("greatsword", "cleaver", "hammer", "scythe", "titan", "colossus")):
-                speed_str = "Slow, Heavy Speed (0.46s)"
-            elif "bow" in iid:
-                speed_str = "Average Speed (0.36s)"
-            elif any(w in iid for w in ("staff", "wand", "scepter", "rod")):
-                speed_str = "Average Speed (0.34s)"
-            elif any(w in iid for w in ("katana", "saber", "rapier", "spear")):
-                speed_str = "Fast Speed (0.26s)"
-            else:
-                speed_str = "Fast Speed (0.32s)"
-            lines.append((f"Use Speed: {speed_str}", (240, 230, 160), self.font_sm))
+            rarity_str = str(rarity).lower()
+            is_high_tier = rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient")
+            if "wood" not in iid and is_high_tier:
+                if effects:
+                    for eff in effects:
+                        lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
+                elif data.get("special"):
+                    lines.append((f"Special: {data['special']}", (100, 240, 240), self.font_sm))
 
-        if data.get("def", 0) > 0:
-            lines.append((f"+{data['def']} Defense", (140, 230, 140), self.font_sm))
-        if data.get("atk", 0) > 0:
-            lines.append((f"+{data['atk']} Attack", (255, 205, 110), self.font_sm))
-        if data.get("crit", 0) > 0:
-            lines.append((f"+{data['crit']}% Critical Strike Chance", (255, 175, 80), self.font_sm))
-        if data.get("speed", 0) > 0:
-            if data.get("cat") == "weapon":
-                lines.append((f"+{int(data['speed'] * 100)}% Attack Speed", (255, 235, 140), self.font_sm))
-            else:
-                lines.append((f"+{data['speed']}% Movement Speed", (200, 210, 255), self.font_sm))
-        if data.get("hp", 0) > 0:
-            lines.append((f"+{data['hp']} Max HP", (255, 120, 120), self.font_sm))
-        if data.get("mp", 0) > 0:
-            lines.append((f"+{data['mp']} Max MP", (100, 180, 255), self.font_sm))
-        if data.get("mp_regen", 0) > 0:
-            lines.append((f"+{data['mp_regen']:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
-        if data.get("heal", 0) > 0:
-            lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
+            # 5. Usage / Description
+            desc = data.get("desc")
+            if not desc or str(desc).strip() == "":
+                desc = f"A fine {rarity.title()} {cat.lower()} radiating elemental potency."
+            lines.append((desc, (215, 225, 240), self.font_sm))
 
-        # 4. Special Effects (Bulleted for upper rarities: Epic, Mythic, Legendary, Ancient; suppressed for low-tier and wooden items)
-        effects = data.get("effects", [])
-        iid = item.item_id.lower()
-        rarity_str = str(rarity).lower()
-        is_high_tier = rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient")
-        if "wood" not in iid and is_high_tier:
-            if effects:
-                for eff in effects:
-                    lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
-            elif data.get("special"):
-                lines.append((f"Special: {data['special']}", (100, 240, 240), self.font_sm))
-
-        # 5. Usage / Description
-        desc = data.get("desc")
-        if not desc or str(desc).strip() == "":
-            desc = f"A fine {rarity.title()} {cat.lower()} radiating elemental potency."
-        lines.append((desc, (215, 225, 240), self.font_sm))
-
-        # 6. Lore Quote (Diablo / Torchlight style) - Only Legendary, Mythic, Ancient
-        rarity_str = str(rarity).lower()
-        if data.get("lore") and rarity_str in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "legendary", "mythic", "ancient"):
-            lines.append((data["lore"], (240, 205, 120), self.font_lore))
+            # 6. Lore Quote (Diablo / Torchlight style) - Only Legendary, Mythic, Ancient
+            rarity_str = str(rarity).lower()
+            if data.get("lore") and rarity_str in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "legendary", "mythic", "ancient"):
+                lines.append((data["lore"], (240, 205, 120), self.font_lore))
 
         # Calculate bounding dimensions
         rendered_surfs = [fnt.render(text, True, col) for text, col, fnt in lines]
@@ -669,6 +686,7 @@ class HUD:
         for s in rendered_surfs:
             target_surf.blit(s, (tx + 10, cur_y))
             cur_y += s.get_height() + 3
+        return lines
 
     def _render_reticle(self, target_surf, player, camera, mouse_x, mouse_y, inventory=None, world=None):
         tx, ty = camera.screen_to_tile(mouse_x, mouse_y)

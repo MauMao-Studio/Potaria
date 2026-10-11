@@ -76,6 +76,7 @@ from src.ui.menu import MenuManager, Button
 from src.ui.character_panel import CharacterPanel
 from src.ui.npc_dialogue import NPCDialogueWindow
 from src.ui.chest_ui import ChestStorageWindow
+from src.ui.fishing_minigame import FishingBattleMiniGame
 from src.ui.touch_controller import TouchController
 from src.entities.npc import TownNPC
 from src.network.server import LANServer
@@ -171,6 +172,7 @@ class PotariaGame:
         self.character_panel = CharacterPanel(self.asset_factory)
         self.npc_dialogue = NPCDialogueWindow(self.asset_factory, self.sound_manager)
         self.chest_ui = ChestStorageWindow(self.asset_factory, self.sound_manager)
+        self.fishing_minigame = FishingBattleMiniGame(self.asset_factory, self.sound_manager)
         self.playtime = 0.0
         self.achievement_manager = AchievementManager(sound_manager=self.sound_manager)
         self.menu = MenuManager(self.asset_factory, self.sound_manager, self.bgm, self.achievement_manager)
@@ -643,14 +645,17 @@ class PotariaGame:
 
     def toggle_fullscreen(self):
         """Toggles borderless fullscreen display mode across all game states (prevents screenshot / Win+Shift+S blackout)."""
-        self.fullscreen = not self.fullscreen
-        self.menu.settings["fullscreen"] = self.fullscreen
-        self.menu._refresh_settings_button_labels()
+        self.set_fullscreen_mode(not self.fullscreen)
+
+    def set_fullscreen_mode(self, enabled: bool):
+        """Explicitly sets fullscreen mode (True = Borderless Fullscreen, False = Windowed)."""
+        self.fullscreen = bool(enabled)
+        if hasattr(self, "menu") and hasattr(self.menu, "settings"):
+            self.menu.settings["fullscreen"] = self.fullscreen
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         if hasattr(self, "renderer_manager"):
-            self.renderer_manager.switch_renderer(
-                self.renderer_manager.requested_type,
-                fullscreen=self.fullscreen,
-            )
+            self.renderer_manager.set_fullscreen(self.fullscreen)
             self.renderer = self.renderer_manager.renderer
             self.screen = self.renderer_manager.surface
             self.ui_screen = self.renderer_manager.ui_surface
@@ -738,10 +743,14 @@ class PotariaGame:
             self.combat.show_damage_numbers = settings.get("damage_numbers", True)
         if hasattr(self, "inventory"):
             self.inventory.tooltip_mode = settings.get("tooltips", "detailed")
+        if hasattr(self, "hud"):
+            self.hud.tooltip_mode = settings.get("tooltips", "detailed")
+        if hasattr(self, "chest_ui"):
+            self.chest_ui.tooltip_mode = settings.get("tooltips", "detailed")
 
-        if bool(settings.get("fullscreen", False)) != self.fullscreen:
+        if "fullscreen" in settings and bool(settings.get("fullscreen", False)) != self.fullscreen:
             try:
-                self.toggle_fullscreen()
+                self.set_fullscreen_mode(bool(settings["fullscreen"]))
             except Exception:
                 pass
 
@@ -924,6 +933,8 @@ class PotariaGame:
             self.start_lan_host()
         elif isinstance(action, tuple) and action[0] == "join_lan":
             self.join_lan_game(action[1])
+        elif isinstance(action, tuple) and action[0] == "set_fullscreen":
+            self.set_fullscreen_mode(action[1])
         elif action == "toggle_fullscreen":
             self.toggle_fullscreen()
         elif isinstance(action, tuple) and action[0] == "set_renderer":
@@ -1005,13 +1016,22 @@ class PotariaGame:
             if hasattr(self, "combat"):
                 self.combat.show_damage_numbers = not cur_d
         elif isinstance(action, tuple) and action[0] == "set_tooltips":
+            tt_mode = str(action[1])
             if hasattr(self, "inventory"):
-                self.inventory.tooltip_mode = str(action[1])
+                self.inventory.tooltip_mode = tt_mode
+            if hasattr(self, "hud"):
+                self.hud.tooltip_mode = tt_mode
+            if hasattr(self, "chest_ui"):
+                self.chest_ui.tooltip_mode = tt_mode
         elif action == "toggle_tooltips":
             cur_t = "compact" if self.menu.settings.get("tooltips", "detailed") == "detailed" else "detailed"
             self.menu.settings["tooltips"] = cur_t
             if hasattr(self, "inventory"):
                 self.inventory.tooltip_mode = cur_t
+            if hasattr(self, "hud"):
+                self.hud.tooltip_mode = cur_t
+            if hasattr(self, "chest_ui"):
+                self.chest_ui.tooltip_mode = cur_t
         elif isinstance(action, tuple) and action[0] == "set_touch_controls":
             if hasattr(self, "touch_controller"):
                 self.touch_controller.set_mode(action[1])
@@ -1078,6 +1098,17 @@ class PotariaGame:
             elif event.type in (pygame.WINDOWFOCUSLOST, getattr(pygame, "WINDOWMINIMIZED", 0)):
                 if hasattr(self, "touch_controller"):
                     self.touch_controller.reset()
+
+            elif event.type in (getattr(pygame, "WINDOWFOCUSGAINED", 0), getattr(pygame, "WINDOWRESTORED", 0), getattr(pygame, "VIDEOEXPOSE", 0)):
+                if hasattr(self, "lighting"):
+                    self.lighting.dirty = True
+                if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "active_renderer"):
+                    rend = self.renderer_manager.active_renderer
+                    if hasattr(rend, "_update_viewport"):
+                        try:
+                            rend._update_viewport()
+                        except Exception:
+                            pass
 
             elif event.type in (pygame.FINGERDOWN, pygame.FINGERMOTION, pygame.FINGERUP):
                 px = int(round(event.x * SCREEN_WIDTH))
@@ -1397,6 +1428,11 @@ class PotariaGame:
                         ui_consumed = True
                         continue
 
+                # 0.4. Fishing Battle Mini-Game
+                if hasattr(self, "fishing_minigame") and self.fishing_minigame.is_active:
+                    self.fishing_minigame.handle_click(is_right_click=is_right_click)
+                    ui_consumed = True
+
                 # 0.5. Storage Chest Window
                 if hasattr(self, "chest_ui") and self.chest_ui.is_open:
                     if self.chest_ui.handle_click(mouse_x, mouse_y, is_right_click, self.player, self.inventory):
@@ -1487,8 +1523,16 @@ class PotariaGame:
     def _open_or_break_chest(self, tx, ty, world_x, world_y):
         """Rolls high-value loot for naturally discovered or drops stored items from placed chests."""
         cur_t = self.world.get_tile(tx, ty) if hasattr(self.world, "get_tile") else TILE_CHEST
+        is_player = (tx, ty) in getattr(self.world, "player_placed_tiles", set()) or getattr(self.world, "last_broken_tile_is_player_placed", False)
+        chest = None
         if hasattr(self.world, "chests") and (tx, ty) in self.world.chests:
             chest = self.world.chests.pop((tx, ty))
+        elif hasattr(self.world, "last_broken_chest") and self.world.last_broken_chest:
+            chest = self.world.last_broken_chest
+            self.world.last_broken_chest = None
+        if chest:
+            if getattr(chest, "is_player_placed", False):
+                is_player = True
             self.world.set_tile(tx, ty, TILE_AIR)
             self.block_deltas[(tx, ty)] = TILE_AIR
             if self.client and self.client.connected:
@@ -1512,6 +1556,13 @@ class PotariaGame:
         self.block_deltas[(tx, ty)] = TILE_AIR
         if self.client and self.client.connected:
             self.client.send_block_delta(tx, ty, TILE_AIR)
+
+        if is_player:
+            # Player-placed chest with no storage record: drops ONLY the chest container itself, NEVER dungeon loot
+            self.sound_manager.play("craft")
+            self.particle_system.spawn_debris(world_x + 16, world_y + 16, (180, 130, 70), count=10)
+            self.combat.dropped_items.append(DroppedItem(chest_drop, 1, world_x + 8, world_y - 8, self.asset_factory))
+            return
 
         self.sound_manager.play("craft")
         self.particle_system.spawn_sparks(world_x + 16, world_y + 16, (255, 215, 0), count=30)
@@ -1562,7 +1613,19 @@ class PotariaGame:
             self.camera.add_shake(5.0, 0.3)
 
     def handle_right_click(self, mouse_x, mouse_y):
-        """Handles eating food, drinking potions, toggling doors, placing walls, opening chests, or placing blocks."""
+        """Handles fishing, eating food, drinking potions, toggling doors, placing walls, opening chests, or placing blocks."""
+        # 0. Active Fishing Battle Mini-Game takes top input priority
+        if hasattr(self, "fishing_minigame") and self.fishing_minigame and self.fishing_minigame.is_active:
+            self.fishing_minigame.handle_click(is_right_click=True)
+            return
+
+        # 0a. Fishing Rod Cast / Reel with Right-Click
+        active = self.inventory.get_active_item()
+        if active and active.item_id == "fishing_rod":
+            return self.handle_fishing_action(mouse_x, mouse_y)
+        if getattr(self, "fishing_bobber", None) is not None:
+            return self.handle_fishing_action(mouse_x, mouse_y)
+
         tx, ty = self.camera.screen_to_tile(mouse_x, mouse_y)
         tile_world_x = tx * SCALED_TILE
         tile_world_y = ty * SCALED_TILE
@@ -1863,6 +1926,9 @@ class PotariaGame:
         return cooldown
 
     def handle_fishing_action(self, mouse_x, mouse_y):
+        if hasattr(self, "fishing_minigame") and self.fishing_minigame.is_active:
+            return self.fishing_minigame.handle_click(is_right_click=True)
+
         mouse_wx, mouse_wy = self.camera.screen_to_world(mouse_x, mouse_y)
         tx, ty = int(mouse_wx // SCALED_TILE), int(mouse_wy // SCALED_TILE)
 
@@ -1914,16 +1980,9 @@ class PotariaGame:
                     caught_item = random.choice(rare_loot)
                     caught_count = random.randint(1, 3)
 
-                self.combat.dropped_items.append(
-                    DroppedItem(caught_item, caught_count, self.player.center_x, self.player.center_y - 20, self.asset_factory)
-                )
-                item_name = ITEM_REGISTRY.get(caught_item, {}).get("name", caught_item)
-                if hasattr(self.hud, "add_chat_message"):
-                    self.hud.add_chat_message(f"Caught {item_name} x{caught_count}!", (100, 230, 255))
-                if hasattr(self.inventory, "notify"):
-                    self.inventory.notify(f"Caught {item_name}!")
-                self.sound_manager.play("craft")
-                self.particle_system.spawn_sparks(bob["x"], bob["y"], (100, 220, 255), count=15)
+                self.fishing_bobber = None
+                self.fishing_minigame.start(fish_id=caught_item, caught_count=caught_count)
+                return True
             else:
                 self.sound_manager.play("dig_dirt")
 
@@ -2342,6 +2401,34 @@ class PotariaGame:
         if hasattr(self, "touch_controller"):
             self.touch_controller.update(dt, player=self.player, inventory=self.inventory)
 
+        # Update Fishing Battle Mini-Game
+        if hasattr(self, "fishing_minigame") and self.fishing_minigame.is_active:
+            res = self.fishing_minigame.update(dt)
+            if res == "caught":
+                fish_id = self.fishing_minigame.fish_id
+                fish_cnt = self.fishing_minigame.caught_count
+                self.combat.dropped_items.append(
+                    DroppedItem(fish_id, fish_cnt, self.player.center_x, self.player.center_y - 20, self.asset_factory)
+                )
+                from src.ui.inventory import ITEM_REGISTRY
+                item_name = ITEM_REGISTRY.get(fish_id, {}).get("name", fish_id.replace("_", " ").title())
+                if hasattr(self.hud, "add_chat_message"):
+                    self.hud.add_chat_message(f"Caught {item_name} x{fish_cnt}!", (100, 230, 255))
+                if hasattr(self.inventory, "notify"):
+                    self.inventory.notify(f"Caught {item_name} x{fish_cnt}!")
+                self.sound_manager.play("craft")
+                self.particle_system.spawn_sparks(self.player.center_x, self.player.center_y - 10, (100, 220, 255), count=15)
+                self.fishing_minigame.result = None
+            elif res == "escaped":
+                if hasattr(self.inventory, "notify"):
+                    self.inventory.notify("The fish snapped the line and escaped!")
+                self.sound_manager.play("dig_dirt")
+                self.fishing_minigame.result = None
+            elif res == "cancelled":
+                if hasattr(self.inventory, "notify"):
+                    self.inventory.notify("Fishing battle cancelled!")
+                self.fishing_minigame.result = None
+
         # Update Fishing Bobber state
         if getattr(self, "fishing_bobber", None):
             bob = self.fishing_bobber
@@ -2640,8 +2727,20 @@ class PotariaGame:
         self.profiler.end_section("update_other")
         # 7. Combat, Mobs & Boss
         with self.profiler.section("update_combat"):
+            hp_before_combat = self.player.health
             time_of_day = getattr(self.sky, "time_of_day", getattr(self.sky, "time", 0.0) / max(1.0, getattr(self.sky, "cycle_duration", 480.0)))
             self.combat.update(dt, self.world, self.player, self.sky.is_night, time_of_day=time_of_day)
+
+            # Interrupt fishing if player took damage from combat
+            if self.player.health < hp_before_combat or (self.player.i_frame_timer >= 0.7 and getattr(self.player, "last_damage_taken", 0) > 0):
+                if hasattr(self, "fishing_minigame") and self.fishing_minigame.is_active:
+                    self.fishing_minigame.cancel()
+                    if hasattr(self.inventory, "notify"):
+                        self.inventory.notify("Fishing battle interrupted by enemy attack!")
+                if getattr(self, "fishing_bobber", None):
+                    self.fishing_bobber = None
+                    if hasattr(self.inventory, "notify"):
+                        self.inventory.notify("Fishing line snapped from enemy damage!")
 
         # God Mode Enforcement
         self.profiler.start_section("update_other")
@@ -2922,10 +3021,18 @@ class PotariaGame:
             pygame.draw.circle(self.screen, (220, 40, 40), (bsx, bsy - 2), bob_r)
             pygame.draw.circle(self.screen, (20, 20, 20), (bsx, bsy), bob_r + 1, 1)
             if bob.get("state") == "bite":
-                pygame.draw.circle(self.screen, (100, 200, 255), (bsx, bsy), bob_r + 5, 1)
-                if self.font:
-                    ex_surf = self.font.render("!", True, (255, 230, 60))
-                    self.screen.blit(ex_surf, (bsx - ex_surf.get_width() // 2, bsy - 20))
+                pygame.draw.circle(self.screen, (100, 200, 255), (bsx, bsy), bob_r + 6, 2)
+                pulse = (pygame.time.get_ticks() // 250) % 2
+                ex_col = (255, 235, 60) if pulse else (255, 90, 90)
+                if getattr(self, "boss_font", None):
+                    ex_surf = self.boss_font.render("!", True, ex_col)
+                    self.screen.blit(ex_surf, (bsx - ex_surf.get_width() // 2, bsy - 34))
+                if getattr(self, "font_fps", None):
+                    rc_surf = self.font_fps.render("[RIGHT CLICK!]", True, (255, 255, 255))
+                    bg_w, bg_h = rc_surf.get_width() + 6, rc_surf.get_height() + 2
+                    bg_rect = pygame.Rect(bsx - bg_w // 2, bsy - 18, bg_w, bg_h)
+                    pygame.draw.rect(self.screen, (15, 20, 30, 200), bg_rect, border_radius=3)
+                    self.screen.blit(rc_surf, (bsx - rc_surf.get_width() // 2, bsy - 17))
 
         # Layer 5.2: Aquatic Foreground Water Pass
         self.world.render_water(self.screen, self.camera)
@@ -2989,6 +3096,10 @@ class PotariaGame:
                 pygame.draw.rect(ui_surf, (255, 215, 0), (bx, by, bw, bh), 2, border_radius=10)
                 b_txt = self.title_font.render(self.pvp_victor_banner, True, (255, 230, 60))
                 ui_surf.blit(b_txt, (SCREEN_WIDTH // 2 - b_txt.get_width() // 2, by + 10))
+
+            # Layer 9.85: Fishing Battle Mini-Game UI
+            if hasattr(self, "fishing_minigame") and (self.fishing_minigame.is_active or self.fishing_minigame.result is not None):
+                self.fishing_minigame.render(ui_surf)
 
             # Layer 9.9: Mobile Virtual Touch Controls
             if hasattr(self, "touch_controller") and self.touch_controller.is_visible():

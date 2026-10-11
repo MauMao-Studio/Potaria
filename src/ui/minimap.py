@@ -163,14 +163,20 @@ class MiniMap:
                 for ly in range(self.grid_h):
                     ty = min_ty + ly
                     if ty < 0:
-                        self.map_surf.set_at((lx, ly), (110, 180, 245)) # Sky
+                        if abs(tx) <= 32:
+                            is_player_lit = ((tx - ptx) * (tx - ptx) + (ty - pty) * (ty - pty) <= p_reach_sq)
+                            self.map_surf.set_at((lx, ly), (15, 20, 35) if is_player_lit else (0, 0, 0)) # Cosmic Fog of War
+                        else:
+                            self.map_surf.set_at((lx, ly), (110, 180, 245)) # Sky
                         continue
                     if ty >= world.height:
                         self.map_surf.set_at((lx, ly), (20, 20, 20)) # Deep Bedrock
                         continue
 
                     # Fog of War Light Check: Tile must be illuminated by sunlight, player light, or placed torches
-                    is_sunlit = (ty < surf_y)
+                    # Sky Citadel / Boss Arena (ty <= 42, abs(tx) <= 32) is shrouded in cosmic fog of war until explored
+                    is_sky_citadel = (ty <= 42 and abs(tx) <= 32)
+                    is_sunlit = (ty < surf_y) and not is_sky_citadel
                     is_player_lit = ((tx - ptx) * (tx - ptx) + (ty - pty) * (ty - pty) <= p_reach_sq)
                     is_emitter_lit = False
                     if not is_sunlit and not is_player_lit and local_emitters:
@@ -248,11 +254,12 @@ class MiniMap:
                 pygame.draw.rect(target_surf, (255, 220, 0), (cx - 2, cy - 2, 4, 4))
 
         # 4. Blips: Regular Mobs (Red dots)
-        for mob in combat.mobs:
-            if mob.is_alive:
-                bx, by = world_to_map(mob.center_x, mob.center_y)
-                if mx + 4 <= bx <= mx + 4 + inner_w and my + 18 <= by <= my + 18 + inner_h:
-                    pygame.draw.circle(target_surf, (255, 50, 50), (bx, by), 2)
+        if combat and hasattr(combat, "mobs"):
+            for mob in combat.mobs:
+                if mob.is_alive:
+                    bx, by = world_to_map(mob.center_x, mob.center_y)
+                    if mx + 4 <= bx <= mx + 4 + inner_w and my + 18 <= by <= my + 18 + inner_h:
+                        pygame.draw.circle(target_surf, (255, 50, 50), (bx, by), 2)
 
         # 5. Blips: Remote LAN Party Members (Cyan dots with names)
         if lan_client and (lan_client.connected or lan_client.remote_players):
@@ -267,7 +274,7 @@ class MiniMap:
                     target_surf.blit(plbl, (rx - plbl.get_width() // 2, ry - 10))
 
         # 6. Blips: Boss (Large pulsing marker + "BOSS" text)
-        if combat.boss and not combat.boss.is_dead:
+        if combat and getattr(combat, "boss", None) and not combat.boss.is_dead:
             bx, by = world_to_map(combat.boss.center_x, combat.boss.center_y)
             # Clamp to map rect with warning arrow if outside
             clamped_bx = max(mx + 8, min(mx + inner_w, bx))

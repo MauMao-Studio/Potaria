@@ -10,11 +10,12 @@ from src.ui.inventory import ItemStack, ITEM_REGISTRY, ITEM_ALIASES
 CHEST_SLOTS = 20
 
 class StorageChest:
-    def __init__(self, tx, ty, capacity=CHEST_SLOTS, chest_type="chest"):
+    def __init__(self, tx, ty, capacity=CHEST_SLOTS, chest_type="chest", is_player_placed=False):
         self.tx = int(tx)
         self.ty = int(ty)
         self.capacity = int(capacity)
         self.chest_type = str(chest_type)
+        self.is_player_placed = bool(is_player_placed)
         self.slots = [None] * self.capacity
 
     def is_empty(self):
@@ -156,14 +157,14 @@ class StorageChest:
         return deposited
 
     def take_all_to_inventory(self, inventory):
-        """Transfers all items from chest into player inventory."""
+        """Transfers all items from chest into player inventory, depositing from back to preserve hotbar."""
         if not inventory:
             return 0
         taken = 0
         for idx, c_slot in enumerate(self.slots):
             if c_slot:
                 prev_cnt = c_slot.count
-                rem = inventory.add_item(c_slot.item_id, c_slot.count)
+                rem = inventory.add_item(c_slot, from_back=True)
                 transferred = prev_cnt - rem
                 taken += transferred
                 if rem <= 0:
@@ -191,6 +192,7 @@ class StorageChest:
             "ty": self.ty,
             "capacity": self.capacity,
             "chest_type": self.chest_type,
+            "is_player_placed": self.is_player_placed,
             "slots": slots_data
         }
 
@@ -200,7 +202,8 @@ class StorageChest:
         ty = data.get("ty", 0)
         capacity = data.get("capacity", CHEST_SLOTS)
         ctype = data.get("chest_type", "chest")
-        chest = cls(tx, ty, capacity=capacity, chest_type=ctype)
+        is_player = data.get("is_player_placed", True)
+        chest = cls(tx, ty, capacity=capacity, chest_type=ctype, is_player_placed=is_player)
         for sdata in data.get("slots", []):
             idx = sdata.get("slot")
             if idx is not None and 0 <= idx < capacity:

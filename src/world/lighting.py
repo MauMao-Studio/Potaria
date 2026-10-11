@@ -79,6 +79,7 @@ class LightingEngine:
         absorb_grid = [[0 for _ in range(grid_h)] for _ in range(grid_w)]
         queue = collections.deque()
 
+        emitters = []
         # 1. Inject Sunlight and Tile Emitters
         for lx in range(grid_w):
             tx = min_tx + lx
@@ -113,11 +114,11 @@ class LightingEngine:
                         light[lx][ly] = sun_val
                         queue.append((lx, ly, sun_val))
 
-                # Check block intrinsic light emission (e.g. Torches, Furnaces)
+                # Check block intrinsic light emission (e.g. Torches, Lanterns, Lamps, Chandeliers)
                 emit = prop.get("light_emit", 0)
-                if emit > light[lx][ly]:
-                    light[lx][ly] = emit
-                    queue.append((lx, ly, emit))
+                if emit > 0:
+                    rad = prop.get("light_radius") or emit
+                    emitters.append((lx, ly, emit, rad))
 
         # 2. Inject extra dynamic lights (held torches, projectile glow, etc.)
         if torch_positions:
@@ -125,11 +126,10 @@ class LightingEngine:
                 lx = tx - min_tx
                 ly = ty - min_ty
                 if 0 <= lx < grid_w and 0 <= ly < grid_h:
-                    if intensity > light[lx][ly]:
-                        light[lx][ly] = intensity
-                        queue.append((lx, ly, intensity))
+                    rad = max(4, intensity - 1)
+                    emitters.append((lx, ly, intensity, rad))
 
-        # 3. BFS Light Diffusion / Propagation
+        # 3. BFS Light Diffusion / Propagation for Sunlight
         while queue:
             cx, cy, current_val = queue.popleft()
             if current_val <= 1:
@@ -144,6 +144,36 @@ class LightingEngine:
                     if next_val > light[nx][ny]:
                         light[nx][ny] = next_val
                         queue.append((nx, ny, next_val))
+
+        # 4. Smooth Radial Circular Quadratic Falloff for Localized Light Emitters
+        for ex, ey, intensity, radius in emitters:
+            r_sq = radius * radius
+            min_x = max(0, ex - radius)
+            max_x = min(grid_w - 1, ex + radius)
+            min_y = max(0, ey - radius)
+            max_y = min(grid_h - 1, ey + radius)
+            for x in range(min_x, max_x + 1):
+                dx = x - ex
+                dx_sq = dx * dx
+                for y in range(min_y, max_y + 1):
+                    dy = y - ey
+                    d_sq = dx_sq + dy * dy
+                    if d_sq <= r_sq:
+                        val = int(round(intensity * (1.0 - (d_sq / r_sq))))
+                        if val > light[x][y]:
+                            steps = max(abs(dx), abs(dy))
+                            if steps > 1:
+                                drop = 0
+                                for s in range(1, steps):
+                                    rx = ex + int(round(dx * s / steps))
+                                    ry = ey + int(round(dy * s / steps))
+                                    if absorb_grid[rx][ry] > 0:
+                                        drop += (absorb_grid[rx][ry] + 1) * 2
+                                        if drop >= val:
+                                            break
+                                val = max(0, val - drop)
+                            if val > light[x][y]:
+                                light[x][y] = val
 
         # 4. Bake into Light Mask Surface
         # Resize surface if viewport tile count changed
@@ -167,7 +197,17 @@ class LightingEngine:
                 for ly in range(grid_h):
                     pixels[lx, ly] = lut[col[ly]]
 
+        self._last_light_grid = light
         self.dirty = True
+
+    def get_light_level(self, tx, ty):
+        """Returns the computed light intensity level [0..15] for world tile (tx, ty)."""
+        if getattr(self, "_last_light_grid", None) and self._last_min_tx is not None and self._last_min_ty is not None:
+            lx = tx - self._last_min_tx
+            ly = ty - self._last_min_ty
+            if 0 <= lx < len(self._last_light_grid) and 0 <= ly < len(self._last_light_grid[0]):
+                return self._last_light_grid[lx][ly]
+        return 0
 
     def render_lighting(self, target_surf, offset_x, offset_y):
         """

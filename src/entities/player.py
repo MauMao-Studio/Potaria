@@ -599,15 +599,17 @@ class Player:
 
             # Titan's Resolve: Triples defense when below 30% HP
             effective_def = self.stats.total_def
-            if self.has_effect("titan's resolve") and (self.health < self.max_health * 0.3):
+            is_titan = self.has_effect("titan's resolve") and (self.health < self.max_health * 0.3)
+            if is_titan:
                 effective_def *= 3
 
-            # Apply DEF mitigation formula from GDD!
-            actual_damage = max(1, amount - effective_def)
+            # Apply DEF mitigation formula capped at 85% (minimum piercing damage)
+            min_pierce = 1 if is_titan else max(1, math.ceil(amount * 0.15))
+            actual_damage = max(min_pierce, amount - effective_def)
 
             # Damage Mitigation: -25% Total Damage Mitigation
             if self.has_effect("damage mitigation") or self.has_effect("-25%"):
-                actual_damage = max(1, int(actual_damage * 0.75))
+                actual_damage = max(min_pierce, int(actual_damage * 0.75))
 
             # Radiant Shield: Absorbs 40 damage every 15s
             if self.has_effect("radiant shield") and self.radiant_shield_hp > 0:
@@ -640,6 +642,7 @@ class Player:
             self.sound_manager.play("craft")
             return False
 
+        self.last_damage_taken = actual_damage
         self.health -= actual_damage
         self.i_frame_timer = 0.8
         self.vx = knockback_vx

@@ -102,12 +102,14 @@ TILE_DUNGEON_MAGMA = 57        # Nether Magma Dungeon Brick (indestructible)
 TILE_DUNGEON_ICE = 58          # Permafrost Crypt Dungeon Brick (indestructible)
 TILE_DUNGEON_BONE = 59         # Ancient Catacomb Bone Brick (indestructible)
 TILE_DUNGEON_GATE = 60         # Indestructible Dungeon Gate / Portcullis Arch
+TILE_LAMP = 61                 # Standing/table brass oil lamp (warm steady illumination)
 
 LANTERN_TILES = (
     TILE_CARVED_TUBER_LANTERN,
     TILE_BRASS_LANTERN,
     TILE_SPECTRAL_LANTERN,
     TILE_CHANDELIER,
+    TILE_LAMP,
 )
 
 # Wall IDs (Background)
@@ -166,7 +168,7 @@ TILE_PROPS = {
     TILE_WOOD_PLATFORM: {"name": "Wood Platform", "hardness": 10, "drop": "wood_platform", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_WORK_BENCH: {"name": "Work Bench", "hardness": 25, "drop": "work_bench", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_FURNACE: {"name": "Furnace", "hardness": 40, "drop": "furnace", "solid": False, "platform": False, "light_emit": 8, "absorb": 0, "opaque": False},
-    TILE_TORCH: {"name": "Torch", "hardness": 5, "drop": "torch", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
+    TILE_TORCH: {"name": "Torch", "hardness": 5, "drop": "torch", "solid": False, "platform": False, "light_emit": 10, "light_radius": 6, "absorb": 0, "opaque": False},
     TILE_STONE_BRICK: {"name": "Stone Brick", "hardness": 38, "drop": "stone_brick", "solid": True, "platform": False, "light_emit": 0, "absorb": 4, "opaque": True},
     TILE_BEDROCK: {"name": "Bedrock", "hardness": 9999, "drop": None, "solid": True, "platform": False, "light_emit": 0, "absorb": 15, "opaque": True},
     TILE_DUNGEON_BRICK: {"name": "Dungeon Brick", "hardness": 9999, "drop": None, "solid": True, "platform": False, "light_emit": 1, "absorb": 15, "opaque": True, "indestructible": True},
@@ -198,19 +200,20 @@ TILE_PROPS = {
     TILE_BED: {"name": "Wooden Bed", "hardness": 20, "drop": "wooden_bed", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_BOOKSHELF: {"name": "Bookshelf", "hardness": 20, "drop": "bookshelf", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_GRANDFATHER_CLOCK: {"name": "Grandfather Clock", "hardness": 25, "drop": "grandfather_clock", "solid": False, "platform": False, "light_emit": 1, "absorb": 0, "opaque": False},
-    TILE_FIREPLACE: {"name": "Stone Fireplace", "hardness": 35, "drop": "stone_fireplace", "solid": False, "platform": True, "light_emit": 13, "absorb": 0, "opaque": False},
-    TILE_CANDELABRA: {"name": "Candelabra", "hardness": 10, "drop": "candelabra", "solid": False, "platform": False, "light_emit": 12, "absorb": 0, "opaque": False},
-    TILE_CHANDELIER: {"name": "Chandelier", "hardness": 12, "drop": "chandelier", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
-    TILE_POTTED_PLANT: {"name": "Potted Spud Plant", "hardness": 10, "drop": "potted_plant", "solid": False, "platform": False, "light_emit": 2, "absorb": 0, "opaque": False},
+    TILE_FIREPLACE: {"name": "Stone Fireplace", "hardness": 35, "drop": "stone_fireplace", "solid": False, "platform": True, "light_emit": 13, "light_radius": 11, "absorb": 0, "opaque": False},
+    TILE_CANDELABRA: {"name": "Candelabra", "hardness": 10, "drop": "candelabra", "solid": False, "platform": False, "light_emit": 12, "light_radius": 10, "absorb": 0, "opaque": False},
+    TILE_CHANDELIER: {"name": "Chandelier", "hardness": 12, "drop": "chandelier", "solid": False, "platform": False, "light_emit": 14, "light_radius": 14, "absorb": 0, "opaque": False},
+    TILE_POTTED_PLANT: {"name": "Potted Spud Plant", "hardness": 10, "drop": "potted_plant", "solid": False, "platform": False, "light_emit": 2, "light_radius": 3, "absorb": 0, "opaque": False},
     TILE_DRESSER: {"name": "Wooden Dresser", "hardness": 20, "drop": "wooden_dresser", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_TAPESTRY: {"name": "Wall Tapestry", "hardness": 8, "drop": "wall_tapestry", "solid": False, "platform": False, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_BATHTUB: {"name": "Bathtub", "hardness": 25, "drop": "bathtub", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_SINK: {"name": "Sink", "hardness": 20, "drop": "sink", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_PAINTING: {"name": "Painting", "hardness": 8, "drop": "painting", "solid": False, "platform": False, "light_emit": 1, "absorb": 0, "opaque": False},
     TILE_WOOD_SHELF: {"name": "Wood Shelf", "hardness": 10, "drop": "wood_shelf", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
-    TILE_CARVED_TUBER_LANTERN: {"name": "Carved Tuber Lantern", "hardness": 8, "drop": "carved_tuber_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
-    TILE_BRASS_LANTERN: {"name": "Brass Lantern", "hardness": 10, "drop": "brass_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
-    TILE_SPECTRAL_LANTERN: {"name": "Spectral Lantern", "hardness": 10, "drop": "spectral_lantern", "solid": False, "platform": False, "light_emit": 14, "absorb": 0, "opaque": False},
+    TILE_CARVED_TUBER_LANTERN: {"name": "Carved Tuber Lantern", "hardness": 8, "drop": "carved_tuber_lantern", "solid": False, "platform": False, "light_emit": 14, "light_radius": 8, "absorb": 0, "opaque": False},
+    TILE_BRASS_LANTERN: {"name": "Brass Lantern", "hardness": 10, "drop": "brass_lantern", "solid": False, "platform": False, "light_emit": 14, "light_radius": 8, "absorb": 0, "opaque": False},
+    TILE_SPECTRAL_LANTERN: {"name": "Spectral Lantern", "hardness": 10, "drop": "spectral_lantern", "solid": False, "platform": False, "light_emit": 14, "light_radius": 8, "absorb": 0, "opaque": False},
+    TILE_LAMP: {"name": "Brass Lamp", "hardness": 10, "drop": "brass_lamp", "solid": False, "platform": False, "light_emit": 14, "light_radius": 9, "absorb": 0, "opaque": False},
     TILE_SAPLING: {"name": "Oak Sapling", "hardness": 5, "drop": "oak_sapling", "solid": False, "platform": False, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_IRON_CHEST: {"name": "Iron Storage Chest", "hardness": 35, "drop": "iron_chest", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_ROPE_RUNGS: {"name": "Rope Rungs", "hardness": 10, "drop": "rope_rungs", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},

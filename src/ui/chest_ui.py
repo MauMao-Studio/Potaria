@@ -36,6 +36,7 @@ class ChestStorageWindow:
         self.font_btn = pygame.font.SysFont("Arial", 11, bold=True)
         self.font_count = pygame.font.SysFont("Arial", 10, bold=True)
         self.font_sm = pygame.font.SysFont("Arial", 10)
+        self.tooltip_mode = "detailed"
 
     def open(self, chest, player=None, inventory=None):
         self.is_open = True
@@ -289,30 +290,45 @@ class ChestStorageWindow:
         rarity = str(data.get("rarity", "common")).lower()
         r_color = RARITY_COLORS.get(rarity, (220, 220, 220))
         lines = [(name, r_color, self.font_title)]
+        is_compact = getattr(self, "tooltip_mode", "detailed") == "compact"
         cat = data.get("cat", "item").replace("_", " ").title()
         lines.append((f"[{rarity.upper()} {cat.upper()}]", r_color, self.font_sm))
-        if data.get("damage", 0) > 0:
-            lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
-        if data.get("atk", 0) > 0 and data.get("damage", 0) == 0:
-            lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
-        if data.get("def", 0) > 0:
-            lines.append((f"Defense: +{data['def']}", (160, 230, 160), self.font_sm))
-        if data.get("hp", 0) > 0:
-            lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
-        if getattr(item, "enhancement_level", 0) > 0:
-            lines.append((f"Enhanced: +{item.enhancement_level} (Double Stats at +7)", (80, 240, 255), self.font_sm))
-        if getattr(item, "is_broken", False):
-            lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
-        if getattr(item, "affix_slots", 0) > 0:
-            aff_cnt = len(getattr(item, "affixes", []))
-            lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
-        for aff in getattr(item, "affixes", []):
-            from src.rpg.enhancement import GOD_TIER_AFFIXES
-            desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
-            lines.append((f"★ {aff}: {desc}", (255, 230, 90), self.font_sm))
-        desc = data.get("desc")
-        if desc:
-            lines.append((desc, (200, 210, 225), self.font_sm))
+        if is_compact:
+            if data.get("damage", 0) > 0:
+                lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+            elif data.get("atk", 0) > 0:
+                lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
+            if data.get("def", 0) > 0:
+                lines.append((f"Defense: +{data['def']}", (160, 230, 160), self.font_sm))
+            if data.get("hp", 0) > 0:
+                lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
+            if getattr(item, "enhancement_level", 0) > 0:
+                lines.append((f"+{item.enhancement_level} Enhanced", (80, 240, 255), self.font_sm))
+            if getattr(item, "is_broken", False):
+                lines.append(("[BROKEN]", (255, 70, 70), self.font_sm))
+        else:
+            if data.get("damage", 0) > 0:
+                lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+            if data.get("atk", 0) > 0 and data.get("damage", 0) == 0:
+                lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
+            if data.get("def", 0) > 0:
+                lines.append((f"Defense: +{data['def']}", (160, 230, 160), self.font_sm))
+            if data.get("hp", 0) > 0:
+                lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
+            if getattr(item, "enhancement_level", 0) > 0:
+                lines.append((f"Enhanced: +{item.enhancement_level} (Double Stats at +7)", (80, 240, 255), self.font_sm))
+            if getattr(item, "is_broken", False):
+                lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
+            if getattr(item, "affix_slots", 0) > 0:
+                aff_cnt = len(getattr(item, "affixes", []))
+                lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
+            for aff in getattr(item, "affixes", []):
+                from src.rpg.enhancement import GOD_TIER_AFFIXES
+                desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
+                lines.append((f"★ {aff}: {desc}", (255, 230, 90), self.font_sm))
+            desc = data.get("desc")
+            if desc:
+                lines.append((desc, (200, 210, 225), self.font_sm))
 
         tw = max(self.font_sm.size(text)[0] for text, _, _ in lines) + 24
         th = sum(16 for _ in lines) + 12
@@ -330,3 +346,4 @@ class ChestStorageWindow:
             rendered = font.render(text, True, col)
             target_surf.blit(rendered, (tx + 10, cur_y))
             cur_y += rendered.get_height() + 2
+        return lines

@@ -529,6 +529,7 @@ class World:
         if current >= max_health:
             del self.tile_damage[coord]
             is_player_placed = (tx, ty) in self.player_placed_tiles
+            self.last_broken_tile_is_player_placed = is_player_placed
             self.player_placed_tiles.discard((tx, ty))
             drop = prop.get("drop")
             if t_id == TILE_LEAVES:
@@ -546,7 +547,11 @@ class World:
                 sap_data = self.planted_saplings.pop((tx, ty), None)
                 drop = sap_data.get("sapling_type", "oak_sapling") if sap_data else "oak_sapling"
             elif t_id in (TILE_CHEST, TILE_IRON_CHEST) and (tx, ty) in self.chests:
-                broken_chest = self.chests.pop((tx, ty))
+                broken_chest = self.chests.pop((tx, ty), None)
+                self.last_broken_chest = broken_chest
+                if broken_chest and getattr(broken_chest, "is_player_placed", False):
+                    is_player_placed = True
+                    self.last_broken_tile_is_player_placed = True
                 if broken_chest and getattr(broken_chest, "chest_type", None):
                     drop = broken_chest.chest_type
                 elif t_id == TILE_IRON_CHEST:
@@ -638,7 +643,7 @@ class World:
             self.player_placed_tiles.add((tx, ty))
             if tile_id in (TILE_CHEST, TILE_IRON_CHEST):
                 from src.world.storage_chest import StorageChest
-                self.chests[(tx, ty)] = StorageChest(tx, ty, chest_type="iron_chest" if tile_id == TILE_IRON_CHEST else chest_type)
+                self.chests[(tx, ty)] = StorageChest(tx, ty, chest_type="iron_chest" if tile_id == TILE_IRON_CHEST else chest_type, is_player_placed=True)
             elif tile_id == TILE_SAPLING:
                 sap_type = chest_type if "sapling" in str(chest_type) else "oak_sapling"
                 self.planted_saplings[(tx, ty)] = {"growth_days": 0, "sapling_type": sap_type}

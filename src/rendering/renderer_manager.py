@@ -139,6 +139,21 @@ class RendererManager:
             requested_type=norm_type,
         )
 
+    def set_fullscreen(self, fullscreen: bool) -> BaseRenderer:
+        """Sets fullscreen or windowed display mode on the active renderer."""
+        self.fullscreen = bool(fullscreen)
+        if self.active_renderer and self.active_renderer.initialized:
+            if hasattr(self.active_renderer, "set_display_resolution"):
+                self.active_renderer.set_display_resolution(
+                    self.display_width, self.display_height, fullscreen=self.fullscreen
+                )
+            else:
+                self.active_renderer.set_mode(
+                    self.width, self.height, fullscreen=self.fullscreen
+                )
+            return self.active_renderer
+        return self.switch_renderer(self.requested_type, fullscreen=self.fullscreen)
+
     def toggle_renderer(self, fullscreen: Optional[bool] = None) -> BaseRenderer:
         """Toggles between Hardware and Software renderer."""
         next_type = (

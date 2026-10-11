@@ -9,6 +9,7 @@ import os
 import json
 import pygame
 from src.constants import (
+    SCREEN_WIDTH, SCREEN_HEIGHT,
     HOTBAR_SLOTS, INV_COLS, INV_ROWS, INV_TOTAL_SLOTS,
     SLOT_SIZE, SLOT_PADDING, CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL,
     CAT_MATERIAL, CAT_CONSUMABLE, CAT_SPECIAL, CAT_ACCESSORY, CAT_CURRENCY,
@@ -24,7 +25,7 @@ from src.constants import (
     TILE_BED, TILE_BOOKSHELF, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE,
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
-    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
+    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, TILE_LAMP,
     TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     WALL_WOOD, WALL_STONE_BRICK, WALL_GLASS,
     RARITY_COMMON, RARITY_UNCOMMON, RARITY_RARE, RARITY_EPIC,
@@ -79,6 +80,7 @@ ITEM_ALIASES = {
     "star": "fallen_star",
     "falling_star": "fallen_star",
     "wooden_chest": "chest",
+    "lamp": "brass_lamp",
 }
 REVERSE_ITEM_ALIASES = {v: k for k, v in ITEM_ALIASES.items()}
 
@@ -2018,6 +2020,12 @@ ITEM_REGISTRY = {
         "desc": "Weatherproof brass oil lantern that burns steadily through heavy storms and downpours.",
         "lore": "", "effects": [], "special": "Steady Lantern Glow"
     },
+    "brass_lamp": {
+        "name": "Brass Lamp", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
+        "tile": TILE_LAMP, "rarity": RARITY_UNCOMMON,
+        "desc": "Fine table brass oil lamp emitting bright warm radial illumination.",
+        "lore": "'A steady glow illuminates hearth and home.'", "effects": [], "special": "Bright Warm Radial Light"
+    },
     "spectral_lantern": {
         "name": "Spectral Lantern", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99,
         "tile": TILE_SPECTRAL_LANTERN, "rarity": RARITY_UNCOMMON,
@@ -2304,6 +2312,12 @@ class Inventory:
         self.last_learned_message = None
         self.last_learned_timer = 0.0
         self.tooltip_mode = "detailed"
+
+        # Fonts
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 18)
+        self.font_bold = pygame.font.Font(None, 20)
+        self.font_sm = pygame.font.Font(None, 16)
 
         # Set initial loadout based on difficulty mode
         self.set_difficulty_loadout(difficulty)
@@ -2595,7 +2609,7 @@ class Inventory:
     def get_active_item(self):
         return self.slots[self.selected_slot]
 
-    def add_item(self, item_id, count=1):
+    def add_item(self, item_id, count=1, from_back=False):
         stack_source = None
         if isinstance(item_id, ItemStack):
             stack_source = item_id
@@ -2625,7 +2639,8 @@ class Inventory:
         # Non-modified stackable items can merge into existing slots
         is_modified = stack_source and (stack_source.enhancement_level > 0 or stack_source.is_broken or stack_source.affixes or stack_source.removed_stats)
         if max_s > 1 and not is_modified:
-            for slot in self.slots:
+            merge_slots = list(reversed(self.slots)) if from_back else self.slots
+            for slot in merge_slots:
                 if slot:
                     slot_canon = ITEM_ALIASES.get(slot.item_id, slot.item_id)
                     if (slot.item_id == target_id or slot_canon == target_id) and slot.count < max_s:
@@ -2637,7 +2652,8 @@ class Inventory:
                             if count <= 0:
                                 return 0
 
-        for idx in range(len(self.slots)):
+        slot_indices = range(len(self.slots) - 1, -1, -1) if from_back else range(len(self.slots))
+        for idx in slot_indices:
             if self.slots[idx] is None:
                 transfer = min(max_s, count)
                 if stack_source:
@@ -2847,38 +2863,114 @@ class Inventory:
         return False
 
     def render_tooltip(self, target_surf, item, mx, my):
-        """Renders rich RPG tooltip for an item or ItemStack."""
+        """Renders rich RPG tooltip for an item or ItemStack with Compact and Detailed modes."""
         if not item:
             return
         data = item.data if hasattr(item, "data") else {}
         name = data.get("name", getattr(item, "item_id", "Item"))
         rarity = str(data.get("rarity", "common")).lower()
         r_color = RARITY_COLORS.get(rarity, (220, 220, 220))
-        lines = [(name, r_color, self.font_bold)]
         cat = data.get("cat", "item").replace("_", " ").title()
-        lines.append((f"[{rarity.upper()} {cat.upper()}]", r_color, self.font_sm))
-        if data.get("damage", 0) > 0:
-            lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
-        if data.get("atk", 0) > 0 and data.get("damage", 0) == 0:
-            lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
-        if data.get("def", 0) > 0:
-            lines.append((f"Defense: +{data['def']}", (160, 230, 160), self.font_sm))
-        if data.get("hp", 0) > 0:
-            lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
-        if getattr(item, "enhancement_level", 0) > 0:
-            lines.append((f"Enhanced: +{item.enhancement_level} (Double Stats at +7)", (80, 240, 255), self.font_sm))
-        if getattr(item, "is_broken", False):
-            lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
-        if getattr(item, "affix_slots", 0) > 0:
-            aff_cnt = len(getattr(item, "affixes", []))
-            lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
-        for aff in getattr(item, "affixes", []):
-            from src.rpg.enhancement import GOD_TIER_AFFIXES
-            desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
-            lines.append((f"★ {aff}: {desc}", (255, 230, 90), self.font_sm))
-        desc = data.get("desc")
-        if desc:
-            lines.append((desc, (200, 210, 225), self.font_sm))
+        enh_lvl = getattr(item, "enhancement_level", 0)
+        is_broken = getattr(item, "is_broken", False)
+        is_compact = getattr(self, "tooltip_mode", "detailed") == "compact"
+
+        rarity_tiers = {
+            "common": "Tier I",
+            "uncommon": "Tier II",
+            "rare": "Tier III",
+            "epic": "Tier IV",
+            "legendary": "Tier V",
+            "mythic": "Tier VI",
+            "ancient": "Tier VII",
+        }
+        tier_str = data.get("tier") or rarity_tiers.get(rarity, "Tier I")
+
+        lines = [(name, r_color, self.font_bold)]
+
+        if is_compact:
+            lines.append((f"[{rarity.upper()} {cat.upper()}]", r_color, self.font_sm))
+            if data.get("damage", 0) > 0:
+                lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
+            elif data.get("atk", 0) > 0:
+                lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
+            if data.get("def", 0) > 0:
+                lines.append((f"Defense: +{data['def']}", (160, 230, 160), self.font_sm))
+            if data.get("hp", 0) > 0:
+                lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
+            if enh_lvl > 0:
+                lines.append((f"+{enh_lvl} Enhanced", (80, 240, 255), self.font_sm))
+            if is_broken:
+                lines.append(("[BROKEN]", (255, 70, 70), self.font_sm))
+        else:
+            # Detailed Mode: Tier, base vs bonus stats, attack speed, crit, max stack, sell value, lore
+            lines.append((f"[{tier_str.upper()} • {rarity.upper()} {cat.upper()}]", r_color, self.font_sm))
+
+            if data.get("damage", 0) > 0:
+                base_dmg = data['damage']
+                if enh_lvl > 0:
+                    bonus_dmg = int(base_dmg * (enh_lvl * 0.15))
+                    lines.append((f"Damage: {base_dmg + bonus_dmg} (Base {base_dmg} + {bonus_dmg} Enhanced)", (255, 215, 100), self.font_sm))
+                else:
+                    lines.append((f"Damage: {base_dmg} (Base)", (255, 215, 100), self.font_sm))
+            elif data.get("atk", 0) > 0:
+                base_atk = data['atk']
+                if enh_lvl > 0:
+                    bonus_atk = int(base_atk * (enh_lvl * 0.15))
+                    lines.append((f"Attack: +{base_atk + bonus_atk} (Base +{base_atk} + {bonus_atk} Enhanced)", (255, 215, 100), self.font_sm))
+                else:
+                    lines.append((f"Attack: +{base_atk} (Base)", (255, 215, 100), self.font_sm))
+
+            if data.get("def", 0) > 0:
+                base_def = data['def']
+                if enh_lvl > 0:
+                    bonus_def = int(base_def * (enh_lvl * 0.15))
+                    lines.append((f"Defense: +{base_def + bonus_def} (Base +{base_def} + {bonus_def} Enhanced)", (160, 230, 160), self.font_sm))
+                else:
+                    lines.append((f"Defense: +{base_def} (Base)", (160, 230, 160), self.font_sm))
+
+            if data.get("hp", 0) > 0:
+                lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
+
+            if data.get("cat") in (CAT_WEAPON, CAT_TOOL) or "speed" in data:
+                spd = data.get("speed", 0.0)
+                spd_str = f"{spd:.2f}s swing cooldown" if spd > 0 else "0.35s (Standard fast attack)"
+                lines.append((f"Attack Speed: {spd_str}", (190, 220, 245), self.font_sm))
+
+            if data.get("cat") == CAT_WEAPON or "crit" in data:
+                crit_pct = data.get("crit", 4.0)
+                lines.append((f"Critical Strike: {crit_pct:.1f}%", (255, 200, 100), self.font_sm))
+
+            max_s = data.get("max_stack", 999)
+            lines.append((f"Max Stack: {max_s}", (175, 185, 200), self.font_sm))
+
+            rarity_vals = {
+                "common": 5, "uncommon": 15, "rare": 45, "epic": 140,
+                "legendary": 450, "mythic": 1200, "ancient": 3000
+            }
+            sell_val = data.get("sell_value") or data.get("price") or rarity_vals.get(rarity, 5)
+            lines.append((f"Sell Value: {sell_val} Copper", (240, 200, 80), self.font_sm))
+
+            if enh_lvl > 0:
+                lines.append((f"Enhanced: +{enh_lvl} (Double Stats at +7)", (80, 240, 255), self.font_sm))
+            if is_broken:
+                lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
+
+            if getattr(item, "affix_slots", 0) > 0:
+                aff_cnt = len(getattr(item, "affixes", []))
+                lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
+            for aff in getattr(item, "affixes", []):
+                from src.rpg.enhancement import GOD_TIER_AFFIXES
+                aff_desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
+                lines.append((f"★ {aff}: {aff_desc}", (255, 230, 90), self.font_sm))
+
+            desc = data.get("desc")
+            if desc:
+                lines.append((desc, (200, 210, 225), self.font_sm))
+
+            lore = data.get("lore")
+            if lore:
+                lines.append((lore, (165, 180, 205), self.font_sm))
 
         tw = max(self.font_sm.size(text)[0] for text, _, _ in lines) + 24
         th = sum(16 for _ in lines) + 12
@@ -2896,6 +2988,7 @@ class Inventory:
             rendered = font.render(text, True, col)
             target_surf.blit(rendered, (tx + 10, cur_y))
             cur_y += rendered.get_height() + 2
+        return lines
 
 
 

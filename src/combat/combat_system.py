@@ -213,6 +213,8 @@ class CombatManager:
         self.mobs.append(mob)
 
     def spawn_damage_number(self, world_x, world_y, amount, color=(255, 210, 50), is_crit=False):
+        if not getattr(self, "show_damage_numbers", True):
+            return
         self.damage_numbers.append(DamageNumber(world_x, world_y, amount, color, is_crit))
 
     def _on_mob_slain(self, mob, player):
@@ -297,7 +299,8 @@ class CombatManager:
                 knock_dir = 1.0 if player.center_x > self.boss.center_x else -1.0
                 damaged = player.take_damage(self.boss.damage, knockback_vx=knock_dir * 6.0, knockback_vy=-4.5)
                 if damaged:
-                    self.spawn_damage_number(player.center_x, player.y - 10, self.boss.damage, color=(255, 50, 50))
+                    dmg_val = getattr(player, "last_damage_taken", self.boss.damage)
+                    self.spawn_damage_number(player.center_x, player.y - 10, dmg_val, color=(255, 50, 50))
                     self.camera.add_shake(6.0, 0.3)
 
             if self.boss.is_dead:
@@ -436,7 +439,8 @@ class CombatManager:
                 knock_dir = 1.0 if player.center_x > self.secondary_boss.center_x else -1.0
                 damaged = player.take_damage(self.secondary_boss.damage, knockback_vx=knock_dir * 6.0, knockback_vy=-4.5)
                 if damaged:
-                    self.spawn_damage_number(player.center_x, player.y - 10, self.secondary_boss.damage, color=(255, 50, 50))
+                    dmg_val = getattr(player, "last_damage_taken", self.secondary_boss.damage)
+                    self.spawn_damage_number(player.center_x, player.y - 10, dmg_val, color=(255, 50, 50))
                     self.camera.add_shake(6.0, 0.3)
             if self.secondary_boss.is_dead:
                 self.particle_system.spawn_sparks(self.secondary_boss.center_x, self.secondary_boss.center_y, (255, 230, 80), count=45)
@@ -867,7 +871,8 @@ class CombatManager:
                 knock_x = 4.0 if ep.vel.x > 0 else -4.0
                 damaged = player.take_damage(ep.damage, knockback_vx=knock_x, knockback_vy=-3.0)
                 if damaged:
-                    self.spawn_damage_number(player.center_x, player.y - 10, ep.damage, color=(255, 60, 60))
+                    dmg_val = getattr(player, "last_damage_taken", ep.damage)
+                    self.spawn_damage_number(player.center_x, player.y - 10, dmg_val, color=(255, 60, 60))
                     self.sound_manager.play("hurt")
                     self.camera.add_shake(4.0, 0.2)
                     self.particle_system.spawn_sparks(player.center_x, player.center_y, (100, 220, 60), 8)
@@ -881,7 +886,8 @@ class CombatManager:
                 knock_dir = 1.0 if player.center_x > mob.center_x else -1.0
                 damaged = player.take_damage(mob.damage, knockback_vx=knock_dir * 4.5, knockback_vy=-3.5)
                 if damaged:
-                    self.spawn_damage_number(player.center_x, player.y - 10, mob.damage, color=(255, 50, 50))
+                    dmg_val = getattr(player, "last_damage_taken", mob.damage)
+                    self.spawn_damage_number(player.center_x, player.y - 10, dmg_val, color=(255, 50, 50))
                     self.camera.add_shake(5.0, 0.25)
                     self.particle_system.spawn_sparks(player.center_x, player.center_y, (255, 50, 50), 6)
 

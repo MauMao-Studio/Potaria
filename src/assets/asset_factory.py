@@ -5247,6 +5247,272 @@ class AssetFactory:
         pygame.draw.circle(rock_sp, (170, 165, 160), (4, 4), 2)
         self.mobs["rock"] = rock_sp
 
+        # 10 Philippine fish species pixel-art mobs
+        self._generate_fish_mobs()
+
+    def _generate_fish_mobs(self):
+        """Generates authentic 2D pixel-art fish mob sprites for all 10 Philippine fish species."""
+        self.fish_base_sprites = {}
+
+        # 1. Bangus (Milkfish) - Silvery streamlined body with deeply forked caudal fin
+        bangus_frames = []
+        for i in range(4):
+            surf = pygame.Surface((28, 14), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            fin_dy = [0, -1, 0, 1][i]
+            pygame.draw.ellipse(surf, (190, 205, 220), (6, 3, 18, 8))
+            pygame.draw.ellipse(surf, (225, 235, 245), (8, 5, 14, 5))
+            pygame.draw.line(surf, (135, 155, 175), (8, 3), (20, 4), 2)
+            pygame.draw.polygon(surf, (170, 190, 210), [(6, 7), (1, 2 + tail_dy), (4, 7), (1, 12 + tail_dy)])
+            pygame.draw.polygon(surf, (160, 180, 200), [(14, 3), (17, 1 + fin_dy), (19, 4)])
+            pygame.draw.polygon(surf, (180, 200, 215), [(16, 8), (14, 11 + fin_dy), (19, 9)])
+            pygame.draw.circle(surf, (35, 45, 55), (21, 6), 2)
+            pygame.draw.circle(surf, (255, 255, 255), (22, 5), 1)
+            bangus_frames.append(surf)
+        bangus_base = pygame.Surface((28, 14), pygame.SRCALPHA)
+        pygame.draw.ellipse(bangus_base, (190, 205, 220), (6, 3, 18, 8))
+        pygame.draw.ellipse(bangus_base, (225, 235, 245), (8, 5, 14, 5))
+        pygame.draw.line(bangus_base, (135, 155, 175), (8, 3), (20, 4), 2)
+        pygame.draw.polygon(bangus_base, (170, 190, 210), [(6, 7), (1, 2), (4, 7), (1, 12)])
+        pygame.draw.polygon(bangus_base, (160, 180, 200), [(14, 3), (17, 1), (19, 4)])
+        pygame.draw.polygon(bangus_base, (180, 200, 215), [(16, 8), (14, 11), (19, 9)])
+        pygame.draw.circle(bangus_base, (35, 45, 55), (21, 6), 2)
+        pygame.draw.circle(bangus_base, (255, 255, 255), (22, 5), 1)
+        pygame.draw.circle(bangus_base, (245, 250, 255), (12, 6), 1)
+        self.mobs["bangus"] = bangus_frames
+        self.fish_base_sprites["bangus"] = bangus_base
+
+        # 2. Tilapia - Olive-grey body with vertical stripes and spiky dorsal fin
+        tilapia_frames = []
+        for i in range(4):
+            surf = pygame.Surface((24, 16), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            fin_dy = [0, -1, 0, 1][i]
+            pygame.draw.ellipse(surf, (115, 130, 105), (5, 4, 15, 9))
+            pygame.draw.ellipse(surf, (145, 160, 135), (7, 6, 11, 6))
+            for sx in (9, 12, 15):
+                pygame.draw.line(surf, (85, 100, 75), (sx, 5), (sx, 11), 1)
+            pygame.draw.polygon(surf, (95, 110, 85), [(7, 4), (11, 1 + fin_dy), (16, 2 + fin_dy), (18, 5)])
+            pygame.draw.polygon(surf, (105, 120, 95), [(6, 8), (1, 4 + tail_dy), (2, 8), (1, 12 + tail_dy)])
+            pygame.draw.circle(surf, (40, 45, 35), (18, 7), 2)
+            pygame.draw.circle(surf, (220, 215, 180), (18, 7), 1)
+            tilapia_frames.append(surf)
+        tilapia_base = pygame.Surface((24, 16), pygame.SRCALPHA)
+        pygame.draw.ellipse(tilapia_base, (115, 130, 105), (5, 4, 15, 9))
+        pygame.draw.ellipse(tilapia_base, (145, 160, 135), (7, 6, 11, 6))
+        for sx in (9, 12, 15):
+            pygame.draw.line(tilapia_base, (85, 100, 75), (sx, 5), (sx, 11), 1)
+        pygame.draw.polygon(tilapia_base, (95, 110, 85), [(7, 4), (11, 1), (16, 2), (18, 5)])
+        pygame.draw.polygon(tilapia_base, (105, 120, 95), [(6, 8), (1, 4), (2, 8), (1, 12)])
+        pygame.draw.circle(tilapia_base, (40, 45, 35), (18, 7), 2)
+        pygame.draw.circle(tilapia_base, (220, 215, 180), (18, 7), 1)
+        pygame.draw.circle(tilapia_base, (200, 215, 190), (10, 8), 1)
+        self.mobs["tilapia"] = tilapia_frames
+        self.fish_base_sprites["tilapia"] = tilapia_base
+
+        # 3. Galunggong (Round Scad) - Slender blue-grey body with yellow tail accent
+        gg_frames = []
+        for i in range(4):
+            surf = pygame.Surface((26, 10), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            fin_dy = [0, -1, 0, 1][i]
+            pygame.draw.ellipse(surf, (95, 125, 145), (5, 2, 17, 6))
+            pygame.draw.ellipse(surf, (185, 200, 210), (7, 4, 13, 3))
+            pygame.draw.polygon(surf, (240, 210, 50), [(6, 5), (1, 1 + tail_dy), (4, 5), (1, 9 + tail_dy)])
+            pygame.draw.polygon(surf, (230, 200, 45), [(14, 2), (17, 0 + fin_dy), (18, 2)])
+            pygame.draw.circle(surf, (25, 35, 45), (19, 4), 2)
+            pygame.draw.circle(surf, (255, 255, 255), (20, 4), 1)
+            gg_frames.append(surf)
+        gg_base = pygame.Surface((26, 10), pygame.SRCALPHA)
+        pygame.draw.ellipse(gg_base, (95, 125, 145), (5, 2, 17, 6))
+        pygame.draw.ellipse(gg_base, (185, 200, 210), (7, 4, 13, 3))
+        pygame.draw.polygon(gg_base, (240, 210, 50), [(6, 5), (1, 1), (4, 5), (1, 9)])
+        pygame.draw.polygon(gg_base, (230, 200, 45), [(14, 2), (17, 0), (18, 2)])
+        pygame.draw.circle(gg_base, (25, 35, 45), (19, 4), 2)
+        pygame.draw.circle(gg_base, (255, 255, 255), (20, 4), 1)
+        pygame.draw.circle(gg_base, (220, 235, 245), (11, 4), 1)
+        self.mobs["galunggong"] = gg_frames
+        self.fish_base_sprites["galunggong"] = gg_base
+
+        # 4. Maya-Maya (Red Snapper) - Rich crimson & scarlet with sharp dorsal spines
+        maya_frames = []
+        for i in range(4):
+            surf = pygame.Surface((26, 16), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            fin_dy = [0, -1, 0, 1][i]
+            pygame.draw.ellipse(surf, (215, 55, 55), (5, 4, 17, 9))
+            pygame.draw.ellipse(surf, (245, 105, 95), (8, 6, 12, 6))
+            pygame.draw.polygon(surf, (185, 35, 35), [(8, 4), (12, 1 + fin_dy), (18, 2 + fin_dy), (20, 5)])
+            pygame.draw.polygon(surf, (195, 40, 40), [(6, 8), (1, 3 + tail_dy), (3, 8), (1, 13 + tail_dy)])
+            pygame.draw.polygon(surf, (235, 80, 70), [(12, 9), (10, 13 + fin_dy), (15, 10)])
+            pygame.draw.circle(surf, (245, 215, 50), (19, 7), 2)
+            pygame.draw.circle(surf, (30, 20, 20), (19, 7), 1)
+            maya_frames.append(surf)
+        maya_base = pygame.Surface((26, 16), pygame.SRCALPHA)
+        pygame.draw.ellipse(maya_base, (215, 55, 55), (5, 4, 17, 9))
+        pygame.draw.ellipse(maya_base, (245, 105, 95), (8, 6, 12, 6))
+        pygame.draw.polygon(maya_base, (185, 35, 35), [(8, 4), (12, 1), (18, 2), (20, 5)])
+        pygame.draw.polygon(maya_base, (195, 40, 40), [(6, 8), (1, 3), (3, 8), (1, 13)])
+        pygame.draw.polygon(maya_base, (235, 80, 70), [(12, 9), (10, 13), (15, 10)])
+        pygame.draw.circle(maya_base, (245, 215, 50), (19, 7), 2)
+        pygame.draw.circle(maya_base, (30, 20, 20), (19, 7), 1)
+        pygame.draw.circle(maya_base, (255, 180, 170), (12, 6), 1)
+        self.mobs["maya_maya"] = maya_frames
+        self.fish_base_sprites["maya_maya"] = maya_base
+
+        # 5. Tanigue (Spanish Mackerel) - Streamlined blue-silver predator with dark tiger stripes
+        tanigue_frames = []
+        for i in range(4):
+            surf = pygame.Surface((32, 12), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            pygame.draw.ellipse(surf, (75, 105, 135), (6, 2, 22, 8))
+            pygame.draw.ellipse(surf, (195, 210, 225), (9, 4, 17, 5))
+            for sx in (11, 14, 17, 20, 23):
+                pygame.draw.line(surf, (45, 65, 85), (sx, 3), (sx - 1, 8), 1)
+            pygame.draw.polygon(surf, (65, 90, 115), [(7, 6), (1, 1 + tail_dy), (4, 6), (1, 11 + tail_dy)])
+            pygame.draw.polygon(surf, (180, 195, 210), [(26, 4), (31, 6), (26, 8)])
+            pygame.draw.circle(surf, (20, 30, 40), (25, 5), 2)
+            pygame.draw.circle(surf, (255, 255, 255), (26, 5), 1)
+            tanigue_frames.append(surf)
+        tanigue_base = pygame.Surface((32, 12), pygame.SRCALPHA)
+        pygame.draw.ellipse(tanigue_base, (75, 105, 135), (6, 2, 22, 8))
+        pygame.draw.ellipse(tanigue_base, (195, 210, 225), (9, 4, 17, 5))
+        for sx in (11, 14, 17, 20, 23):
+            pygame.draw.line(tanigue_base, (45, 65, 85), (sx, 3), (sx - 1, 8), 1)
+        pygame.draw.polygon(tanigue_base, (65, 90, 115), [(7, 6), (1, 1), (4, 6), (1, 11)])
+        pygame.draw.polygon(tanigue_base, (180, 195, 210), [(26, 4), (31, 6), (26, 8)])
+        pygame.draw.circle(tanigue_base, (20, 30, 40), (25, 5), 2)
+        pygame.draw.circle(tanigue_base, (255, 255, 255), (26, 5), 1)
+        pygame.draw.circle(tanigue_base, (230, 240, 250), (13, 5), 1)
+        self.mobs["tanigue"] = tanigue_frames
+        self.fish_base_sprites["tanigue"] = tanigue_base
+
+        # 6. Tambakol (Yellowfin Tuna) - Torpedo navy body with bright yellow dorsal/anal finlets
+        tambakol_frames = []
+        for i in range(4):
+            surf = pygame.Surface((28, 16), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            fin_dy = [0, -1, 0, 1][i]
+            pygame.draw.ellipse(surf, (40, 60, 105), (5, 4, 19, 9))
+            pygame.draw.ellipse(surf, (185, 200, 220), (8, 6, 14, 6))
+            pygame.draw.polygon(surf, (255, 215, 35), [(13, 4), (16, 0 + fin_dy), (18, 4)])
+            pygame.draw.polygon(surf, (255, 215, 35), [(14, 12), (16, 16 - fin_dy), (18, 12)])
+            pygame.draw.polygon(surf, (45, 70, 120), [(6, 8), (1, 2 + tail_dy), (3, 8), (1, 14 + tail_dy)])
+            pygame.draw.circle(surf, (25, 35, 55), (20, 7), 2)
+            pygame.draw.circle(surf, (255, 255, 255), (21, 7), 1)
+            tambakol_frames.append(surf)
+        tambakol_base = pygame.Surface((28, 16), pygame.SRCALPHA)
+        pygame.draw.ellipse(tambakol_base, (40, 60, 105), (5, 4, 19, 9))
+        pygame.draw.ellipse(tambakol_base, (185, 200, 220), (8, 6, 14, 6))
+        pygame.draw.polygon(tambakol_base, (255, 215, 35), [(13, 4), (16, 0), (18, 4)])
+        pygame.draw.polygon(tambakol_base, (255, 215, 35), [(14, 12), (16, 16), (18, 12)])
+        pygame.draw.polygon(tambakol_base, (45, 70, 120), [(6, 8), (1, 2), (3, 8), (1, 14)])
+        pygame.draw.circle(tambakol_base, (25, 35, 55), (20, 7), 2)
+        pygame.draw.circle(tambakol_base, (255, 255, 255), (21, 7), 1)
+        pygame.draw.circle(tambakol_base, (215, 230, 250), (12, 7), 1)
+        self.mobs["tambakol"] = tambakol_frames
+        self.fish_base_sprites["tambakol"] = tambakol_base
+
+        # 7. Lapu-Lapu (Red Grouper) - Heavy mahogany-brown body with leopard spots and fan tail
+        lapu_frames = []
+        for i in range(4):
+            surf = pygame.Surface((26, 16), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            pygame.draw.ellipse(surf, (175, 75, 45), (5, 3, 17, 10))
+            pygame.draw.ellipse(surf, (210, 115, 80), (8, 5, 12, 7))
+            spots = [(10, 5), (13, 7), (16, 5), (11, 9), (14, 10), (17, 8)]
+            for sx, sy in spots:
+                pygame.draw.circle(surf, (115, 35, 20), (sx, sy), 1)
+            pygame.draw.polygon(surf, (155, 60, 35), [(6, 8), (1, 4 + tail_dy), (2, 8), (1, 12 + tail_dy)])
+            pygame.draw.rect(surf, (135, 50, 30), (21, 9, 4, 3))
+            pygame.draw.circle(surf, (255, 210, 40), (19, 6), 2)
+            pygame.draw.circle(surf, (20, 15, 15), (19, 6), 1)
+            lapu_frames.append(surf)
+        lapu_base = pygame.Surface((26, 16), pygame.SRCALPHA)
+        pygame.draw.ellipse(lapu_base, (175, 75, 45), (5, 3, 17, 10))
+        pygame.draw.ellipse(lapu_base, (210, 115, 80), (8, 5, 12, 7))
+        spots = [(10, 5), (13, 7), (16, 5), (11, 9), (14, 10), (17, 8)]
+        for sx, sy in spots:
+            pygame.draw.circle(lapu_base, (115, 35, 20), (sx, sy), 1)
+        pygame.draw.polygon(lapu_base, (155, 60, 35), [(6, 8), (1, 4), (2, 8), (1, 12)])
+        pygame.draw.rect(lapu_base, (135, 50, 30), (21, 9, 4, 3))
+        pygame.draw.circle(lapu_base, (255, 210, 40), (19, 6), 2)
+        pygame.draw.circle(lapu_base, (20, 15, 15), (19, 6), 1)
+        pygame.draw.circle(lapu_base, (245, 150, 110), (12, 6), 1)
+        self.mobs["lapu_lapu"] = lapu_frames
+        self.fish_base_sprites["lapu_lapu"] = lapu_base
+
+        # 8. Hito (Catfish) - Charcoal-black body with whiskers / barbels curling from mouth
+        hito_frames = []
+        for i in range(4):
+            surf = pygame.Surface((28, 12), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            barbel_dy = [-1, 1, 2, 0][i]
+            pygame.draw.ellipse(surf, (55, 55, 60), (5, 2, 19, 8))
+            pygame.draw.ellipse(surf, (85, 85, 90), (7, 4, 15, 5))
+            pygame.draw.line(surf, (40, 40, 45), (23, 5), (27, 2 - barbel_dy), 1)
+            pygame.draw.line(surf, (40, 40, 45), (23, 7), (27, 10 + barbel_dy), 1)
+            pygame.draw.line(surf, (45, 45, 50), (9, 2), (20, 2), 2)
+            pygame.draw.ellipse(surf, (50, 50, 55), (1, 3 + tail_dy, 6, 6))
+            pygame.draw.circle(surf, (20, 20, 25), (21, 5), 2)
+            pygame.draw.circle(surf, (210, 210, 210), (22, 5), 1)
+            hito_frames.append(surf)
+        hito_base = pygame.Surface((28, 12), pygame.SRCALPHA)
+        pygame.draw.ellipse(hito_base, (55, 55, 60), (5, 2, 19, 8))
+        pygame.draw.ellipse(hito_base, (85, 85, 90), (7, 4, 15, 5))
+        pygame.draw.line(hito_base, (40, 40, 45), (23, 5), (27, 2), 1)
+        pygame.draw.line(hito_base, (40, 40, 45), (23, 7), (27, 10), 1)
+        pygame.draw.line(hito_base, (45, 45, 50), (9, 2), (20, 2), 2)
+        pygame.draw.ellipse(hito_base, (50, 50, 55), (1, 3, 6, 6))
+        pygame.draw.circle(hito_base, (20, 20, 25), (21, 5), 2)
+        pygame.draw.circle(hito_base, (210, 210, 210), (22, 5), 1)
+        pygame.draw.circle(hito_base, (110, 110, 120), (13, 5), 1)
+        self.mobs["hito"] = hito_frames
+        self.fish_base_sprites["hito"] = hito_base
+
+        # 9. Dilis (Anchovy) - Small translucent silver fish with glittering cyan lateral line
+        dilis_frames = []
+        for i in range(4):
+            surf = pygame.Surface((18, 8), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            line_y = [2, 3, 4, 3][i]
+            pygame.draw.ellipse(surf, (215, 225, 235), (4, 1, 12, 5))
+            pygame.draw.line(surf, (80, 185, 245), (6, line_y), (14, line_y), 1)
+            pygame.draw.polygon(surf, (190, 205, 215), [(4, 3), (1, 1 + tail_dy), (2, 3), (1, 6 + tail_dy)])
+            pygame.draw.circle(surf, (30, 40, 50), (13, 3), 1)
+            dilis_frames.append(surf)
+        dilis_base = pygame.Surface((18, 8), pygame.SRCALPHA)
+        pygame.draw.ellipse(dilis_base, (215, 225, 235), (4, 1, 12, 5))
+        pygame.draw.line(dilis_base, (80, 185, 245), (6, 3), (14, 3), 1)
+        pygame.draw.polygon(dilis_base, (190, 205, 215), [(4, 3), (1, 1), (2, 3), (1, 6)])
+        pygame.draw.circle(dilis_base, (30, 40, 50), (13, 3), 1)
+        pygame.draw.circle(dilis_base, (245, 250, 255), (9, 2), 1)
+        self.mobs["dilis"] = dilis_frames
+        self.fish_base_sprites["dilis"] = dilis_base
+
+        # 10. Dalagang Bukid (Yellowtail Fusilier) - Electric yellow back, ruby-red underside, and blue stripe
+        db_frames = []
+        for i in range(4):
+            surf = pygame.Surface((24, 12), pygame.SRCALPHA)
+            tail_dy = [-2, -1, 1, 2][i]
+            pygame.draw.ellipse(surf, (250, 215, 40), (5, 1, 16, 7))
+            pygame.draw.ellipse(surf, (230, 65, 95), (6, 4, 14, 6))
+            pygame.draw.line(surf, (90, 165, 240), (7, 4), (18, 4), 1)
+            pygame.draw.polygon(surf, (255, 220, 45), [(6, 5), (1, 1 + tail_dy), (3, 5), (1, 9 + tail_dy)])
+            pygame.draw.circle(surf, (35, 30, 40), (18, 4), 2)
+            pygame.draw.circle(surf, (255, 255, 255), (19, 3), 1)
+            db_frames.append(surf)
+        db_base = pygame.Surface((24, 12), pygame.SRCALPHA)
+        pygame.draw.ellipse(db_base, (250, 215, 40), (5, 1, 16, 7))
+        pygame.draw.ellipse(db_base, (230, 65, 95), (6, 4, 14, 6))
+        pygame.draw.line(db_base, (90, 165, 240), (7, 4), (18, 4), 1)
+        pygame.draw.polygon(db_base, (255, 220, 45), [(6, 5), (1, 1), (3, 5), (1, 9)])
+        pygame.draw.circle(db_base, (35, 30, 40), (18, 4), 2)
+        pygame.draw.circle(db_base, (255, 255, 255), (19, 3), 1)
+        pygame.draw.circle(db_base, (255, 245, 160), (11, 3), 1)
+        self.mobs["dalagang_bukid"] = db_frames
+        self.fish_base_sprites["dalagang_bukid"] = db_base
+
     # ==========================================================================
     # 7. SPECIAL CATALOG ITEMS
     # ==========================================================================
@@ -6712,7 +6978,12 @@ class AssetFactory:
             and os.path.exists(craftable_sample)
             and all(os.path.exists(os.path.join(craftable_dir, f"{cid}.png")) for cid in crafting_item_ids)
         )
-        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects:
+        mobs_dir = os.path.join(target_dir, "mobs")
+        has_fish_mobs = os.path.exists(mobs_dir) and all(
+            os.path.exists(os.path.join(mobs_dir, f"{f_id}.png"))
+            for f_id in ["bangus", "tilapia", "galunggong", "maya_maya", "tanigue", "tambakol", "lapu_lapu", "hito", "dilis", "dalagang_bukid"]
+        )
+        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects and has_fish_mobs:
             return
 
         os.makedirs(target_dir, exist_ok=True)
@@ -6788,11 +7059,18 @@ class AssetFactory:
 
         # Export mob frames
         for mkey, mval in self.mobs.items():
+            if mkey.startswith("raw_"):
+                continue
             if isinstance(mval, list):
                 for i, f in enumerate(mval):
                     pygame.image.save(f, os.path.join(target_dir, "mobs", f"{mkey}_{i}.png"))
             elif isinstance(mval, pygame.Surface):
                 pygame.image.save(mval, os.path.join(target_dir, "mobs", f"{mkey}.png"))
+
+        # Export dedicated base sprites for Philippine fish species
+        for fkey, fbase in getattr(self, "fish_base_sprites", {}).items():
+            if isinstance(fbase, pygame.Surface):
+                pygame.image.save(fbase, os.path.join(target_dir, "mobs", f"{fkey}.png"))
 
         # Export projectiles (each with distinct motion aura so zero files collide with items/ or boss/)
         for p_name, p_surf in self.projectiles.items():

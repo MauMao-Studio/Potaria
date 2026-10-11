@@ -775,10 +775,11 @@ class MenuManager:
                 elif btn.action == "vol_sfx_up":
                     self.settings["sfx_volume"] = min(1.0, round(self.settings["sfx_volume"] + 0.1, 2))
                 elif btn.action == "toggle_display":
-                    self.settings["fullscreen"] = not self.settings["fullscreen"]
+                    target_fs = not self.settings.get("fullscreen", False)
+                    self.settings["fullscreen"] = target_fs
                     self._refresh_settings_button_labels()
                     self.save_settings()
-                    return "toggle_fullscreen"
+                    return ("set_fullscreen", target_fs)
                 elif btn.action == "toggle_renderer":
                     cur = str(self.settings.get("renderer", "hardware")).lower()
                     next_rend = "software" if cur == "hardware" else "hardware"

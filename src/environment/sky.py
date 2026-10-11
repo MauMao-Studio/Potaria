@@ -7,7 +7,7 @@ twinkling starfields, and multi-layer parallax scrolling mountains and forests.
 import math
 import random
 import pygame
-from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALED_TILE
 
 class DayNightCycle:
     def __init__(self, asset_factory, cycle_duration=360.0):
@@ -53,34 +53,34 @@ class DayNightCycle:
 
     @property
     def ambient_sunlight(self):
-        """Calculates 2D light intensity (2 to 15) for the lighting engine."""
+        """Calculates 2D light intensity (3 to 15) for the lighting engine."""
         t = self.time_of_day
-        if 0.15 <= t <= 0.45:
-            return 15  # Full noon sunlight
-        elif 0.55 <= t <= 0.90:
+        if 0.04 <= t <= 0.48:
+            return 15  # Morning & Daytime full warm sunlight
+        elif 0.58 <= t <= 0.92:
             return 3   # Night darkness
-        elif t < 0.15:
-            # Sunrise transition (3 -> 15)
-            frac = t / 0.15
-            return int(3 + frac * 12)
+        elif t < 0.04:
+            # Quick dawn rise (3 -> 15 by 7:00 AM)
+            frac = t / 0.04
+            return min(15, max(3, int(3 + frac * 12)))
         else:
-            # Sunset transition (15 -> 3)
-            frac = (t - 0.45) / 0.10
-            return int(15 - frac * 12)
+            # Sunset transition (15 -> 3 from 0.48 to 0.58)
+            frac = (t - 0.48) / 0.10
+            return min(15, max(3, int(15 - frac * 12)))
 
     @property
     def atmospheric_tint(self):
         """Returns (r_mult, g_mult, b_mult) color grading based on celestial time."""
         t = self.time_of_day
-        if (0.0 <= t < 0.15) or (0.45 <= t < 0.55):
-            # Dawn / Sunset: Glowing warm amber
-            return (1.18, 0.96, 0.76)
-        elif 0.55 <= t <= 0.92:
+        if (0.0 <= t < 0.08) or (0.48 <= t < 0.56):
+            # Dawn / Sunset: Glowing warm golden amber
+            return (1.20, 1.05, 0.85)
+        elif 0.58 <= t <= 0.92:
             # Moonlit Night: Deep sapphire blue
             return (0.75, 0.88, 1.22)
         else:
-            # Daytime: Crisp radiant sunlight
-            return (1.05, 1.02, 0.98)
+            # Daytime: Crisp radiant warm sunlight
+            return (1.08, 1.04, 0.98)
 
     def update(self, dt):
         self.time += dt
@@ -202,11 +202,19 @@ class DayNightCycle:
         """Draws sky gradient, stars, sun/moon celestial bodies, and parallax mountains."""
         sw, sh = target_surf.get_width(), target_surf.get_height()
 
+        # Check if camera is in the Sky Citadel / Boss Arena (y <= 42)
+        in_sky_realm = getattr(camera, "y", 9999.0) <= 42 * SCALED_TILE
+
         # 1. Sky Gradient (Cached: only re-bake when colors shift and at least 150ms elapsed)
-        top_c, bot_c = self.get_sky_colors()
+        if in_sky_realm:
+            top_c = (5, 8, 22)
+            bot_c = (24, 15, 48)
+        else:
+            top_c, bot_c = self.get_sky_colors()
+
         now_ticks = pygame.time.get_ticks()
         if (self._cached_sky_surf is None or
-            ((now_ticks - self._last_bake_ticks) > 150 and (self._cached_top_c != top_c or self._cached_bot_c != bot_c)) or
+            self._cached_top_c != top_c or self._cached_bot_c != bot_c or
             self._cached_sky_surf.get_width() != sw or
             self._cached_sky_surf.get_height() != sh):
             
@@ -227,34 +235,34 @@ class DayNightCycle:
 
         target_surf.blit(self._cached_sky_surf, (0, 0))
 
-        # 2. Twinkling Stars (if nighttime - fast precomputed tuple writes, zero math)
-        if self.is_night or self.time_of_day > 0.52:
+        # 2. Twinkling Stars (Always active in Sky Citadel, or at nighttime)
+        if in_sky_realm or self.is_night or self.time_of_day > 0.52:
             frame_idx = (now_ticks // 220) % len(self.star_frames)
             for sx, sy, star_c in self.star_frames[frame_idx]:
                 target_surf.set_at((sx, sy), star_c)
 
         # 3. Celestial Orbit (Sun & Moon Arc)
-        # Sun: active during day (0.0 to 0.5)
+        # Sun: active during day (0.0 to 0.5) when not in deep space sky realm
         t = self.time_of_day
-        if t < 0.55:
+        if t < 0.55 and not in_sky_realm:
             sun_t = t / 0.55  # 0.0 (left) to 1.0 (right)
             sun_x = sun_t * sw
             sun_y = sh * 0.7 - math.sin(sun_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.sun_surf, (sun_x - 20, sun_y - 20))
 
-        # Moon: active during night (0.50 to 1.0)
-        if t >= 0.48:
-            moon_t = (t - 0.48) / 0.52
+        # Moon: active during night or in deep space sky realm
+        if t >= 0.48 or in_sky_realm:
+            moon_t = (t - 0.48) / 0.52 if not in_sky_realm else 0.5
             moon_x = moon_t * sw
             moon_y = sh * 0.7 - math.sin(moon_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.moon_surf, (moon_x - 16, moon_y - 16))
 
-        # 4. Parallax Mountain Silhouettes (Scroll factor 0.07, tiled across screen width)
-        mount_offset = int(-(camera.x * 0.07) % sw)
-        target_surf.blit(self.mountains_surf, (mount_offset - sw, sh - 280))
-        target_surf.blit(self.mountains_surf, (mount_offset, sh - 280))
+        # 4. Parallax Mountain & Forest Silhouettes (Only when below sky realm)
+        if not in_sky_realm:
+            mount_offset = int(-(camera.x * 0.07) % sw)
+            target_surf.blit(self.mountains_surf, (mount_offset - sw, sh - 280))
+            target_surf.blit(self.mountains_surf, (mount_offset, sh - 280))
 
-        # 5. Parallax Forest Silhouettes (Scroll factor 0.18, tiled across screen width)
-        tree_offset = int(-(camera.x * 0.18) % sw)
-        target_surf.blit(self.trees_surf, (tree_offset - sw, sh - 170))
-        target_surf.blit(self.trees_surf, (tree_offset, sh - 170))
+            tree_offset = int(-(camera.x * 0.18) % sw)
+            target_surf.blit(self.trees_surf, (tree_offset - sw, sh - 170))
+            target_surf.blit(self.trees_surf, (tree_offset, sh - 170))
