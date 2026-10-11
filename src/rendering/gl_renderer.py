@@ -10,6 +10,8 @@ import array
 import os
 import pygame
 
+os.environ.setdefault("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS", "0")
+
 from src.rendering.base_renderer import (
     BaseRenderer,
     RENDERER_HARDWARE,
@@ -929,16 +931,21 @@ class GLRenderer(BaseRenderer):
         return self._apply_display_mode()
 
     def _sync_window_frame_and_pos(self):
-        """Synchronizes SDL2 window borderless frame and position for runtime fullscreen toggling."""
+        """Synchronizes SDL2 window borderless frame, size, and position for runtime fullscreen toggling."""
         try:
             win_cls = getattr(getattr(pygame, "window", None), "Window", None)
             if win_cls and hasattr(win_cls, "from_display_module"):
                 win = win_cls.from_display_module()
                 if self.fullscreen:
                     win.borderless = True
+                    win.size = self._get_desktop_resolution()
                     win.position = (0, 0)
                 else:
                     win.borderless = False
+                    win.size = (
+                        getattr(self, "display_width", self.width),
+                        getattr(self, "display_height", self.height),
+                    )
                     if hasattr(pygame, "WINDOWPOS_CENTERED"):
                         win.position = (pygame.WINDOWPOS_CENTERED, pygame.WINDOWPOS_CENTERED)
         except Exception:
@@ -946,6 +953,7 @@ class GLRenderer(BaseRenderer):
 
     def _apply_display_mode(self) -> bool:
         """Applies windowed or borderless fullscreen display mode smoothly without monitor stalling."""
+        os.environ["SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"] = "0"
         flags = pygame.OPENGL | pygame.DOUBLEBUF
         if self.fullscreen:
             os.environ["SDL_VIDEO_WINDOW_POS"] = "0,0"

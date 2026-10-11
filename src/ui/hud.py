@@ -64,7 +64,7 @@ class HUD:
         self.chat_input_text = ""
         self.local_chat_history = []
 
-    def render(self, target_surf, player, inventory, crafting_system, camera, mouse_x, mouse_y, world=None, combat=None, lan_client=None):
+    def render(self, target_surf, player, inventory, crafting_system, camera, mouse_x, mouse_y, world=None, combat=None, lan_client=None, render_dragged=True):
         # 1. Health & Mana (Top Right)
         self._render_hp_and_mp(target_surf, player)
 
@@ -91,7 +91,8 @@ class HUD:
             self._render_tooltip(target_surf, mouse_x, mouse_y, hovered_slot)
 
         # 8. Held Dragging Item
-        self.render_dragged_item(target_surf, inventory, mouse_x, mouse_y)
+        if render_dragged:
+            self.render_dragged_item(target_surf, inventory, mouse_x, mouse_y)
 
         # 9. LAN Multiplayer Party HUD & Chat / Cheat Console
         if lan_client and (lan_client.connected or lan_client.remote_players):

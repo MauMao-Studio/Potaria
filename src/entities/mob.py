@@ -203,9 +203,16 @@ class Mob:
         water_rects = world.get_water_rects_in_bounds(lower_body_rect) if hasattr(world, "get_water_rects_in_bounds") else []
         self.in_water = len(water_rects) > 0
         if self.in_water:
-            self.vy = max(-3.5, min(1.5, self.vy + GRAVITY * 0.25 - 0.05))
-            self.vx *= 0.88
-            self.vy *= 0.90
+            if self.vy < 0:
+                # Slow upward water jump with half-buoyancy fluid resistance
+                self.vy = max(-5.5, self.vy + GRAVITY * 0.30)
+                self.vx *= 0.90
+                self.vy *= 0.96
+            else:
+                # Half buoyancy: slowly sink downward in water instead of floating up
+                self.vy = min(1.5, self.vy + GRAVITY * 0.25 - 0.05)
+                self.vx *= 0.88
+                self.vy *= 0.90
             return True
         return False
 
@@ -248,6 +255,7 @@ class SlimeMob(Mob):
         dist_x = player.center_x - self.center_x
         dist_y = player.center_y - self.center_y
         dist = math.hypot(dist_x, dist_y)
+        jump_dir = 1 if dist_x > 0 else -1
 
         if self.on_ground or (self.in_water and self.vy >= 0):
             if self.on_ground:
@@ -257,23 +265,29 @@ class SlimeMob(Mob):
 
             if self.state == "jumping":
                 self.state = "idle"
-                self.jump_cooldown = random.uniform(0.8, 1.8) / self.speed_mult
+                base_cd = random.uniform(0.35, 0.65) if self.in_water else random.uniform(0.8, 1.8)
+                self.jump_cooldown = base_cd / self.speed_mult
 
             if self.state == "idle":
+                if self.in_water and self.jump_cooldown > 0.65 / self.speed_mult:
+                    self.jump_cooldown = 0.45 / self.speed_mult
                 self.jump_cooldown -= dt
                 if self.jump_cooldown <= 0:
                     self.state = "squishing"
-                    self.squish_timer = 0.22 / self.speed_mult
+                    self.squish_timer = (0.14 if self.in_water else 0.22) / self.speed_mult
 
             elif self.state == "squishing":
                 self.squish_timer -= dt
                 if self.squish_timer <= 0:
                     self.state = "jumping"
-                    jump_dir = 1 if dist_x > 0 else -1
                     speed_x = min(4.2, max(2.0, abs(dist_x) * 0.016)) * self.speed_mult
-                    self.vx = jump_dir * (speed_x * 0.7 if self.in_water else speed_x)
-                    self.vy = (-3.4 if self.in_water else -7.0) * math.sqrt(self.speed_mult)
+                    self.vx = jump_dir * (speed_x * 0.8 if self.in_water else speed_x)
+                    self.vy = (-4.2 if self.in_water else -7.0) * math.sqrt(self.speed_mult)
                     self.on_ground = False
+        elif self.state == "jumping" and self.vy < 0:
+            # Maintain gentle horizontal propulsion while hopping upward so slime can step onto ledges as it emerges from water
+            swim_vx = jump_dir * min(3.2, max(1.8, abs(dist_x) * 0.016)) * self.speed_mult * (0.75 if self.in_water else 0.85)
+            self.vx = self.vx * 0.8 + swim_vx * 0.2
 
         self.anim_timer += dt
         if self.anim_timer >= 1.0 / 12.0:
@@ -281,7 +295,6 @@ class SlimeMob(Mob):
             self.anim_idx = (self.anim_idx + 1) % len(self.frames)
 
         # Anti-cheese: if slime is obstructed by a wall or unable to reach player
-        jump_dir = 1 if dist_x > 0 else -1
         check_x = self.x + (self.width + 4 if jump_dir > 0 else -4)
         wall_front = _is_solid(world, int(check_x // SCALED_TILE), int((self.y + self.height - 8) // SCALED_TILE))
         wall_high = _is_solid(world, int(check_x // SCALED_TILE), int(self.y // SCALED_TILE))
@@ -294,7 +307,7 @@ class SlimeMob(Mob):
         if self.stuck_timer >= 0.8:
             self.stuck_timer = 0.0
             self.state = "jumping"
-            self.vy = -4.2 if self.in_water else -11.0
+            self.vy = -4.8 if self.in_water else -11.0
             self.vx = jump_dir * (3.2 if self.in_water else 5.2) * self.speed_mult
             self.on_ground = False
             if dist < 350.0:
@@ -314,7 +327,7 @@ class SlimeMob(Mob):
                     self.x = tile_rect.left - self.width
                 elif self.vx < 0:
                     self.x = tile_rect.right
-                self.vx = -self.vx * 0.5
+                self.vx = 0.0 if (self.in_water or self.vy < 0) else -self.vx * 0.5
                 self.stuck_timer += dt * 1.5
                 break
 
@@ -426,20 +439,20 @@ class WalkerMob(Mob):
             if wall_high:
                 self.stuck_timer += dt
             else:
-                self.vy = -3.4 if self.in_water else -6.5
+                self.vy = -4.2 if self.in_water else -6.5
                 self.on_ground = False
         elif self.in_water and dist_y < -16 and self.vy >= 0:
             self.water_jump_timer = getattr(self, "water_jump_timer", 0.0) + dt
             if self.water_jump_timer >= 0.85:
                 self.water_jump_timer = 0.0
-                self.vy = -3.4
+                self.vy = -4.2
                 self.on_ground = False
         else:
             self.stuck_timer = max(0.0, self.stuck_timer - dt * 0.4)
 
         if self.stuck_timer >= 0.8:
             self.stuck_timer = 0.0
-            self.vy = -4.2 if self.in_water else -10.5
+            self.vy = -4.8 if self.in_water else -10.5
             self.vx = move_dir * (self.speed * (1.5 if self.in_water else 2.5))
             self.on_ground = False
             if dist < 350.0:
@@ -740,7 +753,7 @@ class CrawlerMob(Mob):
         dist = math.hypot(dist_x, dist_y)
         move_dir = 1 if dist_x > 0 else -1
         self.facing_right = (move_dir > 0)
-        self.vx = move_dir * self.speed
+        self.vx = move_dir * (self.speed * 0.75 if self.in_water else self.speed)
 
         check_x = self.x + (self.width + 4 if move_dir > 0 else -4)
         front_ty = int((self.y + self.height - 8) // SCALED_TILE)
@@ -751,20 +764,20 @@ class CrawlerMob(Mob):
             if wall_high:
                 self.stuck_timer += dt
             else:
-                self.vy = -3.5 if self.in_water else -7.2
+                self.vy = -4.2 if self.in_water else -7.2
                 self.on_ground = False
         elif self.in_water and dist_y < -16 and self.vy >= 0:
             self.water_jump_timer = getattr(self, "water_jump_timer", 0.0) + dt
             if self.water_jump_timer >= 0.85:
                 self.water_jump_timer = 0.0
-                self.vy = -3.4
+                self.vy = -4.2
                 self.on_ground = False
         else:
             self.stuck_timer = max(0.0, self.stuck_timer - dt * 0.4)
 
         if self.stuck_timer >= 0.8:
             self.stuck_timer = 0.0
-            self.vy = -4.2 if self.in_water else -10.5
+            self.vy = -4.8 if self.in_water else -10.5
             self.vx = move_dir * (self.speed * (1.4 if self.in_water else 2.0))
             self.on_ground = False
             if dist < 350.0:
@@ -1223,9 +1236,15 @@ class NightEliteMob(Mob):
             # Obstacle hopping
             front_tile_x = int((self.center_x + move_dir * (self.width / 2 + 8)) // SCALED_TILE)
             front_tile_y = int((self.y + self.height - 4) // SCALED_TILE)
-            if hasattr(world, "is_tile_solid") and world.is_tile_solid(front_tile_x, front_tile_y) and (self.on_ground or (self.in_water and self.vy >= 0)):
-                self.vy = -3.5 if self.in_water else -6.5
+            if _is_solid(world, front_tile_x, front_tile_y) and (self.on_ground or (self.in_water and self.vy >= 0)):
+                self.vy = -4.2 if self.in_water else -6.5
                 self.on_ground = False
+            elif self.in_water and dist_y < -16 and self.vy >= 0:
+                self.water_jump_timer = getattr(self, "water_jump_timer", 0.0) + dt
+                if self.water_jump_timer >= 0.85:
+                    self.water_jump_timer = 0.0
+                    self.vy = -4.2
+                    self.on_ground = False
 
         # One Signature Special Skill Trigger
         if self.skill_cooldown <= 0:

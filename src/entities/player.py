@@ -220,6 +220,8 @@ class Player:
         if world is None or not hasattr(world, "get_tile"):
             self.on_rope_rungs = False
             self.on_scaffolding = False
+            self.rope_below = False
+            self.scaffold_below = False
             self.on_climbable = False
             return False
         min_tx = int((self.rect.left + 4) // SCALED_TILE)
@@ -229,15 +231,25 @@ class Player:
         body_max_ty = int((self.rect.bottom - 1) // SCALED_TILE)
         found_rope = False
         found_scaffold = False
+        rope_below = False
+        scaffold_below = False
         for tx in range(min_tx, max_tx + 1):
             for ty in range(min_ty, max_ty + 1):
                 tid = world.get_tile(tx, ty)
                 if tid == TILE_ROPE_RUNGS:
-                    found_rope = True
-                elif tid == TILE_WOOD_PLATFORM and ty <= body_max_ty:
-                    found_scaffold = True
+                    if ty <= body_max_ty:
+                        found_rope = True
+                    else:
+                        rope_below = True
+                elif tid == TILE_WOOD_PLATFORM:
+                    if ty <= body_max_ty:
+                        found_scaffold = True
+                    else:
+                        scaffold_below = True
         self.on_rope_rungs = found_rope
         self.on_scaffolding = found_scaffold
+        self.rope_below = rope_below
+        self.scaffold_below = scaffold_below
         self.on_climbable = found_rope or found_scaffold
         return self.on_climbable
 
@@ -310,6 +322,10 @@ class Player:
                 self.vy = max(self.vy, 3.2)
                 self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
                 self.on_ground = False
+        elif (getattr(self, "rope_below", False) or getattr(self, "scaffold_below", False)) and down_held:
+            self.vy = max(self.vy, 3.2)
+            self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
+            self.on_ground = False
         elif self.in_water:
             # Water swimming controls: paddling up with Jump/Up/W, diving with Drop/Down/S
             if up_held:
@@ -790,6 +806,7 @@ class Player:
 
         # Climbable Rope Rungs & Scaffolding Detection
         self.check_climbable(world)
+        was_climbing_up = (self.on_rope_rungs or self.on_scaffolding) and self._climb_up_input
 
         # Gravity, Climbing & Fluid Drag
         if self.on_rope_rungs:
@@ -801,8 +818,7 @@ class Player:
                 self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
                 self.on_ground = False
             else:
-                if self.vy > 0:
-                    self.vy = 0.0
+                self.vy = 0.0
         elif self.on_scaffolding and (self._climb_up_input or self._climb_down_input):
             if self._climb_up_input:
                 self.vy = -3.8
@@ -811,6 +827,10 @@ class Player:
                 self.vy = max(self.vy, 3.2)
                 self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
                 self.on_ground = False
+        elif (getattr(self, "rope_below", False) or getattr(self, "scaffold_below", False)) and self._climb_down_input:
+            self.vy = max(self.vy, 3.2)
+            self.ignore_platforms_timer = max(self.ignore_platforms_timer, PLAYER_DROP_THROUGH_TIME)
+            self.on_ground = False
         elif self.in_water:
             self.vy = min(2.5, self.vy + GRAVITY * 0.25)
             self.vx *= 0.88
@@ -858,6 +878,16 @@ class Player:
                         self.y = tile_rect.bottom
                         self.vy = 0.0
                     break
+
+        self.check_climbable(world)
+        if was_climbing_up and not self.on_climbable and self.vy < 0:
+            prev_top_ty = int((prev_bottom - 1) // SCALED_TILE)
+            platform_top_y = float(prev_top_ty * SCALED_TILE)
+            if prev_bottom > platform_top_y >= self.rect.bottom:
+                self.y = platform_top_y - self.height
+                self.vy = 0.0
+                self.on_ground = True
+                self.check_climbable(world)
 
         if self.on_rope_rungs and not self._climb_up_input and not self._climb_down_input and self.vy == 0.0:
             self.on_ground = True

@@ -10,6 +10,8 @@ import os
 import pygame
 from src.rendering.base_renderer import BaseRenderer, RENDERER_SOFTWARE
 
+os.environ.setdefault("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS", "0")
+
 
 class SurfaceRenderer(BaseRenderer):
     """
@@ -46,11 +48,45 @@ class SurfaceRenderer(BaseRenderer):
         self.last_batch_count: int = 0
         self.total_batched_projectiles: int = 0
 
+    def _get_desktop_resolution(self) -> Tuple[int, int]:
+        """Returns the primary monitor desktop resolution for borderless fullscreen."""
+        desktop_sizes = getattr(pygame.display, "get_desktop_sizes", lambda: [])()
+        if desktop_sizes:
+            return desktop_sizes[0]
+        info = pygame.display.Info()
+        w = getattr(info, "current_w", 0)
+        h = getattr(info, "current_h", 0)
+        if w > 0 and h > 0:
+            return (w, h)
+        return (1920, 1080)
+
+    def _sync_window_frame_and_pos(self):
+        """Synchronizes SDL2 window borderless frame, size, and position for runtime fullscreen toggling."""
+        try:
+            win_cls = getattr(getattr(pygame, "window", None), "Window", None)
+            if win_cls and hasattr(win_cls, "from_display_module"):
+                win = win_cls.from_display_module()
+                if self.fullscreen:
+                    win.borderless = True
+                    win.size = self._get_desktop_resolution()
+                    win.position = (0, 0)
+                else:
+                    win.borderless = False
+                    win.size = (
+                        getattr(self, "display_width", self.width),
+                        getattr(self, "display_height", self.height),
+                    )
+                    if hasattr(pygame, "WINDOWPOS_CENTERED"):
+                        win.position = (pygame.WINDOWPOS_CENTERED, pygame.WINDOWPOS_CENTERED)
+        except Exception:
+            pass
+
     def initialize(self) -> bool:
         """Initializes the Pygame display mode with double-buffering and crisp scaling."""
         if not pygame.get_init():
             pygame.init()
 
+        os.environ["SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"] = "0"
         if self.title:
             pygame.display.set_caption(self.title)
 
@@ -63,6 +99,7 @@ class SurfaceRenderer(BaseRenderer):
 
         try:
             self.surface = pygame.display.set_mode((self.width, self.height), flags)
+            self._sync_window_frame_and_pos()
         except pygame.error:
             # Fallback for environments where SCALED or NOFRAME might fail (e.g., dummy driver)
             try:
@@ -70,6 +107,7 @@ class SurfaceRenderer(BaseRenderer):
                 if self.fullscreen:
                     fallback_flags |= pygame.NOFRAME
                 self.surface = pygame.display.set_mode((self.width, self.height), fallback_flags)
+                self._sync_window_frame_and_pos()
             except pygame.error:
                 self.surface = pygame.display.set_mode((self.width, self.height))
 
@@ -193,6 +231,7 @@ class SurfaceRenderer(BaseRenderer):
                 win.size = (width, height)
             else:
                 win.borderless = True
+                win.size = self._get_desktop_resolution()
                 win.position = (0, 0)
             return True
         except Exception:

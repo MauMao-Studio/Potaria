@@ -11,12 +11,18 @@ import random
 
 # Enable HD crisp pixel scaling (nearest-neighbor) in scaled and fullscreen modes
 os.environ["SDL_RENDER_SCALE_QUALITY"] = "nearest"
+# Prevent SDL2 from minimizing or hiding the borderless fullscreen window when Win+Shift+S / screenshot overlays take focus
+os.environ.setdefault("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS", "0")
 
-# Enable 1ms Windows timer resolution for rock-solid 60 FPS frame pacing
+# Enable 1ms Windows timer resolution for rock-solid 60 FPS frame pacing and 1:1 physical DPI awareness
 if sys.platform == "win32":
     try:
         import ctypes
         ctypes.windll.winmm.timeBeginPeriod(1)
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            ctypes.windll.user32.SetProcessDPIAware()
     except Exception:
         pass
 
@@ -2422,7 +2428,7 @@ class PotariaGame:
             active_keys = keys
         self.profiler.end_section("update_other")
         with self.profiler.section("update_player"):
-            self.player.handle_input(active_keys, aim_target_wx, aim_target_wy, key_bindings=self.menu.key_bindings)
+            self.player.handle_input(active_keys, aim_target_wx, aim_target_wy, key_bindings=self.menu.key_bindings, world=self.world)
             self.player.update(dt, self.world)
 
         # Update Achievements & Feat Tracking
@@ -2954,7 +2960,8 @@ class PotariaGame:
             mouse_x, mouse_y = self.get_mouse_pos()
             self.hud.render(
                 ui_surf, self.player, self.inventory, self.crafting,
-                self.camera, mouse_x, mouse_y, world=self.world, combat=self.combat, lan_client=self.client
+                self.camera, mouse_x, mouse_y, world=self.world, combat=self.combat, lan_client=self.client,
+                render_dragged=False
             )
 
             # Layer 9.5: Character & Paperdoll Equipment Panel (Chroisen Style)
@@ -2967,7 +2974,7 @@ class PotariaGame:
 
             # Layer 9.7: Storage Chest Window
             if hasattr(self, "chest_ui") and self.chest_ui.is_open:
-                self.chest_ui.render(ui_surf, self.inventory, mouse_x, mouse_y)
+                self.chest_ui.render(ui_surf, self.inventory, mouse_x, mouse_y, render_dragged=False)
 
             # Layer 9.75: Foreground Dragged Item (Always above Chest UI, Character Panel, and NPC Shop)
             if hasattr(self.hud, "render_dragged_item"):

@@ -79,6 +79,7 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
             self.assertTrue(gl_flags_fs & pygame.NOFRAME, "Fullscreen GLRenderer must use borderless pygame.NOFRAME")
             self.assertFalse(gl_flags_fs & pygame.FULLSCREEN, "Fullscreen GLRenderer must not use exclusive pygame.FULLSCREEN")
             self.assertEqual(gl_pos_fs, "0,0")
+            self.assertEqual(os.environ.get("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"), "0")
 
     def test_02_water_requires_lower_body_submersion_and_no_blue_box_overlay(self):
         """Verifies in_water requires lower-body submersion and sprites in water have zero blue square box."""
@@ -143,13 +144,13 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
         drop.render(canvas, cam)
         self.assertEqual(canvas.get_at((296, 96))[3], 0, "Dropped item in water must not have a blue square box")
 
-    def test_03_enemy_half_buoyancy_sinks_slowly_and_jumps_slowly_in_water(self):
-        """Verifies enemies in water have half buoyancy (slow downward sink) and can jump slowly upward in water."""
+    def test_03_enemy_half_buoyancy_sinks_slowly_and_jumps_slowly_out_of_water_pool(self):
+        """Verifies enemies in water have half buoyancy (slow downward sink) and can jump slowly out of water pools."""
         from src.constants import SCALED_TILE, TILE_STONE, TILE_WATER
         from src.entities.mob import GreenSlime, Zombie, DesertScorpion
 
-        self._clear_area(0, 15, 0, 15)
-        # Create a 4-tile deep water pool at tx=4..8, ty=5..8 with solid floor at ty=9 and wall at tx=7
+        self._clear_area(0, 18, 0, 15)
+        # Create a 4-tile deep water pool at tx=4..8, ty=5..8 with solid floor at ty=9
         for tx in range(3, 10):
             self.world.set_tile(tx, 9, TILE_STONE)
             for ty in range(5, 9):
@@ -169,7 +170,7 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
         slime.vy = 0.2
         slime.update(0.02, self.world, self.player)
         self.assertLess(slime.vy, -1.5, "Slime must be able to jump upward in water")
-        self.assertGreater(slime.vy, -5.0, "Slime water jump must be slower than dry-land jump (-7.0)")
+        self.assertGreater(slime.vy, -5.5, "Slime water jump must be slower than dry-land jump (-7.0)")
 
         # Verify zombie in water jumps slowly when obstructed by a 1-block ledge or pursuing player above
         self.world.set_tile(6, 8, TILE_STONE)  # 1-block underwater step at (6, 8)
@@ -180,14 +181,37 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
         zombie.update(0.016, self.world, self.player)
         self.assertTrue(zombie.in_water)
         self.assertLess(zombie.vy, -1.5, "Zombie must jump upward in water when obstructed")
-        self.assertGreater(zombie.vy, -5.0, "Zombie water jump must be slow (-3.4*0.9)")
+        self.assertGreater(zombie.vy, -5.5, "Zombie water jump must be slow")
 
         scorpion = DesertScorpion(5 * SCALED_TILE + 4, 9 * SCALED_TILE - 22, self.factory)
         scorpion.on_ground = True
         scorpion.update(0.016, self.world, self.player)
         self.assertTrue(scorpion.in_water)
         self.assertLess(scorpion.vy, -1.5)
-        self.assertGreater(scorpion.vy, -5.0)
+        self.assertGreater(scorpion.vy, -5.5)
+
+        # Full multi-frame simulation: verify GreenSlime, Zombie, and DesertScorpion actually escape a water pool onto dry bank
+        self._clear_area(0, 18, 0, 15)
+        # Pool at tx=4..6, ty=8 (water), floor at ty=9, dry banks at tx=2..3 and tx=7..11 at ty=8..9
+        for tx in range(2, 12):
+            self.world.set_tile(tx, 9, TILE_STONE)
+        for tx in (2, 3, 7, 8, 9, 10, 11):
+            self.world.set_tile(tx, 8, TILE_STONE)
+        for tx in (4, 5, 6):
+            self.world.set_tile(tx, 8, TILE_WATER)
+
+        self.player.x = float(9 * SCALED_TILE)
+        self.player.y = float(8 * SCALED_TILE - self.player.height)
+
+        for mob_cls in (GreenSlime, Zombie, DesertScorpion):
+            mob = mob_cls(5 * SCALED_TILE, 7 * SCALED_TILE, self.factory)
+            escaped = False
+            for _ in range(240):
+                mob.update(0.016, self.world, self.player)
+                if mob.x >= 7 * SCALED_TILE and not mob.in_water:
+                    escaped = True
+                    break
+            self.assertTrue(escaped, f"{mob_cls.__name__} must be able to slowly jump out of a water pool onto the dry bank")
 
     def test_04_dropped_items_and_blocks_have_transparent_corners_no_square_box(self):
         """Verifies all mob drops, ores, natural blocks, and every item icon in AssetFactory.items have transparent corners."""
@@ -213,9 +237,10 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
                 f"Item icon '{item_id}' has opaque square box corners {corners} instead of transparent background"
             )
 
-    def test_05_rope_rungs_and_scaffolding_climbing_up_and_down(self):
-        """Verifies player can climb up, climb down, and cling on TILE_ROPE_RUNGS and climb TILE_WOOD_PLATFORM scaffolding."""
-        from src.constants import SCALED_TILE, TILE_ROPE_RUNGS, TILE_WOOD_PLATFORM, TILE_STONE
+    def test_05_rope_rungs_and_scaffolding_climbing_top_landing_and_jumping(self):
+        """Verifies player can climb up, climb down, cling, rest stably on top, and jump off TILE_ROPE_RUNGS and TILE_WOOD_PLATFORM."""
+        from src.constants import SCALED_TILE, TILE_ROPE_RUNGS, TILE_WOOD_PLATFORM, TILE_STONE, PLAYER_JUMP_FORCE
+        from src.ui.inventory import get_mining_damage
 
         self._clear_area(0, 15, 0, 15)
         for tx in range(0, 12):
@@ -250,7 +275,34 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
             self.player.update(0.016, self.world)
         self.assertGreater(self.player.y, mid_y + 20.0, "Holding S on rope rungs must climb downward smoothly")
 
-        # 4. Build a vertical column of scaffolding (TILE_WOOD_PLATFORM) at tx=8, ty=4..9
+        # 4. Climbing all the way to the top of Rope Rungs (ty=4 -> top at y=128) while holding W lands stably without jitter
+        for _ in range(60):
+            self.player.handle_input({pygame.K_w: True}, self.player.center_x, self.player.center_y, world=self.world)
+            self.player.update(0.016, self.world)
+        expected_top_y = float(4 * SCALED_TILE - self.player.height)
+        self.assertAlmostEqual(self.player.y, expected_top_y, places=2)
+        self.assertTrue(self.player.on_ground, "Player at top of rope rungs must rest on top as a platform")
+
+        # Holding W for another 5 frames at the top must not oscillate or jitter
+        for _ in range(5):
+            self.player.handle_input({pygame.K_w: True}, self.player.center_x, self.player.center_y, world=self.world)
+            self.player.update(0.016, self.world)
+            self.assertAlmostEqual(self.player.y, expected_top_y, places=2)
+
+        # Pressing Space while standing on top of rope rungs must perform a full jump (PLAYER_JUMP_FORCE)
+        self.player.handle_input({pygame.K_SPACE: True}, self.player.center_x, self.player.center_y, world=self.world)
+        self.assertEqual(self.player.vy, PLAYER_JUMP_FORCE)
+
+        # Pressing S while standing on top of rope rungs must climb down into the rope rungs
+        self.player.y = expected_top_y
+        self.player.vy = 0.0
+        self.player.on_ground = True
+        for _ in range(5):
+            self.player.handle_input({pygame.K_s: True}, self.player.center_x, self.player.center_y, world=self.world)
+            self.player.update(0.016, self.world)
+        self.assertGreater(self.player.y, expected_top_y + 10.0, "Pressing S on top of rope rungs must descend into the ladder")
+
+        # 5. Build a vertical column of scaffolding (TILE_WOOD_PLATFORM) at tx=8, ty=4..9
         for ty in range(4, 10):
             self.world.set_tile(8, ty, TILE_WOOD_PLATFORM)
 
@@ -267,6 +319,9 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
             self.player.handle_input({pygame.K_s: True}, self.player.center_x, self.player.center_y, world=self.world)
             self.player.update(0.016, self.world)
         self.assertGreater(self.player.y, scaf_mid_y + 20.0, "Holding S inside scaffolding column must descend downward")
+
+        # 6. Verify TILE_ROPE_RUNGS can be broken with bare hands or tools
+        self.assertGreater(get_mining_damage(None, TILE_ROPE_RUNGS), 0.0, "TILE_ROPE_RUNGS must be breakable with bare hands")
 
     def test_06_chest_ui_dragged_item_renders_in_foreground(self):
         """Verifies dragged items (inventory.held_item) render in front of ChestStorageWindow instead of behind it."""
@@ -290,14 +345,14 @@ class TestWaterClimbingChestAndFullscreen(unittest.TestCase):
 
         surf_without_held = pygame.Surface((1280, 720), pygame.SRCALPHA)
         self.inventory.held_item = None
-        hud.render(surf_without_held, self.player, self.inventory, crafting, cam, mx, my, world=self.world)
-        chest_ui.render(surf_without_held, self.inventory, mx, my)
+        hud.render(surf_without_held, self.player, self.inventory, crafting, cam, mx, my, world=self.world, render_dragged=False)
+        chest_ui.render(surf_without_held, self.inventory, mx, my, render_dragged=False)
         hud.render_dragged_item(surf_without_held, self.inventory, mx, my)
 
         surf_with_held = pygame.Surface((1280, 720), pygame.SRCALPHA)
-        self.inventory.held_item = ItemStack("gold_broadsword", 1)
-        hud.render(surf_with_held, self.player, self.inventory, crafting, cam, mx, my, world=self.world)
-        chest_ui.render(surf_with_held, self.inventory, mx, my)
+        self.inventory.held_item = ItemStack("gold_broadsword", 5)
+        hud.render(surf_with_held, self.player, self.inventory, crafting, cam, mx, my, world=self.world, render_dragged=False)
+        chest_ui.render(surf_with_held, self.inventory, mx, my, render_dragged=False)
         hud.render_dragged_item(surf_with_held, self.inventory, mx, my)
 
         # Compare the 24x24 region around (mx, my) to prove the dragged item icon was drawn on top of the chest panel
