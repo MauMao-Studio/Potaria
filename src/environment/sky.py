@@ -44,9 +44,10 @@ class DayNightCycle:
         self._cached_top_c = None
         self._cached_bot_c = None
         self._last_bake_ticks = 0
+        self._last_bg_alpha = 255
 
     def _load_background_assets(self):
-        """Loads and pre-scales multi-plane parallax pixel art layers from assets/backgrounds/."""
+        """Loads, pre-scales, and RLE-accelerates multi-plane parallax pixel art layers from assets/backgrounds/."""
         sw, sh = SCREEN_WIDTH, SCREEN_HEIGHT
 
         def _load_or_fallback(filename, fallback_fn):
@@ -54,16 +55,32 @@ class DayNightCycle:
             if os.path.isfile(path):
                 try:
                     raw = pygame.image.load(path)
-                    return pygame.transform.scale(raw, (sw, sh)).convert_alpha()
+                    if pygame.display.get_surface() is not None:
+                        return pygame.transform.scale(raw, (sw, sh)).convert_alpha()
+                    return pygame.transform.scale(raw, (sw, sh))
                 except Exception:
                     pass
             return fallback_fn()
+
+        def _optimize_parallax_band(surf):
+            """Crops transparent top sky space and clears surface-level alpha modulation for SIMD 32-bit blitting."""
+            br = surf.get_bounding_rect()
+            if br.width <= 0 or br.height <= 0:
+                return surf, 0
+            band_rect = pygame.Rect(0, br.top, sw, sh - br.top)
+            band = surf.subsurface(band_rect).copy()
+            band.set_alpha(None)
+            return band, band_rect.top
 
         self.mountains_surf = _load_or_fallback("bg_far_mountains.png", self._create_mountain_silhouette)
         self.hills_surf = _load_or_fallback("bg_rolling_hills.png", self._create_mountain_silhouette)
         self.trees_surf = _load_or_fallback("bg_mid_forest.png", self._create_tree_silhouette)
         self.clouds_surf = _load_or_fallback("bg_sky_clouds.png", lambda: pygame.Surface((sw, sh), pygame.SRCALPHA))
         self.space_nebula_surf = _load_or_fallback("bg_space_nebula.png", lambda: pygame.Surface((sw, sh), pygame.SRCALPHA))
+
+        self._mountains_band, self._mountains_top = _optimize_parallax_band(self.mountains_surf)
+        self._hills_band, self._hills_top = _optimize_parallax_band(self.hills_surf)
+        self._trees_band, self._trees_top = _optimize_parallax_band(self.trees_surf)
 
     @property
     def time_of_day(self):
@@ -290,10 +307,8 @@ class DayNightCycle:
                 c = self._lerp_color(top_c, bot_c, frac)
                 gradient.set_at((0, y), c)
             scaled_grad = pygame.transform.scale(gradient, (sw, sh))
-            try:
-                self._cached_sky_surf = scaled_grad.convert()
-            except pygame.error:
-                self._cached_sky_surf = scaled_grad
+            scaled_grad.set_alpha(None)
+            self._cached_sky_surf = scaled_grad
             self._cached_top_c = top_c
             self._cached_bot_c = bot_c
             self._last_bake_ticks = now_ticks
@@ -359,26 +374,29 @@ class DayNightCycle:
 
         if bg_alpha > 0.02:
             alpha_int = int(bg_alpha * 255)
+            if alpha_int != self._last_bg_alpha:
+                mod_val = None if alpha_int >= 255 else alpha_int
+                self._mountains_band.set_alpha(mod_val)
+                self._hills_band.set_alpha(mod_val)
+                self._trees_band.set_alpha(mod_val)
+                self._last_bg_alpha = alpha_int
 
             # Locked horizon Y position prevents horizon distortion during flight
             horizon_y = 0
 
-            # Layer 1: High Sky Clouds removed to optimize render sky performance (eliminates 4.89ms full-screen alpha blits)
+            # Layer 1: High Sky Clouds removed to optimize render sky performance
 
             # Layer 2: Far Misty Mountains (speed = 0.08)
             mount_offset = int(-(cam_x * 0.08) % sw)
-            self.mountains_surf.set_alpha(alpha_int)
-            target_surf.blit(self.mountains_surf, (mount_offset - sw, horizon_y))
-            target_surf.blit(self.mountains_surf, (mount_offset, horizon_y))
+            target_surf.blit(self._mountains_band, (mount_offset - sw, horizon_y + self._mountains_top))
+            target_surf.blit(self._mountains_band, (mount_offset, horizon_y + self._mountains_top))
 
             # Layer 3: Rolling Hills (speed = 0.14)
             hills_offset = int(-(cam_x * 0.14) % sw)
-            self.hills_surf.set_alpha(alpha_int)
-            target_surf.blit(self.hills_surf, (hills_offset - sw, horizon_y))
-            target_surf.blit(self.hills_surf, (hills_offset, horizon_y))
+            target_surf.blit(self._hills_band, (hills_offset - sw, horizon_y + self._hills_top))
+            target_surf.blit(self._hills_band, (hills_offset, horizon_y + self._hills_top))
 
             # Layer 4: Mid Forest & Ancient Ruins (speed = 0.22)
             tree_offset = int(-(cam_x * 0.22) % sw)
-            self.trees_surf.set_alpha(alpha_int)
-            target_surf.blit(self.trees_surf, (tree_offset - sw, horizon_y))
-            target_surf.blit(self.trees_surf, (tree_offset, horizon_y))
+            target_surf.blit(self._trees_band, (tree_offset - sw, horizon_y + self._trees_top))
+            target_surf.blit(self._trees_band, (tree_offset, horizon_y + self._trees_top))
