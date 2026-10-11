@@ -1,0 +1,50 @@
+{
+  "id": "example_magic_spuds",
+  "name": "Magic Spuds",
+  "version": "1.0.0",
+  "author": "Potaria Modding Community",
+  "description": "Adds magical potato artifacts and mystical spud recipes to Potaria.",
+  "type": "mod",
+  "enabled": true,
+  "items": {
+    "spud_of_destiny": {
+      "name": "Spud of Destiny",
+      "cat": "accessory",
+      "rarity": "mythic",
+      "desc": "A legendary potato radiating ancient cosmic energy.",
+      "lore": "Carved by the first starchy deities.",
+      "special": "Increases luck and celestial resistance by +15%"
+    },
+    "enchanted_fry": {
+      "name": "Enchanted French Fry",
+      "cat": "consumable",
+      "rarity": "rare",
+      "desc": "Golden crispy snack infused with potent healing starlight.",
+      "lore": "",
+      "heal": 50
+    }
+  },
+  "recipes": [
+    {
+      "result": "spud_of_destiny",
+      "count": 1,
+      "station": "work_bench",
+      "category": "equipment",
+      "ingredients": [
+        ["raw_potato", 10],
+        ["gold_bar", 5],
+        ["spud_sap", 10]
+      ]
+    },
+    {
+      "result": "enchanted_fry",
+      "count": 3,
+      "station": "furnace",
+      "category": "survival",
+      "ingredients": [
+        ["raw_potato", 3],
+        ["gold_ore", 1]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "expansion_celestial_depths",
+  "name": "Celestial Depths Expansion",
+  "version": "1.0.0",
+  "author": "Potaria Studios",
+  "description": "Official expansion exploring the orbital void, deep cosmos, and stellar relics.",
+  "type": "dlc",
+  "enabled": true,
+  "items": {
+    "orbital_stardust_blade": {
+      "name": "Orbital Stardust Blade",
+      "cat": "weapon",
+      "rarity": "legendary",
+      "power": 85,
+      "damage": 55,
+      "desc": "Forged in the outer stratosphere from fallen stellar fragments.",
+      "special": "Strikes trigger celestial sparks in orbit."
+    },
+    "nebula_graviton_core": {
+      "name": "Nebula Graviton Core",
+      "cat": "accessory",
+      "rarity": "ancient",
+      "desc": "Defies terrestrial gravity, enabling effortless movement in the deep sky void.",
+      "special": "Decreases orbital gravity fall rate by 60%."
+    }
+  },
+  "recipes": [
+    {
+      "result": "orbital_stardust_blade",
+      "count": 1,
+      "station": "work_bench",
+      "category": "equipment",
+      "ingredients": [
+        ["gold_bar", 10],
+        ["stone_brick", 20],
+        ["spud_sap", 15]
+      ]
+    },
+    {
+      "result": "nebula_graviton_core",
+      "count": 1,
+      "station": "work_bench",
+      "category": "equipment",
+      "ingredients": [
+        ["gold_bar", 15],
+        ["glass_window", 10]
+      ]
+    }
+  ]
+}

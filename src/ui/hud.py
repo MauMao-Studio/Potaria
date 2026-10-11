@@ -33,12 +33,18 @@ class HUD:
         # MiniMap component (Corner Radar & Expanded Map)
         self.minimap = MiniMap()
 
-        # Fonts
-        pygame.font.init()
-        self.font = pygame.font.SysFont("Arial", 13, bold=True)
-        self.font_sm = pygame.font.SysFont("Arial", 11)
-        self.font_lg = pygame.font.SysFont("Arial", 16, bold=True)
-        self.font_lore = pygame.font.SysFont("Georgia", 11, italic=True)
+        # Celestial Clock Widget Icons
+        sun_raw = asset_factory.environment.get("sun") if hasattr(asset_factory, "environment") else None
+        moon_raw = asset_factory.environment.get("moon") if hasattr(asset_factory, "environment") else None
+        self.clock_sun_icon = pygame.transform.scale(sun_raw, (16, 16)) if sun_raw else None
+        self.clock_moon_icon = pygame.transform.scale(moon_raw, (16, 16)) if moon_raw else None
+
+        # Fonts (Centralized Typography Theme)
+        from src.ui.theme import font_semibold, font_compact, font_bold, font_regular
+        self.font = font_semibold(13)
+        self.font_sm = font_compact(11)
+        self.font_lg = font_bold(16)
+        self.font_lore = font_regular(12)
 
         # Pre-rendered reticle variants (avoids copying & blending every frame)
         self.reticle_in_reach = self.reticle
@@ -65,13 +71,19 @@ class HUD:
         self.local_chat_history = []
         self.tooltip_mode = "detailed"
 
-    def render(self, target_surf, player, inventory, crafting_system, camera, mouse_x, mouse_y, world=None, combat=None, lan_client=None, render_dragged=True):
+    def render(self, target_surf, player, inventory, crafting_system, camera, mouse_x, mouse_y, world=None, combat=None, lan_client=None, render_dragged=True, sky=None):
         # 1. Health & Mana (Top Right)
         self._render_hp_and_mp(target_surf, player)
 
         # 2. Mini-Map (Corner Radar or Overview Map toggled via [M])
         if world and combat:
             self.minimap.render(target_surf, world, player, combat, lan_client)
+
+        # 2.5. In-Game Clock / Celestial Time Widget
+        if sky:
+            self._render_clock_widget(target_surf, sky)
+        elif world and hasattr(world, "day_night_cycle") and world.day_night_cycle:
+            self._render_clock_widget(target_surf, world.day_night_cycle)
 
         # 3. Notification Banner (Learned Skill / Event Notifications)
         if getattr(inventory, "last_learned_message", None):
@@ -745,3 +757,55 @@ class HUD:
                     fill_rect = pygame.Rect(gx + 1, gy + 1, fill_w, gauge_h - 2)
                     fill_col = (255, 215, 80) if charge < 0.9 else (120, 240, 255)
                     pygame.draw.rect(target_surf, fill_col, fill_rect, border_radius=1)
+
+    def get_game_time_string(self, sky):
+        """Returns formatted (time_str, period, is_night) from sky DayNightCycle time_of_day."""
+        t = getattr(sky, "time_of_day", 0.25)
+        total_hours = (t * 24.0 + 6.0) % 24.0
+        hour = int(total_hours) % 24
+        minute = int((total_hours * 60) % 60)
+        period = "AM" if hour < 12 else "PM"
+        disp_hour = hour % 12
+        if disp_hour == 0:
+            disp_hour = 12
+        time_str = f"{disp_hour}:{minute:02d} {period}"
+        is_night = getattr(sky, "is_night", False)
+        return time_str, period, is_night
+
+    def _render_clock_widget(self, target_surf, sky):
+        """Displays in-game celestial time (12-hour AM/PM) with Sun/Moon icon docked below or beside the minimap."""
+        time_str, period, is_night = self.get_game_time_string(sky)
+
+        # Placement docked under the radar minimap (corner mode) or at top right
+        mw = 148
+        mh = 24
+        mx = SCREEN_WIDTH - mw - 16
+        if getattr(self, "minimap", None) and self.minimap.is_open and self.minimap.mode == "corner":
+            my = 16 + 108 + 6  # 130
+        else:
+            my = 16
+
+        bg_rect = pygame.Rect(mx, my, mw, mh)
+        pygame.draw.rect(target_surf, (20, 24, 38, 235), bg_rect, border_radius=6)
+        pygame.draw.rect(target_surf, (218, 165, 32), bg_rect, 1, border_radius=6)
+
+        # Celestial Icon
+        icon = self.clock_moon_icon if is_night else self.clock_sun_icon
+        if icon:
+            target_surf.blit(icon, (mx + 6, my + 4))
+        else:
+            sym = "☾" if is_night else "☀"
+            sym_col = (180, 215, 255) if is_night else (255, 215, 70)
+            txt_sym = self.font.render(sym, True, sym_col)
+            target_surf.blit(txt_sym, (mx + 8, my + 3))
+
+        # Time readout
+        t_col = (180, 220, 255) if is_night else (255, 230, 110)
+        t_surf = self.font_sm.render(time_str, True, t_col)
+        target_surf.blit(t_surf, (mx + 28, my + 5))
+
+        # Phase tag badge
+        phase_str = "NIGHT" if is_night else "DAY"
+        phase_col = (140, 175, 230) if is_night else (230, 180, 80)
+        p_surf = self.font_sm.render(phase_str, True, phase_col)
+        target_surf.blit(p_surf, (mx + mw - p_surf.get_width() - 8, my + 5))

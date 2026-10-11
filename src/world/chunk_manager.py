@@ -35,6 +35,7 @@ from src.world.noise import PerlinNoise
 
 CHUNK_WIDTH = 16
 CHUNK_HEIGHT = 240
+SKY_MIN_Y = -240
 SECTION_HEIGHT = 16
 NUM_SECTIONS = CHUNK_HEIGHT // SECTION_HEIGHT
 
@@ -83,14 +84,11 @@ class ChunkSection:
             col_biome = chunk.col_biomes[lx]
             is_dungeon_col = (-30 <= gx <= 30)
             local_px = lx * world.scaled_tile
-            tiles_col = chunk.tiles[lx]
-            walls_col = chunk.walls[lx]
-
             for ty in range(min_ty, max_ty):
                 local_py = (ty - min_ty) * world.scaled_tile
-                t_id = tiles_col[ty]
-                w_id = walls_col[ty]
-                if t_id != TILE_AIR or w_id != WALL_AIR or ty >= surf_y or ty >= SURFACE_LEVEL:
+                t_id = chunk.get_tile_local(lx, ty)
+                w_id = chunk.get_wall_local(lx, ty)
+                if t_id != TILE_AIR or w_id != WALL_AIR or (ty >= 0 and (ty >= surf_y or ty >= SURFACE_LEVEL)):
                     drawn_count += 1
                 prop = TILE_PROPS.get(t_id, {})
 
@@ -103,7 +101,7 @@ class ChunkSection:
                         if wall_tex:
                             self.surf.blit(wall_tex, (local_px, local_py))
                     else:
-                        if ty >= surf_y or ty >= SURFACE_LEVEL:
+                        if ty >= 0 and (ty >= surf_y or ty >= SURFACE_LEVEL):
                             if ty >= DUNGEON_LEVEL - 8 and is_dungeon_col:
                                 sub_w = WALL_DUNGEON
                             elif ty >= CAVERN_LEVEL - 12:
@@ -207,14 +205,43 @@ class ChunkSection:
 class Chunk:
     def __init__(self, chunk_x, seed, noise_surface, noise_caves, noise_ores, noise_biome):
         self.chunk_x = chunk_x
+        self.seed = seed
         self.width = CHUNK_WIDTH
         self.height = CHUNK_HEIGHT
         self.tiles = [[TILE_AIR for _ in range(self.height)] for _ in range(self.width)]
         self.walls = [[WALL_AIR for _ in range(self.height)] for _ in range(self.width)]
+        self.sky_tiles = {}
+        self.sky_walls = {}
         self.modified = False
         self.sections = {}
 
         self._generate(seed, noise_surface, noise_caves, noise_ores, noise_biome)
+
+    def get_tile_local(self, lx, ty):
+        if ty < 0:
+            return self.sky_tiles.get((lx, ty), TILE_AIR)
+        if ty >= self.height:
+            return TILE_BEDROCK
+        return self.tiles[lx][ty]
+
+    def set_tile_local(self, lx, ty, tile_id):
+        if ty < 0:
+            self.sky_tiles[(lx, ty)] = tile_id
+        elif ty < self.height:
+            self.tiles[lx][ty] = tile_id
+
+    def get_wall_local(self, lx, ty):
+        if ty < 0:
+            return self.sky_walls.get((lx, ty), WALL_AIR)
+        if ty >= self.height:
+            return WALL_AIR
+        return self.walls[lx][ty]
+
+    def set_wall_local(self, lx, ty, wall_id):
+        if ty < 0:
+            self.sky_walls[(lx, ty)] = wall_id
+        elif ty < self.height:
+            self.walls[lx][ty] = wall_id
 
     def mark_section_dirty(self, sec_y):
         if sec_y in self.sections:
@@ -687,55 +714,59 @@ class Chunk:
                 self.tiles[lx][216] = TILE_DUNGEON_ALTAR
 
     def _carve_sky_citadel(self):
-        """Carves out Sol-Rho's Celestial Sky Citadel floating in the clouds."""
+        """Carves out Sol-Rho's Celestial Sky Citadel high in the celestial atmosphere / space stratum (y = -185..-162)."""
+        citadel_floor = -163
+        citadel_ceiling = -185
         for lx in range(self.width):
             gx = self.chunk_x * self.width + lx
             if abs(gx) > 22:
                 continue
 
             # Sky Citadel background wall
-            for y in range(16, 38):
-                self.walls[lx][y] = WALL_DUNGEON
-                self.tiles[lx][y] = TILE_AIR
+            for y in range(citadel_ceiling, citadel_floor + 2):
+                self.set_wall_local(lx, y, WALL_DUNGEON)
+                self.set_tile_local(lx, y, TILE_AIR)
 
             # Outer perimeter frame
-            for y in range(18, 38):
-                if abs(gx) == 22 or y in (18, 37):
-                    self.tiles[lx][y] = TILE_DUNGEON_BRICK
+            for y in range(citadel_ceiling + 1, citadel_floor + 2):
+                if abs(gx) == 22 or y in (citadel_ceiling + 1, citadel_floor + 1):
+                    self.set_tile_local(lx, y, TILE_DUNGEON_BRICK)
 
-            # Citadel Floor at y = 36 and 37
-            self.tiles[lx][36] = TILE_DUNGEON_BRICK
-            self.tiles[lx][37] = TILE_DUNGEON_BRICK
+            # Citadel Floor at y = -163 and -162
+            self.set_tile_local(lx, citadel_floor, TILE_DUNGEON_BRICK)
+            self.set_tile_local(lx, citadel_floor + 1, TILE_DUNGEON_BRICK)
 
-            # Grand Dais / Altar at gx = 0
+            # Grand Dais / Altar at gx = 0, y = -164
             if gx == 0:
-                self.tiles[lx][35] = TILE_DUNGEON_ALTAR
+                self.set_tile_local(lx, citadel_floor - 1, TILE_DUNGEON_ALTAR)
 
             # Celestial Pillars
             if abs(gx) in (6, 12, 18):
-                for py in range(22, 36):
-                    self.tiles[lx][py] = TILE_DUNGEON_BRICK
+                for py in range(citadel_ceiling + 6, citadel_floor):
+                    self.set_tile_local(lx, py, TILE_DUNGEON_BRICK)
 
             # Aerial jump-through platforms for bullet hell dodging
             if (-16 <= gx <= -8) or (8 <= gx <= 16):
-                self.tiles[lx][31] = TILE_WOOD_PLATFORM
+                self.set_tile_local(lx, citadel_floor - 6, TILE_WOOD_PLATFORM)
             if -10 <= gx <= 10:
-                self.tiles[lx][26] = TILE_WOOD_PLATFORM
+                self.set_tile_local(lx, citadel_floor - 11, TILE_WOOD_PLATFORM)
 
             # Spectral Lanterns hanging from celestial ceiling
             if abs(gx) in (4, 10, 16):
-                self.tiles[lx][21] = TILE_SPECTRAL_LANTERN
+                self.set_tile_local(lx, citadel_ceiling + 3, TILE_SPECTRAL_LANTERN)
 
 import threading
 import concurrent.futures
+from src.world.world_cache import WorldCache
 
 class ChunkManager:
-    def __init__(self, seed=None, world_type="infinite"):
+    def __init__(self, seed=None, world_type="infinite", world_name="Spud World"):
         if seed is None:
             seed = random.randint(100000, 99999999)
         self.seed = seed
         self.world_type = world_type
         self.chunks = {}
+        self.world_cache = WorldCache(world_name=world_name)
         
         self.noise_surface = PerlinNoise(seed)
         self.noise_caves = PerlinNoise(seed + 101)
@@ -746,11 +777,44 @@ class ChunkManager:
         self._generating = {}
         self._lock = threading.Lock()
 
+    def set_world_name(self, world_name):
+        if self.world_cache:
+            self.world_cache.set_world_name(world_name)
+
     def _create_chunk(self, chunk_x):
-        return Chunk(
+        # 1. Check world-scoped disk cache first for instant streaming
+        if self.world_cache and self.world_cache.has_chunk_cache(chunk_x):
+            cdata = self.world_cache.load_chunk_data(chunk_x)
+            if cdata and cdata.get("seed") == self.seed:
+                chk = Chunk.__new__(Chunk)
+                chk.chunk_x = chunk_x
+                chk.seed = self.seed
+                chk.width = CHUNK_WIDTH
+                chk.height = CHUNK_HEIGHT
+                chk.tiles = cdata.get("tiles", [[TILE_AIR for _ in range(CHUNK_HEIGHT)] for _ in range(CHUNK_WIDTH)])
+                chk.walls = cdata.get("walls", [[WALL_AIR for _ in range(CHUNK_HEIGHT)] for _ in range(CHUNK_WIDTH)])
+                chk.surface_heights = cdata.get("surface_heights", [SURFACE_LEVEL] * CHUNK_WIDTH)
+                chk.col_biomes = cdata.get("col_biomes", [BIOME_FOREST] * CHUNK_WIDTH)
+                chk.sky_tiles = {}
+                for k, v in cdata.get("sky_tiles", {}).items():
+                    parts = k.split(",")
+                    chk.sky_tiles[(int(parts[0]), int(parts[1]))] = v
+                chk.sky_walls = {}
+                for k, v in cdata.get("sky_walls", {}).items():
+                    parts = k.split(",")
+                    chk.sky_walls[(int(parts[0]), int(parts[1]))] = v
+                chk.modified = False
+                chk.sections = {}
+                return chk
+
+        # 2. Procedural generation fallback
+        chk = Chunk(
             chunk_x, self.seed, self.noise_surface,
             self.noise_caves, self.noise_ores, self.noise_biome
         )
+        if self.world_cache:
+            self.world_cache.save_chunk(chunk_x, chk, seed=self.seed)
+        return chk
 
     def _generate_async(self, chunk_x):
         chk = self._create_chunk(chunk_x)
@@ -805,7 +869,7 @@ class ChunkManager:
         if self.world_type == "finite" and (gx < -160 or gx >= 160):
             return TILE_BEDROCK
 
-        if gy < 0:
+        if gy < SKY_MIN_Y:
             return TILE_AIR
         if gy >= CHUNK_HEIGHT:
             return TILE_BEDROCK
@@ -815,14 +879,14 @@ class ChunkManager:
         chunk = self.get_chunk(chunk_x)
         if chunk is None:
             return TILE_AIR
-        return chunk.tiles[lx][gy]
+        return chunk.get_tile_local(lx, gy)
 
     def set_tile(self, gx, gy, tile_id):
         """Sets tile ID at global coordinates (gx, gy)."""
         if self.world_type == "finite" and (gx < -160 or gx >= 160):
             return False
 
-        if gy < 0 or gy >= CHUNK_HEIGHT:
+        if gy < SKY_MIN_Y or gy >= CHUNK_HEIGHT:
             return False
 
         chunk_x = gx // CHUNK_WIDTH
@@ -830,14 +894,14 @@ class ChunkManager:
         chunk = self.get_chunk(chunk_x)
         if chunk is None:
             return False
-        chunk.tiles[lx][gy] = tile_id
+        chunk.set_tile_local(lx, gy, tile_id)
         chunk.modified = True
 
         sec_y = gy // SECTION_HEIGHT
         chunk.mark_section_dirty(sec_y)
-        if gy % SECTION_HEIGHT == 0 and sec_y > 0:
+        if gy % SECTION_HEIGHT == 0:
             chunk.mark_section_dirty(sec_y - 1)
-        elif gy % SECTION_HEIGHT == (SECTION_HEIGHT - 1) and sec_y < (NUM_SECTIONS - 1):
+        elif gy % SECTION_HEIGHT == (SECTION_HEIGHT - 1):
             chunk.mark_section_dirty(sec_y + 1)
 
         if lx == 0:
@@ -856,7 +920,7 @@ class ChunkManager:
         if self.world_type == "finite" and (gx < -160 or gx >= 160):
             return WALL_AIR
 
-        if gy < 0 or gy >= CHUNK_HEIGHT:
+        if gy < SKY_MIN_Y or gy >= CHUNK_HEIGHT:
             return WALL_AIR
 
         chunk_x = gx // CHUNK_WIDTH
@@ -864,10 +928,10 @@ class ChunkManager:
         chunk = self.get_chunk(chunk_x)
         if chunk is None:
             return WALL_AIR
-        return chunk.walls[lx][gy]
+        return chunk.get_wall_local(lx, gy)
 
     def set_wall(self, gx, gy, wall_id):
-        if gy < 0 or gy >= CHUNK_HEIGHT:
+        if gy < SKY_MIN_Y or gy >= CHUNK_HEIGHT:
             return False
 
         chunk_x = gx // CHUNK_WIDTH
@@ -875,7 +939,7 @@ class ChunkManager:
         chunk = self.get_chunk(chunk_x)
         if chunk is None:
             return False
-        chunk.walls[lx][gy] = wall_id
+        chunk.set_wall_local(lx, gy, wall_id)
         chunk.modified = True
         chunk.mark_section_dirty(gy // SECTION_HEIGHT)
         return True

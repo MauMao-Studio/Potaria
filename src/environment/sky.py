@@ -1,13 +1,19 @@
 """
-Terraria Pygame - Sky, Day/Night Cycle & Parallax Backgrounds
+Terraria Pygame - Sky, Day/Night Cycle & Multi-Plane Parallax Backgrounds
 Simulates smooth celestial progression (Sun & Moon arcs), dynamic sky gradients,
-twinkling starfields, and multi-layer parallax scrolling mountains and forests.
+twinkling starfields, multi-plane horizontally-looping parallax pixel art backgrounds
+(locked Y-parallax), and atmospheric altitude transition into cosmic space.
+Developer: Kurados
 """
 
+import os
 import math
 import random
 import pygame
 from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALED_TILE
+
+BACKGROUNDS_DIR = os.path.join("assets", "backgrounds")
+
 
 class DayNightCycle:
     def __init__(self, asset_factory, cycle_duration=360.0):
@@ -21,24 +27,43 @@ class DayNightCycle:
         # Generate persistent starfield
         self.stars = []
         rng = random.Random(42)
-        for _ in range(90):
+        for _ in range(140):
             sx = rng.randint(0, SCREEN_WIDTH)
-            sy = rng.randint(0, SCREEN_HEIGHT // 2)
+            sy = rng.randint(0, SCREEN_HEIGHT)
             brightness = rng.uniform(0.4, 1.0)
             self.stars.append((sx, sy, brightness))
 
         # Pre-computed twinkling star frames for high performance
         self.star_frames = self._create_star_frames()
 
-        # Generate Parallax Silhouette Surfaces
-        self.mountains_surf = self._create_mountain_silhouette()
-        self.trees_surf = self._create_tree_silhouette()
+        # Load Parallax Background Assets from assets/backgrounds/
+        self._load_background_assets()
 
         # Cached sky gradient surface for high performance
         self._cached_sky_surf = None
         self._cached_top_c = None
         self._cached_bot_c = None
         self._last_bake_ticks = 0
+
+    def _load_background_assets(self):
+        """Loads and pre-scales multi-plane parallax pixel art layers from assets/backgrounds/."""
+        sw, sh = SCREEN_WIDTH, SCREEN_HEIGHT
+
+        def _load_or_fallback(filename, fallback_fn):
+            path = os.path.join(BACKGROUNDS_DIR, filename)
+            if os.path.isfile(path):
+                try:
+                    raw = pygame.image.load(path)
+                    return pygame.transform.scale(raw, (sw, sh)).convert_alpha()
+                except Exception:
+                    pass
+            return fallback_fn()
+
+        self.mountains_surf = _load_or_fallback("bg_far_mountains.png", self._create_mountain_silhouette)
+        self.hills_surf = _load_or_fallback("bg_rolling_hills.png", self._create_mountain_silhouette)
+        self.trees_surf = _load_or_fallback("bg_mid_forest.png", self._create_tree_silhouette)
+        self.clouds_surf = _load_or_fallback("bg_sky_clouds.png", lambda: pygame.Surface((sw, sh), pygame.SRCALPHA))
+        self.space_nebula_surf = _load_or_fallback("bg_space_nebula.png", lambda: pygame.Surface((sw, sh), pygame.SRCALPHA))
 
     @property
     def time_of_day(self):
@@ -100,6 +125,7 @@ class DayNightCycle:
         return f"{display_hour}:{minute:02d} {period} ({phase})"
 
     def _lerp_color(self, c1, c2, t):
+        t = max(0.0, min(1.0, t))
         return (
             int(c1[0] + (c2[0] - c1[0]) * t),
             int(c1[1] + (c2[1] - c1[1]) * t),
@@ -110,7 +136,6 @@ class DayNightCycle:
         """Returns (top_color, bottom_color) based on current celestial time."""
         t = self.time_of_day
 
-        # Stardew Valley x Terraria pastel teal/cyan day palette matching reference image
         c_day_top = (115, 175, 195)
         c_day_bot = (175, 215, 225)
 
@@ -124,67 +149,82 @@ class DayNightCycle:
         c_dawn_bot = (245, 155, 110)
 
         if t < 0.12:
-            # Dawn
             frac = t / 0.12
             return self._lerp_color(c_night_top, c_dawn_top, frac), self._lerp_color(c_night_bot, c_dawn_bot, frac)
         elif t < 0.22:
-            # Dawn to Day
             frac = (t - 0.12) / 0.10
             return self._lerp_color(c_dawn_top, c_day_top, frac), self._lerp_color(c_dawn_bot, c_day_bot, frac)
         elif t < 0.48:
-            # Day
             return c_day_top, c_day_bot
         elif t < 0.56:
-            # Sunset / Dusk
             frac = (t - 0.48) / 0.08
             return self._lerp_color(c_day_top, c_dusk_top, frac), self._lerp_color(c_day_bot, c_dusk_bot, frac)
         elif t < 0.65:
-            # Dusk to Night
             frac = (t - 0.56) / 0.09
             return self._lerp_color(c_dusk_top, c_night_top, frac), self._lerp_color(c_dusk_bot, c_night_bot, frac)
         else:
-            # Night
             return c_night_top, c_night_bot
 
+    def get_altitude_sky_colors(self, camera_y_tile):
+        """
+        Transitions sky colors naturally based on altitude:
+        - Troposphere (ty >= 20): Surface day/night cycle colors
+        - Stratosphere (20 > ty >= -40): Deepening cobalt twilight
+        - Mesosphere (-40 > ty >= -100): Dark indigo & midnight violet
+        - Thermosphere / Space (ty < -100): Pitch black space void (0, 0, 4) to (0, 0, 0)
+        """
+        base_top, base_bot = self.get_sky_colors()
+
+        if camera_y_tile >= 45:
+            return base_top, base_bot
+
+        # Stratosphere transition (45 -> -20)
+        c_strato_top = (25, 38, 70)
+        c_strato_bot = (50, 75, 110)
+
+        # Mesosphere transition (-20 -> -80)
+        c_meso_top = (8, 12, 32)
+        c_meso_bot = (18, 22, 48)
+
+        # Deep space void (ty <= -80)
+        c_space_top = (2, 2, 8)
+        c_space_bot = (0, 0, 2)
+
+        if camera_y_tile >= -20:
+            frac = (45.0 - camera_y_tile) / 65.0
+            return self._lerp_color(base_top, c_strato_top, frac), self._lerp_color(base_bot, c_strato_bot, frac)
+        elif camera_y_tile >= -80:
+            frac = (-20.0 - camera_y_tile) / 60.0
+            return self._lerp_color(c_strato_top, c_meso_top, frac), self._lerp_color(c_strato_bot, c_meso_bot, frac)
+        else:
+            frac = min(1.0, (-80.0 - camera_y_tile) / 60.0)
+            return self._lerp_color(c_meso_top, c_space_top, frac), self._lerp_color(c_meso_bot, c_space_bot, frac)
+
     def _create_mountain_silhouette(self):
-        """Generates soft rolling hills parallax silhouette matching reference image."""
-        w, h = SCREEN_WIDTH, 260
+        w, h = SCREEN_WIDTH, SCREEN_HEIGHT
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
         color = (65, 120, 145, 180)
-
         points = [(0, h)]
         step = 20
-        # Seamless periodic function so x=0 matches x=w
         freq = (2.0 * math.pi) / w
         for x in range(0, w + step, step):
-            py = int(70 + 40 * math.sin(x * freq) + 15 * math.sin(x * freq * 2.0))
+            py = int(h - 180 + 40 * math.sin(x * freq) + 15 * math.sin(x * freq * 2.0))
             points.append((x, py))
         points.append((w, h))
-
         pygame.draw.polygon(surf, color, points)
-        try:
-            return surf.convert_alpha()
-        except pygame.error:
-            return surf
+        return surf
 
     def _create_tree_silhouette(self):
-        """Generates mid-ground distant trees parallax silhouette."""
-        w, h = SCREEN_WIDTH, 180
+        w, h = SCREEN_WIDTH, SCREEN_HEIGHT
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
         color = (45, 85, 65, 210)
-
         for x in range(0, w, 20):
             tree_h = 45 + (x % 31)
-            # Soft rounded canopy
             pygame.draw.circle(surf, color, (x + 10, h - tree_h + 12), 12)
             pygame.draw.rect(surf, color, (x + 8, h - tree_h + 12, 4, tree_h - 12))
-        try:
-            return surf.convert_alpha()
-        except pygame.error:
-            return surf
+        return surf
 
     def _create_star_frames(self):
-        """Pre-computes 4 discrete twinkle phases as coordinate-color tuples."""
         frames = []
         for f in range(4):
             frame_stars = []
@@ -199,18 +239,21 @@ class DayNightCycle:
         return frames
 
     def render(self, target_surf, camera):
-        """Draws sky gradient, stars, sun/moon celestial bodies, and parallax mountains."""
+        """
+        Draws sky gradient, stars, sun/moon celestial bodies, and multi-plane
+        seamless parallax background layers with locked Y-parallax and altitude fading.
+        """
         sw, sh = target_surf.get_width(), target_surf.get_height()
+        cam_x = getattr(camera, "x", 0.0)
+        cam_y = getattr(camera, "y", 9999.0)
+        cam_y_tile = cam_y / float(SCALED_TILE)
 
-        # Check if camera is in the Sky Citadel / Boss Arena (y <= 42)
-        in_sky_realm = getattr(camera, "y", 9999.0) <= 42 * SCALED_TILE
+        # High atmosphere / space stratum check (Sky Citadel arena is at ty <= -150)
+        in_space = cam_y_tile <= -100
+        in_sky_realm = cam_y_tile <= -140
 
-        # 1. Sky Gradient (Cached: only re-bake when colors shift and at least 150ms elapsed)
-        if in_sky_realm:
-            top_c = (5, 8, 22)
-            bot_c = (24, 15, 48)
-        else:
-            top_c, bot_c = self.get_sky_colors()
+        # 1. Sky Gradient based on altitude & celestial time
+        top_c, bot_c = self.get_altitude_sky_colors(cam_y_tile)
 
         now_ticks = pygame.time.get_ticks()
         if (self._cached_sky_surf is None or
@@ -235,34 +278,68 @@ class DayNightCycle:
 
         target_surf.blit(self._cached_sky_surf, (0, 0))
 
-        # 2. Twinkling Stars (Always active in Sky Citadel, or at nighttime)
-        if in_sky_realm or self.is_night or self.time_of_day > 0.52:
+        # 2. Twinkling Stars (Active during night or when high in the atmosphere/space)
+        show_stars = in_space or self.is_night or self.time_of_day > 0.52 or cam_y_tile < 0
+        if show_stars:
             frame_idx = (now_ticks // 220) % len(self.star_frames)
             for sx, sy, star_c in self.star_frames[frame_idx]:
                 target_surf.set_at((sx, sy), star_c)
 
-        # 3. Celestial Orbit (Sun & Moon Arc)
-        # Sun: active during day (0.0 to 0.5) when not in deep space sky realm
+        # 3. Deep Space Nebula & Constellations (Fades in as player ascends into the mesosphere/space)
+        if cam_y_tile < 20:
+            nebula_alpha = max(0.0, min(1.0, (20.0 - cam_y_tile) / 120.0))
+            if nebula_alpha > 0.05:
+                nebula_offset = int(-(cam_x * 0.02) % sw)
+                self.space_nebula_surf.set_alpha(int(nebula_alpha * 240))
+                target_surf.blit(self.space_nebula_surf, (nebula_offset - sw, 0))
+                target_surf.blit(self.space_nebula_surf, (nebula_offset, 0))
+
+        # 4. Celestial Orbit (Sun & Moon Arc)
         t = self.time_of_day
-        if t < 0.55 and not in_sky_realm:
-            sun_t = t / 0.55  # 0.0 (left) to 1.0 (right)
+        if t < 0.55 and not in_space:
+            sun_t = t / 0.55
             sun_x = sun_t * sw
             sun_y = sh * 0.7 - math.sin(sun_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.sun_surf, (sun_x - 20, sun_y - 20))
 
-        # Moon: active during night or in deep space sky realm
-        if t >= 0.48 or in_sky_realm:
-            moon_t = (t - 0.48) / 0.52 if not in_sky_realm else 0.5
+        if t >= 0.48 or in_space:
+            moon_t = (t - 0.48) / 0.52 if not in_space else 0.5
             moon_x = moon_t * sw
             moon_y = sh * 0.7 - math.sin(moon_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.moon_surf, (moon_x - 16, moon_y - 16))
 
-        # 4. Parallax Mountain & Forest Silhouettes (Only when below sky realm)
-        if not in_sky_realm:
-            mount_offset = int(-(camera.x * 0.07) % sw)
-            target_surf.blit(self.mountains_surf, (mount_offset - sw, sh - 280))
-            target_surf.blit(self.mountains_surf, (mount_offset, sh - 280))
+        # 5. Multi-Plane Parallax Background Layers with Locked Y-Parallax
+        # Layers smoothly fade out as altitude rises into stratosphere (ty < 20 down to -30)
+        bg_alpha = 1.0
+        if cam_y_tile < 30:
+            bg_alpha = max(0.0, min(1.0, (cam_y_tile - (-30.0)) / 60.0))
 
-            tree_offset = int(-(camera.x * 0.18) % sw)
-            target_surf.blit(self.trees_surf, (tree_offset - sw, sh - 170))
-            target_surf.blit(self.trees_surf, (tree_offset, sh - 170))
+        if bg_alpha > 0.02:
+            alpha_int = int(bg_alpha * 255)
+
+            # Locked horizon Y position prevents horizon distortion during flight
+            horizon_y = 0
+
+            # Layer 1: High Sky Clouds (speed = 0.04)
+            clouds_offset = int(-(cam_x * 0.04 + now_ticks * 0.015) % sw)
+            self.clouds_surf.set_alpha(int(alpha_int * 0.8))
+            target_surf.blit(self.clouds_surf, (clouds_offset - sw, horizon_y))
+            target_surf.blit(self.clouds_surf, (clouds_offset, horizon_y))
+
+            # Layer 2: Far Misty Mountains (speed = 0.08)
+            mount_offset = int(-(cam_x * 0.08) % sw)
+            self.mountains_surf.set_alpha(alpha_int)
+            target_surf.blit(self.mountains_surf, (mount_offset - sw, horizon_y))
+            target_surf.blit(self.mountains_surf, (mount_offset, horizon_y))
+
+            # Layer 3: Rolling Hills (speed = 0.14)
+            hills_offset = int(-(cam_x * 0.14) % sw)
+            self.hills_surf.set_alpha(alpha_int)
+            target_surf.blit(self.hills_surf, (hills_offset - sw, horizon_y))
+            target_surf.blit(self.hills_surf, (hills_offset, horizon_y))
+
+            # Layer 4: Mid Forest & Ancient Ruins (speed = 0.22)
+            tree_offset = int(-(cam_x * 0.22) % sw)
+            self.trees_surf.set_alpha(alpha_int)
+            target_surf.blit(self.trees_surf, (tree_offset - sw, horizon_y))
+            target_surf.blit(self.trees_surf, (tree_offset, horizon_y))

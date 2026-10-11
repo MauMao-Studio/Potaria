@@ -367,7 +367,10 @@ class GLRenderer(BaseRenderer):
 
     def _init_gl_pipeline(self):
         """Sets up the ModernGL full-screen quad shader, world FBO, UI overlay, and virtual surfaces."""
-        self.virtual_surface = pygame.Surface((self.width, self.height)).convert_alpha()
+        try:
+            self.virtual_surface = pygame.Surface((self.width, self.height)).convert_alpha()
+        except pygame.error:
+            self.virtual_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.ui_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
 
         self.program = self.ctx.program(
@@ -449,9 +452,12 @@ class GLRenderer(BaseRenderer):
         """Calculates and sets the OpenGL viewport to fit/fill the window while preserving aspect ratio."""
         if not self.ctx or not hasattr(self.ctx, "viewport"):
             return
-        try:
-            win_w, win_h = pygame.display.get_window_size()
-        except Exception:
+        if self.fullscreen:
+            try:
+                win_w, win_h = pygame.display.get_window_size()
+            except Exception:
+                win_w, win_h = self._get_desktop_resolution()
+        else:
             win_w = getattr(self, "display_width", self.width)
             win_h = getattr(self, "display_height", self.height)
 

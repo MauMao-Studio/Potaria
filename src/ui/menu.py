@@ -71,14 +71,14 @@ class MenuManager:
         self.achievements_scroll_y = 0.0
         self.achievements_dragging = False
 
-        pygame.font.init()
-        self.font_logo = pygame.font.SysFont("Arial", 46, bold=True)
-        self.font_sub = pygame.font.SysFont("Arial", 16, bold=True)
-        self.font_btn = pygame.font.SysFont("Arial", 18, bold=True)
-        self.font_body = pygame.font.SysFont("Arial", 15)
+        from src.ui.theme import font_title, font_semibold, font_bold, font_regular
+        self.font_logo = font_title(46)
+        self.font_sub = font_semibold(16)
+        self.font_btn = font_semibold(18)
+        self.font_body = font_regular(15)
         self.font = self.font_body
-        self.font_title = pygame.font.SysFont("Arial", 26, bold=True)
-        self.font_sm = pygame.font.SysFont("Arial", 13)
+        self.font_title = font_bold(26)
+        self.font_sm = font_regular(13)
 
         # Ambient particles with multi-tone floating sparkles
         self.ambient_particles = []

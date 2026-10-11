@@ -98,9 +98,9 @@ class MiniMap:
         self._cached_chests = []
         self._dirty = True
 
-        pygame.font.init()
-        self.font = pygame.font.SysFont("Arial", 11, bold=True)
-        self.font_sm = pygame.font.SysFont("Arial", 9)
+        from src.ui.theme import font_compact
+        self.font = font_compact(11)
+        self.font_sm = font_compact(9)
 
     def mark_dirty(self):
         """Forces minimap terrain to re-bake on next render."""
@@ -163,18 +163,24 @@ class MiniMap:
                 for ly in range(self.grid_h):
                     ty = min_ty + ly
                     if ty < 0:
-                        if abs(tx) <= 32:
-                            is_player_lit = ((tx - ptx) * (tx - ptx) + (ty - pty) * (ty - pty) <= p_reach_sq)
-                            self.map_surf.set_at((lx, ly), (15, 20, 35) if is_player_lit else (0, 0, 0)) # Cosmic Fog of War
+                        is_sky_citadel = (ty <= -150 and abs(tx) <= 32)
+                        is_player_lit = ((tx - ptx) * (tx - ptx) + (ty - pty) * (ty - pty) <= p_reach_sq)
+                        if is_sky_citadel:
+                            if is_player_lit:
+                                t_id = world.get_tile(tx, ty)
+                                col = TILE_MAP_COLORS.get(t_id, (25, 28, 50)) if t_id != TILE_AIR else (15, 20, 38)
+                                self.map_surf.set_at((lx, ly), col)
+                            else:
+                                self.map_surf.set_at((lx, ly), (0, 0, 0)) # Deep Space Fog of War
                         else:
-                            self.map_surf.set_at((lx, ly), (110, 180, 245)) # Sky
+                            sky_c = (110, 180, 245) if ty >= -40 else ((35, 55, 95) if ty >= -100 else (6, 8, 20))
+                            self.map_surf.set_at((lx, ly), sky_c)
                         continue
                     if ty >= world.height:
                         self.map_surf.set_at((lx, ly), (20, 20, 20)) # Deep Bedrock
                         continue
 
                     # Fog of War Light Check: Tile must be illuminated by sunlight, player light, or placed torches
-                    # Sky Citadel / Boss Arena (ty <= 42, abs(tx) <= 32) is shrouded in cosmic fog of war until explored
                     is_sky_citadel = (ty <= 42 and abs(tx) <= 32)
                     is_sunlit = (ty < surf_y) and not is_sky_citadel
                     is_player_lit = ((tx - ptx) * (tx - ptx) + (ty - pty) * (ty - pty) <= p_reach_sq)

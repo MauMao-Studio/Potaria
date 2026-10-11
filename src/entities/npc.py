@@ -61,9 +61,9 @@ class TownNPC:
         self.anim_timer = 0.0
         self.portrait = asset_factory.npc_portraits.get(npc_type) if hasattr(asset_factory, "npc_portraits") else None
 
-        pygame.font.init()
-        self.font = pygame.font.SysFont("Arial", 11, bold=True)
-        self.font_hint = pygame.font.SysFont("Arial", 10, bold=True)
+        from src.ui.theme import font_semibold, font_compact
+        self.font = font_semibold(11)
+        self.font_hint = font_compact(10)
 
     @property
     def rect(self):

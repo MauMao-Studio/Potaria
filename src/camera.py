@@ -9,7 +9,7 @@ import math
 import random
 import pygame
 from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALED_TILE
-from src.world.chunk_manager import CHUNK_HEIGHT
+from src.world.chunk_manager import CHUNK_HEIGHT, SKY_MIN_Y
 
 class Camera:
     def __init__(self, screen_width=SCREEN_WIDTH, screen_height=SCREEN_HEIGHT):
@@ -18,6 +18,7 @@ class Camera:
         self.screen_width = screen_width
         self.screen_height = screen_height
         
+        self.world_min_y = SKY_MIN_Y * SCALED_TILE
         self.world_max_y = CHUNK_HEIGHT * SCALED_TILE - self.screen_height
 
         # Screen shake
@@ -39,8 +40,8 @@ class Camera:
         dest_x = target_px_x - self.screen_width / 2.0
         dest_y = target_px_y - self.screen_height / 2.0
 
-        # Vertical clamp only (No horizontal limit in infinite world!)
-        dest_y = max(0.0, min(self.world_max_y, dest_y))
+        # Vertical clamp allows soaring into celestial space stratum down to world_min_y
+        dest_y = max(self.world_min_y, min(self.world_max_y, dest_y))
 
         if instant:
             self.x = dest_x

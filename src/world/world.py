@@ -28,18 +28,19 @@ from src.constants import (
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT, BIOME_MUSHROOM, BIOME_DUNGEON,
     TILE_PROPS
 )
-from src.world.chunk_manager import ChunkManager, CHUNK_WIDTH, CHUNK_HEIGHT, SECTION_HEIGHT, NUM_SECTIONS
+from src.world.chunk_manager import ChunkManager, CHUNK_WIDTH, CHUNK_HEIGHT, SKY_MIN_Y, SECTION_HEIGHT, NUM_SECTIONS
 
 class World:
-    def __init__(self, asset_factory, seed=None, world_type="infinite"):
+    def __init__(self, asset_factory, seed=None, world_type="infinite", world_name="Spud World"):
         self.scale = SCALE
         self.scaled_tile = SCALED_TILE
         self.height = CHUNK_HEIGHT
         self.asset_factory = asset_factory
         self.world_type = world_type
+        self.world_name = world_name
 
         # Initialize Chunk Manager
-        self.chunk_manager = ChunkManager(seed, world_type=world_type)
+        self.chunk_manager = ChunkManager(seed, world_type=world_type, world_name=world_name)
         self.seed = self.chunk_manager.seed
 
         # Pre-scale textures for fast blitting at 32x32
@@ -179,6 +180,11 @@ class World:
         self.plant_anim_timer = 0.0
         self.plant_frame_idx = 0
         self.growth_animations = []
+
+    def set_world_name(self, world_name):
+        self.world_name = world_name
+        if hasattr(self, "chunk_manager") and self.chunk_manager:
+            self.chunk_manager.set_world_name(world_name)
 
     def get_biome_spawn(self, player_idx=1):
         """Returns surface spawn coordinates in different biomes for LMS / PvP mode."""
@@ -1080,7 +1086,7 @@ class World:
 
         min_tx = int(cam_x // self.scaled_tile) - 1
         max_tx = int((cam_x + sw) // self.scaled_tile) + 1
-        min_ty = max(0, int(cam_y // self.scaled_tile) - 1)
+        min_ty = max(SKY_MIN_Y, int(cam_y // self.scaled_tile) - 1)
         max_ty = min(self.height - 1, int((cam_y + sh) // self.scaled_tile) + 1)
 
         # Stream and ensure chunks in viewport
@@ -1088,8 +1094,8 @@ class World:
 
         min_cx = min_tx // CHUNK_WIDTH
         max_cx = max_tx // CHUNK_WIDTH
-        min_sy = max(0, min_ty // SECTION_HEIGHT)
-        max_sy = min(NUM_SECTIONS - 1, max(0, max_ty // SECTION_HEIGHT))
+        min_sy = min_ty // SECTION_HEIGHT
+        max_sy = min(NUM_SECTIONS - 1, max_ty // SECTION_HEIGHT)
 
         anim_tiles_to_draw = []
 

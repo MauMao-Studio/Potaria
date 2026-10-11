@@ -27,11 +27,11 @@ class CharacterPanel:
         self.hovered_skill_id = None
         
         # Fonts
-        pygame.font.init()
-        self.font_title = pygame.font.SysFont("Arial", 18, bold=True)
-        self.font = pygame.font.SysFont("Arial", 14)
-        self.font_bold = pygame.font.SysFont("Arial", 13, bold=True)
-        self.font_sm = pygame.font.SysFont("Arial", 11)
+        from src.ui.theme import font_bold, font_regular, font_semibold, font_compact
+        self.font_title = font_bold(18)
+        self.font = font_regular(14)
+        self.font_bold = font_semibold(13)
+        self.font_sm = font_compact(11)
 
         # Slot bounding rects for mouse interaction
         self.slot_rects = {}

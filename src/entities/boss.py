@@ -372,9 +372,12 @@ class DungeonMiniBoss:
 
         target_surf.blit(cur_surf, (sx, sy))
 
-    def render_boss_bar(self, target_surf, font, font_title, bar_y=86):
+    def render_boss_bar(self, target_surf, font, font_title, bar_y=None):
         if self.is_dead:
             return
+        if bar_y is None:
+            bar_y = SCREEN_HEIGHT - 60
+        self.bar_y = bar_y
         bar_w = 480
         bar_h = 20
         bar_x = (SCREEN_WIDTH - bar_w) // 2
@@ -1564,13 +1567,15 @@ class GrandBossSolRho:
 
         target_surf.blit(cur_surf, (sx, sy))
 
-    def render_boss_bar(self, target_surf, font, font_title):
+    def render_boss_bar(self, target_surf, font, font_title, bar_y=None):
         if self.is_dead:
             return
         bar_w = 520
         bar_h = 22
         bar_x = (SCREEN_WIDTH - bar_w) // 2
-        bar_y = 86  # Positioned with clean clearance below hotbar (y=20..64) and player hearts (y=3..75)
+        if bar_y is None:
+            bar_y = SCREEN_HEIGHT - 60  # Centered at screen bottom with ample clearance
+        self.bar_y = bar_y
 
         # Smooth ghost damage lag interpolation
         if not hasattr(self, "display_hp"):

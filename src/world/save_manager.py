@@ -247,6 +247,14 @@ def save_world(world_name, game):
         "chests": chests_data,
     }
 
+    # Flush active chunks to world cache under saves/<world_name>/cache/
+    if hasattr(game, "world") and hasattr(game.world, "chunk_manager"):
+        cm = game.world.chunk_manager
+        cm.set_world_name(world_name)
+        if getattr(cm, "world_cache", None):
+            for cx, chk in list(cm.chunks.items()):
+                cm.world_cache.save_chunk(cx, chk)
+
     with open(save_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
 
@@ -278,7 +286,7 @@ def load_world(world_name, game):
 
     # 1. Rebuild World
     from src.world.world import World
-    game.world = World(game.asset_factory, seed=seed, world_type=world_type)
+    game.world = World(game.asset_factory, seed=seed, world_type=world_type, world_name=world_name)
     game.world_type = world_type
     game.difficulty = difficulty
     game.game_mode = game_mode
@@ -499,7 +507,25 @@ def delete_world(world_name):
     world_dir = get_world_dir(world_name)
     if os.path.exists(world_dir):
         import shutil
-        shutil.rmtree(world_dir)
+        import time
+        import stat
+
+        def handle_remove_readonly(func, path, exc_info):
+            try:
+                os.chmod(path, stat.S_IWRITE)
+                func(path)
+            except Exception:
+                pass
+
+        for attempt in range(10):
+            try:
+                shutil.rmtree(world_dir, onexc=handle_remove_readonly)
+                print(f"[SaveManager] World '{world_name}' deleted.")
+                return True
+            except (PermissionError, OSError):
+                time.sleep(0.05)
+
+        shutil.rmtree(world_dir, ignore_errors=True)
         print(f"[SaveManager] World '{world_name}' deleted.")
         return True
     return False

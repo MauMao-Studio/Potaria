@@ -27,12 +27,12 @@ class CutsceneEngine:
         self.sound_manager = sound_manager
         self.bgm_manager = bgm_manager
 
-        pygame.font.init()
-        self.font_name = pygame.font.SysFont("Arial", 16, bold=True)
-        self.font_text = pygame.font.SysFont("Arial", 16)
-        self.font_prompt = pygame.font.SysFont("Arial", 13, bold=True)
-        self.font_header = pygame.font.SysFont("Arial", 14, bold=True)
-        self.font_skip = pygame.font.SysFont("Arial", 13, bold=True)
+        from src.ui.theme import font_bold, font_regular, font_semibold
+        self.font_name = font_bold(16)
+        self.font_text = font_regular(16)
+        self.font_prompt = font_semibold(13)
+        self.font_header = font_bold(14)
+        self.font_skip = font_semibold(13)
 
         # Full narrative lore script
         self.script = [

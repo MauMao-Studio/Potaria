@@ -34,15 +34,15 @@ class NPCDialogueWindow:
         self.typewriter_chars = 0
         self.typewriter_timer = 0.0
 
-        # Fonts
-        pygame.font.init()
-        self.font_title = pygame.font.SysFont("Arial", 16, bold=True)
-        self.font_role = pygame.font.SysFont("Arial", 12, bold=True)
-        self.font_body = pygame.font.SysFont("Georgia", 13)
-        self.font_btn = pygame.font.SysFont("Arial", 12, bold=True)
-        self.font_sm = pygame.font.SysFont("Arial", 11)
-        self.font_bold = pygame.font.SysFont("Arial", 11, bold=True)
-        self.font_lore = pygame.font.SysFont("Georgia", 11, italic=True)
+        # Fonts (Centralized Typography Theme)
+        from src.ui.theme import font_bold, font_semibold, font_regular, font_compact
+        self.font_title = font_bold(16)
+        self.font_role = font_semibold(12)
+        self.font_body = font_regular(14)
+        self.font_btn = font_semibold(12)
+        self.font_sm = font_compact(11)
+        self.font_bold = font_semibold(11)
+        self.font_lore = font_regular(11)
 
     def open(self, npc, player, world=None, combat=None):
         if combat and hasattr(npc, "check_hostile_enemies"):

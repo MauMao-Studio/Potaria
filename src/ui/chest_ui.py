@@ -30,12 +30,12 @@ class ChestStorageWindow:
         self.active_chest = None
         self.status_message = ""
 
-        pygame.font.init()
-        self.font_title = pygame.font.SysFont("Arial", 14, bold=True)
-        self.font_drag = pygame.font.SysFont("Arial", 13, bold=True)
-        self.font_btn = pygame.font.SysFont("Arial", 11, bold=True)
-        self.font_count = pygame.font.SysFont("Arial", 10, bold=True)
-        self.font_sm = pygame.font.SysFont("Arial", 10)
+        from src.ui.theme import font_bold, font_semibold, font_compact, font_regular
+        self.font_title = font_bold(14)
+        self.font_drag = font_semibold(13)
+        self.font_btn = font_semibold(11)
+        self.font_count = font_compact(10)
+        self.font_sm = font_regular(10)
         self.tooltip_mode = "detailed"
 
     def open(self, chest, player=None, inventory=None):

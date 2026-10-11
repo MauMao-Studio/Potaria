@@ -2313,11 +2313,11 @@ class Inventory:
         self.last_learned_timer = 0.0
         self.tooltip_mode = "detailed"
 
-        # Fonts
-        pygame.font.init()
-        self.font = pygame.font.Font(None, 18)
-        self.font_bold = pygame.font.Font(None, 20)
-        self.font_sm = pygame.font.Font(None, 16)
+        # Fonts (Centralized Typography Theme)
+        from src.ui.theme import font_regular, font_semibold, font_compact
+        self.font = font_regular(14)
+        self.font_bold = font_semibold(16)
+        self.font_sm = font_compact(11)
 
         # Set initial loadout based on difficulty mode
         self.set_difficulty_loadout(difficulty)

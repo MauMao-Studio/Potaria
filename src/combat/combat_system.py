@@ -129,9 +129,9 @@ class CombatManager:
         self.next_mob_id = 1
         self.multiplayer_player_positions = []
 
-        pygame.font.init()
-        self.font = pygame.font.SysFont("Arial", 14, bold=True)
-        self.font_crit = pygame.font.SysFont("Arial", 18, bold=True)
+        from src.ui.theme import font_bold
+        self.font = font_bold(14)
+        self.font_crit = font_bold(18)
 
         self._catalog_rarity_pools = {
             "common": [], "uncommon": [], "rare": [], "epic": [],

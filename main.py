@@ -120,11 +120,12 @@ class PotariaGame:
         self.show_profiler = False
         self.boost_mode = True
 
-        # Fonts
-        self.font = pygame.font.SysFont("Arial", 14)
-        self.title_font = pygame.font.SysFont("Arial", 28, bold=True)
-        self.boss_font = pygame.font.SysFont("Arial", 15, bold=True)
-        self.font_fps = pygame.font.SysFont("Arial", 11, bold=True)
+        # Fonts (Centralized Typography Theme)
+        from src.ui.theme import font_regular, font_bold, font_title, font_compact
+        self.font = font_regular(14)
+        self.title_font = font_title(28)
+        self.boss_font = font_bold(16)
+        self.font_fps = font_compact(11)
 
         # 1. Initialize Asset Synthesis Engine
         print(f"[Engine] Synthesizing all procedural Potaria assets (Developer: {DEVELOPER})...")
@@ -177,6 +178,11 @@ class PotariaGame:
         self.achievement_manager = AchievementManager(sound_manager=self.sound_manager)
         self.menu = MenuManager(self.asset_factory, self.sound_manager, self.bgm, self.achievement_manager)
         self._apply_graphics_settings()
+
+        # 7b. Modding & DLC Expansion System
+        from src.modding.mod_manager import get_mod_manager
+        self.mod_manager = get_mod_manager()
+        self.mod_manager.load_all(asset_factory=self.asset_factory, crafting_system=self.crafting)
 
         # 8. Mobile Virtual Touch Controller (Cross-Platform Controls)
         self.touch_controller = TouchController(self.asset_factory, self.sound_manager)
@@ -1657,7 +1663,7 @@ class PotariaGame:
             # 0c. Dungeon Altar (Summon / Awaken Biome Boss)
             if t_id == TILE_DUNGEON_ALTAR:
                 if not self.combat.boss:
-                    if ty <= 40 and abs(tx) <= 25 and all(self.combat.defeated_mini_bosses.values()):
+                    if ty <= -150 and abs(tx) <= 25 and all(self.combat.defeated_mini_bosses.values()):
                         self.combat.spawn_grand_boss(tile_world_x, tile_world_y, player=self.player)
                     elif abs(tx - 80) <= 20:
                         self.combat.spawn_boss(tile_world_x, tile_world_y, boss_cls="ignis_colossus", player=self.player)
@@ -2576,9 +2582,9 @@ class PotariaGame:
                     if not self.combat.defeated_mini_bosses.get("necro_tuber", False):
                         self.combat.spawn_boss(140 * SCALED_TILE, 215 * SCALED_TILE, boss_cls="necro_tuber", player=self.player)
 
-                # 5. Sky Citadel (Grand Boss Sol-Rho)
-                elif (abs(ptx) <= 22 and 18 <= pty <= 38) and all(self.combat.defeated_mini_bosses.values()):
-                    self.combat.spawn_grand_boss(0.0, 24 * SCALED_TILE, player=self.player)
+                # 5. Sky Citadel (Grand Boss Sol-Rho in Deep Celestial Space)
+                elif (abs(ptx) <= 22 and -185 <= pty <= -155) and all(self.combat.defeated_mini_bosses.values()):
+                    self.combat.spawn_grand_boss(0.0, -165 * SCALED_TILE, player=self.player)
 
         # 3. LAN Multiplayer Synchronization
         if self.client and self.client.connected:
@@ -3056,11 +3062,11 @@ class PotariaGame:
         for dn in self.combat.damage_numbers:
             dn.render(ui_surf, self.camera, self.font)
 
-        # Layer 8: Boss Health Bar (if active)
+        # Layer 8: Boss Health Bar (Centered at screen bottom so it never covers the fight)
         if self.combat.boss:
             self.combat.boss.render_boss_bar(ui_surf, self.boss_font, self.title_font)
         if getattr(self.combat, "secondary_boss", None):
-            self.combat.secondary_boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=142)
+            self.combat.secondary_boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=SCREEN_HEIGHT - 120)
 
         # Layer 9: HUD, Hotbar, Inventory, Reticle, Party, Minimap & Chat
         with self.profiler.section("render_hud"):
@@ -3068,7 +3074,7 @@ class PotariaGame:
             self.hud.render(
                 ui_surf, self.player, self.inventory, self.crafting,
                 self.camera, mouse_x, mouse_y, world=self.world, combat=self.combat, lan_client=self.client,
-                render_dragged=False
+                render_dragged=False, sky=self.sky
             )
 
             # Layer 9.5: Character & Paperdoll Equipment Panel (Chroisen Style)
