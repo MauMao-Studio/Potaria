@@ -230,7 +230,21 @@ class BaseRenderer(ABC):
             "particle_density": "high",
         }
 
+    def get_ui_surface(self) -> pygame.Surface:
+        """Returns the pygame.Surface dedicated to crisp UI/HUD rendering (without bloom)."""
+        return self.get_surface()
+
+    def set_display_resolution(self, width: int, height: int, fullscreen: Optional[bool] = None) -> bool:
+        """Sets the target display resolution mode (e.g. 1920x1080, 1600x900, 1366x768, 1280x720)."""
+        fs = self.fullscreen if fullscreen is None else fullscreen
+        return self.set_mode(width, height, fullscreen=fs)
+
+    def window_to_virtual_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
+        """Translates window mouse coordinates to virtual screen coordinates."""
+        return pos
+
     @abstractmethod
     def cleanup(self):
         """Releases all graphics and windowing resources cleanly."""
         pass
+

@@ -123,7 +123,8 @@ class MenuManager:
             "bloom": True,
             "shaders": True,
             "vignette": True,
-            "water_effects": True,
+            "water_effects": False,
+            "resolution": "1920x1080",
             "color_grade": "vibrant",
             "lighting_quality": "high",
             "particle_density": "high",
@@ -131,6 +132,7 @@ class MenuManager:
             "damage_numbers": True,
             "tooltips": "detailed",
         }
+        self.resolutions = ["1920x1080", "1600x900", "1366x768", "1280x720"]
         self.settings_tab = "graphics"
 
         # Key Bindings / Input Mapping
@@ -174,14 +176,14 @@ class MenuManager:
         self.btn_shaders = Button(gx, gy_start + 1 * gy_step, gw, gh, "POST-PROCESSING: ON", "toggle_shaders")
         self.btn_bloom = Button(gx, gy_start + 2 * gy_step, gw, gh, "BLOOM SHADERS: ON", "toggle_bloom")
         self.btn_vignette = Button(gx, gy_start + 3 * gy_step, gw, gh, "AMBIENT VIGNETTE: ON", "toggle_vignette")
-        self.btn_water = Button(gx, gy_start + 4 * gy_step, gw, gh, "WATER WAVES: ON", "toggle_water_effects")
+        self.btn_res = Button(gx, gy_start + 4 * gy_step, gw, gh, f"RESOLUTION: {self.settings['resolution']}", "cycle_resolution")
         self.btn_color = Button(gx, gy_start + 5 * gy_step, gw, gh, "COLOR GRADE: VIBRANT", "cycle_color_grade")
         self.btn_light = Button(gx, gy_start + 6 * gy_step, gw, gh, "LIGHTING: HIGH", "cycle_lighting_quality")
         self.btn_part = Button(gx, gy_start + 7 * gy_step, gw, gh, "PARTICLES: HIGH", "cycle_particle_density")
         self.btn_disp = Button(gx, gy_start + 8 * gy_step, gw, gh, "DISPLAY: WINDOWED", "toggle_display")
         self.graphics_buttons = [
             self.btn_renderer, self.btn_shaders, self.btn_bloom, self.btn_vignette,
-            self.btn_water, self.btn_color, self.btn_light, self.btn_part, self.btn_disp
+            self.btn_res, self.btn_color, self.btn_light, self.btn_part, self.btn_disp
         ]
 
         # 3. Audio Tab Buttons (coordinates hit historical unit test click targets)
@@ -313,7 +315,7 @@ class MenuManager:
                     for k in (
                         "master_volume", "bgm_volume", "sfx_volume", "fullscreen",
                         "screen_shake", "touch_controls", "touch_opacity", "renderer",
-                        "bloom", "shaders", "vignette", "water_effects", "color_grade",
+                        "bloom", "shaders", "vignette", "water_effects", "resolution", "color_grade",
                         "lighting_quality", "particle_density", "boost_mode",
                         "damage_numbers", "tooltips"
                     ):
@@ -369,6 +371,9 @@ class MenuManager:
                 btn.text = "BLOOM SHADERS: ON" if self.settings.get("bloom", True) else "BLOOM SHADERS: OFF"
             elif btn.action == "toggle_vignette":
                 btn.text = "VIGNETTE: ON" if self.settings.get("vignette", True) else "VIGNETTE: OFF"
+            elif btn.action == "cycle_resolution":
+                res = str(self.settings.get("resolution", "1920x1080"))
+                btn.text = f"RESOLUTION: {res}"
             elif btn.action == "toggle_water_effects":
                 btn.text = "WATER WAVES: ON" if self.settings.get("water_effects", True) else "WATER WAVES: OFF"
             elif btn.action == "cycle_color_grade":
@@ -795,6 +800,14 @@ class MenuManager:
                     self._refresh_settings_button_labels()
                     self.save_settings()
                     return ("set_vignette", self.settings["vignette"])
+                elif btn.action == "cycle_resolution":
+                    cur_r = str(self.settings.get("resolution", "1920x1080"))
+                    idx = self.resolutions.index(cur_r) if cur_r in self.resolutions else 0
+                    next_r = self.resolutions[(idx + 1) % len(self.resolutions)]
+                    self.settings["resolution"] = next_r
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("set_resolution", next_r)
                 elif btn.action == "toggle_water_effects":
                     self.settings["water_effects"] = not self.settings.get("water_effects", True)
                     self._refresh_settings_button_labels()
@@ -1092,7 +1105,7 @@ class MenuManager:
                 ("Post-Processing", "Master GLSL shader pipeline toggle"),
                 ("Bloom Aura Glow", "Emissive dynamic lighting on torches & magic"),
                 ("Atmospheric Vignette", "Cinematic dark edge shading & focus"),
-                ("Water Wave Refraction", "Sinusoidal surface ripples & fluid distortion"),
+                ("Display Resolution", "Windowed / fullscreen viewport resolution"),
                 ("Color Atmosphere", "Rich saturation & contrast tone grading"),
                 ("Dynamic Lighting", "Cellular shadow propagation accuracy"),
                 ("Particle Density", "Debris, weapon slash sparks & spell effects"),

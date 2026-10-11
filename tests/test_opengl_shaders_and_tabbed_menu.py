@@ -179,7 +179,7 @@ class TestTabbedSettingsMenu(unittest.TestCase):
         keys = [
             "master_volume", "bgm_volume", "sfx_volume", "fullscreen",
             "screen_shake", "renderer", "bloom", "shaders", "vignette",
-            "water_effects", "color_grade", "lighting_quality",
+            "water_effects", "resolution", "color_grade", "lighting_quality",
             "particle_density", "boost_mode", "damage_numbers", "tooltips"
         ]
         for k in keys:
@@ -190,10 +190,13 @@ class TestTabbedSettingsMenu(unittest.TestCase):
         btn_shaders = next(b for b in self.menu.settings_buttons if b.action == "toggle_shaders")
         btn_bloom = next(b for b in self.menu.settings_buttons if b.action == "toggle_bloom")
         btn_vignette = next(b for b in self.menu.settings_buttons if b.action == "toggle_vignette")
-        btn_water = next(b for b in self.menu.settings_buttons if b.action == "toggle_water_effects")
+        btn_res = next(b for b in self.menu.settings_buttons if b.action == "cycle_resolution")
         btn_cg = next(b for b in self.menu.settings_buttons if b.action == "cycle_color_grade")
         btn_lq = next(b for b in self.menu.settings_buttons if b.action == "cycle_lighting_quality")
         btn_pd = next(b for b in self.menu.settings_buttons if b.action == "cycle_particle_density")
+
+        # Verify toggle_water_effects is removed from UI buttons
+        self.assertFalse(any(b.action == "toggle_water_effects" for b in self.menu.settings_buttons))
 
         # Shaders toggle
         cur_s = self.menu.settings.get("shaders", True)
@@ -207,11 +210,11 @@ class TestTabbedSettingsMenu(unittest.TestCase):
         self.assertEqual(act, ("set_vignette", not cur_v))
         self.assertEqual(self.menu.settings["vignette"], not cur_v)
 
-        # Water effects toggle
-        cur_w = self.menu.settings.get("water_effects", True)
-        act = self.menu.handle_click((btn_water.rect.centerx, btn_water.rect.centery))
-        self.assertEqual(act, ("set_water_effects", not cur_w))
-        self.assertEqual(self.menu.settings["water_effects"], not cur_w)
+        # Resolution cycle
+        self.menu.settings["resolution"] = "1920x1080"
+        act = self.menu.handle_click((btn_res.rect.centerx, btn_res.rect.centery))
+        self.assertEqual(act, ("set_resolution", "1600x900"))
+        self.assertEqual(self.menu.settings["resolution"], "1600x900")
 
         # Color grade cycle
         self.menu.settings["color_grade"] = "vibrant"
@@ -274,6 +277,13 @@ class TestPotariaGameSettingsWiring(unittest.TestCase):
 
         game._execute_menu_action(("set_tooltips", "compact"))
         self.assertEqual(game.inventory.tooltip_mode, "compact")
+
+        game._execute_menu_action(("set_resolution", "1600x900"))
+        self.assertEqual(game.renderer_manager.display_width, 1600)
+        self.assertEqual(game.renderer_manager.display_height, 900)
+
+        game._execute_menu_action("cycle_resolution")
+        self.assertEqual(game.menu.settings["resolution"], "1366x768")
 
 
 if __name__ == "__main__":

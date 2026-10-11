@@ -83,12 +83,6 @@ class GLRenderer(BaseRenderer):
 
     void main() {
         vec2 uv = v_text;
-        if (u_shaders_enabled == 1 && u_water_distortion_enabled == 1) {
-            float wave_x = sin(v_text.y * 50.0 + u_time * 3.0) * 0.0016 * u_water_distortion_intensity;
-            float wave_y = cos(v_text.x * 40.0 + u_time * 2.5) * 0.0012 * u_water_distortion_intensity;
-            uv += vec2(wave_x, wave_y);
-        }
-
         vec4 base_color = texture(u_texture, uv);
 
         if (u_shaders_enabled == 0) {
@@ -157,6 +151,41 @@ class GLRenderer(BaseRenderer):
     }
     """
 
+    UI_VERTEX_SHADER: str = """
+    #version 330 core
+    in vec2 in_vert;
+    in vec2 in_text;
+    out vec2 v_text;
+    void main() {
+        gl_Position = vec4(in_vert, 0.0, 1.0);
+        v_text = in_text;
+    }
+    """
+
+    UI_FRAGMENT_SHADER: str = """
+    #version 330 core
+    uniform sampler2D u_ui_texture;
+    in vec2 v_text;
+    out vec4 f_color;
+    void main() {
+        vec4 col = texture(u_ui_texture, v_text);
+        if (col.a <= 0.001) {
+            discard;
+        }
+        f_color = col;
+    }
+    """
+
+    FBO_FRAGMENT_SHADER: str = """
+    #version 330 core
+    uniform sampler2D u_fbo_texture;
+    in vec2 v_text;
+    out vec4 f_color;
+    void main() {
+        f_color = texture(u_fbo_texture, v_text);
+    }
+    """
+
     @classmethod
     def reset_fallback_log(cls):
         """Resets the fallback warning logged state (primarily for automated unit tests)."""
@@ -175,13 +204,26 @@ class GLRenderer(BaseRenderer):
         self._using_fallback = False
         self.fallback_reason = ""
 
+        # Display and viewport settings
+        self.display_width = width
+        self.display_height = height
+        self.viewport_rect = (0, 0, width, height)
+
         # ModernGL resources
         self.ctx = None
         self.virtual_surface: Optional[pygame.Surface] = None
+        self.ui_surface: Optional[pygame.Surface] = None
         self.screen_texture = None
+        self.ui_texture = None
         self.program = None
+        self.ui_program = None
         self.vbo = None
         self.vao = None
+        self.ui_vao = None
+        self.world_fbo = None
+        self.world_fbo_texture = None
+        self.fbo_program = None
+        self.fbo_vao = None
         self.texture_cache: Dict[int, any] = {}
 
         # Graphics and Post-Processing Settings
@@ -227,10 +269,20 @@ class GLRenderer(BaseRenderer):
 
         flags = pygame.OPENGL | pygame.DOUBLEBUF
         if self.fullscreen:
+            desktop_sizes = getattr(pygame.display, "get_desktop_sizes", lambda: [])()
+            if desktop_sizes:
+                target_w, target_h = desktop_sizes[0]
+            else:
+                info = pygame.display.Info()
+                target_w = getattr(info, "current_w", 1920)
+                target_h = getattr(info, "current_h", 1080)
             flags |= pygame.FULLSCREEN
+        else:
+            target_w = getattr(self, "display_width", self.width)
+            target_h = getattr(self, "display_height", self.height)
 
         try:
-            pygame.display.set_mode((self.width, self.height), flags)
+            pygame.display.set_mode((target_w, target_h), flags)
             self.ctx = moderngl.create_context()
         except Exception as e:
             self._engage_fallback(f"OpenGL context creation failed: {e}")
@@ -248,33 +300,18 @@ class GLRenderer(BaseRenderer):
 
     def _cleanup_gl_resources(self):
         """Safely releases ModernGL textures, buffers, arrays, programs, and contexts."""
-        if self.screen_texture:
-            try:
-                self.screen_texture.release()
-            except Exception:
-                pass
-            self.screen_texture = None
-
-        if self.vbo:
-            try:
-                self.vbo.release()
-            except Exception:
-                pass
-            self.vbo = None
-
-        if self.vao:
-            try:
-                self.vao.release()
-            except Exception:
-                pass
-            self.vao = None
-
-        if self.program:
-            try:
-                self.program.release()
-            except Exception:
-                pass
-            self.program = None
+        for res_name in (
+            "screen_texture", "ui_texture", "world_fbo_texture",
+            "vbo", "vao", "ui_vao", "fbo_vao",
+            "world_fbo", "program", "ui_program", "fbo_program"
+        ):
+            res = getattr(self, res_name, None)
+            if res:
+                try:
+                    res.release()
+                except Exception:
+                    pass
+                setattr(self, res_name, None)
 
         if self.ctx:
             try:
@@ -285,6 +322,7 @@ class GLRenderer(BaseRenderer):
 
         self.texture_cache.clear()
         self.virtual_surface = None
+        self.ui_surface = None
 
     def _engage_fallback(self, reason: str):
         """Activates graceful fallback to SurfaceRenderer."""
@@ -319,8 +357,9 @@ class GLRenderer(BaseRenderer):
         self.initialized = True
 
     def _init_gl_pipeline(self):
-        """Sets up the ModernGL full-screen quad shader and virtual surface backbuffer."""
+        """Sets up the ModernGL full-screen quad shader, world FBO, UI overlay, and virtual surfaces."""
         self.virtual_surface = pygame.Surface((self.width, self.height)).convert_alpha()
+        self.ui_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
 
         self.program = self.ctx.program(
             vertex_shader=self.VERTEX_SHADER,
@@ -350,13 +389,77 @@ class GLRenderer(BaseRenderer):
         )
         self.screen_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
-        self._update_shader_uniforms()
+        # UI Overlay Pipeline (crisp, zero bloom, zero distortion, alpha-blended)
+        try:
+            self.ui_program = self.ctx.program(
+                vertex_shader=self.UI_VERTEX_SHADER,
+                fragment_shader=self.UI_FRAGMENT_SHADER,
+            )
+            self.ui_vao = self.ctx.simple_vertex_array(
+                self.ui_program,
+                self.vbo,
+                "in_vert",
+                "in_text",
+            )
+            self.ui_texture = self.ctx.texture(
+                (self.width, self.height),
+                4,
+                pygame.image.tobytes(self.ui_surface, "RGBA"),
+            )
+            self.ui_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        except Exception:
+            self.ui_program = None
+            self.ui_vao = None
+            self.ui_texture = None
 
-        if hasattr(self.ctx, "viewport"):
+        # Post-Processing World FBO Pipeline
+        try:
+            self.fbo_program = self.ctx.program(
+                vertex_shader=self.VERTEX_SHADER,
+                fragment_shader=self.FBO_FRAGMENT_SHADER,
+            )
+            self.fbo_vao = self.ctx.simple_vertex_array(
+                self.fbo_program,
+                self.vbo,
+                "in_vert",
+                "in_text",
+            )
+            self.world_fbo_texture = self.ctx.texture((self.width, self.height), 4)
+            self.world_fbo_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
+            self.world_fbo = self.ctx.framebuffer(color_attachments=[self.world_fbo_texture])
+        except Exception:
+            self.fbo_program = None
+            self.fbo_vao = None
+            self.world_fbo_texture = None
+            self.world_fbo = None
+
+        self._update_shader_uniforms()
+        self._update_viewport()
+
+    def _update_viewport(self):
+        """Calculates and sets the OpenGL viewport to fit/fill the window while preserving aspect ratio."""
+        if not self.ctx or not hasattr(self.ctx, "viewport"):
+            return
+        if self.fullscreen:
             try:
-                self.ctx.viewport = (0, 0, self.width, self.height)
+                win_w, win_h = pygame.display.get_window_size()
             except Exception:
-                pass
+                win_w, win_h = self.display_width, self.display_height
+        else:
+            win_w = getattr(self, "display_width", self.width)
+            win_h = getattr(self, "display_height", self.height)
+
+        scale = min(win_w / float(self.width), win_h / float(self.height))
+        vw = max(1, int(round(self.width * scale)))
+        vh = max(1, int(round(self.height * scale)))
+        vx = max(0, (win_w - vw) // 2)
+        vy = max(0, (win_h - vh) // 2)
+
+        self.viewport_rect = (vx, vy, vw, vh)
+        try:
+            self.ctx.viewport = (vx, vy, vw, vh)
+        except Exception:
+            pass
 
     def _update_shader_uniforms(self):
         """Updates active shader uniforms for bloom, vignette, water distortion, color grading, resolution, and time."""
@@ -392,6 +495,8 @@ class GLRenderer(BaseRenderer):
 
         if self.virtual_surface:
             self.virtual_surface.fill(color)
+        if self.ui_surface:
+            self.ui_surface.fill((0, 0, 0, 0))
         if self.ctx:
             r = color[0] / 255.0
             g = color[1] / 255.0
@@ -492,10 +597,44 @@ class GLRenderer(BaseRenderer):
 
         if self.ctx and self.screen_texture and self.virtual_surface and self.vao:
             self.time += 0.016
+
+            # Step 1: Render in-game world/lighting pass through post-processing shader into FBO (or screen)
             self.screen_texture.write(pygame.image.tobytes(self.virtual_surface, "RGBA"))
             self.screen_texture.use(location=0)
             self._update_shader_uniforms()
-            self.vao.render(moderngl.TRIANGLE_STRIP)
+
+            if self.world_fbo and self.world_fbo_texture and self.fbo_vao and self.fbo_program:
+                # 1A: Render post-processed world into FBO
+                self.world_fbo.use()
+                self.ctx.viewport = (0, 0, self.width, self.height)
+                self.ctx.disable(moderngl.BLEND)
+                self.vao.render(moderngl.TRIANGLE_STRIP)
+
+                # 1B: Blit FBO texture to default screen framebuffer with target display viewport
+                self.ctx.screen.use()
+                self._update_viewport()
+                self.ctx.clear(0.0, 0.0, 0.0, 1.0)
+                self.world_fbo_texture.use(location=0)
+                if "u_fbo_texture" in self.fbo_program:
+                    self.fbo_program["u_fbo_texture"].value = 0
+                self.fbo_vao.render(moderngl.TRIANGLE_STRIP)
+            else:
+                # Direct fallback pass to screen
+                self._update_viewport()
+                self.ctx.clear(0.0, 0.0, 0.0, 1.0)
+                self.ctx.disable(moderngl.BLEND)
+                self.vao.render(moderngl.TRIANGLE_STRIP)
+
+            # Step 2: Blit/render the UI directly onto the final frame without bloom/distortion
+            if self.ui_surface and self.ui_texture and self.ui_vao and self.ui_program:
+                self.ctx.enable(moderngl.BLEND)
+                self.ctx.blend_func = moderngl.DEFAULT_BLENDING
+                self.ui_texture.write(pygame.image.tobytes(self.ui_surface, "RGBA"))
+                self.ui_texture.use(location=0)
+                if "u_ui_texture" in self.ui_program:
+                    self.ui_program["u_ui_texture"].value = 0
+                self.ui_vao.render(moderngl.TRIANGLE_STRIP)
+
             pygame.display.flip()
 
     def draw_projectiles_batch(
@@ -725,19 +864,85 @@ class GLRenderer(BaseRenderer):
             self.fallback_renderer.get_surface() if self.fallback_renderer else pygame.Surface((self.width, self.height))
         )
 
+    def get_ui_surface(self) -> pygame.Surface:
+        """Returns the dedicated UI surface for clean, bloom-free interface rendering."""
+        if self._using_fallback and self.fallback_renderer:
+            return self.fallback_renderer.get_ui_surface()
+        if self.ui_surface is None or self.ui_surface.get_size() != (self.width, self.height):
+            self.ui_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        return self.ui_surface
+
+    def window_to_virtual_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
+        """Translates window mouse coordinates to virtual screen coordinates."""
+        if self._using_fallback and self.fallback_renderer:
+            return self.fallback_renderer.window_to_virtual_pos(pos)
+        if not self.ctx:
+            return pos
+        try:
+            win_w, win_h = pygame.display.get_window_size()
+        except Exception:
+            return pos
+
+        vx, vy, vw, vh = getattr(self, "viewport_rect", (0, 0, win_w, win_h))
+        top_in_win = win_h - (vy + vh)
+        if vw <= 0 or vh <= 0:
+            return pos
+
+        mx, my = pos
+        rel_x = (mx - vx) / float(vw)
+        rel_y = (my - top_in_win) / float(vh)
+
+        vx_scaled = int(round(rel_x * self.width))
+        vy_scaled = int(round(rel_y * self.height))
+        return max(0, min(self.width - 1, vx_scaled)), max(0, min(self.height - 1, vy_scaled))
+
+    def set_display_resolution(self, width: int, height: int, fullscreen: Optional[bool] = None) -> bool:
+        """Sets target display resolution mode (e.g. 1920x1080, 1600x900, 1366x768, 1280x720)."""
+        if fullscreen is not None:
+            self.fullscreen = fullscreen
+        self.display_width = width
+        self.display_height = height
+        if self._using_fallback and self.fallback_renderer:
+            return self.fallback_renderer.set_display_resolution(width, height, self.fullscreen)
+        return self._apply_display_mode()
+
     def set_mode(self, width: int, height: int, fullscreen: bool = False) -> bool:
         self.width = width
         self.height = height
         self.fullscreen = fullscreen
+        self.display_width = width
+        self.display_height = height
         if self._using_fallback and self.fallback_renderer:
             return self.fallback_renderer.set_mode(width, height, fullscreen)
-        res = self.initialize()
-        if self.ctx and hasattr(self.ctx, "viewport"):
-            try:
-                self.ctx.viewport = (0, 0, self.width, self.height)
-            except Exception:
-                pass
-        return res
+        return self._apply_display_mode()
+
+    def _apply_display_mode(self) -> bool:
+        """Applies windowed or borderless fullscreen display mode smoothly without monitor stalling."""
+        flags = pygame.OPENGL | pygame.DOUBLEBUF
+        if self.fullscreen:
+            desktop_sizes = getattr(pygame.display, "get_desktop_sizes", lambda: [])()
+            if desktop_sizes:
+                target_w, target_h = desktop_sizes[0]
+            else:
+                info = pygame.display.Info()
+                target_w = getattr(info, "current_w", 1920)
+                target_h = getattr(info, "current_h", 1080)
+            flags |= pygame.FULLSCREEN
+        else:
+            target_w = getattr(self, "display_width", self.width)
+            target_h = getattr(self, "display_height", self.height)
+
+        try:
+            pygame.display.set_mode((target_w, target_h), flags)
+            if not self.ctx:
+                self.ctx = moderngl.create_context()
+                self._init_gl_pipeline()
+            else:
+                self._update_viewport()
+            return True
+        except Exception as e:
+            self._engage_fallback(f"OpenGL display mode change failed: {e}")
+            return True
 
     def is_hardware_accelerated(self) -> bool:
         return not self._using_fallback

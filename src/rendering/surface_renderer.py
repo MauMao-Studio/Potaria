@@ -26,6 +26,9 @@ class SurfaceRenderer(BaseRenderer):
     ):
         super().__init__(width=width, height=height, title=title, fullscreen=fullscreen)
         self.surface: Optional[pygame.Surface] = None
+        self.ui_surface: Optional[pygame.Surface] = None
+        self.display_width: int = width
+        self.display_height: int = height
         self.shaders_enabled: bool = True
         self.bloom_enabled: bool = False
         self.bloom_intensity: float = 0.0
@@ -70,9 +73,11 @@ class SurfaceRenderer(BaseRenderer):
         return True
 
     def clear(self, color: Tuple[int, int, int] = (0, 0, 0)):
-        """Fills the primary display surface with a solid color."""
+        """Fills the primary display surface with a solid color and clears the UI layer."""
         if self.surface:
             self.surface.fill(color)
+        if self.ui_surface:
+            self.ui_surface.fill((0, 0, 0, 0))
 
     def draw_sprite(
         self,
@@ -144,7 +149,9 @@ class SurfaceRenderer(BaseRenderer):
             pygame.draw.circle(self.surface, color, center, int(radius), width)
 
     def present(self):
-        """Presents the frame by flipping the display buffer."""
+        """Presents the frame by compositing the UI layer and flipping the display buffer."""
+        if self.surface and self.ui_surface:
+            self.surface.blit(self.ui_surface, (0, 0))
         pygame.display.flip()
 
     def get_surface(self) -> pygame.Surface:
@@ -153,12 +160,25 @@ class SurfaceRenderer(BaseRenderer):
             self.initialize()
         return self.surface
 
+    def get_ui_surface(self) -> pygame.Surface:
+        """Returns the dedicated UI surface for clean, bloom-free interface rendering."""
+        if self.ui_surface is None or self.ui_surface.get_size() != (self.width, self.height):
+            self.ui_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        return self.ui_surface
+
     def set_mode(self, width: int, height: int, fullscreen: bool = False) -> bool:
         """Reconfigures resolution and fullscreen state."""
         self.width = width
         self.height = height
         self.fullscreen = fullscreen
         return self.initialize()
+
+    def set_display_resolution(self, width: int, height: int, fullscreen: Optional[bool] = None) -> bool:
+        """Sets target display resolution mode."""
+        fs = self.fullscreen if fullscreen is None else fullscreen
+        self.display_width = width
+        self.display_height = height
+        return self.set_mode(self.width, self.height, fullscreen=fs)
 
     def is_hardware_accelerated(self) -> bool:
         """SurfaceRenderer uses CPU-side software blitting."""
@@ -323,4 +343,5 @@ class SurfaceRenderer(BaseRenderer):
     def cleanup(self):
         """Releases renderer resources."""
         self.surface = None
+        self.ui_surface = None
         self.initialized = False

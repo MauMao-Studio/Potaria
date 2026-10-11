@@ -36,6 +36,8 @@ class RendererManager:
     def __init__(self):
         self.width = 1280
         self.height = 720
+        self.display_width = 1280
+        self.display_height = 720
         self.title = "Potaria"
         self.fullscreen = False
         self.requested_type = RENDERER_HARDWARE
@@ -152,6 +154,33 @@ class RendererManager:
     def surface(self) -> pygame.Surface:
         """Returns the active pygame.Surface for rendering."""
         return self.renderer.get_surface()
+
+    @property
+    def ui_surface(self) -> pygame.Surface:
+        """Returns the active pygame.Surface for crisp UI/HUD rendering (without bloom)."""
+        return self.renderer.get_ui_surface()
+
+    def get_ui_surface(self) -> pygame.Surface:
+        """Explicit getter for UI surface."""
+        return self.renderer.get_ui_surface()
+
+    def window_to_virtual_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
+        """Translates window mouse coordinates to virtual screen coordinates."""
+        if hasattr(self.renderer, "window_to_virtual_pos"):
+            return self.renderer.window_to_virtual_pos(pos)
+        return pos
+
+    def set_display_resolution(self, width: int, height: int, fullscreen: Optional[bool] = None) -> BaseRenderer:
+        """Sets the display resolution for the active renderer."""
+        fs = self.fullscreen if fullscreen is None else fullscreen
+        self.display_width = width
+        self.display_height = height
+        self.fullscreen = fs
+        if hasattr(self.active_renderer, "set_display_resolution"):
+            self.active_renderer.set_display_resolution(width, height, fullscreen=fs)
+        elif self.active_renderer:
+            self.active_renderer.set_mode(self.width, self.height, fullscreen=fs)
+        return self.active_renderer
 
     @property
     def is_hardware(self) -> bool:

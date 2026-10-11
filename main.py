@@ -102,6 +102,7 @@ class PotariaGame:
         )
         self.renderer = self.renderer_manager.renderer
         self.screen = self.renderer_manager.surface
+        self.ui_screen = self.renderer_manager.ui_surface
         self.clock = pygame.time.Clock()
         self.running = True
         self.paused = False
@@ -593,7 +594,7 @@ class PotariaGame:
             if self.menu.state == STATE_PLAYING and not self.paused:
                 self.update_gameplay(dt)
             else:
-                mouse_pos = pygame.mouse.get_pos()
+                mouse_pos = self.get_mouse_pos()
                 self.menu.update(dt, mouse_pos)
                 if self.menu.state == STATE_VICTORY:
                     self.bgm.update(dt, scene="victory")
@@ -627,6 +628,13 @@ class PotariaGame:
         pygame.quit()
         sys.exit()
 
+    def get_mouse_pos(self) -> tuple[int, int]:
+        """Translates window mouse coordinates to virtual screen coordinates."""
+        raw_pos = pygame.mouse.get_pos()
+        if hasattr(self, "renderer_manager"):
+            return self.renderer_manager.window_to_virtual_pos(raw_pos)
+        return raw_pos
+
     def toggle_fullscreen(self):
         """Toggles fullscreen display mode across all game states."""
         self.fullscreen = not self.fullscreen
@@ -639,6 +647,7 @@ class PotariaGame:
             )
             self.renderer = self.renderer_manager.renderer
             self.screen = self.renderer_manager.surface
+            self.ui_screen = self.renderer_manager.ui_surface
         elif self.fullscreen:
             try:
                 self.screen = pygame.display.set_mode(
@@ -668,11 +677,30 @@ class PotariaGame:
                     pygame.DOUBLEBUF
                 )
 
+    def set_resolution(self, res_str: str):
+        """Sets display resolution mode (e.g. 1920x1080, 1600x900, 1366x768, 1280x720)."""
+        try:
+            parts = str(res_str).lower().split("x")
+            if len(parts) == 2:
+                w, h = int(parts[0]), int(parts[1])
+                if hasattr(self, "renderer_manager"):
+                    self.renderer_manager.set_display_resolution(w, h, fullscreen=self.fullscreen)
+                    self.renderer = self.renderer_manager.renderer
+                    self.screen = self.renderer_manager.surface
+                    self.ui_screen = self.renderer_manager.ui_surface
+                if hasattr(self, "menu") and hasattr(self.menu, "settings"):
+                    self.menu.settings["resolution"] = res_str
+                    self.menu._refresh_settings_button_labels()
+        except Exception as e:
+            print(f"[Engine] Failed to apply resolution {res_str}: {e}")
+
     def _apply_graphics_settings(self):
         """Propagates loaded menu settings into active rendering, camera, particle, combat, and inventory systems."""
         if not hasattr(self, "menu") or not hasattr(self.menu, "settings"):
             return
         settings = self.menu.settings
+        if "resolution" in settings:
+            self.set_resolution(str(settings["resolution"]))
         if hasattr(self, "camera"):
             self.camera.shake_enabled = settings.get("screen_shake", True)
         req_rend = settings.get("renderer", RENDERER_HARDWARE)
@@ -715,6 +743,7 @@ class PotariaGame:
             self.renderer_manager.switch_renderer(mode, fullscreen=self.fullscreen)
             self.renderer = self.renderer_manager.renderer
             self.screen = self.renderer_manager.surface
+            self.ui_screen = self.renderer_manager.ui_surface
             if hasattr(self.menu, "settings"):
                 self.menu.settings["renderer"] = self.renderer_manager.requested_type
                 self.menu._refresh_settings_button_labels()
@@ -727,6 +756,7 @@ class PotariaGame:
             self.renderer_manager.toggle_renderer(fullscreen=self.fullscreen)
             self.renderer = self.renderer_manager.renderer
             self.screen = self.renderer_manager.surface
+            self.ui_screen = self.renderer_manager.ui_surface
             if hasattr(self.menu, "settings"):
                 self.menu.settings["renderer"] = self.renderer_manager.requested_type
                 self.menu._refresh_settings_button_labels()
@@ -916,6 +946,17 @@ class PotariaGame:
             self.menu.settings["vignette"] = not cur_v
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_vignette_enabled"):
                 self.renderer_manager.set_vignette_enabled(not cur_v)
+        elif isinstance(action, tuple) and action[0] == "set_resolution":
+            self.set_resolution(action[1])
+        elif action == "cycle_resolution":
+            cur_r = str(self.menu.settings.get("resolution", "1920x1080"))
+            res_list = getattr(self.menu, "resolutions", ["1920x1080", "1600x900", "1366x768", "1280x720"])
+            idx = res_list.index(cur_r) if cur_r in res_list else 0
+            next_r = res_list[(idx + 1) % len(res_list)]
+            self.menu.settings["resolution"] = next_r
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
+            self.set_resolution(next_r)
         elif isinstance(action, tuple) and action[0] == "set_water_effects":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_water_distortion_enabled"):
                 self.renderer_manager.set_water_distortion_enabled(action[1])
@@ -1009,7 +1050,7 @@ class PotariaGame:
             self.return_to_main_menu()
 
     def handle_events(self):
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = self.get_mouse_pos()
         mouse_x, mouse_y = mouse_pos
 
         if self.paused and self.menu.state == STATE_PLAYING:
@@ -1278,7 +1319,7 @@ class PotariaGame:
 
             elif event.type == pygame.MOUSEWHEEL:
                 if self.menu.state == STATE_PLAYING and not self.paused:
-                    mouse_pos = pygame.mouse.get_pos()
+                    mouse_pos = self.get_mouse_pos()
                     if self.inventory.is_open and self.crafting.get_panel_rect().collidepoint(mouse_pos):
                         self.crafting.handle_scroll(event.y)
                     else:
@@ -1287,6 +1328,11 @@ class PotariaGame:
                     self.menu.handle_scroll(event.y)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                if hasattr(self, "renderer_manager"):
+                    mouse_pos = self.renderer_manager.window_to_virtual_pos(event.pos)
+                else:
+                    mouse_pos = event.pos
+                mouse_x, mouse_y = mouse_pos
                 is_right_click = (event.button == 3)
                 is_left_click = (event.button == 1)
 
@@ -1418,11 +1464,13 @@ class PotariaGame:
 
             elif event.type == pygame.MOUSEMOTION:
                 if self.menu.state == STATE_PLAYING and hasattr(self, "touch_controller") and self.touch_controller.is_visible():
-                    self.touch_controller.handle_mouse_motion(event.pos[0], event.pos[1], self)
+                    vpos = self.renderer_manager.window_to_virtual_pos(event.pos) if hasattr(self, "renderer_manager") else event.pos
+                    self.touch_controller.handle_mouse_motion(vpos[0], vpos[1], self)
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if self.menu.state == STATE_PLAYING and hasattr(self, "touch_controller") and self.touch_controller.is_visible():
-                    self.touch_controller.handle_mouse_up(event.pos[0], event.pos[1], event.button, self)
+                    vpos = self.renderer_manager.window_to_virtual_pos(event.pos) if hasattr(self, "renderer_manager") else event.pos
+                    self.touch_controller.handle_mouse_up(vpos[0], vpos[1], event.button, self)
 
     def _open_or_break_chest(self, tx, ty, world_x, world_y):
         """Rolls high-value loot for naturally discovered or drops stored items from placed chests."""
@@ -2270,7 +2318,7 @@ class PotariaGame:
         self.playtime = getattr(self, "playtime", 0.0) + dt
         self.profiler.start_section("update_other")
         keys = pygame.key.get_pressed()
-        mouse_x, mouse_y = pygame.mouse.get_pos()
+        mouse_x, mouse_y = self.get_mouse_pos()
         mouse_wx, mouse_wy = self.camera.screen_to_world(mouse_x, mouse_y)
 
         # Update inventory timers (notification banners, etc.)
@@ -2807,8 +2855,15 @@ class PotariaGame:
             )
 
     def render(self):
+        if hasattr(self, "renderer_manager"):
+            self.renderer_manager.clear((0, 0, 0))
+        elif hasattr(self, "screen") and self.screen:
+            self.screen.fill((0, 0, 0))
+
+        ui_surf = getattr(self, "ui_screen", None) or self.screen
+
         if self.menu.state != STATE_PLAYING:
-            self.menu.render(self.screen)
+            self.menu.render(ui_surf)
             if hasattr(self, "renderer_manager"):
                 self.renderer_manager.present()
             else:
@@ -2880,75 +2935,76 @@ class PotariaGame:
 
         # Layer 7: Floating Damage Numbers
         for dn in self.combat.damage_numbers:
-            dn.render(self.screen, self.camera, self.font)
+            dn.render(ui_surf, self.camera, self.font)
 
         # Layer 8: Boss Health Bar (if active)
         if self.combat.boss:
-            self.combat.boss.render_boss_bar(self.screen, self.boss_font, self.title_font)
+            self.combat.boss.render_boss_bar(ui_surf, self.boss_font, self.title_font)
         if getattr(self.combat, "secondary_boss", None):
-            self.combat.secondary_boss.render_boss_bar(self.screen, self.boss_font, self.title_font, bar_y=142)
+            self.combat.secondary_boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=142)
 
         # Layer 9: HUD, Hotbar, Inventory, Reticle, Party, Minimap & Chat
         with self.profiler.section("render_hud"):
-            mouse_x, mouse_y = pygame.mouse.get_pos()
+            mouse_x, mouse_y = self.get_mouse_pos()
             self.hud.render(
-                self.screen, self.player, self.inventory, self.crafting,
+                ui_surf, self.player, self.inventory, self.crafting,
                 self.camera, mouse_x, mouse_y, world=self.world, combat=self.combat, lan_client=self.client
             )
-    
+
             # Layer 9.5: Character & Paperdoll Equipment Panel (Chroisen Style)
             if self.character_panel.is_open:
-                self.character_panel.render(self.screen, self.player, mouse_x, mouse_y)
-    
+                self.character_panel.render(ui_surf, self.player, mouse_x, mouse_y)
+
             # Layer 9.6: Town NPC Dialogue & Shop Window
             if hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
-                self.npc_dialogue.render(self.screen, self.player, self.inventory, mouse_x, mouse_y)
-    
+                self.npc_dialogue.render(ui_surf, self.player, self.inventory, mouse_x, mouse_y)
+
             # Layer 9.7: Storage Chest Window
             if hasattr(self, "chest_ui") and self.chest_ui.is_open:
-                self.chest_ui.render(self.screen, self.inventory, mouse_x, mouse_y)
-    
+                self.chest_ui.render(ui_surf, self.inventory, mouse_x, mouse_y)
+
             # Layer 9.8: PvP Last Man Standing Victory Banner
             if self.pvp_victor_banner:
                 bw, bh = 540, 52
                 bx = SCREEN_WIDTH // 2 - bw // 2
                 by = 40
-                pygame.draw.rect(self.screen, (30, 20, 10, 235), (bx, by, bw, bh), border_radius=10)
-                pygame.draw.rect(self.screen, (255, 215, 0), (bx, by, bw, bh), 2, border_radius=10)
+                pygame.draw.rect(ui_surf, (30, 20, 10, 235), (bx, by, bw, bh), border_radius=10)
+                pygame.draw.rect(ui_surf, (255, 215, 0), (bx, by, bw, bh), 2, border_radius=10)
                 b_txt = self.title_font.render(self.pvp_victor_banner, True, (255, 230, 60))
-                self.screen.blit(b_txt, (SCREEN_WIDTH // 2 - b_txt.get_width() // 2, by + 10))
-    
+                ui_surf.blit(b_txt, (SCREEN_WIDTH // 2 - b_txt.get_width() // 2, by + 10))
+
             # Layer 9.9: Mobile Virtual Touch Controls
             if hasattr(self, "touch_controller") and self.touch_controller.is_visible():
-                self.touch_controller.render(self.screen, self.player, self.inventory, self.camera, game=self)
+                self.touch_controller.render(ui_surf, self.player, self.inventory, self.camera, game=self)
 
         # Layer 10: Debug Overlay
         if self.show_debug:
-            self._render_debug_overlay()
+            self._render_debug_overlay(target_surf=ui_surf)
 
         # Layer 10.2: Persistent Small-Text FPS Indicator (for performance debugging)
-        self._render_fps_counter()
+        self._render_fps_counter(target_surf=ui_surf)
 
         # Layer 10.5: In-Game Achievement Toasts
         if hasattr(self, "achievement_manager"):
             self.achievement_manager.render_toast(
-                self.screen, self.menu.font_title, self.menu.font_sub,
+                ui_surf, self.menu.font_title, self.menu.font_sub,
                 self.asset_factory.ui.get("achievement_banner")
             )
 
         # Layer 11: Pause Menu Overlay
         if self.paused:
-            self._render_pause_menu()
+            self._render_pause_menu(target_surf=ui_surf)
         # Layer 12: Profiler Overlay
         if getattr(self, "show_profiler", False):
-            self.profiler.render_overlay(self.screen, self.font)
+            self.profiler.render_overlay(ui_surf, self.font)
 
         if hasattr(self, "renderer_manager"):
             self.renderer_manager.present()
         else:
             pygame.display.flip()
 
-    def _render_debug_overlay(self):
+    def _render_debug_overlay(self, target_surf=None):
+        target = target_surf or getattr(self, "ui_screen", None) or self.screen
         fps = int(self.clock.get_fps())
         ptx = int(self.player.center_x // SCALED_TILE)
         pty = int(self.player.center_y // SCALED_TILE)
@@ -2968,10 +3024,11 @@ class PotariaGame:
         ]
         for i, l in enumerate(lines):
             txt = self.font.render(l, True, (255, 255, 255))
-            pygame.draw.rect(self.screen, (0, 0, 0, 180), (10, 80 + i * 20, txt.get_width() + 8, 18))
-            self.screen.blit(txt, (14, 80 + i * 20))
+            pygame.draw.rect(target, (0, 0, 0, 180), (10, 80 + i * 20, txt.get_width() + 8, 18))
+            target.blit(txt, (14, 80 + i * 20))
 
-    def _render_fps_counter(self):
+    def _render_fps_counter(self, target_surf=None):
+        target = target_surf or getattr(self, "ui_screen", None) or self.screen
         fps = int(self.clock.get_fps())
         # Color coding: Green >= 55, Yellow >= 30, Red < 30
         if fps >= 55:
@@ -2988,35 +3045,36 @@ class PotariaGame:
         badge_rect = pygame.Rect(bx - 3, by - 1, tw + 6, th + 2)
         bg_surf = pygame.Surface((badge_rect.width, badge_rect.height), pygame.SRCALPHA)
         bg_surf.fill((16, 20, 30, 200))
-        self.screen.blit(bg_surf, badge_rect.topleft)
-        pygame.draw.rect(self.screen, (60, 75, 105, 200), badge_rect, 1, border_radius=3)
-        self.screen.blit(txt, (bx, by))
+        target.blit(bg_surf, badge_rect.topleft)
+        pygame.draw.rect(target, (60, 75, 105, 200), badge_rect, 1, border_radius=3)
+        target.blit(txt, (bx, by))
 
-    def _render_pause_menu(self):
+    def _render_pause_menu(self, target_surf=None):
+        target = target_surf or getattr(self, "ui_screen", None) or self.screen
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 160))
-        self.screen.blit(overlay, (0, 0))
+        target.blit(overlay, (0, 0))
 
         # Pause modal box
         pw, ph = 420, 440
         px = SCREEN_WIDTH // 2 - pw // 2
         py = SCREEN_HEIGHT // 2 - ph // 2 - 10
-        pygame.draw.rect(self.screen, (28, 33, 48, 245), (px, py, pw, ph), border_radius=14)
-        pygame.draw.rect(self.screen, (255, 215, 0), (px, py, pw, ph), 2, border_radius=14)
+        pygame.draw.rect(target, (28, 33, 48, 245), (px, py, pw, ph), border_radius=14)
+        pygame.draw.rect(target, (255, 215, 0), (px, py, pw, ph), 2, border_radius=14)
 
         title = self.title_font.render("GAME PAUSED", True, (255, 215, 0))
-        self.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 18))
+        target.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 18))
 
         mode_str = f"{self.active_world_name}  •  {self.difficulty.upper()}  •  {self.game_mode.replace('_', ' ').upper()}"
         sub = self.font.render(mode_str, True, (200, 210, 230))
-        self.screen.blit(sub, (SCREEN_WIDTH // 2 - sub.get_width() // 2, py + 52))
+        target.blit(sub, (SCREEN_WIDTH // 2 - sub.get_width() // 2, py + 52))
 
         for btn in self.pause_buttons:
-            btn.render(self.screen, self.menu.font_btn)
+            btn.render(target, self.menu.font_btn)
         for btn in getattr(self, "pause_extra_buttons", []):
-            btn.render(self.screen, self.menu.font_btn)
+            btn.render(target, self.menu.font_btn)
         for btn in self.save_buttons:
-            btn.render(self.screen, self.menu.font_btn)
+            btn.render(target, self.menu.font_btn)
 
 if __name__ == "__main__":
     game = PotariaGame()
