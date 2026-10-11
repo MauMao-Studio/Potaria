@@ -1574,7 +1574,7 @@ class CombatManager:
             else:
                 self.spawn_mob(GreenSlime(spawn_x, spawn_y, self.asset_factory), player=player)
 
-    def render(self, target_surf, camera, renderer=None):
+    def render(self, target_surf, camera, renderer=None, render_damage_numbers=True):
         for item in self.dropped_items:
             item.render(target_surf, camera)
 
@@ -1619,7 +1619,7 @@ class CombatManager:
                 except TypeError:
                     self.secondary_boss.render(target_surf, camera)
 
-        if getattr(self, "show_damage_numbers", True):
+        if render_damage_numbers and getattr(self, "show_damage_numbers", True):
             for dn in self.damage_numbers:
                 dn.render(target_surf, camera, self.font, self.font_crit)
 

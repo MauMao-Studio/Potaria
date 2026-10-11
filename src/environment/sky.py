@@ -279,19 +279,17 @@ class DayNightCycle:
 
     def render(self, target_surf, camera):
         """
-        Draws sky gradient, stars, sun/moon celestial bodies, and multi-plane
-        seamless parallax background layers with locked Y-parallax and altitude fading.
+        Draws pure sky gradient, twinkling stars, and sun/moon celestial bodies.
+        Parallax assets (clouds, mountains, hills, trees) are excluded for a clean sky and fast rendering.
         """
         sw, sh = target_surf.get_width(), target_surf.get_height()
-        cam_x = getattr(camera, "x", 0.0)
         cam_y = getattr(camera, "y", 9999.0)
         cam_y_tile = cam_y / float(SCALED_TILE)
 
         # High atmosphere / space stratum check (Sky Citadel arena is at ty <= -150)
         in_space = cam_y_tile <= -100
-        in_sky_realm = cam_y_tile <= -140
 
-        # 1. Sky Gradient based on altitude & celestial time
+        # 1. Pure Sky Gradient based on altitude & celestial time
         top_c, bot_c = self.get_altitude_sky_colors(cam_y_tile)
 
         now_ticks = pygame.time.get_ticks()
@@ -306,9 +304,7 @@ class DayNightCycle:
                 frac = y * inv_sh
                 c = self._lerp_color(top_c, bot_c, frac)
                 gradient.set_at((0, y), c)
-            scaled_grad = pygame.transform.scale(gradient, (sw, sh))
-            scaled_grad.set_alpha(None)
-            self._cached_sky_surf = scaled_grad
+            self._cached_sky_surf = pygame.transform.scale(gradient, (sw, sh))
             self._cached_top_c = top_c
             self._cached_bot_c = bot_c
             self._last_bake_ticks = now_ticks
@@ -335,16 +331,7 @@ class DayNightCycle:
                         sc = star_c
                     target_surf.set_at((sx, sy), sc)
 
-        # 3. Deep Space Nebula & Constellations (Fades in as player ascends into the mesosphere/space)
-        if cam_y_tile < 20:
-            nebula_alpha = max(0.0, min(1.0, (20.0 - cam_y_tile) / 120.0))
-            if nebula_alpha > 0.05:
-                nebula_offset = int(-(cam_x * 0.02) % sw)
-                self.space_nebula_surf.set_alpha(int(nebula_alpha * 240))
-                target_surf.blit(self.space_nebula_surf, (nebula_offset - sw, 0))
-                target_surf.blit(self.space_nebula_surf, (nebula_offset, 0))
-
-        # 4. Celestial Orbit (Sun & Moon Arc - Philippine timing)
+        # 3. Celestial Orbit (Sun & Moon Arc - Philippine timing)
         # 6:00 AM (t = 0.0) is the start of the sun rising; sets at 6:00 PM (t = 0.50)
         t = self.time_of_day
         if t <= 0.51 and not in_space:
@@ -365,38 +352,3 @@ class DayNightCycle:
             moon_x = moon_t * sw
             moon_y = sh * 0.7 - math.sin(moon_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.moon_surf, (moon_x - 16, moon_y - 16))
-
-        # 5. Multi-Plane Parallax Background Layers with Locked Y-Parallax
-        # Layers smoothly fade out as altitude rises into stratosphere (ty < 20 down to -30)
-        bg_alpha = 1.0
-        if cam_y_tile < 30:
-            bg_alpha = max(0.0, min(1.0, (cam_y_tile - (-30.0)) / 60.0))
-
-        if bg_alpha > 0.02:
-            alpha_int = int(bg_alpha * 255)
-            if alpha_int != self._last_bg_alpha:
-                mod_val = None if alpha_int >= 255 else alpha_int
-                self._mountains_band.set_alpha(mod_val)
-                self._hills_band.set_alpha(mod_val)
-                self._trees_band.set_alpha(mod_val)
-                self._last_bg_alpha = alpha_int
-
-            # Locked horizon Y position prevents horizon distortion during flight
-            horizon_y = 0
-
-            # Layer 1: High Sky Clouds removed to optimize render sky performance
-
-            # Layer 2: Far Misty Mountains (speed = 0.08)
-            mount_offset = int(-(cam_x * 0.08) % sw)
-            target_surf.blit(self._mountains_band, (mount_offset - sw, horizon_y + self._mountains_top))
-            target_surf.blit(self._mountains_band, (mount_offset, horizon_y + self._mountains_top))
-
-            # Layer 3: Rolling Hills (speed = 0.14)
-            hills_offset = int(-(cam_x * 0.14) % sw)
-            target_surf.blit(self._hills_band, (hills_offset - sw, horizon_y + self._hills_top))
-            target_surf.blit(self._hills_band, (hills_offset, horizon_y + self._hills_top))
-
-            # Layer 4: Mid Forest & Ancient Ruins (speed = 0.22)
-            tree_offset = int(-(cam_x * 0.22) % sw)
-            target_surf.blit(self._trees_band, (tree_offset - sw, horizon_y + self._trees_top))
-            target_surf.blit(self._trees_band, (tree_offset, horizon_y + self._trees_top))

@@ -367,10 +367,7 @@ class GLRenderer(BaseRenderer):
 
     def _init_gl_pipeline(self):
         """Sets up the ModernGL full-screen quad shader, world FBO, UI overlay, and virtual surfaces."""
-        try:
-            self.virtual_surface = pygame.Surface((self.width, self.height)).convert_alpha()
-        except pygame.error:
-            self.virtual_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.virtual_surface = pygame.Surface((self.width, self.height))
         self.ui_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
 
         self.program = self.ctx.program(

@@ -3096,7 +3096,7 @@ class PotariaGame:
 
         # Layer 4: Mobs, Boss & Dropped Items
         with self.profiler.section("render_combat"):
-            self.combat.render(self.screen, self.camera, renderer=getattr(self, "renderer", None))
+            self.combat.render(self.screen, self.camera, renderer=getattr(self, "renderer", None), render_damage_numbers=False)
 
         # Layer 4.5: Remote LAN Party Members
         if self.client and self.client.connected:
@@ -3153,9 +3153,10 @@ class PotariaGame:
             light_screen_y = min_ty * SCALED_TILE - cam_y
             self.lighting.render_lighting(self.screen, light_screen_x, light_screen_y)
 
-        # Layer 7: Floating Damage Numbers
-        for dn in self.combat.damage_numbers:
-            dn.render(ui_surf, self.camera, self.font)
+        # Layer 7: Floating Damage Numbers (pure text, no background box)
+        if getattr(self.combat, "show_damage_numbers", True):
+            for dn in self.combat.damage_numbers:
+                dn.render(ui_surf, self.camera, self.combat.font, self.combat.font_crit)
 
         # Layer 8: Boss Health Bar (Centered at screen bottom so it never covers the fight)
         if self.combat.boss:

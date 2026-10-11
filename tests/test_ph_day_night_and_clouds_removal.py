@@ -38,10 +38,10 @@ class TestPhilippineDayNightAndCloudsRemoval(unittest.TestCase):
         self.sky = DayNightCycle(self.asset_factory, cycle_duration=240.0)
 
     def test_clouds_not_rendered(self):
-        """Verifies that clouds are not blitted during sky render."""
+        """Verifies that clouds, mountains, hills, and trees are not blitted during sky render (pure sky only)."""
         camera = Camera()
         camera.x = 100.0
-        camera.y = 100.0
+        camera.y = 1760.0
 
         blitted_surfaces = []
 
@@ -62,16 +62,50 @@ class TestPhilippineDayNightAndCloudsRemoval(unittest.TestCase):
             def set_at(self, pos, color):
                 self._base.set_at(pos, color)
 
-        raw_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        raw_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         wrapper = TargetSurfWrapper(raw_surf)
+        self.sky.time = 0.25 * self.sky.cycle_duration  # Noon
         self.sky.render(wrapper, camera)
 
-        # self.sky.clouds_surf should NOT be among blitted surfaces
-        self.assertNotIn(
+        for parallax_surf in (
             self.sky.clouds_surf,
-            blitted_surfaces,
-            "Clouds surface must not be blitted during sky render"
-        )
+            self.sky.mountains_surf,
+            self.sky.hills_surf,
+            self.sky.trees_surf,
+            getattr(self.sky, "_mountains_band", None),
+            getattr(self.sky, "_hills_band", None),
+            getattr(self.sky, "_trees_band", None),
+        ):
+            if parallax_surf is not None:
+                self.assertNotIn(
+                    parallax_surf,
+                    blitted_surfaces,
+                    "Parallax surface must not be blitted during pure sky render"
+                )
+
+        # Ensure no black (0, 0, 0) rectangle band exists anywhere in the daytime sky
+        for y in (100, 260, 350, 500, 650):
+            px = raw_surf.get_at((SCREEN_WIDTH // 2, y))
+            self.assertGreater(px.r, 50, f"Sky at y={y} must be pure sky gradient, not black")
+            self.assertGreater(px.g, 100, f"Sky at y={y} must be pure sky gradient, not black")
+            self.assertGreater(px.b, 120, f"Sky at y={y} must be pure sky gradient, not black")
+
+    def test_damage_number_has_no_background_box(self):
+        """Verifies that DamageNumber renders pure text with transparent corners and no background color."""
+        from src.combat.combat_system import DamageNumber
+        from src.ui.theme import font_bold
+        camera = Camera()
+        camera.x = 0.0
+        camera.y = 0.0
+
+        ui_surf = pygame.Surface((200, 100), pygame.SRCALPHA)
+        ui_surf.fill((0, 0, 0, 0))
+        dn = DamageNumber(40, 40, 240, is_crit=True)
+        dn.render(ui_surf, camera, font_bold(14), font_bold(18))
+
+        # Top-left corner (40, 40) must have alpha == 0 (transparent, not a solid background rectangle)
+        corner = ui_surf.get_at((40, 40))
+        self.assertEqual(corner.a, 0, "Damage text corner must be transparent (alpha=0), not a solid box")
 
     def test_time_at_5am_starts_to_not_be_pitch_black(self):
         """At 5:00 AM (t = 23/24), the sky starts brightening from pitch black night towards dawn."""
