@@ -14,11 +14,15 @@ os.environ["SDL_RENDER_SCALE_QUALITY"] = "nearest"
 # Prevent SDL2 from minimizing or hiding the borderless fullscreen window when Win+Shift+S / screenshot overlays take focus
 os.environ.setdefault("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS", "0")
 
-# Enable 1ms Windows timer resolution for rock-solid 60 FPS frame pacing and 1:1 physical DPI awareness
+# Enable 1ms Windows timer resolution for rock-solid 60 FPS frame pacing, 1:1 physical DPI awareness, and Taskbar AppUserModelID
 if sys.platform == "win32":
     try:
         import ctypes
         ctypes.windll.winmm.timeBeginPeriod(1)
+        try:
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("MauMaoStudio.Potaria.Game.1")
+        except Exception:
+            pass
         try:
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except Exception:
@@ -98,6 +102,7 @@ class PotariaGame:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption(f"{TITLE}  |  By {DEVELOPER}")
+        self._pre_load_window_icon()
         # Initialize Renderer Hardware Abstraction Layer (HAL)
         self.renderer_manager = get_renderer_manager()
         self.renderer_manager.initialize(
@@ -133,7 +138,7 @@ class PotariaGame:
         self.asset_factory.export_all_assets("assets")
 
         # Set Window Game Icon!
-        pygame.display.set_icon(self.asset_factory.branding["game_icon"])
+        self._apply_window_icon()
 
         # 2. Audio Engine (SFX + Procedural Synth BGM)
         self.sound_manager = SoundManager()
@@ -642,6 +647,48 @@ class PotariaGame:
         pygame.quit()
         sys.exit()
 
+    def _pre_load_window_icon(self):
+        """Loads and sets the custom Potaria window icon prior to display creation."""
+        for candidate in (
+            os.path.join("assets", "branding", "game_icon_hd.png"),
+            os.path.join("assets", "branding", "game_icon.png"),
+        ):
+            if os.path.exists(candidate):
+                try:
+                    surf = pygame.image.load(candidate)
+                    pygame.display.set_icon(pygame.transform.smoothscale(surf, (256, 256)))
+                    break
+                except Exception:
+                    pass
+
+    def _apply_window_icon(self):
+        """Applies the official Potaria game icon to the pygame display and Windows HWND."""
+        try:
+            if hasattr(self, "asset_factory") and "game_icon" in getattr(self.asset_factory, "branding", {}):
+                pygame.display.set_icon(self.asset_factory.branding["game_icon"])
+            else:
+                self._pre_load_window_icon()
+            if sys.platform == "win32":
+                ico_path = os.path.abspath(os.path.join("assets", "branding", "game_icon.ico"))
+                if os.path.exists(ico_path):
+                    import ctypes
+                    wm_info = pygame.display.get_wm_info()
+                    hwnd = wm_info.get("window")
+                    if hwnd:
+                        IMAGE_ICON = 1
+                        LR_LOADFROMFILE = 0x00000010
+                        WM_SETICON = 0x0080
+                        ICON_SMALL = 0
+                        ICON_BIG = 1
+                        hicon_big = ctypes.windll.user32.LoadImageW(None, ico_path, IMAGE_ICON, 256, 256, LR_LOADFROMFILE)
+                        hicon_small = ctypes.windll.user32.LoadImageW(None, ico_path, IMAGE_ICON, 32, 32, LR_LOADFROMFILE)
+                        if hicon_big:
+                            ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon_big)
+                        if hicon_small:
+                            ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon_small)
+        except Exception:
+            pass
+
     def get_mouse_pos(self) -> tuple[int, int]:
         """Translates window mouse coordinates to virtual screen coordinates."""
         raw_pos = pygame.mouse.get_pos()
@@ -695,6 +742,7 @@ class PotariaGame:
                     (SCREEN_WIDTH, SCREEN_HEIGHT),
                     pygame.DOUBLEBUF
                 )
+        self._apply_window_icon()
 
     def set_resolution(self, res_str: str):
         """Sets display resolution mode (e.g. 1920x1080, 1600x900, 1366x768, 1280x720)."""
@@ -710,6 +758,7 @@ class PotariaGame:
                 if hasattr(self, "menu") and hasattr(self.menu, "settings"):
                     self.menu.settings["resolution"] = res_str
                     self.menu._refresh_settings_button_labels()
+            self._apply_window_icon()
         except Exception as e:
             print(f"[Engine] Failed to apply resolution {res_str}: {e}")
 
@@ -759,6 +808,7 @@ class PotariaGame:
                 self.set_fullscreen_mode(bool(settings["fullscreen"]))
             except Exception:
                 pass
+        self._apply_window_icon()
 
     def set_renderer_mode(self, mode: str):
         """Switches the active renderer between hardware (ModernGL) and software via HAL."""
@@ -772,6 +822,7 @@ class PotariaGame:
                 self.menu._refresh_settings_button_labels()
                 if hasattr(self.menu, "save_settings"):
                     self.menu.save_settings()
+            self._apply_window_icon()
 
     def toggle_renderer_mode(self):
         """Toggles between hardware (ModernGL) and software renderer via HAL."""

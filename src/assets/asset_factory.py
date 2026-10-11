@@ -5658,13 +5658,33 @@ class AssetFactory:
     # 8. BRANDING, UI & ENVIRONMENT
     # ==========================================================================
     def _generate_branding(self):
-        icon = pygame.Surface((64, 64), pygame.SRCALPHA)
-        pygame.draw.circle(icon, (45, 55, 80), (32, 32), 30)
-        pygame.draw.circle(icon, (255, 215, 0), (32, 32), 30, 3)
-        pygame.draw.ellipse(icon, (205, 155, 90), (16, 16, 32, 36))
-        pygame.draw.ellipse(icon, (20, 20, 20), (24, 28, 5, 8))
-        pygame.draw.ellipse(icon, (20, 20, 20), (35, 28, 5, 8))
-        pygame.draw.line(icon, (70, 180, 50), (32, 16), (32, 8), 3)
+        icon = None
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        for candidate in (
+            os.path.join(base_dir, "assets", "branding", "game_icon.png"),
+            os.path.join("assets", "branding", "game_icon.png"),
+        ):
+            if os.path.exists(candidate):
+                try:
+                    loaded = pygame.image.load(candidate)
+                    if pygame.display.get_surface() is not None:
+                        loaded = loaded.convert_alpha()
+                    if loaded.get_size() != (256, 256):
+                        icon = pygame.transform.smoothscale(loaded, (256, 256))
+                    else:
+                        icon = loaded
+                    break
+                except Exception:
+                    pass
+
+        if icon is None:
+            icon = pygame.Surface((64, 64), pygame.SRCALPHA)
+            pygame.draw.circle(icon, (45, 55, 80), (32, 32), 30)
+            pygame.draw.circle(icon, (255, 215, 0), (32, 32), 30, 3)
+            pygame.draw.ellipse(icon, (205, 155, 90), (16, 16, 32, 36))
+            pygame.draw.ellipse(icon, (20, 20, 20), (24, 28, 5, 8))
+            pygame.draw.ellipse(icon, (20, 20, 20), (35, 28, 5, 8))
+            pygame.draw.line(icon, (70, 180, 50), (32, 16), (32, 8), 3)
         self.branding["game_icon"] = icon
 
         logo = pygame.Surface((360, 84), pygame.SRCALPHA)
