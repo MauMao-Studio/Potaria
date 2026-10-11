@@ -287,6 +287,8 @@ def load_world(world_name, game):
     # 1. Rebuild World
     from src.world.world import World
     game.world = World(game.asset_factory, seed=seed, world_type=world_type, world_name=world_name)
+    game.world.tree_cascade_felling = False
+    game.world.game = game
     game.world_type = world_type
     game.difficulty = difficulty
     game.game_mode = game_mode

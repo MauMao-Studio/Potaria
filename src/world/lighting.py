@@ -118,16 +118,24 @@ class LightingEngine:
                 emit = prop.get("light_emit", 0)
                 if emit > 0:
                     rad = prop.get("light_radius") or emit
-                    emitters.append((lx, ly, emit, rad))
+                    emitters.append((lx, ly, emit, rad, True))
 
         # 2. Inject extra dynamic lights (held torches, projectile glow, etc.)
         if torch_positions:
-            for tx, ty, intensity in torch_positions:
+            for item in torch_positions:
+                if len(item) == 3:
+                    tx, ty, intensity = item
+                    rad = max(4, intensity - 2)
+                    cast_shadow = False
+                elif len(item) == 4:
+                    tx, ty, intensity, rad = item
+                    cast_shadow = False
+                else:
+                    tx, ty, intensity, rad, cast_shadow = item[:5]
                 lx = tx - min_tx
                 ly = ty - min_ty
                 if 0 <= lx < grid_w and 0 <= ly < grid_h:
-                    rad = max(4, intensity - 1)
-                    emitters.append((lx, ly, intensity, rad))
+                    emitters.append((lx, ly, intensity, rad, cast_shadow))
 
         # 3. BFS Light Diffusion / Propagation for Sunlight
         while queue:
@@ -146,7 +154,7 @@ class LightingEngine:
                         queue.append((nx, ny, next_val))
 
         # 4. Smooth Radial Circular Quadratic Falloff for Localized Light Emitters
-        for ex, ey, intensity, radius in emitters:
+        for ex, ey, intensity, radius, cast_shadow in emitters:
             r_sq = radius * radius
             min_x = max(0, ex - radius)
             max_x = min(grid_w - 1, ex + radius)
@@ -161,17 +169,18 @@ class LightingEngine:
                     if d_sq <= r_sq:
                         val = int(round(intensity * (1.0 - (d_sq / r_sq))))
                         if val > light[x][y]:
-                            steps = max(abs(dx), abs(dy))
-                            if steps > 1:
-                                drop = 0
-                                for s in range(1, steps):
-                                    rx = ex + int(round(dx * s / steps))
-                                    ry = ey + int(round(dy * s / steps))
-                                    if absorb_grid[rx][ry] > 0:
-                                        drop += (absorb_grid[rx][ry] + 1) * 2
-                                        if drop >= val:
-                                            break
-                                val = max(0, val - drop)
+                            if cast_shadow:
+                                steps = max(abs(dx), abs(dy))
+                                if steps > 1:
+                                    drop = 0
+                                    for s in range(1, steps):
+                                        rx = ex + int(round(dx * s / steps))
+                                        ry = ey + int(round(dy * s / steps))
+                                        if absorb_grid[rx][ry] > 0:
+                                            drop += (absorb_grid[rx][ry] + 1) * 2
+                                            if drop >= val:
+                                                break
+                                    val = max(0, val - drop)
                             if val > light[x][y]:
                                 light[x][y] = val
 

@@ -1627,7 +1627,8 @@ class PotariaGame:
 
         # 0a. Fishing Rod Cast / Reel with Right-Click
         active = self.inventory.get_active_item()
-        if active and active.item_id == "fishing_rod":
+        FISHING_ROD_IDS = ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod")
+        if active and (active.item_id in FISHING_ROD_IDS or getattr(active, "special", "") == "Fishing Tool" or "angler_rod" in active.item_id):
             return self.handle_fishing_action(mouse_x, mouse_y)
         if getattr(self, "fishing_bobber", None) is not None:
             return self.handle_fishing_action(mouse_x, mouse_y)
@@ -1970,21 +1971,59 @@ class PotariaGame:
         else:
             bob = self.fishing_bobber
             if bob.get("state") == "bite":
+                active = self.inventory.get_active_item()
+                rod_id = active.item_id if active else "fishing_rod"
+                from src.ui.inventory import ITEM_REGISTRY
+                rod_info = ITEM_REGISTRY.get(rod_id, {})
+                rod_rarity = str(rod_info.get("rarity", "common")).lower()
+
                 pinoy_fishes = [
                     "raw_bangus", "raw_tilapia", "raw_galunggong", "raw_maya_maya",
                     "raw_tanigue", "raw_tambakol", "raw_lapu_lapu", "raw_hito",
                     "raw_dilis", "raw_dalagang_bukid"
                 ]
-                rare_loot = [
-                    "gold_coin", "silver_coin", "iron_ore", "copper_ore",
-                    "healing_potion", "speed_potion"
-                ]
-                if random.random() < 0.85:
-                    caught_item = random.choice(pinoy_fishes)
-                    caught_count = random.randint(2, 5) if caught_item == "raw_dilis" else 1
+
+                if rod_rarity == "common":
+                    if random.random() < 0.85:
+                        caught_item = random.choice(["raw_bangus", "raw_tilapia", "raw_galunggong", "raw_dilis"])
+                        caught_count = random.randint(2, 5) if caught_item == "raw_dilis" else 1
+                    else:
+                        caught_item = random.choice(["copper_coin", "dirt", "stone"])
+                        caught_count = random.randint(1, 3)
+                elif rod_rarity == "uncommon" or rod_id == "spud_angler_rod":
+                    if random.random() < 0.65:
+                        caught_item = random.choice(["raw_bangus", "raw_tilapia", "raw_galunggong", "raw_maya_maya", "raw_hito", "raw_dilis"])
+                        caught_count = random.randint(2, 5) if caught_item == "raw_dilis" else 1
+                    else:
+                        caught_item = random.choice(["silver_coin", "iron_ore", "copper_ore", "healing_potion", "speed_potion", "copper_sword", "iron_pickaxe", "wooden_arrow"])
+                        caught_count = random.randint(1, 3) if caught_item in ("silver_coin", "iron_ore", "copper_ore", "wooden_arrow") else 1
+                elif rod_rarity == "rare" or rod_id == "reinforced_angler_rod":
+                    if random.random() < 0.50:
+                        caught_item = random.choice(["raw_tanigue", "raw_tambakol", "raw_lapu_lapu", "raw_dalagang_bukid"])
+                        caught_count = 1
+                    else:
+                        caught_item = random.choice(["gold_coin", "silver_coin", "iron_broadsword", "oak_buckler", "spud_quiver", "greater_healing_potion", "frost_blade", "sandstorm_spear"])
+                        caught_count = random.randint(1, 3) if caught_item in ("gold_coin", "silver_coin") else 1
+                elif rod_rarity == "epic" or rod_id == "gilded_master_rod":
+                    if random.random() < 0.35:
+                        caught_item = random.choice(["raw_lapu_lapu", "raw_tanigue", "raw_dalagang_bukid"])
+                        caught_count = 1
+                    else:
+                        caught_item = random.choice(["golden_fry", "zephyr_striders", "starch_blade", "shadow_cleaver", "talisman_of_vigor", "lucky_clover", "arcane_orchid", "gold_coin", "gilded_russet"])
+                        caught_count = random.randint(2, 5) if caught_item == "gold_coin" else 1
+                elif rod_rarity in ("mythic", "legendary") or rod_id in ("astral_leviathan_rod", "neptune_tide_rod"):
+                    if random.random() < 0.20:
+                        caught_item = random.choice(["raw_lapu_lapu", "raw_tanigue"])
+                        caught_count = 1
+                    else:
+                        if rod_rarity == "mythic" or rod_id == "astral_leviathan_rod":
+                            caught_item = random.choice(["totem_of_resurgence", "celestial_star", "celestial_fragment", "golden_fry", "zephyr_striders", "gold_coin"])
+                        else:
+                            caught_item = random.choice(["neptune_tide_rod", "totem_of_resurgence", "celestial_bow", "celestial_shard", "starfury", "golden_fry", "gold_coin"])
+                        caught_count = random.randint(3, 8) if caught_item == "gold_coin" else 1
                 else:
-                    caught_item = random.choice(rare_loot)
-                    caught_count = random.randint(1, 3)
+                    caught_item = random.choice(pinoy_fishes)
+                    caught_count = 1
 
                 self.fishing_bobber = None
                 self.fishing_minigame.start(fish_id=caught_item, caught_count=caught_count)
@@ -1997,7 +2036,8 @@ class PotariaGame:
 
     def handle_primary_action(self, mouse_x, mouse_y):
         active = self.inventory.get_active_item()
-        if active and active.item_id == "fishing_rod":
+        FISHING_ROD_IDS = ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod")
+        if active and (active.item_id in FISHING_ROD_IDS or getattr(active, "special", "") == "Fishing Tool" or "angler_rod" in active.item_id):
             return self.handle_fishing_action(mouse_x, mouse_y)
         if active and getattr(active, "is_broken", False):
             if hasattr(self.inventory, "notify"):
@@ -2054,11 +2094,14 @@ class PotariaGame:
                 elif self.inventory.count_item("flame_arrow") > 0:
                     arrow_type = "flame_arrow"
                     bonus_dmg = 6
+                elif self.inventory.count_item("glowing_lumen_arrow") > 0:
+                    arrow_type = "glowing_lumen_arrow"
+                    bonus_dmg = 8
                 elif self.inventory.count_item("wooden_arrow") > 0:
                     arrow_type = "wooden_arrow"
                     bonus_dmg = 0
-                elif (active.data.get("rarity") in ("ancient", "legendary", "mythic") if hasattr(active, "data") else False) or held_id == "celestial_bow":
-                    # Ancient & Legendary relic bows channel celestial starlight energy arrows if out of physical arrows!
+                elif held_id == "ancient_composite_bow":
+                    # Ancient composite bow channels astral starlight energy arrows even when quiver is empty
                     arrow_type = "astral_arrow"
                     bonus_dmg = 10
 
@@ -2068,7 +2111,7 @@ class PotariaGame:
                     self.combat.spawn_damage_number(self.player.center_x, self.player.y - 14, "No Arrows!", color=(255, 120, 100))
                     return False
 
-                if arrow_type in ("astral_arrow", "frostburn_arrow", "flame_arrow", "wooden_arrow"):
+                if self.inventory.count_item(arrow_type) > 0:
                     self.inventory.remove_item(arrow_type, 1)
 
                 # Special arrow upgrade for flame/magma bows
@@ -2941,8 +2984,9 @@ class PotariaGame:
             if has_helmet or has_radiance or (held_item and held_item.item_id in ("torch", "carved_tuber_lantern", "curved_tuber_lantern", "brass_lantern", "spectral_lantern")):
                 ptx = int(self.player.center_x // SCALED_TILE)
                 pty = int(self.player.center_y // SCALED_TILE)
-                intensity = 15 if (has_helmet or has_radiance) else 14
-                extra_lights.append((ptx, pty, intensity))
+                intensity = 11 if (has_helmet or has_radiance) else 9
+                rad = 7 if (has_helmet or has_radiance) else 5
+                extra_lights.append((ptx, pty, intensity, rad, False))
     
             # Dynamic light emitted by falling celestial stars and glowing arrows
             for p in self.combat.projectiles:

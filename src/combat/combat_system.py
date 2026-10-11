@@ -233,7 +233,7 @@ class CombatManager:
         if leveled:
             self.sound_manager.play("craft")
             self.particle_system.spawn_sparks(player.center_x, player.center_y, (255, 240, 100), count=25)
-        self._drop_mob_loot(mob)
+        self._drop_mob_loot(mob, tuned=True)
 
     def update(self, dt, world, player, is_night=False, time_of_day=None):
         if time_of_day is None:
@@ -382,8 +382,8 @@ class CombatManager:
                         self.dropped_items.append(DroppedItem("necro_essence", 2, self.boss.center_x + 25, self.boss.center_y, self.asset_factory))
                     else: # Lord Malus
                         self.dungeon_boss_slain = True
-                        self.dropped_items.append(DroppedItem("nether_cleaver", 1, self.boss.center_x - 25, self.boss.center_y, self.asset_factory))
-                        self.dropped_items.append(DroppedItem("crown_of_potaria", 1, self.boss.center_x + 25, self.boss.center_y, self.asset_factory))
+                        malus_loot = random.choice(["nether_cleaver", "crown_of_potaria"])
+                        self.dropped_items.append(DroppedItem(malus_loot, 1, self.boss.center_x - 25, self.boss.center_y, self.asset_factory))
 
                     # Teleport Spud back to overworld if warped via Biome Rune
                     if hasattr(player, "pre_arena_pos") and player.pre_arena_pos:
@@ -1223,11 +1223,70 @@ class CombatManager:
             DroppedItem(item_id, count, ox, my, self.asset_factory, vx=vx, vy=vy)
         )
 
-    def _drop_mob_loot(self, mob):
+    def _drop_mob_loot(self, mob, tuned=None):
+        if tuned is None:
+            tuned = getattr(self, "tuned_mob_drops", False)
         mx, my = mob.center_x, mob.center_y
-        
-        # 1. Base Guaranteed Mob Drop
         m_name = getattr(mob, "name", "")
+
+        if tuned:
+            if not hasattr(self, "_catalog_rarity_pools"):
+                from src.ui.inventory import ITEM_REGISTRY
+                self._catalog_rarity_pools = {
+                    "common": [], "uncommon": [], "rare": [], "epic": [],
+                    "mythic": [], "legendary": [], "ancient": []
+                }
+                for iid, idata in ITEM_REGISTRY.items():
+                    r = idata.get("rarity")
+                    if r in self._catalog_rarity_pools and idata.get("cat") in ("weapon", "armor_head", "armor_chest", "armor_legs", "accessory"):
+                        self._catalog_rarity_pools[r].append(iid)
+
+            is_night_elite = getattr(mob, "is_night_elite", False) or getattr(mob, "is_elite", False)
+            if is_night_elite:
+                # Night Elites (nightly champions) drop up to Epic (high probability of Rare/Epic, no Mythic/Legendary/Ancient)
+                drop_count = random.choice([1, 2])
+                for _ in range(drop_count):
+                    tier_roll = random.random()
+                    if tier_roll < 0.45 and self._catalog_rarity_pools.get("epic"):
+                        drop_id = random.choice(self._catalog_rarity_pools["epic"])
+                    elif tier_roll < 0.85 and self._catalog_rarity_pools.get("rare"):
+                        drop_id = random.choice(self._catalog_rarity_pools["rare"])
+                    else:
+                        drop_id = random.choice(self._catalog_rarity_pools["uncommon"]) if self._catalog_rarity_pools.get("uncommon") else "healing_potion"
+                    self._spawn_loot_drop(drop_id, 1, mx, my)
+                return
+
+            # Regular mobs: drop random 0-2 items only (not guaranteed 3-5 items).
+            # Drop Common, Uncommon, Rare only (never Mythic/Ancient/Legendary/Epic).
+            drop_count = random.choices([0, 1, 2], weights=[0.35, 0.45, 0.20])[0]
+            if drop_count == 0:
+                return
+
+            common_items = ["copper_coin", "spud_sap", "raw_potato", "healing_potion"]
+            if "Slime" in m_name:
+                common_items = ["spud_sap", "copper_coin", "raw_potato"]
+            elif "Skeleton" in m_name:
+                common_items = ["bone", "iron_ore", "copper_coin"]
+            elif "Zombie" in m_name or "Mummy" in m_name:
+                common_items = ["copper_ore", "copper_coin", "healing_potion"]
+            elif "Bat" in m_name:
+                common_items = ["torch", "copper_coin"]
+
+            for _ in range(drop_count):
+                tier_roll = random.random()
+                if tier_roll < 0.05 and self._catalog_rarity_pools.get("rare"):
+                    drop_id = random.choice(self._catalog_rarity_pools["rare"])
+                    cnt = 1
+                elif tier_roll < 0.25 and self._catalog_rarity_pools.get("uncommon"):
+                    drop_id = random.choice(self._catalog_rarity_pools["uncommon"])
+                    cnt = 1
+                else:
+                    drop_id = random.choice(common_items)
+                    cnt = random.randint(1, 4) if drop_id in ("copper_coin", "bone", "copper_ore", "spud_sap") else 1
+                self._spawn_loot_drop(drop_id, cnt, mx, my)
+            return
+
+        # 1. Base Guaranteed Mob Drop
         if "Slime" in m_name:
             self._spawn_loot_drop("spud_sap", random.randint(1, 3), mx, my)
             if "Frost" in m_name:

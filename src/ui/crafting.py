@@ -413,6 +413,22 @@ RECIPES = [
         "ingredients": [("wood", 8), ("spud_sap", 4)]
     },
     {
+        "result": "reinforced_angler_rod", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
+        "ingredients": [("spud_angler_rod", 1), ("iron_bar", 6), ("silver_coin", 2)]
+    },
+    {
+        "result": "gilded_master_rod", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
+        "ingredients": [("reinforced_angler_rod", 1), ("gold_bar", 6), ("golden_fry", 1)]
+    },
+    {
+        "result": "astral_leviathan_rod", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
+        "ingredients": [("gilded_master_rod", 1), ("fallen_star", 5), ("portal_shard", 1)]
+    },
+    {
+        "result": "neptune_tide_rod", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
+        "ingredients": [("astral_leviathan_rod", 1), ("magma_core", 2), ("crown_of_potaria", 1)]
+    },
+    {
         "result": "wood_bow", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
         "ingredients": [("wood", 10)]
     },

@@ -169,6 +169,7 @@ class World:
         
         # Individual Tree Harvesting & Sapling Ecosystem
         self.tree_cascade_felling = True
+        self.decaying_blocks = {}         # (tx, ty) -> {"timer": float, "max_timer": float, "type": int}
         self.planted_saplings = {}        # (tx, ty) -> {"growth_days": int, "sapling_type": str}
         self.wild_sapling_timer = 0.0
         self.last_bonus_drop = None
@@ -221,6 +222,8 @@ class World:
         if self.damage_decay_timer > 3.0 and self.tile_damage:
             self.tile_damage.clear()
             self.damage_decay_timer = 0
+
+        self.update_tree_decay(dt)
 
         # Bare ground wild sapling regeneration on natural surface grass
         self.wild_sapling_timer += dt
@@ -571,7 +574,11 @@ class World:
                     return True, "wood", t_id
                 else:
                     self.set_tile(tx, ty, TILE_AIR)
+                    self._check_tree_decay(tx, ty)
                     return True, "wood", t_id
+
+            if hasattr(self, "decaying_blocks") and (tx, ty) in self.decaying_blocks:
+                self.decaying_blocks.pop((tx, ty), None)
 
             self.set_tile(tx, ty, TILE_AIR)
             # Check adjacent torches and lanterns for loss of physical support
@@ -597,6 +604,107 @@ class World:
             return True, drop, t_id
 
         return False, None, t_id
+
+    def _check_tree_decay(self, tx, ty):
+        """Scans for unsupported trunk blocks and canopy leaves above a broken trunk and starts their decay."""
+        if not hasattr(self, "decaying_blocks"):
+            self.decaying_blocks = {}
+
+        severed_trunks = []
+        for dy in range(1, 25):
+            uy = ty - dy
+            tid = self.get_tile(tx, uy)
+            if tid in (TILE_WOOD_TRUNK, TILE_WOOD):
+                # Check if this trunk block has any solid support beneath it
+                has_support_below = False
+                for sy in range(uy + 1, uy + 20):
+                    stid = self.get_tile(tx, sy)
+                    if stid != TILE_AIR and stid != TILE_WATER:
+                        has_support_below = True
+                        break
+                if not has_support_below:
+                    severed_trunks.append((tx, uy))
+                    if (tx, uy) not in self.decaying_blocks:
+                        self.decaying_blocks[(tx, uy)] = {
+                            "timer": random.uniform(1.5, 4.0),
+                            "max_timer": 4.0,
+                            "type": tid
+                        }
+            elif tid == TILE_AIR:
+                if dy > 5 and all(self.get_tile(tx, ty - k) == TILE_AIR for k in range(dy - 3, dy + 1)):
+                    break
+            else:
+                break
+
+        # Check for canopy leaves around the broken trunk and any severed trunks
+        check_origins = [(tx, ty)] + severed_trunks
+        for cx, cy in check_origins:
+            for ldx in range(-4, 5):
+                for ldy in range(-5, 4):
+                    lx = cx + ldx
+                    ly = cy + ldy
+                    if (lx, ly) in self.decaying_blocks:
+                        continue
+                    if self.get_tile(lx, ly) == TILE_LEAVES:
+                        has_grounded_trunk = False
+                        for tdx in range(-3, 4):
+                            for tdy in range(-3, 4):
+                                check_t = self.get_tile(lx + tdx, ly + tdy)
+                                if check_t in (TILE_WOOD_TRUNK, TILE_WOOD) and (lx + tdx, ly + tdy) not in self.decaying_blocks:
+                                    has_grounded_trunk = True
+                                    break
+                            if has_grounded_trunk:
+                                break
+                        if not has_grounded_trunk:
+                            self.decaying_blocks[(lx, ly)] = {
+                                "timer": random.uniform(2.0, 5.5),
+                                "max_timer": 5.5,
+                                "type": TILE_LEAVES
+                            }
+
+    def update_tree_decay(self, dt, game=None):
+        """Ticks down decaying blocks, darkens them, and drops items on expiration."""
+        if not hasattr(self, "decaying_blocks") or not self.decaying_blocks:
+            return
+
+        if game is None and hasattr(self, "game"):
+            game = self.game
+
+        expired = []
+        for coord, info in list(self.decaying_blocks.items()):
+            info["timer"] -= dt
+            t_id = self.get_tile(coord[0], coord[1])
+            if t_id != info.get("type"):
+                expired.append(coord)
+                continue
+            if info["timer"] <= 0:
+                expired.append(coord)
+                self.set_tile(coord[0], coord[1], TILE_AIR)
+                cx = coord[0] * self.scaled_tile + self.scaled_tile / 2
+                cy = coord[1] * self.scaled_tile + self.scaled_tile / 2
+
+                if info["type"] in (TILE_WOOD_TRUNK, TILE_WOOD):
+                    if game and hasattr(game, "combat"):
+                        game.combat._spawn_loot_drop("wood", 1, cx, cy)
+                elif info["type"] == TILE_LEAVES:
+                    if game and hasattr(game, "combat"):
+                        game.combat._spawn_loot_drop("leaves", 1, cx, cy)
+                        roll = random.random()
+                        if roll < 0.20:
+                            biome = self.get_biome_at(coord[0], coord[1]) if hasattr(self, "get_biome_at") else "forest"
+                            sap_drop = "pine_sapling" if biome == "snow" else ("palm_sapling" if biome == "desert" else "oak_sapling")
+                            game.combat._spawn_loot_drop(sap_drop, 1, cx, cy)
+                        elif roll < 0.35:
+                            game.combat._spawn_loot_drop("apple", 1, cx, cy)
+                        elif roll < 0.50:
+                            game.combat._spawn_loot_drop("acorn", 1, cx, cy)
+
+                if game and hasattr(game, "particle_system"):
+                    col = (110, 80, 45) if info["type"] in (TILE_WOOD_TRUNK, TILE_WOOD) else (70, 160, 60)
+                    game.particle_system.spawn_debris(cx, cy, col, count=4)
+
+        for coord in expired:
+            self.decaying_blocks.pop(coord, None)
 
     def place_tile(self, tx, ty, tile_id, chest_type="chest"):
         cur = self.get_tile(tx, ty)
@@ -1168,6 +1276,18 @@ class World:
                     max_h = max(1, prop.get("hardness", 20))
                     stage = min(3, int((cur / max_h) * 4))
                     target_surf.blit(self.scaled_cracks[stage], (tx * self.scaled_tile - cam_x, ty * self.scaled_tile - cam_y))
+
+        # Dynamic overlay: decaying tree blocks darkening
+        if hasattr(self, "decaying_blocks") and self.decaying_blocks:
+            dark_overlay = pygame.Surface((self.scaled_tile, self.scaled_tile), pygame.SRCALPHA)
+            for (dtx, dty), dinfo in self.decaying_blocks.items():
+                if min_tx <= dtx <= max_tx and min_ty <= dty <= max_ty:
+                    max_t = dinfo.get("max_timer", 4.0)
+                    cur_t = dinfo.get("timer", 2.0)
+                    progress = 1.0 - max(0.0, min(1.0, cur_t / max(0.1, max_t)))
+                    alpha = int(70 + progress * 100)
+                    dark_overlay.fill((20, 15, 10, alpha))
+                    target_surf.blit(dark_overlay, (dtx * self.scaled_tile - cam_x, dty * self.scaled_tile - cam_y))
 
     def render_water(self, target_surf, camera):
         """Renders foreground aquatic animated water surfaces and transparent submerged volume pass."""

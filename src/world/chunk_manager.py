@@ -88,7 +88,7 @@ class ChunkSection:
                 local_py = (ty - min_ty) * world.scaled_tile
                 t_id = chunk.get_tile_local(lx, ty)
                 w_id = chunk.get_wall_local(lx, ty)
-                if t_id != TILE_AIR or w_id != WALL_AIR or (ty >= 0 and (ty >= surf_y or ty >= SURFACE_LEVEL)):
+                if t_id != TILE_AIR or w_id != WALL_AIR or (ty >= 0 and ty >= surf_y):
                     drawn_count += 1
                 prop = TILE_PROPS.get(t_id, {})
 
@@ -101,7 +101,7 @@ class ChunkSection:
                         if wall_tex:
                             self.surf.blit(wall_tex, (local_px, local_py))
                     else:
-                        if ty >= 0 and (ty >= surf_y or ty >= SURFACE_LEVEL):
+                        if ty >= 0 and ty >= surf_y:
                             if ty >= DUNGEON_LEVEL - 8 and is_dungeon_col:
                                 sub_w = WALL_DUNGEON
                             elif ty >= CAVERN_LEVEL - 12:
@@ -124,8 +124,8 @@ class ChunkSection:
                     if t_id in (TILE_TORCH, TILE_WATER, TILE_SAPLING):
                         self.animated_tiles.append((local_px, local_py, t_id))
                     elif t_id == TILE_WOOD_TRUNK:
-                        below_id = tiles_col[ty + 1] if ty + 1 < world.height else TILE_BEDROCK
-                        above_id = tiles_col[ty - 1] if ty > 0 else TILE_AIR
+                        below_id = chunk.get_tile_local(lx, ty + 1)
+                        above_id = chunk.get_tile_local(lx, ty - 1)
                         left_id = world.get_tile(gx - 1, ty)
                         right_id = world.get_tile(gx + 1, ty)
                         in_canopy = (above_id == TILE_LEAVES or left_id == TILE_LEAVES or right_id == TILE_LEAVES)

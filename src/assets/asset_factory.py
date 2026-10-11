@@ -367,19 +367,27 @@ class AssetFactory:
 
         # Removed noise pixel
 
-    def _draw_fishing_rod_sprite(self, surf):
+    def _draw_fishing_rod_sprite(self, surf, item_id="fishing_rod"):
+        rod_palettes = {
+            "spud_angler_rod": ((120, 150, 70), (160, 195, 95), (140, 220, 100)),
+            "reinforced_angler_rod": ((90, 100, 120), (160, 175, 195), (60, 180, 240)),
+            "gilded_master_rod": ((180, 140, 30), (245, 215, 60), (255, 90, 90)),
+            "astral_leviathan_rod": ((70, 40, 140), (140, 100, 240), (100, 240, 255)),
+            "neptune_tide_rod": ((20, 90, 140), (60, 180, 240), (255, 215, 80)),
+        }
+        c_dark, c_light, c_bobber = rod_palettes.get(item_id, ((140, 105, 50), (195, 165, 85), (225, 40, 40)))
         for i in range(18):
             px = 3 + i
             py = 21 - i
-            col = (140, 105, 50) if (i % 4 == 0) else (195, 165, 85)
+            col = c_dark if (i % 4 == 0) else c_light
             surf.set_at((px, py), col)
-            surf.set_at((px + 1, py), (170, 140, 70))
+            surf.set_at((px + 1, py), c_dark)
         surf.set_at((21, 2), (210, 215, 225))
         for ly in range(3, 16):
             surf.set_at((21, ly), (230, 230, 235))
-        pygame.draw.circle(surf, (225, 40, 40), (21, 16), 2)
+        pygame.draw.circle(surf, c_bobber, (21, 16), 2)
         pygame.draw.circle(surf, (245, 245, 250), (21, 18), 2)
-        surf.set_at((21, 16), (255, 120, 120))
+        surf.set_at((21, 16), c_light)
         pygame.draw.circle(surf, (160, 170, 185), (6, 18), 2)
         surf.set_at((6, 18), (220, 230, 240))
 
@@ -548,8 +556,8 @@ class AssetFactory:
             self._draw_sapling_sprite(surf, item_id, h)
             return surf
 
-        if id_lower == "fishing_rod":
-            self._draw_fishing_rod_sprite(surf)
+        if id_lower in ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod") or "angler_rod" in id_lower:
+            self._draw_fishing_rod_sprite(surf, id_lower)
             return surf
         elif id_lower.startswith("raw_") and any(id_lower == f"raw_{k}" for k in ("bangus", "tilapia", "galunggong", "maya_maya", "tanigue", "tambakol", "lapu_lapu", "hito", "dilis", "dalagang_bukid")):
             self._draw_pinoy_fish(surf, id_lower, h)

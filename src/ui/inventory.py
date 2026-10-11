@@ -1368,6 +1368,34 @@ ITEM_REGISTRY = {
         "lore": "'Patience brings the ocean's bounty.'",
         "special": "Fishing Tool"
     },
+    "reinforced_angler_rod": {
+        "name": "Reinforced Iron Angler Rod", "cat": CAT_TOOL, "power": 20, "damage": 5, "max_stack": 1, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Tempered iron casting rod with weighted spool. Catches rare deep-water fish and precious treasures.",
+        "lore": "'Cast deep where the sunken relics rest.'",
+        "special": "Fishing Tool"
+    },
+    "gilded_master_rod": {
+        "name": "Gilded Master Angler Rod", "cat": CAT_TOOL, "power": 35, "damage": 8, "max_stack": 1, "tile": None,
+        "rarity": RARITY_EPIC,
+        "desc": "Masterwork golden fishing rod lined with silk filament. Can reel in exotic catches and epic equipment.",
+        "lore": "'A true angler seeks legends beneath the foam.'",
+        "special": "Fishing Tool"
+    },
+    "astral_leviathan_rod": {
+        "name": "Astral Leviathan Rod", "cat": CAT_TOOL, "power": 50, "damage": 12, "max_stack": 1, "tile": None,
+        "rarity": RARITY_MYTHIC,
+        "desc": "Celestial carbon-weave rod hums with cosmic tides. Capable of catching mythical ocean titans and royal treasure.",
+        "lore": "'The abyss yields its greatest secrets to celestial craft.'",
+        "special": "Fishing Tool"
+    },
+    "neptune_tide_rod": {
+        "name": "Neptune's Sovereign Rod", "cat": CAT_TOOL, "power": 70, "damage": 18, "max_stack": 1, "tile": None,
+        "rarity": RARITY_LEGENDARY,
+        "desc": "Legendary sovereign trident-rod commanding the tides. Reqs supreme mastery to reel mythical relics.",
+        "lore": "'Rule the waters, harvest the boundless cosmos.'",
+        "special": "Fishing Tool"
+    },
     "raw_bangus": {
         "name": "Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
@@ -1701,7 +1729,7 @@ ITEM_REGISTRY = {
     },
     "necro_essence": {
         "name": "Necro Essence", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 999, "tile": None,
-        "rarity": RARITY_EPIC,
+        "rarity": RARITY_RARE,
         "desc": "Dark spirit essence harvested from dungeon horrors.",
         "lore": "'Whispers of forgotten realms.'",
         "special": "Crafting Material"
@@ -1815,11 +1843,11 @@ ITEM_REGISTRY = {
         "effects": ["+7 Defense", "+25 Max Health"], "special": "Heavy Guard"
     },
     "spud_angler_rod": {
-        "name": "Spud Angler Rod", "cat": CAT_TOOL, "power": 12, "damage": 2, "max_stack": 1,
-        "tile": None, "rarity": RARITY_COMMON,
+        "name": "Spud Angler Rod", "cat": CAT_TOOL, "power": 14, "damage": 3, "max_stack": 1,
+        "tile": None, "rarity": RARITY_UNCOMMON,
         "desc": "Flexible whittled birch rod rigged with braided fiber for freshwater angling.",
         "lore": "'Patience and a plump spud will catch any river titan.'",
-        "effects": [], "special": "River Fishing"
+        "effects": [], "special": "Fishing Tool"
     },
     "arbalest_repeater": {
         "name": "Arbalest Repeater", "cat": CAT_WEAPON, "power": 0, "damage": 24, "atk": 24, "crit": 5.0, "speed": 0.15,
