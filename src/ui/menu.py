@@ -2111,7 +2111,7 @@ class MenuManager:
         target_surf.blit(t_surf, (SCREEN_WIDTH // 2 - t_surf.get_width() // 2, 308))
 
         if self.new_world_diff == DIFFICULTY_EASY:
-            diff_desc = "Easy: Starts with basic skills (Power Slash, Dash) and starter wooden axe."
+            diff_desc = "Easy: Starts with basic skills (Power Slash, Dash), wooden axe & 5 torches."
         elif self.new_world_diff == DIFFICULTY_NORMAL:
             diff_desc = "Normal: Starts with 1 wooden axe & 5 torches. NO starting skills."
         elif self.new_world_diff == DIFFICULTY_HARDCORE:

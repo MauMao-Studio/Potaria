@@ -5595,12 +5595,14 @@ class AssetFactory:
                 s = pygame.Surface((20, 20), pygame.SRCALPHA)
                 leg_dy = (i % 2) * 2
                 peck = 1 if i == 2 else 0
+                wing_flp = 1 if i in (1, 2) else 0
                 pygame.draw.polygon(s, (225, 40, 40), [(12, 2 - peck), (16, 1 - peck), (14, 5 - peck)])
                 pygame.draw.circle(s, (180, 70, 35), (13, 6 + peck), 4)
                 pygame.draw.polygon(s, (245, 195, 45), [(16, 6 + peck), (19, 7 + peck), (16, 8 + peck)])
                 s.set_at((14, 5 + peck), (20, 20, 20))
                 pygame.draw.ellipse(s, (140, 60, 25), (4, 7, 12, 8))
                 pygame.draw.polygon(s, (45, 75, 45), [(4, 9), (1, 4), (5, 8)])
+                s.set_at((5 + i, 8 + wing_flp), (165, 75, 32))
                 pygame.draw.line(s, (230, 180, 40), (8, 14), (8, 18 - leg_dy), 1)
                 pygame.draw.line(s, (230, 180, 40), (12, 14), (12, 18 + leg_dy - 2), 1)
                 frames.append(s)
@@ -5612,11 +5614,13 @@ class AssetFactory:
                 s = pygame.Surface((20, 18), pygame.SRCALPHA)
                 waddle = 1 if i % 2 == 1 else 0
                 leg_dy = (i % 2) * 2
+                feather_y = 1 if i in (2, 3) else 0
                 pygame.draw.circle(s, (35, 95, 60), (13, 5 + waddle), 4)
                 pygame.draw.polygon(s, (245, 145, 30), [(16, 5 + waddle), (19, 6 + waddle), (16, 7 + waddle)])
                 s.set_at((14, 4 + waddle), (20, 20, 20))
                 pygame.draw.ellipse(s, (115, 80, 50), (4, 7, 12, 7))
                 s.set_at((12, 8 + waddle), (240, 240, 240))
+                s.set_at((6 + i, 9 + feather_y), (135, 95, 60))
                 pygame.draw.line(s, (240, 130, 30), (7, 13), (6, 17 - leg_dy), 1)
                 pygame.draw.line(s, (240, 130, 30), (12, 13), (13, 17 + leg_dy - 2), 1)
                 frames.append(s)
@@ -5627,6 +5631,7 @@ class AssetFactory:
             for i in range(4):
                 s = pygame.Surface((24, 18), pygame.SRCALPHA)
                 trot = 1 if i % 2 == 1 else 0
+                tail_y = 1 if i in (1, 2) else 0
                 pygame.draw.ellipse(s, (45, 42, 48), (4, 5, 16, 10))
                 pygame.draw.rect(s, (75, 65, 75), (18, 8 + trot, 4, 4), border_radius=1)
                 s.set_at((21, 9 + trot), (25, 20, 25))
@@ -5634,7 +5639,7 @@ class AssetFactory:
                 pygame.draw.polygon(s, (35, 30, 38), [(15, 4 + trot), (17, 7 + trot), (13, 6 + trot)])
                 s.set_at((16, 7 + trot), (230, 200, 180))
                 s.set_at((3, 7), (45, 42, 48))
-                s.set_at((2, 6), (45, 42, 48))
+                s.set_at((2, 6 + tail_y), (55, 48, 56))
                 ld1 = 1 if i in (0, 2) else -1
                 ld2 = -1 if i in (0, 2) else 1
                 pygame.draw.rect(s, (30, 28, 32), (6, 13 + ld1, 3, 4))
@@ -5652,6 +5657,7 @@ class AssetFactory:
                 pygame.draw.rect(s, (85, 88, 95), (26, 10 + walk, 4, 4))
                 s.set_at((28, 12 + walk), (25, 25, 30))
                 pygame.draw.arc(s, (185, 175, 155), (16, 2 + walk, 12, 10), 0.5, 3.2, 2)
+                s.set_at((19 + i, 5), (195, 185, 165))
                 l1 = 1 if i in (0, 3) else -1
                 l2 = -1 if i in (0, 3) else 1
                 pygame.draw.rect(s, (45, 48, 55), (8, 16 + l1, 4, 6))
@@ -5670,6 +5676,7 @@ class AssetFactory:
                 pygame.draw.line(s, (90, 70, 50), (15, 4 + bound), (12, 1 + bound), 2)
                 pygame.draw.line(s, (230, 220, 200), (17, 10 + bound), (17, 13 + bound), 1)
                 s.set_at((17, 6 + bound), (30, 25, 20))
+                s.set_at((16 + (i % 2), 12 + (i // 2)), (240, 230, 210))
                 l1 = 1 if i in (0, 2) else 0
                 l2 = 0 if i in (0, 2) else 1
                 pygame.draw.line(s, (120, 95, 65), (7, 14 + bound), (6, 19 - l1), 2)
@@ -6200,6 +6207,15 @@ class AssetFactory:
             "skillbook_celestial_shield", "skillbook_void_singularity"
         ]:
             self.items[sb] = self.generate_item_icon(sb)
+
+        # Pre-populate all items registered in ITEM_REGISTRY so self.items.get(id) always returns the icon
+        try:
+            from src.ui.inventory import ITEM_REGISTRY
+            for item_key in ITEM_REGISTRY:
+                if item_key not in self.items:
+                    self.items[item_key] = self.generate_item_icon(item_key)
+        except Exception:
+            pass
 
     # ==========================================================================
     # 8. BRANDING, UI & ENVIRONMENT

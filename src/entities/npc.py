@@ -195,7 +195,7 @@ class TownNPC:
         target_surf.blit(t_surf, (tx + 5, ty + 2))
 
         # Interaction hint [E] Talk
-        if player and self.can_interact(player):
+        if player and self.can_interact(player) and not self.is_talking:
             hint_txt = self.font_hint.render("[E] Talk", True, (255, 235, 100))
             hw = hint_txt.get_width() + 10
             hx = sx + self.width // 2 - hw // 2

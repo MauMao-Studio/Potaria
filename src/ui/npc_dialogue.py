@@ -62,7 +62,7 @@ class NPCDialogueWindow:
         if npc.npc_type == "guide":
             self.dialogue_text = npc.get_advice(player, world, combat)
         elif npc.npc_type == "merchant":
-            self.dialogue_text = npc.get_quote()
+            self.dialogue_text = npc.get_quote() if hasattr(npc, "get_quote") else "Welcome to my traveling emporium! Browse my wares or trade your hard-earned copper coins."
         elif npc.npc_type == "nurse":
             cost = npc.calculate_heal_cost(player)
             if cost > 0:
@@ -84,13 +84,20 @@ class NPCDialogueWindow:
         self.active_npc = None
         self.is_open = False
 
-    def update(self, dt):
+    def update(self, dt, player=None):
         if not self.is_open:
             return
         if self.active_npc:
             if getattr(self.active_npc, "shield_active", False) or getattr(self.active_npc, "is_despawned", False):
                 self.close()
                 return
+            if player:
+                npc_cx = getattr(self.active_npc, "center_x", self.active_npc.x + self.active_npc.width / 2)
+                npc_cy = getattr(self.active_npc, "center_y", self.active_npc.y + self.active_npc.height / 2)
+                dist = math.hypot(player.center_x - npc_cx, player.center_y - npc_cy)
+                if dist > 96.0: # Automatically close dialogue if player walks or dashes away
+                    self.close()
+                    return
         if self.typewriter_chars < len(self.dialogue_text):
             self.typewriter_timer += dt
             char_interval = 0.018
@@ -473,9 +480,8 @@ class NPCDialogueWindow:
         pygame.draw.rect(target_surf, (10, 12, 18, 160), shadow_rect, border_radius=8)
 
         panel_rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        panel_surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        panel_surf.fill((22, 26, 38, 245))
-        target_surf.blit(panel_surf, (self.x, self.y))
+        # Solid opaque panel plate - prevents world background from bleeding through
+        pygame.draw.rect(target_surf, (22, 26, 38), panel_rect, border_radius=8)
         pygame.draw.rect(target_surf, (80, 100, 140), panel_rect, 2, border_radius=8)
         pygame.draw.rect(target_surf, COLOR_GOLD, panel_rect, 1, border_radius=8)
 
@@ -512,7 +518,7 @@ class NPCDialogueWindow:
         if self.current_view == "dialogue":
             # Dialogue Speech Box
             box_rect = pygame.Rect(self.x + 94, self.y + 44, self.width - 114, 185)
-            pygame.draw.rect(target_surf, (15, 18, 28, 200), box_rect, border_radius=6)
+            pygame.draw.rect(target_surf, (15, 18, 28), box_rect, border_radius=6)
             pygame.draw.rect(target_surf, (60, 75, 105), box_rect, 1, border_radius=6)
 
             # Render visible typewriter text

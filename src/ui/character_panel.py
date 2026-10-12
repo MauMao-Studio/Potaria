@@ -32,6 +32,8 @@ class CharacterPanel:
         self.font = font_regular(14)
         self.font_bold = font_semibold(13)
         self.font_sm = font_compact(11)
+        self.font_reg_sm = font_regular(12)
+        self.font_reg_xs = font_regular(11)
 
         # Slot bounding rects for mouse interaction
         self.slot_rects = {}
@@ -178,10 +180,12 @@ class CharacterPanel:
                     pygame.draw.rect(target_surf, (255, 230, 80), rect, 2, border_radius=6)
                     hovered_item = equipped_id
             else:
-                lbl_surf = self.font_sm.render(label[:4], True, (115, 125, 145))
-                target_surf.blit(lbl_surf, (sx + 21 - lbl_surf.get_width() // 2, sy + 14))
+                # Faint clean inner indicator for empty equipment slot
+                inner_rect = pygame.Rect(sx + 9, sy + 9, 24, 24)
+                pygame.draw.rect(target_surf, (28, 32, 46), inner_rect, border_radius=4)
+                pygame.draw.rect(target_surf, (55, 65, 88), inner_rect, 1, border_radius=4)
 
-            lbl_name = self.font_sm.render(label, True, (200, 210, 230))
+            lbl_name = self.font_bold.render(label, True, (200, 210, 230))
             target_surf.blit(lbl_name, (sx + 50, sy + 14))
 
         # Active Hotbar Weapon Display (Weapons are held in hand from hotbar!)
@@ -198,7 +202,8 @@ class CharacterPanel:
                 target_surf.blit(hw_icon, (px + 39, hw_y + 9))
             w_name = ARMOR_DATA.get(raw_hw, {}).get("name", str(raw_hw).replace("_", " ").title())
             hw_title = self.font_sm.render("IN HAND (HOTBAR)", True, (255, 215, 100))
-            hw_name = self.font_sm.render(w_name[:16], True, (255, 255, 255))
+            hw_name_font = self.font_reg_xs if self.font_reg_sm.size(w_name)[0] > 140 else self.font_reg_sm
+            hw_name = hw_name_font.render(w_name, True, (255, 255, 255))
             target_surf.blit(hw_title, (px + 78, hw_y + 6))
             target_surf.blit(hw_name, (px + 78, hw_y + 22))
             if hw_rect.collidepoint(mouse_x, mouse_y):
@@ -330,8 +335,9 @@ class CharacterPanel:
                     target_surf.blit(icon_sc, (hx + 30, hy + 7))
                     icon_drawn = True
 
-            skill_name = s_data.get("name", "---")[:8] if (curr_sid and is_learned) else ("(Empty)" if not curr_sid else s_data.get("name", "---")[:8])
-            name_txt = self.font_sm.render(skill_name, True, (255, 255, 255) if is_learned else (110, 110, 110))
+            full_skill_name = s_data.get("name", "") if (curr_sid and is_learned) else ("(Empty)" if not curr_sid else s_data.get("name", ""))
+            name_font = self.font_reg_xs if self.font_reg_sm.size(full_skill_name)[0] > 62 else self.font_reg_sm
+            name_txt = name_font.render(full_skill_name, True, (255, 255, 255) if is_learned else (135, 140, 150))
             target_surf.blit(name_txt, (hx + (56 if icon_drawn else 36), hy + 10))
 
             if h_rect.collidepoint(mouse_x, mouse_y):
@@ -389,18 +395,20 @@ class CharacterPanel:
             text_offset_x = gx + (32 if g_icon_drawn else 6)
 
             # Name and status badge
+            skill_full_name = s_data.get("name", s_id)
+            name_font = self.font_reg_xs if self.font_reg_sm.size(skill_full_name)[0] > 84 else self.font_reg_sm
             if is_learned:
                 lvl = player.skills.get_skill_level(s_id) if hasattr(player.skills, "get_skill_level") else 1
-                s_name = self.font_sm.render(f"{s_data['name'][:6]} L{lvl}", True, (255, 255, 255))
+                s_name = name_font.render(skill_full_name, True, (255, 255, 255))
                 target_surf.blit(s_name, (text_offset_x, gy_pos + 4))
-                status_txt = f"[{bound_key}]" if bound_key else "[Ready]"
-                stat_surf = self.font_sm.render(status_txt, True, COLOR_GOLD if bound_key else (80, 220, 120))
-                target_surf.blit(stat_surf, (text_offset_x, gy_pos + 17))
+                status_txt = f"[{bound_key}] Lv.{lvl}" if bound_key else f"[Ready] Lv.{lvl}"
+                stat_surf = self.font_reg_xs.render(status_txt, True, COLOR_GOLD if bound_key else (80, 220, 120))
+                target_surf.blit(stat_surf, (text_offset_x, gy_pos + 18))
             else:
-                s_name = self.font_sm.render(s_data["name"][:7], True, (110, 115, 125))
+                s_name = name_font.render(skill_full_name, True, (135, 140, 150))
                 target_surf.blit(s_name, (text_offset_x, gy_pos + 4))
-                stat_surf = self.font_sm.render("[Locked]", True, (130, 70, 70))
-                target_surf.blit(stat_surf, (text_offset_x, gy_pos + 17))
+                stat_surf = self.font_reg_xs.render("[Locked]", True, (180, 85, 85))
+                target_surf.blit(stat_surf, (text_offset_x, gy_pos + 18))
 
             if g_rect.collidepoint(mouse_x, mouse_y):
                 pygame.draw.rect(target_surf, (255, 230, 80), g_rect, 2, border_radius=5)

@@ -72,7 +72,8 @@ class TestNightSleepEliteAndBossBuffs(unittest.TestCase):
         # Player must NOT be resting, spawn point should still be updated
         self.assertFalse(self.game.player.is_resting)
         self.assertEqual(self.game.player.spawn_point, (tile_wx, tile_wy - SCALED_TILE))
-        self.assertEqual(self.game.inventory.last_learned_message, "You can only sleep at night")
+        self.assertIn("You can only sleep at night", self.game.inventory.last_learned_message)
+        self.assertIn("Spawn point saved", self.game.inventory.last_learned_message)
 
     def test_bed_sleep_rejected_when_hostile_monster_within_6_blocks(self):
         """Right-clicking bed at night with a hostile monster within 6 blocks rejects sleep."""

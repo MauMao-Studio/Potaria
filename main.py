@@ -1818,7 +1818,9 @@ class PotariaGame:
 
                 # Check daytime / nighttime restriction
                 if not getattr(self.sky, "is_night", False):
-                    self.inventory.notify("You can only sleep at night")
+                    self.sound_manager.play("place")
+                    self.particle_system.spawn_sparks(tile_world_x + 16, tile_world_y + 8, (120, 200, 255), count=20)
+                    self.inventory.notify("Spawn point saved! (You can only sleep at night)")
                     return
 
                 # Check monsters within 6 blocks radius (6 * SCALED_TILE)
@@ -2895,7 +2897,7 @@ class PotariaGame:
             if hasattr(self.world, "update_town_npcs"):
                 self.world.update_town_npcs(dt, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
             if hasattr(self, "npc_dialogue"):
-                self.npc_dialogue.update(dt)
+                self.npc_dialogue.update(dt, player=self.player)
             cam_rect = pygame.Rect(self.camera.x - 32, self.camera.y - 32, SCREEN_WIDTH + 64, SCREEN_HEIGHT + 64)
             self.world.emit_fireplace_smoke(self.particle_system, cam_rect)
             self.particle_system.update(dt)

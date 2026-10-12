@@ -2840,8 +2840,9 @@ class Inventory:
         """Initializes starter inventory according to difficulty mode."""
         self.slots = [None] * INV_TOTAL_SLOTS
         if difficulty == "easy":
-            # Easy: Starts with wood axe and starter skills
+            # Easy: Starts with wood axe, 5 torches, and starter skills
             self.slots[0] = ItemStack("wood_axe", 1)
+            self.slots[1] = ItemStack("torch", 5)
         elif difficulty == "normal":
             # Normal: Starts with 1 wooden axe and 5 torches
             self.slots[0] = ItemStack("wood_axe", 1)

@@ -70,10 +70,10 @@ def test_difficulty_loadouts_and_skills():
     factory = AssetFactory()
     inv = Inventory(factory)
     
-    # Easy: 1 wooden axe, starter skills (power_slash, dash)
+    # Easy: 1 wooden axe, 5 torches, starter skills (power_slash, dash)
     inv.set_difficulty_loadout(DIFFICULTY_EASY)
     assert inv.count_item("wood_axe") == 1
-    assert inv.count_item("torch") == 0
+    assert inv.count_item("torch") == 5
     
     # Normal: 1 wooden axe, 5 torches
     inv.set_difficulty_loadout(DIFFICULTY_NORMAL)
