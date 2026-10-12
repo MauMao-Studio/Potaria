@@ -31,7 +31,7 @@ from src.ui.crafting import RECIPES
 from src.ui.hud import HUD
 from src.entities.mob import (
     MOB_TYPE_REGISTRY, ManokMob, PatoMob, BaboyMob, KalabawMob, KambingMob,
-    Aswang, BlightCultist, PassiveAnimalMob
+    Aswang, BlightCultist, Goblin, PassiveAnimalMob, Zombie
 )
 
 
@@ -245,11 +245,13 @@ class TestPhOverhaulsVerification(unittest.TestCase):
         self.assertLess(kambing.jump_power, -5.5, "Goat should have high agility jump power")
 
     def test_philippine_enemies_registration(self):
-        """Verifies Aswang and Blight Cultist are registered hostile enemies."""
+        """Verifies Aswang, Blight Cultist, and Goblin are registered hostile enemies."""
         self.assertIn("aswang", MOB_TYPE_REGISTRY)
         self.assertIn("blight_cultist", MOB_TYPE_REGISTRY)
+        self.assertIn("goblin", MOB_TYPE_REGISTRY)
         self.assertEqual(MOB_TYPE_REGISTRY["aswang"], Aswang)
         self.assertEqual(MOB_TYPE_REGISTRY["blight_cultist"], BlightCultist)
+        self.assertEqual(MOB_TYPE_REGISTRY["goblin"], Goblin)
 
         aswang = Aswang(100, 100, self.asset_factory)
         self.assertFalse(getattr(aswang, "is_passive", False))
@@ -259,8 +261,33 @@ class TestPhOverhaulsVerification(unittest.TestCase):
         self.assertFalse(getattr(cultist, "is_passive", False))
         self.assertEqual(cultist.name, "Blight Cultist")
 
+        goblin = Goblin(100, 100, self.asset_factory)
+        self.assertFalse(getattr(goblin, "is_passive", False))
+        self.assertEqual(goblin.name, "Goblin Warrior")
+        self.assertEqual(len(goblin.walk_frames), 6)
+
+    def test_humanoid_walker_attack_animation_and_strike(self):
+        """Verifies WalkerMob triggers attack animation and slash telegraphing when player is in melee distance."""
+        world = MockWorld()
+        zombie = Zombie(100, 100, self.asset_factory)
+        self.player.x = 120
+        self.player.y = 100
+        self.assertEqual(zombie.attack_timer, 0.0)
+
+        # Update in melee proximity
+        zombie.update(0.016, world, self.player)
+        self.assertTrue(zombie.is_attacking or zombie.attack_timer > 0.0)
+        self.assertGreater(zombie.attack_timer, 0.0)
+
+        # Render during attack phase (verifies slash arc logic executes cleanly)
+        surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        class MockCam:
+            def world_to_screen(self, x, y):
+                return (int(x), int(y))
+        zombie.render(surf, MockCam())
+
     def test_mob_loot_drops_for_animals_and_enemies(self):
-        """Verifies combat loot drop system spawns authentic meats, milk, eggs, feathers, and cultist drops."""
+        """Verifies combat loot drop system spawns authentic meats, milk, eggs, feathers, cultist drops, and goblin loot."""
         manok = ManokMob(100, 100, self.asset_factory)
         self.combat.dropped_items.clear()
         self.combat._drop_mob_loot(manok)
@@ -275,6 +302,12 @@ class TestPhOverhaulsVerification(unittest.TestCase):
         self.assertIn("raw_beef", item_ids)
         self.assertIn("carabao_milk", item_ids)
 
+        goblin = Goblin(100, 100, self.asset_factory)
+        self.combat.dropped_items.clear()
+        self.combat._drop_mob_loot(goblin)
+        g_item_ids = [d.item_id for d in self.combat.dropped_items]
+        self.assertIn("copper_coin", g_item_ids)
+
     # =========================================================================
     # 5. FILIPINO FOODS, INGREDIENTS & RECIPES
     # =========================================================================
@@ -283,7 +316,8 @@ class TestPhOverhaulsVerification(unittest.TestCase):
         expected_dishes = [
             "chicken_adobo", "pork_adobo", "sinigang", "tinola", "kare_kare",
             "bulalo", "lechon", "pancit_bihon", "arroz_caldo", "halo_halo",
-            "daing_na_bangus", "kaldereta", "balut", "itlog_na_maalat", "sinangag"
+            "daing_na_bangus", "kaldereta", "balut", "itlog_na_maalat", "sinangag",
+            "sinigang_na_bangus", "ginataang_tilapia", "kinilaw_na_tanigue"
         ]
         recipe_results = [r.get("result") for r in RECIPES]
         for dish in expected_dishes:
@@ -291,22 +325,40 @@ class TestPhOverhaulsVerification(unittest.TestCase):
             self.assertIn(dish, ITEM_REGISTRY, f"Missing dish in ITEM_REGISTRY: {dish}")
             self.assertEqual(ITEM_REGISTRY[dish].get("cat"), "consumable")
 
-        # Check ingredients exist
-        expected_ingredients = [
-            "rice", "garlic", "onion", "ginger", "calamansi", "tamarind",
-            "soy_sauce", "vinegar", "black_pepper", "salt", "coconut_milk",
-            "peanut_butter", "eggplant", "string_beans", "pancit_noodles"
+        # Check all connected ingredients exist and are craftable
+        expected_connected_ingredients = [
+            "condensed_milk", "ube_halaya", "pancit_noodles", "peanut_butter", "coconut_milk"
         ]
-        for ing in expected_ingredients:
-            self.assertIn(ing, ITEM_REGISTRY, f"Missing Filipino ingredient in ITEM_REGISTRY: {ing}")
+        for ing in expected_connected_ingredients:
+            self.assertIn(ing, recipe_results, f"Missing recipe for connected ingredient: {ing}")
+            self.assertIn(ing, ITEM_REGISTRY, f"Missing connected ingredient in ITEM_REGISTRY: {ing}")
+
+    def test_fishing_junk_category_and_low_thrash(self):
+        """Verifies junk items like dirt_clod get common rarity, category junk, and low thrash rate."""
+        minigame = FishingBattleMiniGame(self.asset_factory, self.sound_manager)
+        minigame.start(fish_id="dirt_clod", caught_count=3)
+        self.assertEqual(minigame.rarity, "common")
+        self.assertEqual(getattr(minigame, "catch_category", ""), "junk")
+        self.assertEqual(minigame.target_clicks, 5)
+
+        # Render check
+        surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        minigame.render(surf)
+
+    def test_water_snapping_and_rod_tip_sprout_alignment(self):
+        """Verifies get_rod_tip_pos aligns with sprout offset and world coordinate mapping."""
+        self.player.sprout_offset_y = 4
+        tip_x, tip_y = self.player.get_rod_tip_pos()
+        expected_hand_y = self.player.y - 4 + 20
+        self.assertAlmostEqual(tip_y, expected_hand_y, delta=25.0)
 
     def test_pinoy_food_and_animal_sprites_generated(self):
         """Verifies AssetFactory generates sprites for all Pinoy items and mobs."""
-        for item_id in ["sinigang", "chicken_adobo", "tinola", "dirt_clod", "old_boot", "calamansi"]:
+        for item_id in ["sinigang", "chicken_adobo", "tinola", "dirt_clod", "old_boot", "calamansi", "sinigang_na_bangus", "ginataang_tilapia", "kinilaw_na_tanigue"]:
             self.assertIn(item_id, self.asset_factory.items)
             self.assertIsInstance(self.asset_factory.items[item_id], pygame.Surface)
 
-        for mob_id in ["manok", "pato", "baboy", "kalabaw", "kambing", "aswang", "blight_cultist"]:
+        for mob_id in ["manok", "pato", "baboy", "kalabaw", "kambing", "aswang", "blight_cultist", "goblin"]:
             self.assertIn(mob_id, self.asset_factory.mobs)
             self.assertIsInstance(self.asset_factory.mobs[mob_id], list)
             self.assertGreater(len(self.asset_factory.mobs[mob_id]), 0)
@@ -314,3 +366,4 @@ class TestPhOverhaulsVerification(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

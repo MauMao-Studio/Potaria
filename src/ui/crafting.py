@@ -290,6 +290,38 @@ RECIPES = [
         "ingredients": [("snow_block", 1)]
     },
     {
+        "result": "condensed_milk", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("carabao_milk", 1), ("spud_sap", 1)]
+    },
+    {
+        "result": "ube_halaya", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_potato", 2), ("condensed_milk", 1), ("spud_sap", 1)]
+    },
+    {
+        "result": "pancit_noodles", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("rice", 2)]
+    },
+    {
+        "result": "peanut_butter", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_potato", 2), ("spud_sap", 1), ("salt", 1)]
+    },
+    {
+        "result": "coconut_milk", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("wood", 2), ("spud_sap", 1)]
+    },
+    {
+        "result": "sinigang_na_bangus", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_bangus", 1), ("tamarind", 1), ("onion", 1), ("eggplant", 1)]
+    },
+    {
+        "result": "ginataang_tilapia", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_tilapia", 1), ("coconut_milk", 1), ("ginger", 1)]
+    },
+    {
+        "result": "kinilaw_na_tanigue", "count": 1, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_tanigue", 1), ("vinegar", 1), ("calamansi", 1), ("ginger", 1)]
+    },
+    {
         "result": "iron_cauldron", "count": 1, "station": "furnace", "category": CRAFT_CAT_FURNITURE,
         "ingredients": [("iron_bar", 7)]
     },

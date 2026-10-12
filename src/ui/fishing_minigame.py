@@ -66,12 +66,27 @@ class FishingBattleMiniGame:
         if not fish_id:
             fish_id = random.choice(list(PINOY_FISH_DATA.keys()))
 
-        data = PINOY_FISH_DATA.get(fish_id, {
-            "name": ITEM_REGISTRY.get(fish_id, {}).get("name", fish_id.replace("_", " ").title()),
-            "rarity": "rare",
-            "clicks": 15,
-            "thrash_rate": 0.40
-        })
+        if fish_id in PINOY_FISH_DATA:
+            data = PINOY_FISH_DATA[fish_id]
+            self.catch_category = "fish"
+        else:
+            item_data = ITEM_REGISTRY.get(fish_id, {})
+            name = item_data.get("name", fish_id.replace("_", " ").title())
+            rarity = item_data.get("rarity", "common")
+
+            if fish_id in ("dirt_clod", "old_boot", "rusty_can", "seaweed", "driftwood"):
+                data = {"name": name, "rarity": "common", "clicks": 5, "thrash_rate": 0.05}
+                self.catch_category = "junk"
+            elif "skillbook" in fish_id or "book" in fish_id:
+                data = {"name": name, "rarity": "epic", "clicks": 24, "thrash_rate": 0.52}
+                self.catch_category = "grand_prize"
+            elif item_data.get("cat") in ("weapon", "armor_head", "armor_chest", "armor_legs", "accessory"):
+                clicks = 18 if rarity == "epic" else (14 if rarity == "rare" else 10)
+                data = {"name": name, "rarity": rarity, "clicks": clicks, "thrash_rate": 0.40}
+                self.catch_category = "treasure"
+            else:
+                data = {"name": name, "rarity": rarity, "clicks": 6, "thrash_rate": 0.08}
+                self.catch_category = "ingredient"
 
         self.fish_id = fish_id
         self.fish_name = data["name"]
@@ -219,7 +234,14 @@ class FishingBattleMiniGame:
 
         # Title & Rarity
         r_col = RARITY_COLORS.get(self.rarity, (220, 220, 220))
-        title_txt = f"FISHING BATTLE: {self.fish_name.upper()}"
+        if getattr(self, "catch_category", "") == "junk":
+            title_txt = f"REELING IN JUNK: {self.fish_name.upper()}"
+        elif getattr(self, "catch_category", "") == "treasure":
+            title_txt = f"TREASURE HOOKED: {self.fish_name.upper()}"
+        elif getattr(self, "catch_category", "") == "grand_prize":
+            title_txt = f"GRAND PRIZE HOOKED: {self.fish_name.upper()}"
+        else:
+            title_txt = f"FISHING BATTLE: {self.fish_name.upper()}"
         rendered_title = self.font_title.render(title_txt, True, r_col)
         surface.blit(rendered_title, (self.x + 18, self.y + 14))
 
@@ -241,11 +263,18 @@ class FishingBattleMiniGame:
         pygame.draw.rect(surface, (28, 36, 54), (icon_x - 4, icon_y - 2, 44, 34), border_radius=4)
         pygame.draw.rect(surface, (70, 90, 130), (icon_x - 4, icon_y - 2, 44, 34), 1, border_radius=4)
         if icon_surf:
-            sw_scale = pygame.transform.scale(icon_surf, (34, 26))
-            surface.blit(sw_scale, (icon_x + 1, icon_y + 2))
+            iw, ih = icon_surf.get_size()
+            scale_fac = min(36.0 / max(1, iw), 26.0 / max(1, ih))
+            target_w = max(4, int(iw * scale_fac))
+            target_h = max(4, int(ih * scale_fac))
+            sw_scale = pygame.transform.scale(icon_surf, (target_w, target_h))
+            surface.blit(sw_scale, (icon_x - 4 + (44 - target_w) // 2, icon_y - 2 + (34 - target_h) // 2))
 
         # Fish Status Text
-        status_txt = "FISH IS THRASHING! [EASE OFF!]" if self.is_thrashing else "FISH IS CALM [RIGHT-CLICK TO REEL!]"
+        if getattr(self, "catch_category", "") == "junk":
+            status_txt = "HEAVY LINE DRAG! [EASE OFF!]" if self.is_thrashing else "REELING IN RIVER DEBRIS [RIGHT-CLICK TO REEL!]"
+        else:
+            status_txt = "FISH IS THRASHING! [EASE OFF!]" if self.is_thrashing else "FISH IS CALM [RIGHT-CLICK TO REEL!]"
         status_col = (255, 95, 95) if self.is_thrashing else (110, 240, 130)
         rendered_status = self.font_main.render(status_txt, True, status_col)
         surface.blit(rendered_status, (self.x + 18, self.y + 44))
@@ -260,7 +289,7 @@ class FishingBattleMiniGame:
         if fill_w > 0:
             p_fill_col = (65, 215, 120) if self.reeling_progress < 85 else (255, 215, 60)
             pygame.draw.rect(surface, p_fill_col, (bar_x + 2, p_y + 2, fill_w, 16), border_radius=3)
-        prog_txt = f"REEL PROGRESS: {int(self.reeling_progress)}% ({self.clicks_done}/{self.target_clicks} Reeled)"
+        prog_txt = f"REEL PROGRESS: {int(self.reeling_progress)}%"
         rendered_prog = self.font_sm.render(prog_txt, True, (255, 255, 255))
         surface.blit(rendered_prog, (bar_x + 8, p_y + 3))
 

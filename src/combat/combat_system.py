@@ -19,7 +19,7 @@ from src.entities.mob import (
     GreenSlime, PurpleSlime, SandSlime, FrostSlime, CorruptSlime,
     Zombie, IceZombie, Mummy, Skeleton, DemonEye, CaveBat, IceBat,
     DesertScorpion, ShadowCrawler, RockZombie, ShieldWeaver, DiggerMob,
-    BlightCultist, Aswang,
+    BlightCultist, Aswang, Goblin,
     ManokMob, PatoMob, BaboyMob, KalabawMob, KambingMob
 )
 from src.entities.boss import (
@@ -1325,6 +1325,13 @@ class CombatManager:
             if random.random() < 0.25:
                 self._spawn_loot_drop("affix_stone", 1, mx, my)
             return
+        elif m_type == "goblin" or "Goblin" in m_name:
+            self._spawn_loot_drop("copper_coin", random.randint(15, 45), mx, my)
+            if random.random() < 0.45:
+                self._spawn_loot_drop("iron_ore", random.randint(1, 2), mx, my)
+            if random.random() < 0.35:
+                self._spawn_loot_drop("bone", 1, mx, my)
+            return
 
         if tuned:
             if not hasattr(self, "_catalog_rarity_pools"):
@@ -1658,28 +1665,30 @@ class CombatManager:
             self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome in (BIOME_CAVERN, BIOME_MUSHROOM):
-            mob_cls = random.choice([CaveBat, Skeleton, PurpleSlime, DiggerMob, ShieldWeaver, RockZombie])
+            mob_cls = random.choice([CaveBat, Skeleton, Goblin, PurpleSlime, DiggerMob, ShieldWeaver, RockZombie])
             if mob_cls == CaveBat:
                 self.spawn_mob(CaveBat(spawn_x, spawn_y - 80, self.asset_factory), player=player)
             else:
                 self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome == BIOME_DUNGEON:
-            mob_cls = random.choice([Skeleton, ShadowCrawler, ShieldWeaver, BlightCultist])
+            mob_cls = random.choice([Skeleton, Goblin, ShadowCrawler, ShieldWeaver, BlightCultist])
             self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         else: # BIOME_FOREST
             if is_night:
                 r = random.random()
-                if r < 0.25:
+                if r < 0.22:
                     self.spawn_mob(Zombie(spawn_x, spawn_y, self.asset_factory), player=player)
-                elif r < 0.45:
+                elif r < 0.38:
                     self.spawn_mob(DemonEye(spawn_x, player.center_y - 140, self.asset_factory), player=player)
-                elif r < 0.65:
+                elif r < 0.52:
                     self.spawn_mob(RockZombie(spawn_x, spawn_y, self.asset_factory), player=player)
-                elif r < 0.80:
+                elif r < 0.68:
+                    self.spawn_mob(Goblin(spawn_x, spawn_y, self.asset_factory), player=player)
+                elif r < 0.82:
                     self.spawn_mob(Aswang(spawn_x, spawn_y, self.asset_factory), player=player)
-                elif r < 0.90:
+                elif r < 0.92:
                     self.spawn_mob(BlightCultist(spawn_x, spawn_y, self.asset_factory), player=player)
                 else:
                     self.spawn_mob(PurpleSlime(spawn_x, spawn_y, self.asset_factory), player=player)

@@ -412,6 +412,12 @@ class WalkerMob(Mob):
         self.walk_idx = 0
         self.walk_anim_timer = 0.0
 
+        # Attack animation states & telegraphing
+        self.attack_timer = 0.0
+        self.attack_duration = 0.35
+        self.attack_cooldown = 0.0
+        self.is_attacking = False
+
     def update(self, dt, world, player):
         if self.is_dead:
             return
@@ -421,12 +427,27 @@ class WalkerMob(Mob):
         if self.hp_bar_timer > 0:
             self.hp_bar_timer -= dt
 
+        # Attack cycle timers
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= dt
+        if self.attack_timer > 0:
+            self.attack_timer -= dt
+            self.is_attacking = True
+        else:
+            self.is_attacking = False
+
         if not self.update_water_buoyancy(world):
             self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
 
         dist_x = player.center_x - self.center_x
         dist_y = player.center_y - self.center_y
         dist = math.hypot(dist_x, dist_y)
+
+        # Trigger attack windup & slash when approaching melee range
+        if dist < 42.0 and abs(dist_y) < 36.0 and self.attack_cooldown <= 0 and self.attack_timer <= 0:
+            self.attack_timer = self.attack_duration
+            self.attack_cooldown = 0.85
+
         move_dir = 1 if dist_x > 0 else -1
         self.facing_right = (move_dir > 0)
         self.vx = move_dir * (self.speed * 0.75 if self.in_water else self.speed)
@@ -504,6 +525,21 @@ class WalkerMob(Mob):
         sx, sy = camera.world_to_screen(self.x, self.y)
         cur_surf = self.walk_frames[self.walk_idx]
 
+        # Dynamic attack strike animation offset
+        slash_drawn = False
+        if self.attack_timer > 0:
+            atk_p = 1.0 - (self.attack_timer / self.attack_duration)
+            if atk_p < 0.35:
+                # Wind-up: pull back
+                lunge = -3 if self.facing_right else 3
+            elif atk_p < 0.75:
+                # Strike: lunge forward
+                lunge = 5 if self.facing_right else -5
+                slash_drawn = True
+            else:
+                lunge = 1 if self.facing_right else -1
+            sx += lunge
+
         if not self.facing_right:
             cur_surf = pygame.transform.flip(cur_surf, True, False)
 
@@ -514,6 +550,21 @@ class WalkerMob(Mob):
 
         cur_surf = self.apply_water_overlay(cur_surf)
         target_surf.blit(cur_surf, (sx, sy))
+
+        # Dynamic weapon slash / claw arc effect during strike phase
+        if slash_drawn:
+            slash_x = sx + (self.width + 2 if self.facing_right else -14)
+            slash_y = sy + 14
+            slash_col = (255, 60, 60) if "Aswang" in self.name else (
+                (220, 120, 255) if "Cultist" in self.name else (
+                    (255, 230, 120) if "Goblin" in self.name else (220, 230, 245)
+                )
+            )
+            pts = [(slash_x, slash_y - 8), (slash_x + (8 if self.facing_right else -8), slash_y), (slash_x, slash_y + 8)]
+            pygame.draw.lines(target_surf, slash_col, False, pts, 2)
+            glow_pts = [(p[0] + (1 if self.facing_right else -1), p[1]) for p in pts]
+            pygame.draw.lines(target_surf, (255, 255, 255), False, glow_pts, 1)
+
         self.render_health_bar(target_surf, camera)
 
 class Zombie(WalkerMob):
@@ -551,6 +602,18 @@ class Aswang(WalkerMob):
     def __init__(self, x, y, asset_factory):
         super().__init__(x, y, asset_factory, sprite_key="aswang", max_hp=110, damage=38, name="Aswang", speed=2.1)
         self.mob_type = "aswang"
+
+class Goblin(WalkerMob):
+    mob_type = "goblin"
+    def __init__(self, x, y, asset_factory):
+        super().__init__(x, y, asset_factory, sprite_key="goblin", max_hp=48, damage=18, name="Goblin Warrior", speed=1.85)
+        self.mob_type = "goblin"
+        self.width = 22
+        self.height = 38
+        self.rect.width = 22
+        self.rect.height = 38
+        self.walk_frames = [pygame.transform.scale(f, (self.width, self.height)) for f in asset_factory.mobs.get("goblin", asset_factory.mobs["zombie"])]
+
 
 
 # =============================================================================
@@ -1597,6 +1660,7 @@ MOB_TYPE_REGISTRY = {
     "skeleton": Skeleton,
     "blight_cultist": BlightCultist,
     "aswang": Aswang,
+    "goblin": Goblin,
     "manok": ManokMob,
     "pato": PatoMob,
     "baboy": BaboyMob,

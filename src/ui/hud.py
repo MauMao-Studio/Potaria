@@ -268,7 +268,13 @@ class HUD:
                 l_badge = pygame.Rect(sx + bw - lw - 6, start_y + 4, lw + 4, 13)
                 pygame.draw.rect(target_surf, (12, 16, 26, 240), l_badge, border_radius=3)
                 pygame.draw.rect(target_surf, (185, 150, 45), l_badge, 1, border_radius=3)
-                target_surf.blit(lvl_txt, (l_badge.x + 2, l_badge.y))
+                target_surf.blit(lvl_txt, (l_badge.x + 2, l_badge.centery - lvl_txt.get_height() // 2))
+            else:
+                l_badge = pygame.Rect(sx + bw - 15, start_y + 4, 11, 13)
+                pygame.draw.rect(target_surf, (12, 16, 26, 200), l_badge, border_radius=3)
+                pygame.draw.rect(target_surf, (45, 52, 65), l_badge, 1, border_radius=3)
+                lock_txt = self.font_sm.render("-", True, (85, 95, 110))
+                target_surf.blit(lock_txt, (l_badge.centerx - lock_txt.get_width() // 2, l_badge.centery - lock_txt.get_height() // 2))
 
             # Subtle horizontal separator between badge header and icon
             pygame.draw.line(target_surf, (40, 50, 70), (sx + 4, start_y + 19), (sx + bw - 5, start_y + 19), 1)

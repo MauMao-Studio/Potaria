@@ -546,7 +546,8 @@ class AssetFactory:
             "string_beans", "pancit_noodles", "shaved_ice", "condensed_milk", "ube_halaya",
             "chicken_adobo", "pork_adobo", "sinigang", "kare_kare", "bulalo", "tinola",
             "lechon", "pancit_bihon", "arroz_caldo", "halo_halo", "kaldereta", "balut",
-            "itlog_na_maalat", "sinangag", "daing_na_bangus"
+            "itlog_na_maalat", "sinangag", "daing_na_bangus", "sinigang_na_bangus",
+            "ginataang_tilapia", "kinilaw_na_tanigue"
         )
 
     def _draw_pinoy_food_and_ingredients(self, surf, item_id, h):
@@ -803,6 +804,25 @@ class AssetFactory:
             pygame.draw.polygon(surf, (170, 110, 50), [(2, 12), (5, 8), (5, 16)])
             surf.set_at((9, 11), (235, 205, 120))
             surf.set_at((13, 12), (235, 205, 120))
+        elif item_id == "sinigang_na_bangus":
+            pygame.draw.circle(surf, (155, 95, 60), (12, 13), 9)
+            pygame.draw.circle(surf, (210, 185, 120), (12, 13), 7)
+            pygame.draw.ellipse(surf, (190, 205, 220), (7, 10, 8, 4))
+            surf.set_at((8, 12), (50, 160, 60))
+            surf.set_at((14, 11), (220, 45, 40))
+        elif item_id == "ginataang_tilapia":
+            pygame.draw.circle(surf, (160, 120, 80), (12, 13), 9)
+            pygame.draw.circle(surf, (245, 245, 235), (12, 13), 7)
+            pygame.draw.ellipse(surf, (110, 135, 120), (7, 11, 7, 4))
+            surf.set_at((12, 10), (220, 190, 80))
+            surf.set_at((14, 13), (60, 170, 70))
+        elif item_id == "kinilaw_na_tanigue":
+            pygame.draw.circle(surf, (190, 225, 235), (12, 13), 9)
+            pygame.draw.circle(surf, (240, 248, 255), (12, 13), 7)
+            pygame.draw.rect(surf, (230, 230, 235), (8, 9, 3, 3))
+            pygame.draw.rect(surf, (220, 220, 230), (12, 12, 3, 3))
+            surf.set_at((14, 9), (70, 190, 50))
+            surf.set_at((10, 14), (235, 40, 40))
 
         # Distinct 32-byte hash injection ensures 0 hash collisions for unique sprites verification
         surf.set_at((1 + (h[0] % 2), 22), (h[1], h[2], h[3], 255))
@@ -5401,49 +5421,160 @@ class AssetFactory:
 
         def make_walker_frames(head_col, eye_col, tunic_col, pants_col, archetype="zombie"):
             frames = []
-            for f_i, (ldx, ldy, rdx, rdy, sway, arm_dy) in enumerate(z_configs):
-                z = pygame.Surface((20, 26), pygame.SRCALPHA)
-                pygame.draw.rect(z, head_col, (5 + sway, 2, 9, 8), border_radius=2)
-                z.set_at((7 + sway, 5), eye_col)
-                z.set_at((11 + sway, 5), eye_col)
-                pygame.draw.rect(z, tunic_col, (4 + sway, 10, 11, 8))
-                pygame.draw.rect(z, head_col, (13 + sway, 11 + arm_dy, 6, 3))
-                pygame.draw.rect(z, pants_col, (5 + ldx, 18 + ldy, 4, 6))
-                pygame.draw.rect(z, pants_col, (10 + rdx, 18 + rdy, 4, 6))
-                z.set_at((6 + sway, 12 + (f_i % 4)), _blend(tunic_col, (0, 0, 0), 0.25))
+            back_pants = _blend(pants_col, (10, 10, 20), 0.35)
+            back_head = _blend(head_col, (10, 10, 20), 0.25)
 
+            for f_i, (ldx, ldy, rdx, rdy, sway, arm_dy) in enumerate(z_configs):
+                z = pygame.Surface((22, 28), pygame.SRCALPHA)
+                hx = 6 + sway
+                hy = 2
+
+                # 1. Back Arm / Shoulder (Depth Layer)
+                pygame.draw.rect(z, back_head, (hx - 3, hy + 9 - arm_dy, 3, 5), border_radius=1)
+
+                # 2. Back Leg (Darkened for 3D depth)
+                pygame.draw.rect(z, back_pants, (hx + 5 + rdx, hy + 17 + rdy, 3, 7), border_radius=1)
+                pygame.draw.rect(z, _blend(back_pants, (0, 0, 0), 0.4), (hx + 5 + rdx, hy + 22 + rdy, 4, 2))
+
+                # 3. Torso & Tunic / Armor
+                pygame.draw.rect(z, tunic_col, (hx - 1, hy + 8, 11, 9), border_radius=2)
+                # Belt / Buckle
+                pygame.draw.line(z, (35, 25, 20), (hx - 1, hy + 15), (hx + 9, hy + 15), 1)
+                z.set_at((hx + 4, hy + 15), (215, 180, 70))  # Buckle glint
+                # Torso shading
+                pygame.draw.line(z, _blend(tunic_col, (0, 0, 0), 0.3), (hx - 1, hy + 16), (hx + 9, hy + 16), 1)
+
+                # 4. Front Leg
+                pygame.draw.rect(z, pants_col, (hx + ldx, hy + 17 + ldy, 3, 7), border_radius=1)
+                pygame.draw.rect(z, _blend(pants_col, (0, 0, 0), 0.35), (hx + ldx, hy + 22 + ldy, 4, 2))  # Boot
+
+                # 5. Head Base & Shading
+                pygame.draw.rect(z, head_col, (hx, hy, 9, 8), border_radius=2)
+                pygame.draw.line(z, _blend(head_col, (0, 0, 0), 0.25), (hx, hy + 7), (hx + 8, hy + 7), 1)  # Jawline
+                # Eyes
+                z.set_at((hx + 2, hy + 3), eye_col)
+                z.set_at((hx + 6, hy + 3), eye_col)
+
+                # 6. Front Arm & Held Weapon / Claws
+                pygame.draw.rect(z, head_col, (hx + 8, hy + 9 + arm_dy, 4, 3), border_radius=1)
+                pygame.draw.rect(z, head_col, (hx + 10, hy + 11 + arm_dy, 4, 3), border_radius=1)
+
+                # 7. Archetype-Specific Detailed Pixel Design & Accessories
                 if archetype == "zombie":
-                    z.set_at((6 + sway, 3), (45, 80, 40))
-                    z.set_at((12 + sway, 6), (45, 80, 40))
-                    z.set_at((9 + sway, 8), (160, 25, 25))
-                    z.set_at((18 + sway, 12 + arm_dy), (210, 215, 180))
+                    # Decayed flesh patches, sunken rotting eyes, dripping bloody jaw
+                    z.set_at((hx + 1, hy + 1), (40, 75, 35))
+                    z.set_at((hx + 7, hy + 2), (40, 75, 35))
+                    z.set_at((hx + 2, hy + 3), (255, 235, 70))
+                    z.set_at((hx + 6, hy + 3), (255, 235, 70))
+                    z.set_at((hx + 4, hy + 6), (180, 30, 30))  # Gaping bloody mouth
+                    z.set_at((hx + 4, hy + 7), (210, 40, 40))  # Blood drip
+                    # Torn tunic exposing ribs
+                    z.set_at((hx + 2, hy + 10), (45, 80, 40))
+                    z.set_at((hx + 3, hy + 11), (35, 65, 30))
+                    z.set_at((hx + 7, hy + 12), (180, 30, 30))
+                    # Clawed dirty fingers
+                    z.set_at((hx + 13, hy + 12 + arm_dy), (40, 50, 40))
+
                 elif archetype == "ice_zombie":
-                    z.set_at((4 + sway, 10), (220, 250, 255))
-                    z.set_at((14 + sway, 9), (220, 250, 255))
-                    z.set_at((8 + sway, 5), (255, 255, 255))
+                    # Frost crown icicles, frozen cyan eyes, fur trim
+                    pygame.draw.line(z, (220, 250, 255), (hx + 1, hy - 1), (hx + 7, hy - 1), 1)
+                    z.set_at((hx + 3, hy - 2), (240, 255, 255))
+                    z.set_at((hx + 5, hy - 2), (240, 255, 255))
+                    # Piercing bright cyan ocular glow
+                    z.set_at((hx + 2, hy + 3), (230, 255, 255))
+                    z.set_at((hx + 6, hy + 3), (230, 255, 255))
+                    # Fur collar around tunic
+                    pygame.draw.line(z, (210, 235, 250), (hx - 1, hy + 8), (hx + 9, hy + 8), 1)
+                    # Ice claws
+                    z.set_at((hx + 13, hy + 11 + arm_dy), (180, 240, 255))
+                    z.set_at((hx + 14, hy + 12 + arm_dy), (220, 255, 255))
+
                 elif archetype == "mummy":
-                    pygame.draw.line(z, (180, 160, 120), (5 + sway, 4), (13 + sway, 4), 1)
-                    pygame.draw.line(z, (180, 160, 120), (5 + sway, 13), (13 + sway, 13), 1)
-                    z.set_at((9 + sway, 11), (245, 205, 50))
+                    # Detailed layered linen bandage wraps
+                    for by in (hy + 1, hy + 4, hy + 6):
+                        pygame.draw.line(z, (185, 165, 125), (hx, by), (hx + 8, by), 1)
+                    # Glowing cursed ruby eyes
+                    z.set_at((hx + 2, hy + 3), (255, 45, 40))
+                    z.set_at((hx + 6, hy + 3), (255, 45, 40))
+                    # Chest wraps & ancient pharaoh gold amulet
+                    pygame.draw.line(z, (170, 150, 115), (hx, hy + 10), (hx + 8, hy + 13), 1)
+                    pygame.draw.line(z, (170, 150, 115), (hx + 8, hy + 10), (hx, hy + 13), 1)
+                    pygame.draw.circle(z, (245, 205, 50), (hx + 4, hy + 11), 1)
+                    # Dangling wrap trailing off arm
+                    z.set_at((hx + 12, hy + 14 + arm_dy), (195, 175, 135))
+
                 elif archetype == "skeleton":
-                    z.set_at((9 + sway, 6), (20, 20, 25))
-                    pygame.draw.line(z, (30, 30, 35), (5 + sway, 12), (13 + sway, 12), 1)
-                    pygame.draw.line(z, (30, 30, 35), (6 + sway, 15), (12 + sway, 15), 1)
-                    z.set_at((9 + sway, 18), (20, 20, 25))
-                elif archetype == "rock_zombie":
-                    pygame.draw.circle(z, (110, 95, 80), (4 + sway, 10), 3)
-                    z.set_at((9 + sway, 13), (255, 160, 30))
-                    pygame.draw.rect(z, (110, 95, 80), (16 + sway, 11 + arm_dy, 3, 4))
+                    # Anatomical skull: cheekbones, dark nasal cavity, teeth
+                    z.fill((0, 0, 0, 0), pygame.Rect(hx + 1, hy + 5, 2, 2))
+                    z.fill((0, 0, 0, 0), pygame.Rect(hx + 6, hy + 5, 2, 2))
+                    z.set_at((hx + 4, hy + 5), (25, 25, 30))  # Nasal cavity
+                    pygame.draw.line(z, (245, 245, 240), (hx + 2, hy + 6), (hx + 6, hy + 6), 1)  # Teeth row
+                    z.set_at((hx + 2, hy + 3), (220, 40, 40))  # Pinprick death glare
+                    z.set_at((hx + 6, hy + 3), (220, 40, 40))
+                    # Exposed ribcage with spine
+                    pygame.draw.line(z, (25, 25, 30), (hx + 1, hy + 10), (hx + 7, hy + 10), 1)
+                    pygame.draw.line(z, (25, 25, 30), (hx + 2, hy + 12), (hx + 6, hy + 12), 1)
+                    pygame.draw.line(z, (25, 25, 30), (hx + 2, hy + 14), (hx + 6, hy + 14), 1)
+                    z.set_at((hx + 4, hy + 11), (235, 235, 230))  # Spine
+                    z.set_at((hx + 4, hy + 13), (235, 235, 230))
+                    # Bone / Rusty shortsword in hand
+                    pygame.draw.line(z, (190, 195, 205), (hx + 11, hy + 8 + arm_dy), (hx + 15, hy + 6 + arm_dy), 1)
+                    z.set_at((hx + 11, hy + 9 + arm_dy), (130, 90, 50))  # Hilt
+
+                elif archetype == "goblin":
+                    # Pointed goblin ears protruding sideways
+                    pygame.draw.polygon(z, (50, 115, 40), [(hx - 1, hy + 2), (hx - 3, hy), (hx - 1, hy + 4)])
+                    pygame.draw.polygon(z, (50, 115, 40), [(hx + 9, hy + 2), (hx + 11, hy), (hx + 9, hy + 4)])
+                    # Snarling face with white lower tusks/fangs
+                    z.set_at((hx + 2, hy + 5), (250, 250, 230))
+                    z.set_at((hx + 6, hy + 5), (250, 250, 230))
+                    z.set_at((hx + 4, hy + 4), (35, 75, 25))  # Crooked nose
+                    # Leather harness / studs
+                    z.set_at((hx + 1, hy + 9), (190, 190, 190))
+                    z.set_at((hx + 7, hy + 9), (190, 190, 190))
+                    # Jagged iron dagger held in hand
+                    pygame.draw.line(z, (210, 215, 225), (hx + 11, hy + 12 + arm_dy), (hx + 15, hy + 14 + arm_dy), 1)
+                    z.set_at((hx + 10, hy + 11 + arm_dy), (90, 60, 35))
+
                 elif archetype == "blight_cultist":
-                    pygame.draw.polygon(z, (40, 20, 60), [(4 + sway, 3), (14 + sway, 3), (9 + sway, 0)])
-                    z.set_at((9 + sway, 14), (210, 80, 240))
-                    z.set_at((18 + sway, 12 + arm_dy), (230, 220, 240))
+                    # Deep dark occult hooded cowl with golden runic trim
+                    pygame.draw.polygon(z, (35, 18, 50), [(hx - 1, hy + 3), (hx + 9, hy + 3), (hx + 4, hy - 2)])
+                    pygame.draw.line(z, (215, 175, 55), (hx, hy + 3), (hx + 8, hy + 3), 1)
+                    # Shadow cowl face with glowing violet occult gaze
+                    pygame.draw.rect(z, (12, 8, 20), (hx + 1, hy + 2, 7, 5))
+                    z.set_at((hx + 2, hy + 4), (235, 100, 255))
+                    z.set_at((hx + 6, hy + 4), (235, 100, 255))
+                    # Flowing mystic robe sigil
+                    z.set_at((hx + 4, hy + 11), (210, 80, 240))
+                    z.set_at((hx + 3, hy + 12), (180, 60, 210))
+                    z.set_at((hx + 5, hy + 12), (180, 60, 210))
+                    # Athame / channeling ethereal violet blight energy
+                    z.set_at((hx + 12, hy + 10 + arm_dy), (235, 120, 255))
+                    z.set_at((hx + 13, hy + 11 + arm_dy), (190, 60, 240))
+
                 elif archetype == "aswang":
-                    pygame.draw.polygon(z, (30, 15, 25), [(5 + sway, 2), (3 + sway, 0), (7 + sway, 1)])
-                    pygame.draw.polygon(z, (30, 15, 25), [(11 + sway, 1), (15 + sway, 0), (13 + sway, 2)])
-                    z.set_at((8 + sway, 8), (255, 255, 255))
-                    z.set_at((10 + sway, 8), (255, 255, 255))
-                    pygame.draw.line(z, (220, 30, 30), (16 + sway, 12 + arm_dy), (19 + sway, 13 + arm_dy), 1)
+                    # Terrifying Philippine cryptid: bat ears, glowing crimson eyes, razor fangs
+                    pygame.draw.polygon(z, (30, 15, 25), [(hx, hy + 1), (hx - 2, hy - 2), (hx + 2, hy)])
+                    pygame.draw.polygon(z, (30, 15, 25), [(hx + 8, hy + 1), (hx + 10, hy - 2), (hx + 6, hy)])
+                    # Gaping maw with elongated predatory fangs
+                    z.set_at((hx + 2, hy + 5), (250, 250, 250))
+                    z.set_at((hx + 6, hy + 5), (250, 250, 250))
+                    z.set_at((hx + 4, hy + 6), (195, 20, 30))  # Blood drip
+                    # Shadowy bat wings/mantle on back
+                    pygame.draw.line(z, (25, 12, 20), (hx - 2, hy + 7), (hx - 4, hy + 14), 2)
+                    # Elongated razor claws with crimson blood
+                    pygame.draw.line(z, (220, 35, 45), (hx + 11, hy + 11 + arm_dy), (hx + 15, hy + 13 + arm_dy), 1)
+
+                elif archetype == "rock_zombie":
+                    # Chiseled bedrock plates, molten amber fissures
+                    pygame.draw.circle(z, (100, 85, 75), (hx + 2, hy + 1), 2)
+                    pygame.draw.circle(z, (100, 85, 75), (hx + 6, hy + 1), 2)
+                    # Molten magma visor slit
+                    pygame.draw.line(z, (255, 170, 35), (hx + 2, hy + 3), (hx + 6, hy + 3), 1)
+                    # Rocky shoulder carapace & boulder knuckles
+                    pygame.draw.circle(z, (115, 98, 85), (hx - 2, hy + 9), 2)
+                    pygame.draw.circle(z, (120, 105, 90), (hx + 12, hy + 11 + arm_dy), 3)
+                    z.set_at((hx + 4, hy + 12), (255, 140, 25))
 
                 frames.append(z)
             return frames
@@ -5455,6 +5586,7 @@ class AssetFactory:
         self.mobs["rock_zombie"] = make_walker_frames((140, 110, 85), (255, 180, 50), (105, 90, 75), (65, 55, 50), "rock_zombie")
         self.mobs["blight_cultist"] = make_walker_frames((55, 30, 80), (220, 80, 240), (40, 25, 60), (25, 15, 35), "blight_cultist")
         self.mobs["aswang"] = make_walker_frames((40, 25, 35), (255, 35, 45), (35, 20, 30), (20, 12, 18), "aswang")
+        self.mobs["goblin"] = make_walker_frames((65, 135, 50), (255, 200, 30), (85, 60, 40), (45, 35, 25), "goblin")
 
         # Philippine Land Animals & Poultry (4-frame animated sprites)
         def make_manok_frames():

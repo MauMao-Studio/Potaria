@@ -1171,7 +1171,7 @@ class Player:
     def get_rod_tip_pos(self):
         """Calculates the dynamic world position of the held rod tip based on player posture, position, and aim."""
         hand_x = self.x + (22 if self.facing_right else 6)
-        hand_y = self.y + 20
+        hand_y = self.y - getattr(self, "sprout_offset_y", 0) + 20
         swing_angle = math.sin(self.swing_progress * math.pi) * 1.4 if self.is_swinging else 0.0
         if self.facing_right:
             aim_cone = max(-1.15, min(1.15, self.aim_angle))
@@ -1181,7 +1181,7 @@ class Player:
             aim_cone = max(-1.15, min(1.15, rel_aim))
             eff_rel = max(-1.45, min(1.45, aim_cone - swing_angle + 0.2))
             eff_angle = math.atan2(math.sin(eff_rel), -math.cos(eff_rel))
-        tip_x = hand_x + math.cos(eff_angle) * 24.0
-        tip_y = hand_y + math.sin(eff_angle) * 24.0
+        tip_x = hand_x + math.cos(eff_angle) * 23.0
+        tip_y = hand_y + math.sin(eff_angle) * 23.0
         return tip_x, tip_y
 

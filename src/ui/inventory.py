@@ -1894,6 +1894,27 @@ ITEM_REGISTRY = {
         "lore": "'Crispy fins and savory belly loved by breakfast champions.'",
         "special": "Restores 75 Health"
     },
+    "sinigang_na_bangus": {
+        "name": "Sinigang na Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 100, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Tamarind-sour soup with tender milkfish belly, eggplant, and onions. Restores 100 HP.",
+        "lore": "'The signature Filipino fish soup, sour and refreshing.'",
+        "special": "Restores 100 Health"
+    },
+    "ginataang_tilapia": {
+        "name": "Ginataang Tilapia", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 105, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Fresh tilapia simmered in rich creamy coconut milk with ginger and spices. Restores 105 HP.",
+        "lore": "'Creamy oceanic stew with an intoxicating coconut aroma.'",
+        "special": "Restores 105 Health"
+    },
+    "kinilaw_na_tanigue": {
+        "name": "Kinilaw na Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
+        "rarity": RARITY_EPIC,
+        "desc": "Fresh Spanish mackerel cured in native vinegar, calamansi juice, ginger, and chili. Restores 110 HP and +15% Speed.",
+        "lore": "'The ancient oceanic delicacy of the Philippine islands.'",
+        "special": "Restores 110 Health & +15% Speed"
+    },
     "dungeon_rune": {
         "name": "Dungeon Teleporter Rune", "cat": CAT_SPECIAL, "power": 0, "damage": 0, "max_stack": 10, "tile": None,
         "rarity": RARITY_EPIC,

@@ -2062,18 +2062,19 @@ class PotariaGame:
         tx, ty = int(mouse_wx // SCALED_TILE), int(mouse_wy // SCALED_TILE)
 
         if not getattr(self, "fishing_bobber", None):
-            is_water = (
-                self.world.get_tile(tx, ty) == TILE_WATER or
-                self.world.get_tile(tx, ty + 1) == TILE_WATER or
-                self.world.get_tile(tx, ty - 1) == TILE_WATER
-            )
-            if not is_water:
+            if self.world.get_tile(tx, ty) == TILE_WATER:
+                w_tx, w_ty = tx, ty
+            elif self.world.get_tile(tx, ty + 1) == TILE_WATER:
+                w_tx, w_ty = tx, ty + 1
+            elif self.world.get_tile(tx, ty - 1) == TILE_WATER:
+                w_tx, w_ty = tx, ty - 1
+            else:
                 if hasattr(self.inventory, "notify"):
                     self.inventory.notify("Cast your fishing rod into the water!")
                 return False
 
-            bob_x = tx * SCALED_TILE + 16
-            bob_y = ty * SCALED_TILE + 16
+            bob_x = w_tx * SCALED_TILE + 16
+            bob_y = w_ty * SCALED_TILE + 16
             dist = math.hypot(self.player.center_x - bob_x, self.player.center_y - bob_y)
             if dist > 350.0:
                 if hasattr(self.inventory, "notify"):
