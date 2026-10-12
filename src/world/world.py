@@ -388,16 +388,48 @@ class World:
             if not is_surviving_leaf:
                 felled_leaves.append((lx, ly))
 
-        # 3. Clear all felled blocks
+        # 3. Clear all felled blocks and spawn item drops
+        combat = getattr(self, "combat", None)
+        if not hasattr(self, "decay_drops"):
+            self.decay_drops = []
+
+        def spawn_drop(item_id, count, cx, cy):
+            if combat:
+                combat._spawn_loot_drop(item_id, count, cx, cy)
+            else:
+                self.decay_drops.append((item_id, count, cx, cy))
+
         for tx, ty in felled_trunks:
             self.chunk_manager.set_tile(tx, ty, TILE_AIR)
             self.player_placed_tiles.discard((tx, ty))
             self.tile_damage.pop((tx, ty), None)
+            if (tx, ty) != (start_tx, start_ty):
+                cx = tx * self.scaled_tile + self.scaled_tile / 2
+                cy = ty * self.scaled_tile + self.scaled_tile / 2
+                spawn_drop("wood", 1, cx, cy)
 
         for lx, ly in felled_leaves:
             self.chunk_manager.set_tile(lx, ly, TILE_AIR)
             self.player_placed_tiles.discard((lx, ly))
             self.tile_damage.pop((lx, ly), None)
+            cx = lx * self.scaled_tile + self.scaled_tile / 2
+            cy = ly * self.scaled_tile + self.scaled_tile / 2
+            spawn_drop("leaves", 1, cx, cy)
+            roll = random.random()
+            biome = self.get_biome_at(lx, ly) if hasattr(self, "get_biome_at") else "forest"
+            if biome == "snow":
+                sap_drop = "pine_sapling"
+            elif biome == "desert":
+                sap_drop = "palm_sapling"
+            elif biome in ("the_blight", "corruption"):
+                sap_drop = "blight_sapling"
+            else:
+                sap_drop = "oak_sapling"
+            if roll < 0.25:
+                spawn_drop(sap_drop, 1, cx, cy)
+            elif roll < 0.45:
+                fruit_drop = "apple" if (biome not in ("snow", "desert") and random.random() < 0.5) else "acorn"
+                spawn_drop(fruit_drop, 1, cx, cy)
 
         self.last_felled_trunks = list(felled_trunks)
         return len(felled_trunks), felled_leaves
@@ -406,7 +438,17 @@ class World:
         """Advances tree decay by a daily step."""
         if not hasattr(self, "decaying_blocks") or not self.decaying_blocks:
             return
-        self.update_tree_decay(10.0, game=game)
+        for coord, info in list(self.decaying_blocks.items()):
+            if "days_left" in info:
+                info["days_left"] -= 1
+                max_d = max(1, info.get("max_days", 3))
+                info["phase"] = max_d - info["days_left"]
+                info["timer"] = max(0.0, info["max_timer"] * (info["days_left"] / float(max_d)))
+                if info["days_left"] <= 0:
+                    info["timer"] = 0.0
+            else:
+                info["timer"] = 0.0
+        self.update_tree_decay(0.0, game=game)
 
     def grow_plants_daily(self):
         """Called once per day at dawn/daylight transition: grows planted/wild saplings in sunlight into full trees."""
@@ -649,9 +691,13 @@ class World:
                 if not is_grounded:
                     severed_trunks.append((tx, uy))
                     if (tx, uy) not in self.decaying_blocks:
+                        days = random.randint(2, 4)
                         self.decaying_blocks[(tx, uy)] = {
-                            "timer": random.uniform(1.5, 4.0),
-                            "max_timer": 4.0,
+                            "timer": float(days * 180.0),
+                            "max_timer": float(days * 180.0),
+                            "days_left": days,
+                            "max_days": days,
+                            "phase": 0,
                             "type": tid
                         }
             elif tid == TILE_AIR:
@@ -704,9 +750,13 @@ class World:
                             if has_grounded_trunk:
                                 break
                         if not has_grounded_trunk:
+                            days = random.randint(2, 4)
                             self.decaying_blocks[(lx, ly)] = {
-                                "timer": random.uniform(2.0, 5.5),
-                                "max_timer": 5.5,
+                                "timer": float(days * 180.0),
+                                "max_timer": float(days * 180.0),
+                                "days_left": days,
+                                "max_days": days,
+                                "phase": 0,
                                 "type": TILE_LEAVES
                             }
 
@@ -715,16 +765,31 @@ class World:
         if not hasattr(self, "decaying_blocks") or not self.decaying_blocks:
             return
 
+        if not hasattr(self, "decay_drops"):
+            self.decay_drops = []
+
         if game is None and hasattr(self, "game"):
             game = self.game
 
         combat = getattr(self, "combat", None) or getattr(game, "combat", None)
         particles = getattr(self, "particle_system", None) or getattr(game, "particle_system", None)
 
+        if combat and self.decay_drops:
+            for item_id, count, cx, cy in self.decay_drops:
+                combat._spawn_loot_drop(item_id, count, cx, cy)
+            self.decay_drops.clear()
+
+        def spawn_drop(item_id, count, cx, cy):
+            if combat:
+                combat._spawn_loot_drop(item_id, count, cx, cy)
+            else:
+                self.decay_drops.append((item_id, count, cx, cy))
+
         expired = []
         for coord, info in list(self.decaying_blocks.items()):
             if dt >= 10.0:
                 info["timer"] = 0.0
+                info["days_left"] = 0
             else:
                 info["timer"] -= dt
             t_id = self.get_tile(coord[0], coord[1])
@@ -738,27 +803,25 @@ class World:
                 cy = coord[1] * self.scaled_tile + self.scaled_tile / 2
 
                 if info["type"] in (TILE_WOOD_TRUNK, TILE_WOOD):
-                    if combat:
-                        combat._spawn_loot_drop("wood", 1, cx, cy)
+                    spawn_drop("wood", 1, cx, cy)
                 elif info["type"] == TILE_LEAVES:
-                    if combat:
-                        combat._spawn_loot_drop("leaves", 1, cx, cy)
-                        roll = random.random()
-                        if roll < 0.20:
-                            biome = self.get_biome_at(coord[0], coord[1]) if hasattr(self, "get_biome_at") else "forest"
-                            if biome == "snow":
-                                sap_drop = "pine_sapling"
-                            elif biome == "desert":
-                                sap_drop = "palm_sapling"
-                            elif biome in ("the_blight", "corruption"):
-                                sap_drop = "blight_sapling"
-                            else:
-                                sap_drop = "oak_sapling"
-                            combat._spawn_loot_drop(sap_drop, 1, cx, cy)
-                        elif roll < 0.35:
-                            combat._spawn_loot_drop("apple", 1, cx, cy)
-                        elif roll < 0.50:
-                            combat._spawn_loot_drop("acorn", 1, cx, cy)
+                    spawn_drop("leaves", 1, cx, cy)
+                    roll = random.random()
+                    biome = self.get_biome_at(coord[0], coord[1]) if hasattr(self, "get_biome_at") else "forest"
+                    if biome == "snow":
+                        sap_drop = "pine_sapling"
+                    elif biome == "desert":
+                        sap_drop = "palm_sapling"
+                    elif biome in ("the_blight", "corruption"):
+                        sap_drop = "blight_sapling"
+                    else:
+                        sap_drop = "oak_sapling"
+
+                    if roll < 0.25:
+                        spawn_drop(sap_drop, 1, cx, cy)
+                    elif roll < 0.45:
+                        fruit_drop = "apple" if (biome not in ("snow", "desert") and random.random() < 0.5) else "acorn"
+                        spawn_drop(fruit_drop, 1, cx, cy)
 
                 if particles:
                     col = (110, 80, 45) if info["type"] in (TILE_WOOD_TRUNK, TILE_WOOD) else (70, 160, 60)

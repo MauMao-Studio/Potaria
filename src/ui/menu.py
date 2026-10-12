@@ -39,35 +39,44 @@ class Button:
         self.is_hovered = self.rect.collidepoint(mouse_pos)
 
     def render(self, target_surf, font):
-        bg_col = (55, 65, 95, 230) if not self.is_hovered else (80, 100, 150, 245)
+        bg_col = (55, 65, 95, 230) if not self.is_hovered else (80, 105, 155, 245)
         border_col = (110, 125, 170) if not self.is_hovered else (255, 230, 80)
         
         pygame.draw.rect(target_surf, bg_col, self.rect, border_radius=8)
         pygame.draw.rect(target_surf, border_col, self.rect, 2, border_radius=8)
 
         if self.is_hovered:
-            pygame.draw.rect(target_surf, (255, 255, 180, 80), (self.rect.x + 2, self.rect.y + 2, self.rect.w - 4, 3), border_radius=4)
+            pygame.draw.rect(target_surf, (255, 255, 180, 90), (self.rect.x + 2, self.rect.y + 2, self.rect.w - 4, 3), border_radius=4)
 
         if self.icon:
             cx, cy = self.rect.centerx, self.rect.centery
             if self.icon == "play":
-                # Sleek green/gold right-pointing triangle
-                tri_pts = [(cx - 7, cy - 8), (cx + 9, cy), (cx - 7, cy + 8)]
+                # Sleek emerald/gold right-pointing triangle with inner highlight
+                tri_pts = [(cx - 6, cy - 8), (cx + 9, cy), (cx - 6, cy + 8)]
                 tri_col = (255, 240, 100) if self.is_hovered else (80, 230, 120)
+                # Drop shadow
+                pygame.draw.polygon(target_surf, (15, 20, 30), [(cx - 5, cy - 7), (cx + 10, cy + 1), (cx - 5, cy + 9)])
                 pygame.draw.polygon(target_surf, tri_col, tri_pts)
+                pygame.draw.polygon(target_surf, (255, 255, 220), tri_pts, 1)
             elif self.icon == "rename":
-                # Sleek cyan quill/pencil icon
-                pen_col = (120, 240, 255) if self.is_hovered else (90, 190, 230)
+                # Sleek cyan/gold quill/pencil icon
+                pen_col = (130, 245, 255) if self.is_hovered else (90, 195, 235)
+                # Drop shadow
+                pygame.draw.line(target_surf, (15, 20, 30), (cx - 5, cy + 7), (cx + 7, cy - 5), 3)
                 pygame.draw.line(target_surf, pen_col, (cx - 6, cy + 6), (cx + 6, cy - 6), 3)
-                pygame.draw.circle(target_surf, pen_col, (cx + 7, cy - 7), 3)
-                pygame.draw.line(target_surf, pen_col, (cx - 7, cy + 8), (cx - 4, cy + 8), 2)
+                pygame.draw.circle(target_surf, (255, 225, 100) if self.is_hovered else pen_col, (cx + 7, cy - 7), 3)
+                pygame.draw.line(target_surf, (255, 255, 255), (cx - 7, cy + 8), (cx - 4, cy + 8), 2)
             elif self.icon == "delete":
-                # Sleek red trashcan / cross icon
-                del_col = (255, 90, 90) if self.is_hovered else (220, 70, 70)
-                # Draw stylized trashcan
+                # Sleek crimson trashcan icon with lid & vertical slats
+                del_col = (255, 95, 95) if self.is_hovered else (225, 75, 75)
+                # Drop shadow
+                pygame.draw.rect(target_surf, (15, 20, 30), (cx - 5, cy - 3, 12, 11), 2, border_radius=2)
+                # Can body
                 pygame.draw.rect(target_surf, del_col, (cx - 6, cy - 4, 12, 11), 2, border_radius=2)
+                # Lid & handle
                 pygame.draw.line(target_surf, del_col, (cx - 8, cy - 5), (cx + 8, cy - 5), 2)
-                pygame.draw.line(target_surf, del_col, (cx - 3, cy - 7), (cx + 3, cy - 7), 2)
+                pygame.draw.line(target_surf, (255, 220, 220) if self.is_hovered else del_col, (cx - 3, cy - 7), (cx + 3, cy - 7), 2)
+                # Ribs
                 pygame.draw.line(target_surf, del_col, (cx - 2, cy - 2), (cx - 2, cy + 4), 1)
                 pygame.draw.line(target_surf, del_col, (cx + 2, cy - 2), (cx + 2, cy + 4), 1)
             elif isinstance(self.icon, pygame.Surface):
@@ -267,14 +276,21 @@ class MenuManager:
 
         # Multiplayer Menu Buttons & State
         self.discovery = LANDiscovery()
+        mp_pw, mp_ph = 760, 580
+        mp_px = SCREEN_WIDTH // 2 - mp_pw // 2
+        mp_card_w = mp_pw - 50
+        mp_card_x = mp_px + 25
+        mp_btn_w = 210
+        mp_btn_h = 38
+
         self.mp_buttons = [
-            Button(cx, 160, btn_w, btn_h, "HOST LAN GAME", "host_game"),
-            Button(cx, 460, btn_w, btn_h, "MANUAL IP CONNECT", "join_game"),
-            Button(cx, 515, btn_w, btn_h, "<  BACK TO MENU", "menu"),
+            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 176, mp_btn_w, mp_btn_h, "HOST LAN GAME", "host_game", tooltip="Host world on local LAN port 25565"),
+            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 502, mp_btn_w, mp_btn_h, "CONNECT TO IP", "join_game", tooltip="Connect to specified IP address"),
+            Button(SCREEN_WIDTH // 2 - 100, 572, 200, 38, "<  BACK TO MENU", "menu"),
         ]
         self.join_ip_input = "127.0.0.1"
         self.typing_ip = False
-        self.ip_box_rect = pygame.Rect(cx - 30, 410, btn_w + 60, 36)
+        self.ip_box_rect = pygame.Rect(mp_card_x + 18, 504, 320, 36)
 
         # Room key input modal & server selection
         self.room_key_modal_active = False
@@ -289,7 +305,7 @@ class MenuManager:
         self.hosting_lan = False
         self.host_room_key = ""
         self.typing_host_key = False
-        self.host_key_box_rect = pygame.Rect(cx - 30, 112, btn_w + 60, 36)
+        self.host_key_box_rect = pygame.Rect(mp_card_x + 18, 178, 320, 36)
 
         self.back_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 95, 200, 44, "<  BACK TO MENU", "menu")
         self.victory_buttons = [
@@ -1611,55 +1627,76 @@ class MenuManager:
     def _render_multiplayer_menu(self, target_surf):
         self._render_background(target_surf)
 
-        pw, ph = 680, 560
+        pw, ph = 760, 580
         px = SCREEN_WIDTH // 2 - pw // 2
         py = 40
-        pygame.draw.rect(target_surf, (24, 28, 44, 245), (px, py, pw, ph), border_radius=14)
-        pygame.draw.rect(target_surf, COLOR_GOLD, (px, py, pw, ph), 2, border_radius=14)
+        panel_rect = pygame.Rect(px, py, pw, ph)
+        pygame.draw.rect(target_surf, (20, 24, 38, 248), panel_rect, border_radius=14)
+        pygame.draw.rect(target_surf, COLOR_GOLD, panel_rect, 2, border_radius=14)
+        pygame.draw.rect(target_surf, (50, 65, 95), (px + 4, py + 4, pw - 8, ph - 8), 1, border_radius=11)
 
         title = self.font_title.render("LAN MULTIPLAYER (1-5 PLAYERS)", True, COLOR_GOLD)
-        target_surf.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 16))
+        target_surf.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 14))
 
-        # Host instructions & IP
-        host_info = self.font_body.render(f"Your Local Host IP: {self.local_ip}  (Port: 25565)", True, (100, 220, 255))
-        target_surf.blit(host_info, (SCREEN_WIDTH // 2 - host_info.get_width() // 2, py + 52))
+        sub = self.font_sm.render(f"Local Host IP: {self.local_ip}  •  Default Game Port: 25565", True, (130, 215, 240))
+        target_surf.blit(sub, (SCREEN_WIDTH // 2 - sub.get_width() // 2, py + 46))
 
-        # Room key input for hosting
-        key_lbl = self.font_sm.render("Host Room Key (Optional):", True, (200, 215, 235))
-        target_surf.blit(key_lbl, (px + 45, py + 86))
+        card_w = pw - 50
+        card_x = px + 25
 
-        key_box_col = (50, 60, 90) if getattr(self, "typing_host_key", False) else (35, 40, 60)
-        key_border_col = COLOR_GOLD if getattr(self, "typing_host_key", False) else (100, 120, 160)
+        # =========================================================================
+        # CARD 1: HOST SETTINGS
+        # =========================================================================
+        c1_y = py + 72
+        c1_h = 112
+        c1_rect = pygame.Rect(card_x, c1_y, card_w, c1_h)
+        pygame.draw.rect(target_surf, (26, 32, 50, 230), c1_rect, border_radius=8)
+        pygame.draw.rect(target_surf, (65, 80, 115), c1_rect, 1, border_radius=8)
+
+        c1_title = self.font_btn.render("HOST A LOCAL LAN WORLD", True, (255, 220, 100))
+        target_surf.blit(c1_title, (card_x + 18, c1_y + 10))
+
+        key_lbl = self.font_sm.render("Host Room Password / Key (Optional):", True, (190, 205, 230))
+        target_surf.blit(key_lbl, (card_x + 18, c1_y + 36))
+
+        key_box_col = (50, 62, 92) if getattr(self, "typing_host_key", False) else (32, 38, 56)
+        key_border_col = COLOR_GOLD if getattr(self, "typing_host_key", False) else (90, 110, 150)
         pygame.draw.rect(target_surf, key_box_col, self.host_key_box_rect, border_radius=6)
-        pygame.draw.rect(target_surf, key_border_col, self.host_key_box_rect, 1, border_radius=6)
+        pygame.draw.rect(target_surf, key_border_col, self.host_key_box_rect, 1 if not getattr(self, "typing_host_key", False) else 2, border_radius=6)
 
         hcursor = "_" if (getattr(self, "typing_host_key", False) and (pygame.time.get_ticks() // 500) % 2 == 0) else ""
         hk_val = getattr(self, "host_room_key", "")
-        hk_display = hk_val if hk_val else ("(No Password)" if not getattr(self, "typing_host_key", False) else "")
+        hk_display = hk_val if hk_val else ("(No Password - Public)" if not getattr(self, "typing_host_key", False) else "")
         hk_col = (255, 255, 255) if hk_val else (140, 155, 175)
         hk_surf = self.font_btn.render(f"{hk_display}{hcursor}", True, hk_col)
         target_surf.blit(hk_surf, (self.host_key_box_rect.x + 12, self.host_key_box_rect.centery - hk_surf.get_height() // 2))
 
-        # Active LAN Servers Header
-        sep_y = py + 180
-        pygame.draw.line(target_surf, (70, 85, 120), (px + 30, sep_y), (px + pw - 30, sep_y), 1)
-        srv_title = self.font_sm.render("ACTIVE LOCAL LAN SERVERS (AUTO-DISCOVERED)", True, (255, 220, 100))
-        target_surf.blit(srv_title, (SCREEN_WIDTH // 2 - srv_title.get_width() // 2, sep_y - 8))
+        # =========================================================================
+        # CARD 2: ACTIVE LOCAL LAN SERVERS (AUTO-DISCOVERED)
+        # =========================================================================
+        c2_y = py + 196
+        c2_h = 188
+        c2_rect = pygame.Rect(card_x, c2_y, card_w, c2_h)
+        pygame.draw.rect(target_surf, (26, 32, 50, 230), c2_rect, border_radius=8)
+        pygame.draw.rect(target_surf, (65, 80, 115), c2_rect, 1, border_radius=8)
 
-        # Discovered servers list
+        c2_title = self.font_btn.render("ACTIVE LOCAL LAN SERVERS (AUTO-DISCOVERED)", True, (255, 220, 100))
+        target_surf.blit(c2_title, (card_x + 18, c2_y + 10))
+
         servers = self.discovery.get_servers() if hasattr(self, "discovery") else []
         self.lan_join_buttons = []
-        list_y = sep_y + 16
+        list_y = c2_y + 36
 
         if not servers:
-            no_srv = self.font_sm.render("Searching for local LAN servers on port 25566... (No hosts detected)", True, (160, 175, 200))
-            target_surf.blit(no_srv, (SCREEN_WIDTH // 2 - no_srv.get_width() // 2, list_y + 24))
+            pulse = int(140 + 60 * math.sin(pygame.time.get_ticks() / 300.0))
+            no_srv = self.font_sm.render("Scanning local network on broadcast port 25566... (No hosts detected)", True, (pulse, pulse + 20, 220))
+            target_surf.blit(no_srv, (SCREEN_WIDTH // 2 - no_srv.get_width() // 2, list_y + 45))
         else:
             for i, sinfo in enumerate(servers[:3]):
-                ey = list_y + i * 50
-                entry_rect = pygame.Rect(px + 35, ey, pw - 70, 44)
-                pygame.draw.rect(target_surf, (36, 42, 65), entry_rect, border_radius=6)
-                pygame.draw.rect(target_surf, (70, 85, 125), entry_rect, 1, border_radius=6)
+                ey = list_y + i * 46
+                entry_rect = pygame.Rect(card_x + 14, ey, card_w - 28, 42)
+                pygame.draw.rect(target_surf, (36, 44, 68), entry_rect, border_radius=6)
+                pygame.draw.rect(target_surf, (75, 95, 135), entry_rect, 1, border_radius=6)
 
                 s_name = sinfo.get("server_name", "Potaria LAN Server")
                 s_ip = sinfo.get("ip", "127.0.0.1")
@@ -1669,37 +1706,45 @@ class MenuManager:
                 is_priv = sinfo.get("is_private", False)
 
                 name_txt = self.font_btn.render(f"{s_name}", True, (255, 235, 120))
-                target_surf.blit(name_txt, (entry_rect.x + 12, entry_rect.y + 4))
+                target_surf.blit(name_txt, (entry_rect.x + 12, entry_rect.y + 3))
 
-                detail_txt = self.font_sm.render(f"{s_ip}:{s_port}  •  Players: {p_cnt}/{p_max}", True, (180, 200, 230))
-                target_surf.blit(detail_txt, (entry_rect.x + 14, entry_rect.y + 24))
+                detail_txt = self.font_sm.render(f"{s_ip}:{s_port}  •  Players: {p_cnt}/{p_max}", True, (180, 205, 235))
+                target_surf.blit(detail_txt, (entry_rect.x + 14, entry_rect.y + 22))
 
-                # Badge
                 badge_txt = "PRIVATE (KEY)" if is_priv else "PUBLIC"
                 badge_col = (255, 200, 80) if is_priv else (100, 240, 120)
                 badge_surf = self.font_sm.render(badge_txt, True, badge_col)
-                target_surf.blit(badge_surf, (entry_rect.right - 170, entry_rect.centery - badge_surf.get_height() // 2))
+                target_surf.blit(badge_surf, (entry_rect.right - 180, entry_rect.centery - badge_surf.get_height() // 2))
 
-                # Join button
-                j_btn = Button(entry_rect.right - 80, entry_rect.y + 6, 70, 32, "JOIN", ("join_server", sinfo))
+                j_btn = Button(entry_rect.right - 85, entry_rect.y + 5, 75, 32, "JOIN", ("join_server", sinfo))
                 j_btn.render(target_surf, self.font_btn)
                 self.lan_join_buttons.append((j_btn, sinfo))
 
-        # Manual IP input section
-        manual_sep = py + 360
-        pygame.draw.line(target_surf, (70, 85, 120), (px + 30, manual_sep), (px + pw - 30, manual_sep), 1)
-        manual_lbl = self.font_sm.render("DIRECT MANUAL CONNECT", True, (255, 220, 100))
-        target_surf.blit(manual_lbl, (SCREEN_WIDTH // 2 - manual_lbl.get_width() // 2, manual_sep - 8))
+        # =========================================================================
+        # CARD 3: DIRECT IP CONNECT
+        # =========================================================================
+        c3_y = py + 396
+        c3_h = 112
+        c3_rect = pygame.Rect(card_x, c3_y, card_w, c3_h)
+        pygame.draw.rect(target_surf, (26, 32, 50, 230), c3_rect, border_radius=8)
+        pygame.draw.rect(target_surf, (65, 80, 115), c3_rect, 1, border_radius=8)
 
-        ip_box_col = (50, 60, 90) if self.typing_ip else (35, 40, 60)
-        ip_border_col = COLOR_GOLD if self.typing_ip else (100, 120, 160)
+        c3_title = self.font_btn.render("DIRECT IP CONNECT", True, (255, 220, 100))
+        target_surf.blit(c3_title, (card_x + 18, c3_y + 10))
+
+        ip_lbl = self.font_sm.render("Target Server IP Address / Hostname:", True, (190, 205, 230))
+        target_surf.blit(ip_lbl, (card_x + 18, c3_y + 36))
+
+        ip_box_col = (50, 62, 92) if self.typing_ip else (32, 38, 56)
+        ip_border_col = COLOR_GOLD if self.typing_ip else (90, 110, 150)
         pygame.draw.rect(target_surf, ip_box_col, self.ip_box_rect, border_radius=6)
-        pygame.draw.rect(target_surf, ip_border_col, self.ip_box_rect, 1, border_radius=6)
+        pygame.draw.rect(target_surf, ip_border_col, self.ip_box_rect, 1 if not self.typing_ip else 2, border_radius=6)
 
         cursor = "_" if (self.typing_ip and (pygame.time.get_ticks() // 500) % 2 == 0) else ""
         txt_surf = self.font_btn.render(f"{self.join_ip_input}{cursor}", True, (255, 255, 255))
-        target_surf.blit(txt_surf, (self.ip_box_rect.centerx - txt_surf.get_width() // 2, self.ip_box_rect.centery - txt_surf.get_height() // 2))
+        target_surf.blit(txt_surf, (self.ip_box_rect.x + 12, self.ip_box_rect.centery - txt_surf.get_height() // 2))
 
+        # Render Host, Connect, and Back buttons
         for btn in self.mp_buttons:
             btn.render(target_surf, self.font_btn)
 

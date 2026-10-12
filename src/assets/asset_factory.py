@@ -3634,8 +3634,8 @@ class AssetFactory:
         pygame.draw.rect(wb, (48, 28, 14), (11, 8, 3, 8))
         pygame.draw.rect(wb, (145, 92, 45), (12, 8, 2, 7))
         # Lower tool shelf / stretcher
-        pygame.draw.rect(wb, (48, 28, 14), (4, 11, 8, 3))
-        pygame.draw.rect(wb, (120, 75, 38), (5, 11, 6, 2))
+        pygame.draw.rect(wb, (48, 28, 14), (4, 12, 8, 2))
+        pygame.draw.rect(wb, (120, 75, 38), (5, 12, 6, 1))
         # Iron vise clamp on right edge
         pygame.draw.rect(wb, (160, 170, 185), (13, 3, 3, 3))
         self.tiles[TILE_WORK_BENCH] = wb

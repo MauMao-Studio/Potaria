@@ -125,17 +125,24 @@ class LANClient:
             self.connected = True
 
             # Wait for welcome packet
-            raw = self.sock.recv(2048)
-            packets, _ = decode_packets(raw)
-            for pkt in packets:
-                if pkt.get("type") == PKT_WELCOME:
-                    data = pkt.get("data", {})
-                    self.player_id = data.get("player_id", 2)
-                    self.world_seed = data.get("seed", 12345)
-                    print(f"[LANClient] Connected as Player {self.player_id} with World Seed: {self.world_seed}")
-                    join_pkt = encode_packet(PKT_JOIN, {"name": player_name, "room_key": room_key or ""})
-                    self.sock.sendall(join_pkt)
+            self.sock.settimeout(3.0)
+            raw = b""
+            while self.world_seed is None:
+                chunk = self.sock.recv(2048)
+                if not chunk:
                     break
+                raw += chunk
+                packets, raw = decode_packets(raw)
+                for pkt in packets:
+                    if pkt.get("type") == PKT_WELCOME:
+                        data = pkt.get("data", {})
+                        self.player_id = data.get("player_id", 2)
+                        self.world_seed = data.get("seed", 12345)
+                        print(f"[LANClient] Connected as Player {self.player_id} with World Seed: {self.world_seed}")
+                        join_pkt = encode_packet(PKT_JOIN, {"name": player_name, "room_key": room_key or ""})
+                        self.sock.sendall(join_pkt)
+                        break
+            self.sock.settimeout(None)
 
             # Start receiver thread
             self.recv_thread = threading.Thread(target=self._recv_loop, daemon=True)

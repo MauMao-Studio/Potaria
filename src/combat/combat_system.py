@@ -961,26 +961,38 @@ class CombatManager:
                 # 6:00 AM is 0.0, 5:00 PM is 11/24 (~0.4583), 6:00 PM is 0.50, Midnight is 0.75, Sunrise is 1.0.
                 # Strictly 0 spawns between morning/sunrise and 5:00 PM; starts at 5:00 PM and scales into deep night.
                 tod = float(time_of_day) if time_of_day is not None else (0.75 if is_night else 0.25)
-                cutoff_5pm = 11.0 / 24.0  # 5:00 PM
-                if tod < cutoff_5pm:
+                cutoff_5pm = 11.0 / 24.0  # 5:00 PM (17:00)
+                player_ty = int(player.y // SCALED_TILE)
+                is_surface = (player_ty < 85)
+
+                if is_surface and (tod < cutoff_5pm):
+                    # Zero monsters during morning/daytime on surface
                     base_cap = 0
-                    base_interval = 999.0
+                    base_interval = 999999.0
+                elif tod < cutoff_5pm:
+                    # Underground caverns during daytime: ambient mob population
+                    base_cap = 6
+                    base_interval = 6.0
                 elif tod < 0.50:
                     # 5:00 PM - 6:00 PM (Twilight dusk begins)
                     base_cap = 6
                     base_interval = 4.5
+                elif tod < 0.625:
+                    # 6:00 PM - 9:00 PM (Early dusk/evening)
+                    base_cap = 12
+                    base_interval = 3.2
                 elif tod < 0.75:
-                    # 6:00 PM - 12:00 AM (Early night)
-                    base_cap = 14
-                    base_interval = 3.0
-                elif tod < 0.95:
-                    # 12:00 AM - 4:48 AM (Deep night peak)
-                    base_cap = 22
-                    base_interval = 1.8
+                    # 9:00 PM - 12:00 AM (Night ramp)
+                    base_cap = 18
+                    base_interval = 2.4
+                elif tod < 22.0 / 24.0:
+                    # 12:00 AM - 4:00 AM (Deep night peak)
+                    base_cap = 26
+                    base_interval = 1.6
                 else:
-                    # 4:48 AM - 6:00 AM (Dawn subsiding)
+                    # 4:00 AM - 6:00 AM (Dawn subsiding until sunrise)
                     base_cap = 4
-                    base_interval = 6.0
+                    base_interval = 5.0
 
                 effective_max_mobs = min(40, base_cap * party_size)
                 self.mob_spawn_timer += dt
@@ -1118,7 +1130,7 @@ class CombatManager:
 
         # RPG Damage Formula: Scaled by player ATK and Critical Rolls
         if is_hand:
-            # Unarmed punch / bare hand attack against enemies is strictly 1 damage only (no scaling)
+            # Unarmed punch / bare hand attack against enemies is strictly 1 damage only (no ATK scaling, no buffs)
             base_dmg = 1
             is_crit = False
             final_dmg = 1
@@ -1135,7 +1147,7 @@ class CombatManager:
             is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
             final_dmg = int(base_dmg * (crit_mult if is_crit else random.uniform(0.9, 1.15)))
 
-            if hasattr(player, "has_effect"):
+            if not is_hand and hasattr(player, "has_effect"):
                 if player.has_effect("molten blaze"):
                     final_dmg += 12
                 if player.has_effect("armor penetration"):
@@ -1157,7 +1169,7 @@ class CombatManager:
                         self.particle_system.spawn_sparks(hx, hy, (255, 230, 100), count=8)
                         self.camera.add_shake(3.0, 0.15)
                     self.spawn_damage_number(self.boss.center_x, self.boss.y - 12, final_dmg, color=(255, 230, 40) if is_crit else (255, 210, 50), is_crit=is_crit)
-                    if hasattr(player, "has_effect"):
+                    if not is_hand and hasattr(player, "has_effect"):
                         if player.has_effect("starburst explosion"):
                             self.particle_system.spawn_sparks(self.boss.center_x, self.boss.center_y, (255, 215, 60), count=16)
                         if (player.has_effect("molten blaze") or player.has_effect("superheated impact")) and hasattr(self.boss, "apply_burn"):
@@ -1178,10 +1190,12 @@ class CombatManager:
                 if not has_line_of_sight(world, player.center_x, player.center_y, mob.center_x, mob.center_y):
                     continue
                 getattr(player, "swing_hit_targets", set()).add(mob)
-                knock_x = math.cos(player.aim_angle) * 5.0
-                knock_y = min(-2.5, math.sin(player.aim_angle) * 4.0)
+                knock_x = math.cos(player.aim_angle) * (2.0 if is_hand else 5.0)
+                knock_y = min(-1.5 if is_hand else -2.5, math.sin(player.aim_angle) * 4.0)
                 actual_dmg = mob.take_damage(final_dmg, knockback_vx=knock_x, knockback_vy=knock_y)
-                if not actual_dmg or isinstance(actual_dmg, bool):
+                if is_hand:
+                    actual_dmg = 1
+                elif not actual_dmg or isinstance(actual_dmg, bool):
                     actual_dmg = final_dmg
                 if is_crit:
                     self.sound_manager.play("crit_hit")
@@ -1194,7 +1208,7 @@ class CombatManager:
                     self.camera.add_shake(3.0, 0.15)
                 self.spawn_damage_number(mob.center_x, mob.y - 12, actual_dmg, color=(255, 230, 40) if is_crit else (255, 210, 50), is_crit=is_crit)
 
-                if hasattr(player, "has_effect"):
+                if not is_hand and hasattr(player, "has_effect"):
                     if player.has_effect("glacial chill") and hasattr(mob, "speed"):
                         mob.speed = max(0.4, mob.speed * 0.65)
                     if player.has_effect("thunderclap burst"):
