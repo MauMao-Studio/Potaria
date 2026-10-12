@@ -27,10 +27,12 @@ STATE_MULTIPLAYER = "multiplayer"
 STATE_INPUT_MAPPING = "input_mapping"
 
 class Button:
-    def __init__(self, x, y, width, height, text, action):
+    def __init__(self, x, y, width, height, text, action, icon=None, tooltip=""):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.action = action
+        self.icon = icon
+        self.tooltip = tooltip
         self.is_hovered = False
 
     def update(self, mouse_pos):
@@ -46,11 +48,39 @@ class Button:
         if self.is_hovered:
             pygame.draw.rect(target_surf, (255, 255, 180, 80), (self.rect.x + 2, self.rect.y + 2, self.rect.w - 4, 3), border_radius=4)
 
-        text_col = (255, 255, 255) if not self.is_hovered else (255, 235, 100)
-        txt_surf = font.render(self.text, True, text_col)
-        tx = self.rect.centerx - txt_surf.get_width() // 2
-        ty = self.rect.centery - txt_surf.get_height() // 2
-        target_surf.blit(txt_surf, (tx, ty))
+        if self.icon:
+            cx, cy = self.rect.centerx, self.rect.centery
+            if self.icon == "play":
+                # Sleek green/gold right-pointing triangle
+                tri_pts = [(cx - 7, cy - 8), (cx + 9, cy), (cx - 7, cy + 8)]
+                tri_col = (255, 240, 100) if self.is_hovered else (80, 230, 120)
+                pygame.draw.polygon(target_surf, tri_col, tri_pts)
+            elif self.icon == "rename":
+                # Sleek cyan quill/pencil icon
+                pen_col = (120, 240, 255) if self.is_hovered else (90, 190, 230)
+                pygame.draw.line(target_surf, pen_col, (cx - 6, cy + 6), (cx + 6, cy - 6), 3)
+                pygame.draw.circle(target_surf, pen_col, (cx + 7, cy - 7), 3)
+                pygame.draw.line(target_surf, pen_col, (cx - 7, cy + 8), (cx - 4, cy + 8), 2)
+            elif self.icon == "delete":
+                # Sleek red trashcan / cross icon
+                del_col = (255, 90, 90) if self.is_hovered else (220, 70, 70)
+                # Draw stylized trashcan
+                pygame.draw.rect(target_surf, del_col, (cx - 6, cy - 4, 12, 11), 2, border_radius=2)
+                pygame.draw.line(target_surf, del_col, (cx - 8, cy - 5), (cx + 8, cy - 5), 2)
+                pygame.draw.line(target_surf, del_col, (cx - 3, cy - 7), (cx + 3, cy - 7), 2)
+                pygame.draw.line(target_surf, del_col, (cx - 2, cy - 2), (cx - 2, cy + 4), 1)
+                pygame.draw.line(target_surf, del_col, (cx + 2, cy - 2), (cx + 2, cy + 4), 1)
+            elif isinstance(self.icon, pygame.Surface):
+                ix = cx - self.icon.get_width() // 2
+                iy = cy - self.icon.get_height() // 2
+                target_surf.blit(self.icon, (ix, iy))
+
+        if self.text:
+            text_col = (255, 255, 255) if not self.is_hovered else (255, 235, 100)
+            txt_surf = font.render(self.text, True, text_col)
+            tx = self.rect.centerx - txt_surf.get_width() // 2
+            ty = self.rect.centery - txt_surf.get_height() // 2
+            target_surf.blit(txt_surf, (tx, ty))
 
 class MenuManager:
     def __init__(self, asset_factory, sound_manager, bgm_manager=None, achievement_manager=None):
@@ -259,7 +289,7 @@ class MenuManager:
         self.hosting_lan = False
         self.host_room_key = ""
         self.typing_host_key = False
-        self.host_key_box_rect = pygame.Rect(cx - 30, 215, btn_w + 60, 36)
+        self.host_key_box_rect = pygame.Rect(cx - 30, 112, btn_w + 60, 36)
 
         self.back_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 95, 200, 44, "<  BACK TO MENU", "menu")
         self.victory_buttons = [
@@ -322,8 +352,7 @@ class MenuManager:
 
         # Game Over / Permadeath Screen Buttons (YOLO Mode)
         self.game_over_buttons = [
-            Button(cx, 390, btn_w, btn_h, "Restart your life", "restart_yolo"),
-            Button(cx, 450, btn_w, btn_h, "I don't wanna go back! (Main Menu)", "menu"),
+            Button(cx, 420, btn_w, btn_h, "Try Harder (Main Menu)", "menu"),
         ]
 
         self.settings_file = os.path.join("saves", "settings.json")
@@ -482,9 +511,12 @@ class MenuManager:
                 p["y"] = SCREEN_HEIGHT + 10
                 p["x"] = random.uniform(0, SCREEN_WIDTH)
 
+        self.active_tooltip = ""
         if self.state == STATE_MENU:
             for btn in self.menu_buttons:
                 btn.update(mouse_pos)
+                if btn.is_hovered and btn.tooltip:
+                    self.active_tooltip = btn.tooltip
         elif self.state == STATE_MODS:
             self.mods_toggle_lms_btn.update(mouse_pos)
             self.mods_back_btn.update(mouse_pos)
@@ -509,6 +541,8 @@ class MenuManager:
         elif self.state == STATE_SETTINGS:
             for btn in self.settings_buttons:
                 btn.update(mouse_pos)
+                if btn.is_hovered and btn.tooltip:
+                    self.active_tooltip = btn.tooltip
         elif self.state == STATE_INPUT_MAPPING:
             self.input_reset_button.update(mouse_pos)
             self.input_back_button.update(mouse_pos)
@@ -519,6 +553,8 @@ class MenuManager:
             else:
                 for btn in self.mp_buttons:
                     btn.update(mouse_pos)
+                    if btn.is_hovered and btn.tooltip:
+                        self.active_tooltip = btn.tooltip
         elif self.state in (STATE_STORY, STATE_CUTSCENE):
             self.cutscene.update(dt, mouse_pos)
             if self.cutscene.is_finished():
@@ -549,11 +585,22 @@ class MenuManager:
                 else:
                     self.worlds_dragging = False
 
+                viewport_rect = pygame.Rect(SCREEN_WIDTH // 2 - 250, 275, 515, 255)
+                scroll_y = getattr(self, "worlds_scroll_y", 0.0)
                 for load_b, del_b, _ in self.world_entry_buttons:
-                    load_b.update(mouse_pos)
-                    del_b.update(mouse_pos)
+                    adj_load = load_b.rect.move(0, -scroll_y)
+                    adj_del = del_b.rect.move(0, -scroll_y)
+                    load_b.is_hovered = viewport_rect.collidepoint(mouse_pos) and adj_load.collidepoint(mouse_pos)
+                    del_b.is_hovered = viewport_rect.collidepoint(mouse_pos) and adj_del.collidepoint(mouse_pos)
+                    if load_b.is_hovered and load_b.tooltip:
+                        self.active_tooltip = load_b.tooltip
+                    elif del_b.is_hovered and del_b.tooltip:
+                        self.active_tooltip = del_b.tooltip
                 for ren_b, _ in self.world_rename_buttons:
-                    ren_b.update(mouse_pos)
+                    adj_ren = ren_b.rect.move(0, -scroll_y)
+                    ren_b.is_hovered = viewport_rect.collidepoint(mouse_pos) and adj_ren.collidepoint(mouse_pos)
+                    if ren_b.is_hovered and ren_b.tooltip:
+                        self.active_tooltip = ren_b.tooltip
         elif self.state == STATE_NEW_WORLD:
             if getattr(self, "show_yolo_warning", False):
                 self.yolo_confirm_btn.update(mouse_pos)
@@ -579,9 +626,9 @@ class MenuManager:
         start_y = 280
         for i, winfo in enumerate(self.saved_worlds):
             entry_y = start_y + i * 62
-            load_b = Button(bx + 265, entry_y + 10, 72, 36, "PLAY", f"load_{i}")
-            ren_b = Button(bx + 345, entry_y + 10, 78, 36, "RENAME", f"ren_{i}")
-            del_b = Button(bx + 430, entry_y + 10, 56, 36, "DEL", f"del_{i}")
+            load_b = Button(bx + 355, entry_y + 9, 36, 36, "", f"load_{i}", icon="play", tooltip="Enter World")
+            ren_b = Button(bx + 400, entry_y + 9, 36, 36, "", f"ren_{i}", icon="rename", tooltip="Rename World")
+            del_b = Button(bx + 445, entry_y + 9, 36, 36, "", f"del_{i}", icon="delete", tooltip="Delete World")
             self.world_entry_buttons.append((load_b, del_b, winfo))
             self.world_rename_buttons.append((ren_b, winfo))
         
@@ -1260,6 +1307,19 @@ class MenuManager:
         elif self.state == STATE_GAME_OVER:
             self._render_game_over_screen(target_surf)
 
+        # Floating Tooltip Banner (Screen-Space overlay)
+        if getattr(self, "active_tooltip", ""):
+            mpos = getattr(self, "last_mouse_pos", None) or pygame.mouse.get_pos()
+            tt_text = self.active_tooltip
+            tt_surf = self.font_sm.render(tt_text, True, (255, 245, 180))
+            tw, th = tt_surf.get_width() + 16, tt_surf.get_height() + 10
+            tx = min(mpos[0] + 12, SCREEN_WIDTH - tw - 8)
+            ty = max(8, mpos[1] - th - 6)
+            tip_rect = pygame.Rect(tx, ty, tw, th)
+            pygame.draw.rect(target_surf, (15, 20, 32, 245), tip_rect, border_radius=5)
+            pygame.draw.rect(target_surf, (255, 215, 60), tip_rect, 1, border_radius=5)
+            target_surf.blit(tt_surf, (tx + 8, ty + 5))
+
     def _render_settings_screen(self, target_surf):
         self._render_background(target_surf)
 
@@ -1818,8 +1878,8 @@ class MenuManager:
                 # Render button components into clipped surface
                 orig_load_pos = load_b.rect.topleft
                 orig_del_pos = del_b.rect.topleft
-                load_b.rect.topleft = (265, local_y + 10)
-                del_b.rect.topleft = (430, local_y + 10)
+                load_b.rect.topleft = (355, local_y + 9)
+                del_b.rect.topleft = (445, local_y + 9)
                 load_b.render(clip_surf, self.font_btn)
                 del_b.render(clip_surf, self.font_btn)
                 load_b.rect.topleft = orig_load_pos
@@ -1828,7 +1888,7 @@ class MenuManager:
                 if i < len(self.world_rename_buttons):
                     ren_b = self.world_rename_buttons[i][0]
                     orig_ren_pos = ren_b.rect.topleft
-                    ren_b.rect.topleft = (345, local_y + 10)
+                    ren_b.rect.topleft = (400, local_y + 9)
                     ren_b.render(clip_surf, self.font_btn)
                     ren_b.rect.topleft = orig_ren_pos
 

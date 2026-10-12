@@ -312,12 +312,27 @@ class CharacterPanel:
             border_thick = 2 if is_selected else 1
             pygame.draw.rect(target_surf, border_col, h_rect, border_thick, border_radius=6)
 
-            # Hotkey Badge & Skill Name
+            # Hotkey Badge & Skill Name / Icon
             badge = self.font_bold.render(f"[{key}]", True, COLOR_GOLD if is_selected else (220, 220, 220))
-            skill_name = s_data.get("name", "---")[:10] if (curr_sid and is_learned) else "(Empty)"
-            name_txt = self.font_sm.render(skill_name, True, (255, 255, 255) if is_learned else (110, 110, 110))
             target_surf.blit(badge, (hx + 6, hy + 9))
-            target_surf.blit(name_txt, (hx + 36, hy + 10))
+
+            icon_drawn = False
+            if curr_sid and hasattr(self.asset_factory, "skill_icons"):
+                is_ev = hasattr(player.skills, "is_skill_evolved") and player.skills.is_skill_evolved(curr_sid)
+                ev_name = s_data.get("evolved_name", "").lower().replace(" ", "_")
+                icon_surf = self.asset_factory.skill_icons.get(ev_name) if is_ev else None
+                if not icon_surf:
+                    icon_surf = self.asset_factory.skill_icons.get(curr_sid)
+                if icon_surf:
+                    icon_sc = pygame.transform.scale(icon_surf, (22, 22))
+                    if not is_learned:
+                        icon_sc.fill((70, 70, 70, 160), special_flags=pygame.BLEND_RGBA_MULT)
+                    target_surf.blit(icon_sc, (hx + 30, hy + 7))
+                    icon_drawn = True
+
+            skill_name = s_data.get("name", "---")[:8] if (curr_sid and is_learned) else ("(Empty)" if not curr_sid else s_data.get("name", "---")[:8])
+            name_txt = self.font_sm.render(skill_name, True, (255, 255, 255) if is_learned else (110, 110, 110))
+            target_surf.blit(name_txt, (hx + (56 if icon_drawn else 36), hy + 10))
 
             if h_rect.collidepoint(mouse_x, mouse_y):
                 pygame.draw.rect(target_surf, (255, 240, 120), h_rect, 2, border_radius=6)
@@ -356,19 +371,36 @@ class CharacterPanel:
             bd_col = COLOR_GOLD if is_selected_grim else ((80, 180, 240) if is_learned else (55, 60, 70))
             pygame.draw.rect(target_surf, bd_col, g_rect, 2 if is_selected_grim else 1, border_radius=5)
 
+            # Draw skill icon if available
+            g_icon_drawn = False
+            if hasattr(self.asset_factory, "skill_icons"):
+                is_ev = hasattr(player.skills, "is_skill_evolved") and player.skills.is_skill_evolved(s_id)
+                ev_name = s_data.get("evolved_name", "").lower().replace(" ", "_")
+                icon_surf = self.asset_factory.skill_icons.get(ev_name) if is_ev else None
+                if not icon_surf:
+                    icon_surf = self.asset_factory.skill_icons.get(s_id)
+                if icon_surf:
+                    icon_sc = pygame.transform.scale(icon_surf, (24, 24))
+                    if not is_learned:
+                        icon_sc.fill((60, 60, 60, 160), special_flags=pygame.BLEND_RGBA_MULT)
+                    target_surf.blit(icon_sc, (gx + 5, gy_pos + 5))
+                    g_icon_drawn = True
+
+            text_offset_x = gx + (32 if g_icon_drawn else 6)
+
             # Name and status badge
             if is_learned:
                 lvl = player.skills.get_skill_level(s_id) if hasattr(player.skills, "get_skill_level") else 1
-                s_name = self.font_sm.render(f"{s_data['name'][:7]} L{lvl}", True, (255, 255, 255))
-                target_surf.blit(s_name, (gx + 6, gy_pos + 4))
+                s_name = self.font_sm.render(f"{s_data['name'][:6]} L{lvl}", True, (255, 255, 255))
+                target_surf.blit(s_name, (text_offset_x, gy_pos + 4))
                 status_txt = f"[{bound_key}]" if bound_key else "[Ready]"
                 stat_surf = self.font_sm.render(status_txt, True, COLOR_GOLD if bound_key else (80, 220, 120))
-                target_surf.blit(stat_surf, (gx + 6, gy_pos + 17))
+                target_surf.blit(stat_surf, (text_offset_x, gy_pos + 17))
             else:
-                s_name = self.font_sm.render(s_data["name"][:9], True, (110, 115, 125))
-                target_surf.blit(s_name, (gx + 6, gy_pos + 4))
+                s_name = self.font_sm.render(s_data["name"][:7], True, (110, 115, 125))
+                target_surf.blit(s_name, (text_offset_x, gy_pos + 4))
                 stat_surf = self.font_sm.render("[Locked]", True, (130, 70, 70))
-                target_surf.blit(stat_surf, (gx + 6, gy_pos + 17))
+                target_surf.blit(stat_surf, (text_offset_x, gy_pos + 17))
 
             if g_rect.collidepoint(mouse_x, mouse_y):
                 pygame.draw.rect(target_surf, (255, 230, 80), g_rect, 2, border_radius=5)

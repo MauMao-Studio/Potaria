@@ -226,6 +226,8 @@ class PotariaGame:
 
         # 8. Combat Engine
         self.combat = CombatManager(self.asset_factory, self.sound_manager, self.particle_system, self.camera)
+        self.world.game = self
+        self.world.combat = self.combat
 
         # 9. LAN Multiplayer Networking (Host / Client)
         self.server = None
@@ -584,6 +586,8 @@ class PotariaGame:
                 self.combat.mobs.clear()
                 self.combat.boss = None
                 self.world = World(self.asset_factory, seed=host_seed)
+                self.world.game = self
+                self.world.combat = self.combat
                 if self.game_mode == MODE_LAST_MAN_STANDING:
                     pid = getattr(self.client, "player_id", 2) or 2
                     spawn_x, spawn_y = self.world.get_biome_spawn(player_idx=pid)
@@ -903,6 +907,8 @@ class PotariaGame:
         self.game_mode = game_mode
         self.world = World(self.asset_factory, seed=seed, world_type=self.world_type)
         self.world.tree_cascade_felling = False  # Newly generated worlds use natural tree decay
+        self.world.game = self
+        self.world.combat = self.combat
         self.block_deltas = {}
         self.wall_deltas = {}
         self.playtime = 0.0

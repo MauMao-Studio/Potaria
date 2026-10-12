@@ -12,6 +12,7 @@ SKILL_DEFINITIONS = {
     "power_slash": {
         "id": "power_slash",
         "name": "Power Slash",
+        "evolved_name": "Cataclysmic Cleave",
         "hotkey": "Q",
         "mp_cost": 8,
         "cooldown": 2.0,
@@ -21,6 +22,7 @@ SKILL_DEFINITIONS = {
     "whirlwind": {
         "id": "whirlwind",
         "name": "Whirlwind",
+        "evolved_name": "Tempest Cyclone",
         "hotkey": "F",
         "mp_cost": 10,
         "cooldown": 3.0,
@@ -40,15 +42,37 @@ SKILL_DEFINITIONS = {
     "fireball": {
         "id": "fireball",
         "name": "Fireball",
+        "evolved_name": "Inferno Blast",
         "hotkey": "R",
         "mp_cost": 8,
         "cooldown": 2.2,
         "dmg_mult": 1.8,
         "desc": "Casts a blazing fire orb that detonates on impact."
     },
+    "earth_slam": {
+        "id": "earth_slam",
+        "name": "Earth Slam",
+        "evolved_name": "Tectonic Rupture",
+        "hotkey": "E",
+        "mp_cost": 14,
+        "cooldown": 4.0,
+        "dmg_mult": 2.2,
+        "desc": "Slams the ground producing a seismic shockwave shattering nearby enemies."
+    },
+    "shield_bash": {
+        "id": "shield_bash",
+        "name": "Shield Bash",
+        "evolved_name": "Aegis Bulwark",
+        "hotkey": "B",
+        "mp_cost": 12,
+        "cooldown": 3.0,
+        "dmg_mult": 1.5,
+        "desc": "Dashes forward with an impenetrable guard, bashing and stunning foes."
+    },
     "meteor": {
         "id": "meteor",
         "name": "Meteor Strike",
+        "evolved_name": "Grand Starfall",
         "hotkey": "G",
         "mp_cost": 40,
         "cooldown": 12.0,
@@ -59,6 +83,7 @@ SKILL_DEFINITIONS = {
     "frost_nova": {
         "id": "frost_nova",
         "name": "Frost Nova",
+        "evolved_name": "Glacial Blizzard",
         "hotkey": "X",
         "mp_cost": 12,
         "cooldown": 3.5,
@@ -68,6 +93,7 @@ SKILL_DEFINITIONS = {
     "celestial_shield": {
         "id": "celestial_shield",
         "name": "Celestial Shield",
+        "evolved_name": "Divine Sanctuary",
         "hotkey": "Z",
         "mp_cost": 36,
         "cooldown": 14.0,
@@ -78,6 +104,7 @@ SKILL_DEFINITIONS = {
     "void_singularity": {
         "id": "void_singularity",
         "name": "Void Singularity",
+        "evolved_name": "Event Horizon",
         "hotkey": "C",
         "mp_cost": 48,
         "cooldown": 16.0,

@@ -478,6 +478,39 @@ class Player:
                 self.vfx_manager.spawn("void_singularity", vx_pos, self.center_y - 20, duration=1.2, scale=1.5)
                 self.vfx_manager.spawn("thunderclap_strike", vx_pos, self.center_y - 40, duration=0.8, scale=1.4)
 
+        elif s_id == "earth_slam":
+            lvl = self.skills.get_skill_level("earth_slam") if hasattr(self.skills, "get_skill_level") else 1
+            is_evolved = hasattr(self.skills, "is_skill_evolved") and self.skills.is_skill_evolved("earth_slam")
+            camera.add_shake(12.0 if is_evolved else 9.0, 0.5)
+            self.start_swing()
+            particle_system.spawn_debris(self.center_x, self.center_y + 12, (150, 105, 50), count=45 if is_evolved else 30)
+            particle_system.spawn_sparks(self.center_x, self.center_y + 10, (235, 180, 80), count=30 if is_evolved else 20)
+            slam_dmg = int(self.stats.total_atk * (2.2 + lvl * 0.35))
+            slam_dir = 1.0 if self.facing_right else -1.0
+            slam_x = self.center_x + slam_dir * 32
+            self.fireballs.append(PlayerFireball(slam_x, self.center_y + 8, slam_dir * 3.5, 0.0, self.fireball_sprite, damage=slam_dmg))
+            if self.vfx_manager:
+                self.vfx_manager.spawn("earth_slam", slam_x, self.center_y + 10, duration=0.6, scale=1.6 if is_evolved else 1.3)
+                self.vfx_manager.spawn("thunderclap_strike", slam_x, self.center_y, duration=0.5, scale=1.3 if is_evolved else 1.0)
+
+        elif s_id == "shield_bash":
+            lvl = self.skills.get_skill_level("shield_bash") if hasattr(self.skills, "get_skill_level") else 1
+            is_evolved = hasattr(self.skills, "is_skill_evolved") and self.skills.is_skill_evolved("shield_bash")
+            self.dash_timer = 0.25
+            self.i_frame_timer = 0.7 if is_evolved else 0.5
+            bash_speed = 9.0 if is_evolved else 7.5
+            b_dir = 1.0 if self.facing_right else -1.0
+            self.vx = b_dir * bash_speed
+            self.vy = -1.0
+            camera.add_shake(7.0 if is_evolved else 5.0, 0.3)
+            particle_system.spawn_sparks(self.center_x + b_dir * 16, self.center_y, (100, 220, 255), count=25)
+            bash_dmg = int(self.stats.total_atk * (1.5 + lvl * 0.25))
+            bash_x = self.center_x + b_dir * 28
+            self.fireballs.append(PlayerFireball(bash_x, self.center_y, b_dir * 4.0, 0.0, self.fireball_sprite, damage=bash_dmg))
+            if self.vfx_manager:
+                self.vfx_manager.spawn("shield_bash", bash_x, self.center_y, duration=0.45, scale=1.4 if is_evolved else 1.2)
+                self.vfx_manager.spawn("ancient_cleave_grand", bash_x, self.center_y, duration=0.4, scale=1.1)
+
         return True
 
     def can_attack(self):

@@ -250,13 +250,35 @@ class HUD:
                 lvl_txt = self.font_sm.render(f"Lv.{lvl}", True, (255, 230, 80))
                 target_surf.blit(lvl_txt, (sx + bw - lvl_txt.get_width() - 3, start_y + 2))
 
-            # Skill name abbreviation
-            if s_id and hasattr(player.skills, "get_skill_name"):
-                s_name = player.skills.get_skill_name(s_id)[:3]
-            else:
-                s_name = SKILL_DEFINITIONS.get(s_id, {}).get("name", "---")[:3] if s_id else "---"
-            n_txt = self.font_sm.render(s_name, True, (255, 255, 255) if is_learned else (110, 110, 110))
-            target_surf.blit(n_txt, (sx + 14, start_y + 20))
+            # Draw Skill Icon if learned / available
+            icon_drawn = False
+            if s_id and hasattr(self.asset_factory, "skill_icons"):
+                # Check for evolved form icon name if evolved
+                is_evolved = hasattr(player.skills, "is_skill_evolved") and player.skills.is_skill_evolved(s_id)
+                s_def = SKILL_DEFINITIONS.get(s_id, {})
+                ev_name = s_def.get("evolved_name", "").lower().replace(" ", "_")
+                icon_surf = self.asset_factory.skill_icons.get(ev_name) if is_evolved else None
+                if not icon_surf:
+                    icon_surf = self.asset_factory.skill_icons.get(s_id)
+                if icon_surf:
+                    icon_scaled = pygame.transform.scale(icon_surf, (28, 28))
+                    if not is_learned:
+                        # Dim locked / unlearned skill icon
+                        dim_surf = icon_scaled.copy()
+                        dim_surf.fill((60, 60, 60, 160), special_flags=pygame.BLEND_RGBA_MULT)
+                        target_surf.blit(dim_surf, (sx + 7, start_y + 9))
+                    else:
+                        target_surf.blit(icon_scaled, (sx + 7, start_y + 9))
+                    icon_drawn = True
+
+            # Skill name abbreviation fallback or overlay if no icon
+            if not icon_drawn:
+                if s_id and hasattr(player.skills, "get_skill_name"):
+                    s_name = player.skills.get_skill_name(s_id)[:3]
+                else:
+                    s_name = SKILL_DEFINITIONS.get(s_id, {}).get("name", "---")[:3] if s_id else "---"
+                n_txt = self.font_sm.render(s_name, True, (255, 255, 255) if is_learned else (110, 110, 110))
+                target_surf.blit(n_txt, (sx + 14, start_y + 20))
 
             # Cooldown shadow sweep
             if cd_left > 0 and s_id in SKILL_DEFINITIONS:

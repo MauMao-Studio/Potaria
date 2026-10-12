@@ -958,27 +958,29 @@ class CombatManager:
             if not self.boss:
                 party_size = max(1, len(getattr(self, "multiplayer_player_positions", [])))
                 # Diurnal spawn curve based on time_of_day:
-                # Morning (0.00-0.22): Morning Peace on surface, slow subterranean interval
-                # Midday (0.22-0.50): Gradual daylight spawns
-                # Dusk (0.50-0.75): Twilight surge
-                # Night (0.75-0.95): Peak midnight invasion
-                # Dawn (0.95-1.00): Monsters subside
+                # 6:00 AM is 0.0, 5:00 PM is 11/24 (~0.4583), 6:00 PM is 0.50, Midnight is 0.75, Sunrise is 1.0.
+                # Strictly 0 spawns between morning/sunrise and 5:00 PM; starts at 5:00 PM and scales into deep night.
                 tod = float(time_of_day) if time_of_day is not None else (0.75 if is_night else 0.25)
-                if tod < 0.22:
-                    base_cap = 4
-                    base_interval = 8.0
+                cutoff_5pm = 11.0 / 24.0  # 5:00 PM
+                if tod < cutoff_5pm:
+                    base_cap = 0
+                    base_interval = 999.0
                 elif tod < 0.50:
-                    base_cap = 8
-                    base_interval = 4.8
+                    # 5:00 PM - 6:00 PM (Twilight dusk begins)
+                    base_cap = 6
+                    base_interval = 4.5
                 elif tod < 0.75:
+                    # 6:00 PM - 12:00 AM (Early night)
                     base_cap = 14
                     base_interval = 3.0
                 elif tod < 0.95:
+                    # 12:00 AM - 4:48 AM (Deep night peak)
                     base_cap = 22
                     base_interval = 1.8
                 else:
-                    base_cap = 6
-                    base_interval = 5.5
+                    # 4:48 AM - 6:00 AM (Dawn subsiding)
+                    base_cap = 4
+                    base_interval = 6.0
 
                 effective_max_mobs = min(40, base_cap * party_size)
                 self.mob_spawn_timer += dt
@@ -1074,26 +1076,36 @@ class CombatManager:
         is_tool = False
         tool_dmg = 2
         is_ancient = False
+        is_hand = False
+
         if active:
             item_id = active.item_id.lower()
             item_data = getattr(active, "data", {}) or {}
             item_name = item_data.get("name", "").lower()
+            item_cat = str(item_data.get("cat") or item_data.get("category") or "").lower()
             rarity = str(item_data.get("rarity", "")).lower()
             if rarity in ("ancient", "rarity_ancient") or "ancient" in item_id:
                 is_ancient = True
             if any(w in item_id or w in item_name for w in ("bow", "crossbow", "recurve", "shortbow", "longbow")) or any(w in item_id or w in item_name for w in ("staff", "wand", "scepter", "rod", "catalyst", "focus", "grimoire")):
                 return
-            if item_data.get("cat") == "tool" or item_data.get("category") == "tool" or any(t in item_id for t in ("pickaxe", "axe", "shovel", "hammer")) or any(t in item_name for t in ("pickaxe", "axe", "shovel", "hammer")):
+            if item_cat == "tool" or any(t in item_id for t in ("pickaxe", "axe", "shovel", "hammer")) or any(t in item_name for t in ("pickaxe", "axe", "shovel", "hammer")):
                 is_tool = True
                 tool_dmg = item_data.get("damage", 2)
-        elif hasattr(player, "equipment") and hasattr(player.equipment, "slots"):
+            elif item_cat == "weapon" or any(w in item_id for w in ("sword", "blade", "spear", "dagger", "mace", "club", "axe", "scythe", "halberd", "rapier", "katana", "saber")):
+                pass
+            else:
+                is_hand = True
+        elif hasattr(player, "equipment") and hasattr(player.equipment, "slots") and player.equipment.slots.get("weapon"):
             eq_weap = player.equipment.slots.get("weapon")
-            if eq_weap:
-                from src.rpg.equipment import ARMOR_DATA
-                eq_data = ARMOR_DATA.get(eq_weap, {})
-                rarity = str(eq_data.get("rarity", "")).lower()
-                if rarity in ("ancient", "rarity_ancient") or "ancient" in str(eq_weap).lower():
-                    is_ancient = True
+            from src.rpg.equipment import ARMOR_DATA
+            from src.ui.inventory import ITEM_REGISTRY
+            eq_id = eq_weap.item_id if hasattr(eq_weap, "item_id") else str(eq_weap)
+            eq_data = ARMOR_DATA.get(eq_id) or ITEM_REGISTRY.get(eq_id, {})
+            rarity = str(eq_data.get("rarity", "")).lower()
+            if rarity in ("ancient", "rarity_ancient") or "ancient" in eq_id.lower():
+                is_ancient = True
+        else:
+            is_hand = True
 
         # Single-target constraint: Non-ancient melee weapons damage at most 1 enemy per swing!
         if not is_ancient and getattr(player, "swing_hit_targets", None) and len(player.swing_hit_targets) >= 1:
@@ -1105,7 +1117,12 @@ class CombatManager:
         hitbox = pygame.Rect(int(hx - 18), int(hy - 18), 36, 36)
 
         # RPG Damage Formula: Scaled by player ATK and Critical Rolls
-        if is_tool:
+        if is_hand:
+            # Unarmed punch / bare hand attack against enemies is strictly 1 damage only (no scaling)
+            base_dmg = 1
+            is_crit = False
+            final_dmg = 1
+        elif is_tool:
             # Tools deal minimal combat damage and do not leverage full weapon attack power
             lvl_bonus = max(0, (player.stats.level - 1)) * 0.2
             base_dmg = max(1, int(tool_dmg + lvl_bonus))
@@ -1482,10 +1499,10 @@ class CombatManager:
         if ground_ty is None:
             return
 
-        is_morning = (time_of_day < 0.22)
+        cutoff_5pm = 11.0 / 24.0
         is_surface = (ground_ty < 85)
-        if is_morning and is_surface:
-            # Morning Peace: 0 aggressive surface monsters spawn so player can mine & chop wood peacefully
+        if (time_of_day < cutoff_5pm) and is_surface:
+            # Daytime Peace: Strictly 0 aggressive surface monsters spawn before 5:00 PM
             return
 
         # Player-Built House & Base Protection (Minecraft / Terraria Style)

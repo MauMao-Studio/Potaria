@@ -402,8 +402,15 @@ class World:
         self.last_felled_trunks = list(felled_trunks)
         return len(felled_trunks), felled_leaves
 
+    def decay_trees_daily(self, game=None):
+        """Advances tree decay by a daily step."""
+        if not hasattr(self, "decaying_blocks") or not self.decaying_blocks:
+            return
+        self.update_tree_decay(10.0, game=game)
+
     def grow_plants_daily(self):
         """Called once per day at dawn/daylight transition: grows planted/wild saplings in sunlight into full trees."""
+        self.decay_trees_daily()
         sapling_coords = list(self.planted_saplings.keys())
         for tx, ty in sapling_coords:
             if self.get_tile(tx, ty) != TILE_SAPLING:
@@ -711,9 +718,15 @@ class World:
         if game is None and hasattr(self, "game"):
             game = self.game
 
+        combat = getattr(self, "combat", None) or getattr(game, "combat", None)
+        particles = getattr(self, "particle_system", None) or getattr(game, "particle_system", None)
+
         expired = []
         for coord, info in list(self.decaying_blocks.items()):
-            info["timer"] -= dt
+            if dt >= 10.0:
+                info["timer"] = 0.0
+            else:
+                info["timer"] -= dt
             t_id = self.get_tile(coord[0], coord[1])
             if t_id != info.get("type"):
                 expired.append(coord)
@@ -725,24 +738,31 @@ class World:
                 cy = coord[1] * self.scaled_tile + self.scaled_tile / 2
 
                 if info["type"] in (TILE_WOOD_TRUNK, TILE_WOOD):
-                    if game and hasattr(game, "combat"):
-                        game.combat._spawn_loot_drop("wood", 1, cx, cy)
+                    if combat:
+                        combat._spawn_loot_drop("wood", 1, cx, cy)
                 elif info["type"] == TILE_LEAVES:
-                    if game and hasattr(game, "combat"):
-                        game.combat._spawn_loot_drop("leaves", 1, cx, cy)
+                    if combat:
+                        combat._spawn_loot_drop("leaves", 1, cx, cy)
                         roll = random.random()
                         if roll < 0.20:
                             biome = self.get_biome_at(coord[0], coord[1]) if hasattr(self, "get_biome_at") else "forest"
-                            sap_drop = "pine_sapling" if biome == "snow" else ("palm_sapling" if biome == "desert" else "oak_sapling")
-                            game.combat._spawn_loot_drop(sap_drop, 1, cx, cy)
+                            if biome == "snow":
+                                sap_drop = "pine_sapling"
+                            elif biome == "desert":
+                                sap_drop = "palm_sapling"
+                            elif biome in ("the_blight", "corruption"):
+                                sap_drop = "blight_sapling"
+                            else:
+                                sap_drop = "oak_sapling"
+                            combat._spawn_loot_drop(sap_drop, 1, cx, cy)
                         elif roll < 0.35:
-                            game.combat._spawn_loot_drop("apple", 1, cx, cy)
+                            combat._spawn_loot_drop("apple", 1, cx, cy)
                         elif roll < 0.50:
-                            game.combat._spawn_loot_drop("acorn", 1, cx, cy)
+                            combat._spawn_loot_drop("acorn", 1, cx, cy)
 
-                if game and hasattr(game, "particle_system"):
+                if particles:
                     col = (110, 80, 45) if info["type"] in (TILE_WOOD_TRUNK, TILE_WOOD) else (70, 160, 60)
-                    game.particle_system.spawn_debris(cx, cy, col, count=4)
+                    particles.spawn_debris(cx, cy, col, count=4)
 
         for coord in expired:
             self.decaying_blocks.pop(coord, None)

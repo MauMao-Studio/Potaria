@@ -230,6 +230,7 @@ class AssetFactory:
         self.crack_overlays = []
         self.projectiles = {}
         self.animated_effects = {}
+        self.skill_icons = {}
 
         self.generate_all()
 
@@ -247,6 +248,7 @@ class AssetFactory:
         self._generate_cutscene_assets()
         self._generate_projectiles()
         self._generate_grand_animated_effects()
+        self._generate_skill_icons()
 
     # ==========================================================================
     # 1. PROCEDURAL UNIQUE ITEM SPRITE GENERATOR (1400+ Unique Assets)
@@ -3619,15 +3621,23 @@ class AssetFactory:
         pygame.draw.line(plat, (120, 75, 35), (0, 3), (15, 3), 1)
         self.tiles[TILE_WOOD_PLATFORM] = plat
 
-        # Sturdy carpenter's wooden workbench with thick tabletop, vise & tool shelf (matching item icon)
+        # Sturdy carpenter's wooden workbench with thick tabletop, vise & tool shelf (transparent negative space between legs)
         wb = pygame.Surface((16, 16), pygame.SRCALPHA)
-        pygame.draw.rect(wb, (48, 28, 14), (0, 3, 16, 13), border_radius=1)
-        pygame.draw.rect(wb, (185, 125, 65), (1, 4, 14, 4))
+        # Tabletop frame & surface
+        pygame.draw.rect(wb, (48, 28, 14), (0, 3, 16, 5), border_radius=1)
+        pygame.draw.rect(wb, (185, 125, 65), (1, 4, 14, 3))
         pygame.draw.line(wb, (225, 175, 110), (1, 4), (14, 4), 1)
-        pygame.draw.rect(wb, (145, 92, 45), (2, 8, 3, 7))
-        pygame.draw.rect(wb, (145, 92, 45), (11, 8, 3, 7))
-        pygame.draw.rect(wb, (120, 75, 38), (4, 11, 8, 2))
-        pygame.draw.rect(wb, (160, 170, 185), (13, 4, 3, 3))
+        # Left leg (frame + wood fill)
+        pygame.draw.rect(wb, (48, 28, 14), (2, 8, 3, 8))
+        pygame.draw.rect(wb, (145, 92, 45), (2, 8, 2, 7))
+        # Right leg (frame + wood fill)
+        pygame.draw.rect(wb, (48, 28, 14), (11, 8, 3, 8))
+        pygame.draw.rect(wb, (145, 92, 45), (12, 8, 2, 7))
+        # Lower tool shelf / stretcher
+        pygame.draw.rect(wb, (48, 28, 14), (4, 11, 8, 3))
+        pygame.draw.rect(wb, (120, 75, 38), (5, 11, 6, 2))
+        # Iron vise clamp on right edge
+        pygame.draw.rect(wb, (160, 170, 185), (13, 3, 3, 3))
         self.tiles[TILE_WORK_BENCH] = wb
 
         # Domed cobblestone smelting furnace with roaring firebox (matching item icon)
@@ -6979,6 +6989,278 @@ class AssetFactory:
                                 pygame.image.save(c_surf, c_path)
             except Exception:
                 pass
+
+    def _generate_skill_icons(self):
+        """
+        Procedurally generates 32x32 crisp RPG pixel art skill icons for all 10 skills
+        (both standard and evolved forms), with dual-tone engraved borders and thematic emblems.
+        """
+        def make_base_frame(bg_dark, bg_light, border_primary, border_outer=(15, 18, 28)):
+            s = pygame.Surface((32, 32), pygame.SRCALPHA)
+            # Outer dark border
+            pygame.draw.rect(s, border_outer, (0, 0, 32, 32), border_radius=5)
+            # Metallic/thematic inner frame
+            pygame.draw.rect(s, border_primary, (1, 1, 30, 30), border_radius=4)
+            # Gradient fill background
+            for y in range(3, 29):
+                t = (y - 3) / 26.0
+                col = (
+                    int(bg_dark[0] * (1.0 - t) + bg_light[0] * t),
+                    int(bg_dark[1] * (1.0 - t) + bg_light[1] * t),
+                    int(bg_dark[2] * (1.0 - t) + bg_light[2] * t)
+                )
+                pygame.draw.line(s, col, (3, y), (28, y))
+            # Corner rivets/highlights
+            s.set_at((2, 2), (255, 255, 230))
+            s.set_at((29, 2), (255, 255, 230))
+            s.set_at((2, 29), (180, 160, 120))
+            s.set_at((29, 29), (180, 160, 120))
+            return s
+
+        # 1. Power Slash / Cataclysmic Cleave
+        ps = make_base_frame((55, 30, 20), (95, 45, 25), (255, 190, 60))
+        # Sword blade diagonally
+        pygame.draw.line(ps, (240, 245, 255), (8, 23), (23, 8), 3)
+        pygame.draw.line(ps, (255, 255, 255), (8, 23), (23, 8), 1)
+        # Golden crossguard and hilt
+        pygame.draw.line(ps, (255, 215, 60), (6, 21), (10, 25), 2)
+        pygame.draw.line(ps, (160, 90, 40), (6, 25), (4, 27), 2)
+        # Slicing motion arc
+        pygame.draw.arc(ps, (255, 230, 100), (9, 5, 18, 18), 0.2, 1.8, 2)
+        self.skill_icons["power_slash"] = ps
+
+        cc = make_base_frame((80, 15, 20), (140, 25, 30), (255, 230, 80))
+        # Colossal radiant ancient cleave
+        pygame.draw.line(cc, (255, 90, 90), (6, 25), (25, 6), 4)
+        pygame.draw.line(cc, (255, 255, 255), (7, 24), (25, 6), 2)
+        pygame.draw.polygon(cc, (255, 215, 60), [(5, 21), (11, 27), (8, 28), (4, 23)])
+        # Cataclysmic dual fiery arc waves
+        pygame.draw.arc(cc, (255, 220, 50), (6, 4, 22, 22), 0.0, 2.2, 2)
+        pygame.draw.arc(cc, (255, 80, 60), (8, 6, 18, 18), 0.1, 2.0, 1)
+        self.skill_icons["cataclysmic_cleave"] = cc
+
+        # 2. Whirlwind / Tempest Cyclone
+        ww = make_base_frame((20, 45, 75), (40, 85, 130), (100, 200, 255))
+        # Spinning vortex spirals
+        pygame.draw.ellipse(ww, (180, 235, 255), (5, 9, 22, 14), 2)
+        pygame.draw.ellipse(ww, (255, 255, 255), (8, 12, 16, 8), 2)
+        # Twin curved wind blades
+        pygame.draw.line(ww, (255, 255, 255), (6, 16), (12, 10), 2)
+        pygame.draw.line(ww, (255, 255, 255), (26, 16), (20, 22), 2)
+        self.skill_icons["whirlwind"] = ww
+
+        tc = make_base_frame((15, 55, 75), (30, 110, 150), (120, 245, 255))
+        # Multi-layer storm cyclone
+        pygame.draw.ellipse(tc, (210, 245, 255), (4, 7, 24, 18), 2)
+        pygame.draw.ellipse(tc, (120, 220, 255), (7, 10, 18, 12), 2)
+        pygame.draw.circle(tc, (255, 255, 255), (16, 16), 3)
+        # Electric lightning arcs through storm
+        pygame.draw.line(tc, (255, 245, 100), (9, 7), (13, 13), 2)
+        pygame.draw.line(tc, (255, 245, 100), (13, 13), (22, 11), 2)
+        pygame.draw.line(tc, (255, 245, 100), (18, 17), (23, 24), 2)
+        self.skill_icons["tempest_cyclone"] = tc
+
+        # 3. Swift Dash / Phantom Dash
+        sd = make_base_frame((25, 45, 55), (45, 80, 95), (110, 230, 200))
+        # Speed boots / forward sonic dash trail
+        for off in range(3):
+            alpha_col = (130 + off * 40, 220, 210)
+            pygame.draw.polygon(sd, alpha_col, [
+                (7 + off * 5, 21), (14 + off * 5, 16), (7 + off * 5, 11)
+            ])
+        pygame.draw.line(sd, (255, 255, 255), (5, 16), (25, 16), 2)
+        self.skill_icons["dash"] = sd
+
+        pd = make_base_frame((40, 20, 65), (75, 35, 120), (220, 140, 255))
+        # Phantom rift shadows & celestial warp chevron
+        for off in range(3):
+            pcol = (190 + off * 25, 100 + off * 40, 255)
+            pygame.draw.polygon(pd, pcol, [
+                (6 + off * 6, 22), (16 + off * 6, 16), (6 + off * 6, 10)
+            ])
+        pygame.draw.line(pd, (255, 255, 255), (4, 16), (27, 16), 2)
+        pygame.draw.circle(pd, (255, 230, 255), (24, 16), 3)
+        self.skill_icons["phantom_dash"] = pd
+
+        # 4. Fireball / Inferno Blast
+        fb = make_base_frame((70, 25, 15), (120, 45, 20), (255, 140, 40))
+        # Blazing meteor fireball core
+        pygame.draw.circle(fb, (255, 90, 20), (16, 16), 9)
+        pygame.draw.circle(fb, (255, 190, 40), (16, 16), 6)
+        pygame.draw.circle(fb, (255, 255, 200), (16, 16), 3)
+        # Flame tendrils
+        pygame.draw.line(fb, (255, 120, 30), (16, 7), (16, 3), 2)
+        pygame.draw.line(fb, (255, 120, 30), (22, 10), (26, 6), 2)
+        pygame.draw.line(fb, (255, 120, 30), (10, 10), (6, 6), 2)
+        self.skill_icons["fireball"] = fb
+
+        ib = make_base_frame((85, 20, 15), (150, 40, 20), (255, 215, 60))
+        # Inferno eruption core with solar crown
+        pygame.draw.circle(ib, (255, 60, 20), (16, 16), 11)
+        pygame.draw.circle(ib, (255, 160, 30), (16, 16), 8)
+        pygame.draw.circle(ib, (255, 230, 80), (16, 16), 5)
+        pygame.draw.circle(ib, (255, 255, 255), (16, 16), 2)
+        for ang in range(8):
+            a_rad = ang * (math.pi / 4.0)
+            fx = int(16 + math.cos(a_rad) * 12)
+            fy = int(16 + math.sin(a_rad) * 12)
+            pygame.draw.circle(ib, (255, 200, 50), (fx, fy), 2)
+        self.skill_icons["inferno_blast"] = ib
+
+        # 5. Earth Slam / Tectonic Rupture
+        es = make_base_frame((45, 35, 25), (80, 60, 40), (190, 150, 90))
+        # Heavy stone warhammer impacting fractured ground
+        pygame.draw.rect(es, (160, 150, 140), (10, 7, 12, 8), border_radius=2)
+        pygame.draw.rect(es, (100, 95, 90), (11, 8, 10, 6), border_radius=1)
+        pygame.draw.line(es, (130, 90, 45), (16, 15), (16, 24), 3)
+        # Ground seismic fissures
+        pygame.draw.line(es, (235, 180, 80), (7, 24), (16, 22), 2)
+        pygame.draw.line(es, (235, 180, 80), (16, 22), (25, 24), 2)
+        pygame.draw.line(es, (255, 220, 120), (16, 22), (16, 27), 2)
+        self.skill_icons["earth_slam"] = es
+
+        tr = make_base_frame((55, 28, 18), (100, 50, 25), (255, 180, 60))
+        # Magmatic tectonic fissure rupture
+        pygame.draw.polygon(tr, (200, 180, 160), [(7, 8), (25, 8), (21, 14), (11, 14)])
+        pygame.draw.line(tr, (140, 85, 40), (16, 14), (16, 24), 3)
+        # Glowing magma crags erupting outward
+        pygame.draw.line(tr, (255, 80, 30), (5, 23), (12, 21), 3)
+        pygame.draw.line(tr, (255, 200, 50), (12, 21), (16, 20), 3)
+        pygame.draw.line(tr, (255, 200, 50), (16, 20), (20, 21), 3)
+        pygame.draw.line(tr, (255, 80, 30), (20, 21), (27, 23), 3)
+        pygame.draw.circle(tr, (255, 240, 120), (16, 20), 3)
+        self.skill_icons["tectonic_rupture"] = tr
+
+        # 6. Shield Bash / Aegis Bulwark
+        sb = make_base_frame((30, 40, 60), (55, 75, 105), (130, 180, 230))
+        # Sturdy knight kite shield with impact shock rings
+        pygame.draw.polygon(sb, (180, 195, 215), [(16, 7), (24, 11), (22, 21), (16, 26), (10, 21), (8, 11)])
+        pygame.draw.polygon(sb, (80, 110, 150), [(16, 9), (22, 12), (20, 20), (16, 24), (12, 20), (10, 12)])
+        pygame.draw.circle(sb, (255, 215, 60), (16, 16), 3)
+        # Impact bash lines
+        pygame.draw.arc(sb, (255, 255, 255), (19, 9, 10, 14), -0.8, 0.8, 2)
+        self.skill_icons["shield_bash"] = sb
+
+        ab = make_base_frame((45, 35, 70), (85, 65, 130), (255, 215, 60))
+        # Radiant golden Aegis tower shield with celestial wing trims
+        pygame.draw.polygon(ab, (255, 215, 60), [(16, 5), (26, 10), (24, 22), (16, 28), (8, 22), (6, 10)])
+        pygame.draw.polygon(ab, (45, 30, 65), [(16, 8), (23, 12), (21, 20), (16, 25), (11, 20), (9, 12)])
+        # Sacred crest cross
+        pygame.draw.line(ab, (255, 235, 130), (16, 11), (16, 22), 2)
+        pygame.draw.line(ab, (255, 235, 130), (12, 15), (20, 15), 2)
+        pygame.draw.circle(ab, (255, 255, 255), (16, 15), 2)
+        self.skill_icons["aegis_bulwark"] = ab
+
+        # 7. Meteor Strike / Grand Starfall
+        ms = make_base_frame((70, 20, 15), (130, 45, 25), (255, 130, 40))
+        # Diagonal plunging meteor with flame trail
+        pygame.draw.line(ms, (255, 180, 40), (25, 7), (12, 20), 4)
+        pygame.draw.line(ms, (255, 255, 200), (24, 8), (13, 19), 2)
+        pygame.draw.circle(ms, (255, 80, 20), (12, 20), 6)
+        pygame.draw.circle(ms, (255, 230, 80), (12, 20), 4)
+        pygame.draw.circle(ms, (255, 255, 255), (12, 20), 2)
+        self.skill_icons["meteor"] = ms
+
+        gs = make_base_frame((60, 20, 50), (120, 35, 95), (255, 220, 80))
+        # Grand cosmic celestial starfall impact
+        pygame.draw.line(gs, (120, 220, 255), (26, 6), (11, 21), 4)
+        pygame.draw.line(gs, (255, 245, 180), (25, 7), (12, 20), 2)
+        pygame.draw.circle(gs, (255, 215, 60), (11, 21), 7)
+        pygame.draw.circle(gs, (255, 255, 255), (11, 21), 4)
+        for ray in range(6):
+            ra = ray * (math.pi / 3.0)
+            rx = int(11 + math.cos(ra) * 9)
+            ry = int(21 + math.sin(ra) * 9)
+            pygame.draw.line(gs, (255, 235, 120), (11, 21), (rx, ry), 1)
+        self.skill_icons["grand_starfall"] = gs
+
+        # 8. Frost Nova / Glacial Blizzard
+        fn = make_base_frame((20, 50, 75), (45, 95, 135), (130, 225, 255))
+        # 8-direction radial snowflake crystal
+        cx, cy = 16, 16
+        for ang in range(4):
+            a_rad = ang * (math.pi / 4.0)
+            dx = math.cos(a_rad) * 9
+            dy = math.sin(a_rad) * 9
+            pygame.draw.line(fn, (215, 245, 255), (cx - dx, cy - dy), (cx + dx, cy + dy), 2)
+            pygame.draw.circle(fn, (255, 255, 255), (int(cx + dx), int(cy + dy)), 2)
+            pygame.draw.circle(fn, (255, 255, 255), (int(cx - dx), int(cy - dy)), 2)
+        pygame.draw.circle(fn, (100, 210, 255), (cx, cy), 4)
+        pygame.draw.circle(fn, (255, 255, 255), (cx, cy), 2)
+        self.skill_icons["frost_nova"] = fn
+
+        gb = make_base_frame((20, 60, 90), (35, 120, 165), (180, 245, 255))
+        # Intense glacial starburst with frozen ice spikes
+        for ang in range(8):
+            a_rad = ang * (math.pi / 4.0)
+            dx = math.cos(a_rad) * 11
+            dy = math.sin(a_rad) * 11
+            pygame.draw.line(gb, (140, 230, 255), (16, 16), (int(16 + dx), int(16 + dy)), 2)
+            pygame.draw.polygon(gb, (255, 255, 255), [
+                (int(16 + dx), int(16 + dy)),
+                (int(16 + dx * 0.7 + dy * 0.2), int(16 + dy * 0.7 - dx * 0.2)),
+                (int(16 + dx * 0.7 - dy * 0.2), int(16 + dy * 0.7 + dx * 0.2))
+            ])
+        pygame.draw.circle(gb, (255, 255, 255), (16, 16), 3)
+        self.skill_icons["glacial_blizzard"] = gb
+
+        # 9. Celestial Shield / Divine Sanctuary
+        cs = make_base_frame((55, 45, 20), (105, 85, 35), (255, 225, 90))
+        # Orbiting sacred circular mandala barrier
+        pygame.draw.circle(cs, (255, 215, 60), (16, 16), 10, 2)
+        pygame.draw.circle(cs, (120, 220, 255), (16, 16), 7, 1)
+        pygame.draw.circle(cs, (255, 255, 255), (16, 16), 3)
+        for orb in range(4):
+            oa = orb * (math.pi / 2.0)
+            ox = int(16 + math.cos(oa) * 10)
+            oy = int(16 + math.sin(oa) * 10)
+            pygame.draw.circle(cs, (255, 245, 160), (ox, oy), 2)
+        self.skill_icons["celestial_shield"] = cs
+
+        ds = make_base_frame((65, 50, 15), (130, 100, 30), (255, 240, 120))
+        # Divine sanctuary dual rotating sun mandala
+        pygame.draw.circle(ds, (255, 225, 80), (16, 16), 11, 2)
+        pygame.draw.circle(ds, (255, 245, 180), (16, 16), 8, 2)
+        for ray in range(8):
+            ra = ray * (math.pi / 4.0)
+            rx = int(16 + math.cos(ra) * 11)
+            ry = int(16 + math.sin(ra) * 11)
+            pygame.draw.circle(ds, (255, 255, 255), (rx, ry), 2)
+        pygame.draw.circle(ds, (255, 255, 255), (16, 16), 4)
+        self.skill_icons["divine_sanctuary"] = ds
+
+        # 10. Void Singularity / Event Horizon
+        vs = make_base_frame((35, 15, 55), (65, 25, 95), (180, 80, 255))
+        # Accretion vortex spiral
+        pygame.draw.circle(vs, (15, 8, 25), (16, 16), 7)
+        pygame.draw.circle(vs, (200, 90, 255), (16, 16), 8, 2)
+        for arm in range(3):
+            base_a = arm * (2.0 * math.pi / 3.0)
+            for r in range(8, 13):
+                ca = base_a + (r / 12.0) * 1.5
+                vx = int(16 + math.cos(ca) * r)
+                vy = int(16 + math.sin(ca) * r)
+                vs.set_at((vx, vy), (220, 140, 255))
+        self.skill_icons["void_singularity"] = vs
+
+        eh = make_base_frame((25, 8, 45), (55, 18, 85), (220, 110, 255))
+        # Gravitational singularity event horizon with photon sphere
+        pygame.draw.circle(eh, (10, 4, 18), (16, 16), 8)
+        pygame.draw.circle(eh, (240, 120, 255), (16, 16), 9, 2)
+        pygame.draw.ellipse(eh, (255, 215, 80), (4, 13, 24, 6), 1)
+        pygame.draw.circle(eh, (255, 255, 255), (16, 8), 2)
+        pygame.draw.circle(eh, (255, 255, 255), (16, 24), 2)
+        self.skill_icons["event_horizon"] = eh
+
+        # Export all skill icons directly to assets/skills/
+        skills_dir = os.path.join("assets", "skills")
+        os.makedirs(skills_dir, exist_ok=True)
+        for sname, s_surf in self.skill_icons.items():
+            out_file = os.path.join(skills_dir, f"{sname}.png")
+            try:
+                pygame.image.save(s_surf, out_file)
+            except Exception as e:
+                print(f"[AssetFactory] Error saving skill icon {sname}: {e}")
 
     # ==========================================================================
     # 9. DISK EXPORT ENGINE & UNIQUE ASSETS CHECKPOINT TRACKER
