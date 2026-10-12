@@ -1294,7 +1294,7 @@ class CombatManager:
             if random.random() < 0.6:
                 self._spawn_loot_drop("egg", 1, mx, my)
             return
-        elif m_type == "pato" or "Duck" in m_name or "Pato" in m_name:
+        elif m_type == "pato" or m_type.startswith("pato_") or "Duck" in m_name or "Pato" in m_name:
             self._spawn_loot_drop("raw_duck_meat", random.randint(1, 2), mx, my)
             self._spawn_loot_drop("feather", random.randint(1, 3), mx, my)
             if random.random() < 0.6:

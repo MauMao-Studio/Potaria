@@ -783,11 +783,16 @@ class ManokMob(PassiveAnimalMob):
 
 
 class PatoMob(PassiveAnimalMob):
-    """Native Philippine Duck / Itik with buoyant surface swimming."""
+    """Native Philippine Duck / Pato (Muscovy duck with iconic red caruncles and natural plumage variants)."""
     mob_type = "pato"
-    def __init__(self, x, y, asset_factory):
-        super().__init__(x, y, width=18, height=16, max_hp=22, name="Pato", speed=1.1, sprite_key="pato", asset_factory=asset_factory)
+    def __init__(self, x, y, asset_factory, variant=None):
+        if variant is None:
+            variant = random.choice(["pato", "pato_pied", "pato_dark", "pato_white"])
+        super().__init__(x, y, width=18, height=16, max_hp=22, name="Pato", speed=1.1, sprite_key=variant, asset_factory=asset_factory)
         self.mob_type = "pato"
+        self.variant = variant
+        if not self.walk_frames or len(self.walk_frames) < 4:
+            self.walk_frames = self.asset_factory.mobs.get("pato", self.walk_frames)
 
     def update(self, dt, world, player):
         super().update(dt, world, player)
@@ -1663,6 +1668,9 @@ MOB_TYPE_REGISTRY = {
     "goblin": Goblin,
     "manok": ManokMob,
     "pato": PatoMob,
+    "pato_pied": lambda x, y, af: PatoMob(x, y, af, variant="pato_pied"),
+    "pato_dark": lambda x, y, af: PatoMob(x, y, af, variant="pato_dark"),
+    "pato_white": lambda x, y, af: PatoMob(x, y, af, variant="pato_white"),
     "baboy": BaboyMob,
     "kalabaw": KalabawMob,
     "kambing": KambingMob,

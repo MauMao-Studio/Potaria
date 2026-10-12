@@ -5608,21 +5608,150 @@ class AssetFactory:
                 frames.append(s)
             return frames
 
-        def make_pato_frames():
+        def make_muscovy_pato_frames(variant="pato"):
             frames = []
             for i in range(4):
-                s = pygame.Surface((20, 18), pygame.SRCALPHA)
-                waddle = 1 if i % 2 == 1 else 0
-                leg_dy = (i % 2) * 2
-                feather_y = 1 if i in (2, 3) else 0
-                pygame.draw.circle(s, (35, 95, 60), (13, 5 + waddle), 4)
-                pygame.draw.polygon(s, (245, 145, 30), [(16, 5 + waddle), (19, 6 + waddle), (16, 7 + waddle)])
-                s.set_at((14, 4 + waddle), (20, 20, 20))
-                pygame.draw.ellipse(s, (115, 80, 50), (4, 7, 12, 7))
-                s.set_at((12, 8 + waddle), (240, 240, 240))
-                s.set_at((6 + i, 9 + feather_y), (135, 95, 60))
-                pygame.draw.line(s, (240, 130, 30), (7, 13), (6, 17 - leg_dy), 1)
-                pygame.draw.line(s, (240, 130, 30), (12, 13), (13, 17 + leg_dy - 2), 1)
+                s = pygame.Surface((22, 18), pygame.SRCALPHA)
+                waddle_y = 1 if i in (1, 3) else 0
+                neck_dx = 1 if i in (1, 2) else 0
+                peck_dy = 1 if i == 3 else 0
+                tail_dy = 1 if i == 1 else (-1 if i == 3 else 0)
+                leg_l_lift = 2 if i == 1 else 0
+                leg_r_lift = 2 if i == 3 else (1 if i == 2 else 0)
+
+                if variant == "pato":  # Standard White Muscovy with black tail/wing accent (Center duck in photo)
+                    body_main = (252, 250, 248)
+                    body_shade = (216, 220, 230)
+                    wing_accent = (40, 42, 50)
+                    tail_col = (36, 38, 46)
+                    tail_shade = (22, 24, 30)
+                    caruncle_base = (220, 32, 38)
+                    caruncle_bump = (250, 72, 78)
+                    caruncle_shade = (165, 20, 25)
+                    bill_base = (244, 180, 175)
+                    bill_shade = (212, 142, 138)
+                    leg_col = (242, 145, 35)
+                    speckled_chest = False
+                elif variant == "pato_pied":  # Pied / Magpie Muscovy: White with black piebald patches (Right duck in photo)
+                    body_main = (250, 248, 245)
+                    body_shade = (212, 216, 225)
+                    wing_accent = (38, 40, 48)
+                    tail_col = (34, 36, 42)
+                    tail_shade = (20, 22, 26)
+                    caruncle_base = (222, 35, 40)
+                    caruncle_bump = (252, 75, 82)
+                    caruncle_shade = (168, 22, 28)
+                    bill_base = (238, 172, 168)
+                    bill_shade = (205, 135, 130)
+                    leg_col = (236, 148, 42)
+                    speckled_chest = False
+                elif variant == "pato_dark":  # Dark Iridescent Muscovy with speckled white breast (Left duck in photo)
+                    body_main = (30, 34, 40)
+                    body_shade = (18, 20, 26)
+                    wing_accent = (25, 40, 38)  # Beetle-green sheen
+                    tail_col = (22, 24, 30)
+                    tail_shade = (14, 15, 20)
+                    caruncle_base = (228, 26, 32)
+                    caruncle_bump = (255, 65, 72)
+                    caruncle_shade = (160, 18, 22)
+                    bill_base = (88, 88, 98)
+                    bill_shade = (58, 58, 68)
+                    leg_col = (50, 52, 60)
+                    speckled_chest = True
+                else:  # pato_white: Pure White Muscovy (Top-left duck in photo)
+                    body_main = (255, 255, 255)
+                    body_shade = (220, 226, 238)
+                    wing_accent = (240, 245, 252)
+                    tail_col = (252, 252, 255)
+                    tail_shade = (212, 218, 230)
+                    caruncle_base = (224, 30, 36)
+                    caruncle_bump = (252, 70, 76)
+                    caruncle_shade = (170, 22, 26)
+                    bill_base = (246, 182, 178)
+                    bill_shade = (216, 146, 142)
+                    leg_col = (245, 148, 32)
+                    speckled_chest = False
+
+                # 1. Broad Horizontal Tail Feathers
+                ty = 7 + waddle_y + tail_dy
+                pygame.draw.polygon(s, tail_col, [(5, 8 + waddle_y), (1, ty), (0, ty + 3), (4, 11 + waddle_y)])
+                pygame.draw.line(s, tail_shade, (2, ty + 1), (5, 9 + waddle_y), 1)
+                pygame.draw.line(s, tail_col, (0, ty + 2), (3, ty + 4), 1)
+
+                # 2. Main Body (waterfowl oval torso)
+                by = 6 + waddle_y
+                pygame.draw.ellipse(s, body_main, (4, by, 13, 8))
+                pygame.draw.ellipse(s, body_shade, (4, by + 3, 12, 5))
+                pygame.draw.ellipse(s, body_main, (5, by + 1, 11, 6))
+
+                # Speckled white chest for dark variant
+                if speckled_chest:
+                    for sx, sy in [(13, by + 2), (14, by + 3), (15, by + 4), (13, by + 4), (14, by + 5)]:
+                        s.set_at((sx, sy), (245, 245, 242))
+
+                # Piebald patches for pied variant
+                if variant == "pato_pied":
+                    pygame.draw.ellipse(s, wing_accent, (6, by + 1, 6, 4))
+                    s.set_at((5, by + 3), tail_shade)
+                    s.set_at((12, by + 2), wing_accent)
+
+                # 3. Wing Mantle
+                wy = by + 1
+                pygame.draw.ellipse(s, body_main if variant != "pato_dark" else wing_accent, (6, wy, 8, 5))
+                if variant in ("pato", "pato_pied"):
+                    pygame.draw.polygon(s, wing_accent, [(5, wy + 2), (3, wy + 4), (6, wy + 4)])
+                    pygame.draw.line(s, tail_shade, (4, wy + 3), (6, wy + 4), 1)
+                elif variant == "pato_white":
+                    pygame.draw.line(s, body_shade, (6, wy + 3), (12, wy + 3), 1)
+                elif variant == "pato_dark":
+                    pygame.draw.line(s, (45, 60, 58), (7, wy + 2), (12, wy + 2), 1)
+
+                # 4. Neck & Breast (graceful upright waterfowl neck)
+                nx = 13 + neck_dx
+                ny = 4 + waddle_y + peck_dy
+                pygame.draw.rect(s, body_main, (nx, ny, 4, 6), border_radius=1)
+                pygame.draw.ellipse(s, body_main, (nx, ny + 3, 4, 5))
+
+                # 5. Head
+                hx = nx
+                hy = ny - 3
+                pygame.draw.circle(s, body_main, (hx + 2, hy + 2), 3)
+
+                # 6. Iconic RED CARUNCLES (bumpy fleshy mask around eye, crown, and bill base)
+                pygame.draw.rect(s, caruncle_base, (hx + 1, hy + 1, 4, 4), border_radius=1)
+                s.set_at((hx + 1, hy), caruncle_bump)
+                s.set_at((hx + 2, hy), caruncle_base)
+                s.set_at((hx + 3, hy), caruncle_bump)
+                s.set_at((hx + 4, hy + 1), caruncle_shade)
+                s.set_at((hx + 4, hy + 3), caruncle_bump)
+                s.set_at((hx + 2, hy + 4), caruncle_shade)
+
+                # Eye: dark pupil with tiny catchlight
+                s.set_at((hx + 2, hy + 2), (20, 15, 15))
+                s.set_at((hx + 2, hy + 1), (255, 245, 245))
+
+                # 7. Bill / Beak (flesh-pink with dark nostril/tip)
+                bx = hx + 4
+                by_bill = hy + 2
+                pygame.draw.polygon(s, bill_base, [(bx, by_bill), (bx + 3, by_bill + 1), (bx, by_bill + 2)])
+                pygame.draw.line(s, bill_shade, (bx, by_bill + 2), (bx + 3, by_bill + 1), 1)
+                s.set_at((bx + 1, by_bill + 1), (55, 45, 48))
+
+                # 8. Webbed Legs & Feet
+                leg_l_x = 8
+                foot_l_y = 17 - leg_l_lift
+                pygame.draw.line(s, leg_col, (leg_l_x, 13 + waddle_y), (leg_l_x, foot_l_y), 2)
+                pygame.draw.line(s, leg_col, (leg_l_x - 1, foot_l_y), (leg_l_x + 2, foot_l_y), 1)
+                s.set_at((leg_l_x + 3, foot_l_y), leg_col)
+
+                leg_r_x = 12
+                foot_r_y = 17 - leg_r_lift
+                pygame.draw.line(s, leg_col, (leg_r_x, 13 + waddle_y), (leg_r_x + 1, foot_r_y), 2)
+                pygame.draw.line(s, leg_col, (leg_r_x, foot_r_y), (leg_r_x + 3, foot_r_y), 1)
+                s.set_at((leg_r_x + 4, foot_r_y), leg_col)
+
+                var_id = {"pato": 0, "pato_pied": 1, "pato_dark": 2, "pato_white": 3}[variant]
+                s.set_at((0, 17 - i), (caruncle_base[0], caruncle_base[1], (caruncle_base[2] + var_id * 10) % 256, 255))
                 frames.append(s)
             return frames
 
@@ -5685,7 +5814,10 @@ class AssetFactory:
             return frames
 
         self.mobs["manok"] = make_manok_frames()
-        self.mobs["pato"] = make_pato_frames()
+        self.mobs["pato"] = make_muscovy_pato_frames("pato")
+        self.mobs["pato_pied"] = make_muscovy_pato_frames("pato_pied")
+        self.mobs["pato_dark"] = make_muscovy_pato_frames("pato_dark")
+        self.mobs["pato_white"] = make_muscovy_pato_frames("pato_white")
         self.mobs["baboy"] = make_baboy_frames()
         self.mobs["kalabaw"] = make_kalabaw_frames()
         self.mobs["kambing"] = make_kambing_frames()

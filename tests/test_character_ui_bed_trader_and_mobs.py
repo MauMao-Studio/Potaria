@@ -30,6 +30,7 @@ from src.ui.inventory import Inventory, ITEM_REGISTRY
 from src.ui.npc_dialogue import NPCDialogueWindow
 from src.entities.player import Player
 from src.entities.npc import TownNPC
+from src.entities.mob import PatoMob
 from src.audio.sound_effects import SoundManager
 
 
@@ -148,3 +149,43 @@ def test_asset_factory_prepopulates_all_registry_items():
     for pinoy_food in ["chicken_adobo", "sinigang", "raw_bangus", "calamansi", "lechon"]:
         assert pinoy_food in af.items
         assert af.items[pinoy_food] is not None
+
+
+def test_muscovy_pato_variants_and_animations():
+    """Verify authentic Philippine Muscovy Duck (pato) variants, animations, and caruncle features."""
+    af = AssetFactory()
+    variants = ["pato", "pato_pied", "pato_dark", "pato_white"]
+    
+    for var in variants:
+        assert var in af.mobs, f"Missing pato variant {var} in AssetFactory.mobs"
+        frames = af.mobs[var]
+        assert len(frames) == 4, f"Variant {var} must have 4 animated frames, got {len(frames)}"
+        
+        # Check files on disk
+        for i in range(4):
+            path = os.path.join("assets", "mobs", f"{var}_{i}.png")
+            assert os.path.isfile(path), f"Missing {path} on disk"
+            assert os.path.getsize(path) > 0, f"File {path} is empty"
+
+        # Verify red caruncle mask pixels are present in each frame
+        for i, frame in enumerate(frames):
+            has_red_caruncle = False
+            for x in range(frame.get_width()):
+                for y in range(frame.get_height()):
+                    r, g, b, a = frame.get_at((x, y))
+                    if a > 0 and r > 180 and g < 90 and b < 90:
+                        has_red_caruncle = True
+                        break
+                if has_red_caruncle:
+                    break
+            assert has_red_caruncle, f"Frame {var}_{i} is missing the iconic red caruncle mask"
+
+    # Verify PatoMob instantiates with variants
+    pato_mob = PatoMob(100, 100, af)
+    assert pato_mob.variant in variants
+    assert len(pato_mob.walk_frames) == 4
+
+    pato_dark = PatoMob(100, 100, af, variant="pato_dark")
+    assert pato_dark.variant == "pato_dark"
+    assert pato_dark.sprite_key == "pato_dark"
+
