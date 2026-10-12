@@ -322,18 +322,26 @@ class ChestStorageWindow:
             if getattr(item, "affix_slots", 0) > 0:
                 aff_cnt = len(getattr(item, "affixes", []))
                 lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
+            from src.ui.theme import wrap_text_lines
             for aff in getattr(item, "affixes", []):
                 from src.rpg.enhancement import GOD_TIER_AFFIXES
                 desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
-                lines.append((f"★ {aff}: {desc}", (255, 230, 90), self.font_sm))
+                for al in wrap_text_lines(f"★ {aff}: {desc}", self.font_sm, 300):
+                    lines.append((al, (255, 230, 90), self.font_sm))
             desc = data.get("desc")
             if desc:
-                lines.append((desc, (200, 210, 225), self.font_sm))
+                for dl in wrap_text_lines(desc, self.font_sm, 300):
+                    lines.append((dl, (200, 210, 225), self.font_sm))
 
-        tw = max(self.font_sm.size(text)[0] for text, _, _ in lines) + 24
+        content_w = max(self.font_sm.size(text)[0] for text, _, _ in lines)
+        tw = max(160, min(330, content_w + 24))
         th = sum(16 for _ in lines) + 12
         tx = min(SCREEN_WIDTH - tw - 10, max(10, mx + 14))
-        ty = min(SCREEN_HEIGHT - th - 10, max(10, my + 14))
+        ty = my + 14
+        if ty + th > SCREEN_HEIGHT - 10:
+            ty = max(10, my - th - 8)
+        if ty < 10:
+            ty = 10
 
         bg_rect = pygame.Rect(tx, ty, tw, th)
         t_surf = pygame.Surface((tw, th), pygame.SRCALPHA)

@@ -223,11 +223,11 @@ class HUD:
         skills = list(player.skills.hotkey_bindings.items()) if hasattr(player.skills, "hotkey_bindings") else [
             ("Q", "power_slash"), ("F", "whirlwind"), ("V", "dash"), ("R", "fireball")
         ]
-        bw, bh = 46, 54
+        bw, bh = 54, 60
         gap = 8
         total_w = len(skills) * (bw + gap) - gap
         start_x = (SCREEN_WIDTH - total_w) // 2
-        start_y = SCREEN_HEIGHT - 62
+        start_y = SCREEN_HEIGHT - 68
 
         for i, (key, s_id) in enumerate(skills):
             sx = start_x + i * (bw + gap)
@@ -237,7 +237,7 @@ class HUD:
             cd_left = player.skills.cooldowns.get(s_id, 0.0) if s_id else 0.0
 
             # Slot box & backdrop
-            pygame.draw.rect(target_surf, (18, 24, 38, 235), rect, border_radius=6)
+            pygame.draw.rect(target_surf, (18, 24, 38, 240), rect, border_radius=6)
             inner_rect = pygame.Rect(sx + 2, start_y + 2, bw - 4, bh - 4)
             pygame.draw.rect(target_surf, (26, 34, 50, 220), inner_rect, border_radius=5)
 
@@ -251,37 +251,24 @@ class HUD:
                 border_col = (55, 65, 82)
             pygame.draw.rect(target_surf, border_col, rect, 2 if is_evolved else 1, border_radius=6)
 
-            # Header row: Hotkey Badge (top-left) & Level Badge (top-right)
-            # 1. Hotkey Badge
-            k_badge = pygame.Rect(sx + 4, start_y + 4, 15, 13)
+            # 1. Top-Left: Hotkey Badge (strictly separated from level)
+            k_badge = pygame.Rect(sx + 3, start_y + 3, 16, 13)
             pygame.draw.rect(target_surf, (12, 16, 26, 240), k_badge, border_radius=3)
             pygame.draw.rect(target_surf, (95, 125, 165) if is_learned else (45, 52, 65), k_badge, 1, border_radius=3)
             k_txt = self.font_sm.render(key, True, (255, 220, 70) if is_learned else (120, 130, 145))
             target_surf.blit(k_txt, (k_badge.centerx - k_txt.get_width() // 2, k_badge.centery - k_txt.get_height() // 2))
 
-            # 2. Skill Level Badge
-            if is_learned and hasattr(player.skills, "get_skill_level"):
-                lvl = player.skills.get_skill_level(s_id)
-                lvl_str = f"Lv.{lvl}"
-                lvl_txt = self.font_sm.render(lvl_str, True, (255, 225, 85))
-                lw = lvl_txt.get_width()
-                l_badge = pygame.Rect(sx + bw - lw - 6, start_y + 4, lw + 4, 13)
-                pygame.draw.rect(target_surf, (12, 16, 26, 240), l_badge, border_radius=3)
-                pygame.draw.rect(target_surf, (185, 150, 45), l_badge, 1, border_radius=3)
-                target_surf.blit(lvl_txt, (l_badge.x + 2, l_badge.centery - lvl_txt.get_height() // 2))
-            else:
-                l_badge = pygame.Rect(sx + bw - 15, start_y + 4, 11, 13)
-                pygame.draw.rect(target_surf, (12, 16, 26, 200), l_badge, border_radius=3)
-                pygame.draw.rect(target_surf, (45, 52, 65), l_badge, 1, border_radius=3)
-                lock_txt = self.font_sm.render("-", True, (85, 95, 110))
-                target_surf.blit(lock_txt, (l_badge.centerx - lock_txt.get_width() // 2, l_badge.centery - lock_txt.get_height() // 2))
+            # 2. Top-Right: Evolved Crest / Star Badge (if evolved)
+            if is_evolved:
+                evo_badge = pygame.Rect(sx + bw - 18, start_y + 3, 15, 13)
+                pygame.draw.rect(target_surf, (42, 34, 10, 240), evo_badge, border_radius=3)
+                pygame.draw.rect(target_surf, (255, 215, 60), evo_badge, 1, border_radius=3)
+                evo_txt = self.font_sm.render("*", True, (255, 225, 80))
+                target_surf.blit(evo_txt, (evo_badge.centerx - evo_txt.get_width() // 2, evo_badge.centery - evo_txt.get_height() // 2))
 
-            # Subtle horizontal separator between badge header and icon
-            pygame.draw.line(target_surf, (40, 50, 70), (sx + 4, start_y + 19), (sx + bw - 5, start_y + 19), 1)
-
-            # Icon Area: 30x30 centered below header
+            # 3. Center Area: 30x30 Skill Icon
             icon_x = sx + (bw - 30) // 2
-            icon_y = start_y + 21
+            icon_y = start_y + 16
             icon_drawn = False
 
             if s_id and hasattr(self.asset_factory, "skill_icons"):
@@ -323,9 +310,27 @@ class HUD:
                 cd_txt = self.font_sm.render(f"{cd_left:.1f}", True, (255, 255, 255))
                 shd_txt = self.font_sm.render(f"{cd_left:.1f}", True, (0, 0, 0))
                 tx = sx + bw // 2 - cd_txt.get_width() // 2
-                ty = icon_y + 8
+                ty = icon_y + 7
                 target_surf.blit(shd_txt, (tx + 1, ty + 1))
                 target_surf.blit(cd_txt, (tx, ty))
+
+            # 4. Bottom Row: Level Badge (Centered at bottom footer, completely separated from hotkey)
+            lvl_y = start_y + bh - 13
+            if is_learned and hasattr(player.skills, "get_skill_level"):
+                lvl = player.skills.get_skill_level(s_id)
+                lvl_str = f"Lv.{lvl}"
+                lvl_txt = self.font_sm.render(lvl_str, True, (255, 225, 85))
+                lw = lvl_txt.get_width()
+                l_badge = pygame.Rect(sx + (bw - (lw + 6)) // 2, lvl_y, lw + 6, 11)
+                pygame.draw.rect(target_surf, (12, 16, 26, 240), l_badge, border_radius=3)
+                pygame.draw.rect(target_surf, (185, 150, 45), l_badge, 1, border_radius=3)
+                target_surf.blit(lvl_txt, (l_badge.x + 3, l_badge.centery - lvl_txt.get_height() // 2))
+            else:
+                l_badge = pygame.Rect(sx + (bw - 16) // 2, lvl_y, 16, 11)
+                pygame.draw.rect(target_surf, (12, 16, 26, 200), l_badge, border_radius=3)
+                pygame.draw.rect(target_surf, (45, 52, 65), l_badge, 1, border_radius=3)
+                lock_txt = self.font_sm.render("-", True, (85, 95, 110))
+                target_surf.blit(lock_txt, (l_badge.centerx - lock_txt.get_width() // 2, l_badge.centery - lock_txt.get_height() // 2))
 
     def _render_inventory(self, target_surf, inventory, mouse_x, mouse_y, player=None):
         start_x = 20
@@ -716,6 +721,7 @@ class HUD:
                 lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
 
             # 4. Special Effects (Bulleted for upper rarities: Epic, Mythic, Legendary, Ancient)
+            from src.ui.theme import wrap_text_lines
             effects = data.get("effects", [])
             iid = item.item_id.lower()
             rarity_str = str(rarity).lower()
@@ -723,28 +729,35 @@ class HUD:
             if "wood" not in iid and is_high_tier:
                 if effects:
                     for eff in effects:
-                        lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
+                        for el in wrap_text_lines(f"• {eff}", self.font_sm, 300):
+                            lines.append((el, (100, 240, 240), self.font_sm))
                 elif data.get("special"):
-                    lines.append((f"Special: {data['special']}", (100, 240, 240), self.font_sm))
+                    for sl in wrap_text_lines(f"Special: {data['special']}", self.font_sm, 300):
+                        lines.append((sl, (100, 240, 240), self.font_sm))
 
-            # 5. Usage / Description
+            # 5. Usage / Description (Word-wrapped to prevent ultra-wide tooltips)
             desc = data.get("desc")
             if not desc or str(desc).strip() == "":
                 desc = f"A fine {rarity.title()} {cat.lower()} radiating elemental potency."
-            lines.append((desc, (215, 225, 240), self.font_sm))
+            for dl in wrap_text_lines(desc, self.font_sm, 300):
+                lines.append((dl, (215, 225, 240), self.font_sm))
 
             # 6. Lore Quote (Diablo / Torchlight style) - Only Legendary, Mythic, Ancient
             rarity_str = str(rarity).lower()
             if data.get("lore") and rarity_str in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "legendary", "mythic", "ancient"):
-                lines.append((data["lore"], (240, 205, 120), self.font_lore))
+                for ll in wrap_text_lines(data["lore"], self.font_lore, 300):
+                    lines.append((ll, (240, 205, 120), self.font_lore))
 
-        # Calculate bounding dimensions
+        # Calculate bounding dimensions with bounded max width
         rendered_surfs = [fnt.render(text, True, col) for text, col, fnt in lines]
-        tw = max(s.get_width() for s in rendered_surfs) + 20
+        content_w = max(s.get_width() for s in rendered_surfs)
+        tw = max(160, min(330, content_w + 20))
         th = sum(s.get_height() + 3 for s in rendered_surfs) + 12
 
-        tx = min(SCREEN_WIDTH - tw - 12, mx + 16)
-        ty = min(SCREEN_HEIGHT - th - 12, my + 16)
+        tx = max(10, min(SCREEN_WIDTH - tw - 12, mx + 16))
+        ty = my + 16
+        if ty + th > SCREEN_HEIGHT - 10:
+            ty = max(10, my - th - 8)
         if ty < 10:
             ty = 10
 

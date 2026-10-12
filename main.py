@@ -3153,26 +3153,40 @@ class PotariaGame:
             min_ty = base_min_ty - (base_min_ty % 4)
             max_ty = min_ty + (base_max_ty - base_min_ty) + 4
             
-            # Dynamic light sources: Miner Helmet, Torch, Radiance gear, and Glowing Projectiles
+            # Dynamic light sources: Astral Sparkles (brightest), Potato Miner Helmet (gentle cave light), Lanterns, Torches
             extra_lights = []
             held_item = self.inventory.get_active_item()
-            has_helmet = self.inventory.has_miner_helmet() or (self.player.equipment.slots.get(SLOT_HEAD) == "miner_helmet")
-            has_radiance = (
-                (hasattr(self.player, "equipment") and self.player.equipment.has_light_emitter())
+            has_miner_helm = (
+                (hasattr(self.player, "equipment") and self.player.equipment.has_miner_helmet_equipped())
+                or (self.player.equipment.slots.get(SLOT_HEAD) == "miner_helmet")
+                or self.inventory.has_miner_helmet()
+            )
+            has_astral_radiance = (
+                (hasattr(self.player, "equipment") and self.player.equipment.has_astral_radiance())
                 or (hasattr(self.player, "has_effect") and (
                     self.player.has_effect("light radiance")
                     or self.player.has_effect("celestial radiance")
                     or self.player.has_effect("astral sparkles")
+                    or self.player.has_effect("true spud radiance")
                     or self.player.has_effect("supernova")
                 ))
             )
     
-            if has_helmet or has_radiance or (held_item and held_item.item_id in ("torch", "carved_tuber_lantern", "curved_tuber_lantern", "brass_lantern", "spectral_lantern")):
-                ptx = int(self.player.center_x // SCALED_TILE)
-                pty = int(self.player.center_y // SCALED_TILE)
-                intensity = 11 if (has_helmet or has_radiance) else 9
-                rad = 7 if (has_helmet or has_radiance) else 5
-                extra_lights.append((ptx, pty, intensity, rad, False))
+            ptx = int(self.player.center_x // SCALED_TILE)
+            pty = int(self.player.center_y // SCALED_TILE)
+
+            if has_astral_radiance:
+                # Astral Sparkles / Crown of Potaria: Glorious bright celestial radiance
+                extra_lights.append((ptx, pty, 13, 8, False))
+            elif has_miner_helm:
+                # Potato Miner Helmet: Gentle headlamp illumination around player (moderate, not too bright)
+                extra_lights.append((ptx, pty, 8, 5, False))
+            elif held_item and held_item.item_id in ("carved_tuber_lantern", "curved_tuber_lantern", "brass_lantern", "spectral_lantern"):
+                # Portable Lantern: Steady warm light
+                extra_lights.append((ptx, pty, 9, 5, False))
+            elif held_item and held_item.item_id == "torch":
+                # Handheld Torch: Base light
+                extra_lights.append((ptx, pty, 7, 4, False))
     
             # Dynamic light emitted by falling celestial stars and glowing arrows
             for p in self.combat.projectiles:

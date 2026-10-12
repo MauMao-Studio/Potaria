@@ -108,3 +108,36 @@ def font_compact(size=11):
 def clear_font_cache():
     """Clears the font cache."""
     _FONT_CACHE.clear()
+
+
+def wrap_text_lines(text, font, max_width):
+    """
+    Wraps a string into a list of lines so none exceeds max_width pixels.
+    Supports multiline blocks, bullet points, and preserves natural spacing.
+    """
+    if not text:
+        return []
+    
+    result = []
+    for block in str(text).split("\n"):
+        block = block.strip()
+        if not block:
+            continue
+        words = block.split(" ")
+        current_line = []
+        for word in words:
+            if not word:
+                continue
+            test_line = " ".join(current_line + [word])
+            if font.size(test_line)[0] <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    result.append(" ".join(current_line))
+                    current_line = [word]
+                else:
+                    result.append(word)
+                    current_line = []
+        if current_line:
+            result.append(" ".join(current_line))
+    return result if result else [str(text)]

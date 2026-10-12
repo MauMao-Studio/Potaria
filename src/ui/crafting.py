@@ -1179,9 +1179,11 @@ class CraftingSystem:
         lines.append((st_text, (255, 215, 100)))
 
         # Description
+        from src.ui.theme import wrap_text_lines
         desc = res_data.get("desc")
         if desc:
-            lines.append((desc, (200, 215, 235)))
+            for dl in wrap_text_lines(desc, font, 280):
+                lines.append((dl, (200, 215, 235)))
 
         lines.append(("Ingredients:", (220, 220, 220)))
         for iname, icnt in recipe["ingredients"]:
@@ -1200,11 +1202,16 @@ class CraftingSystem:
             lines.append(("[Missing Ingredients]", (240, 80, 80)))
 
         line_surfs = [font.render(text, True, color) for text, color in lines]
-        tip_w = max(s.get_width() for s in line_surfs) + 18
+        content_w = max(s.get_width() for s in line_surfs)
+        tip_w = max(160, min(320, content_w + 18))
         tip_h = len(line_surfs) * 18 + 12
 
-        tip_x = min(target_surf.get_width() - tip_w - 10, mx + 16)
-        tip_y = min(target_surf.get_height() - tip_h - 10, my + 16)
+        tip_x = max(10, min(target_surf.get_width() - tip_w - 10, mx + 16))
+        tip_y = my + 16
+        if tip_y + tip_h > target_surf.get_height() - 10:
+            tip_y = max(10, my - tip_h - 8)
+        if tip_y < 10:
+            tip_y = 10
 
         tip_rect = pygame.Rect(tip_x, tip_y, tip_w, tip_h)
         pygame.draw.rect(target_surf, (20, 24, 38, 245), tip_rect, border_radius=6)

@@ -720,34 +720,42 @@ class NPCDialogueWindow:
                 lines.append((f"+{sp} Movement Speed", (200, 210, 255), self.font_sm))
 
             # Effects for high tier
+            from src.ui.theme import wrap_text_lines
             effects = reg.get("effects") or armor.get("effects", [])
             rarity_str = str(rarity).lower()
             if rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient") and "wood" not in iid.lower():
                 if effects:
                     for eff in effects:
-                        lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
+                        for el in wrap_text_lines(f"• {eff}", self.font_sm, 300):
+                            lines.append((el, (100, 240, 240), self.font_sm))
                 elif reg.get("special") or armor.get("special"):
-                    lines.append((f"Special: {reg.get('special') or armor.get('special')}", (100, 240, 240), self.font_sm))
+                    for sl in wrap_text_lines(f"Special: {reg.get('special') or armor.get('special')}", self.font_sm, 300):
+                        lines.append((sl, (100, 240, 240), self.font_sm))
 
             desc = reg.get("desc") or armor.get("desc")
             if not desc or str(desc).strip() == "":
                 desc = f"A fine {rarity.title()} item radiating elemental potency."
-            lines.append((desc, (215, 225, 240), self.font_sm))
+            for dl in wrap_text_lines(desc, self.font_sm, 300):
+                lines.append((dl, (215, 225, 240), self.font_sm))
 
             if rarity_str in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "legendary", "mythic", "ancient"):
                 lore = reg.get("lore") or armor.get("lore")
                 if lore:
-                    lines.append((lore, (240, 205, 120), self.font_lore))
+                    for ll in wrap_text_lines(lore, self.font_lore, 300):
+                        lines.append((ll, (240, 205, 120), self.font_lore))
 
             lines.append((f"Price: {price} {curr_name} Coins", (255, 215, 100), self.font_bold))
 
         # Render tooltip box
         rendered_surfs = [fnt.render(txt, True, col) for txt, col, fnt in lines]
-        tw = max(s.get_width() for s in rendered_surfs) + 20
+        content_w = max(s.get_width() for s in rendered_surfs)
+        tw = max(160, min(330, content_w + 20))
         th = sum(s.get_height() + 3 for s in rendered_surfs) + 12
 
-        tx = min(SCREEN_WIDTH - tw - 12, mx + 16)
-        ty = min(SCREEN_HEIGHT - th - 12, my + 16)
+        tx = max(10, min(SCREEN_WIDTH - tw - 12, mx + 16))
+        ty = my + 16
+        if ty + th > SCREEN_HEIGHT - 10:
+            ty = max(10, my - th - 8)
         if ty < 10:
             ty = 10
 

@@ -21,7 +21,7 @@ ARMOR_DATA = {
     "frost_hood": {"slot": SLOT_HEAD, "name": "Frost Hood", "def": 6, "hp": 20, "atk": 2, "crit": 2.0, "speed": 0, "mp_regen": 0.8},
     "iron_helmet": {"slot": SLOT_HEAD, "name": "Iron Helmet", "def": 7, "hp": 20, "atk": 2, "crit": 0, "speed": 0},
     "gold_helmet": {"slot": SLOT_HEAD, "name": "Gold Helmet", "def": 10, "hp": 30, "atk": 3, "crit": 3.0, "speed": 0},
-    "miner_helmet": {"slot": SLOT_HEAD, "name": "Potato Miner Helmet", "def": 3, "hp": 10, "atk": 0, "crit": 0, "speed": 0, "light": True},
+    "miner_helmet": {"slot": SLOT_HEAD, "name": "Potato Miner Helmet", "def": 3, "hp": 10, "atk": 0, "crit": 0, "speed": 0, "light": True, "effects": ["Cave Illumination (Gentle Headlamp)"], "special": "Cave Illumination", "skill": "Cave Illumination"},
     "shadow_helmet": {"slot": SLOT_HEAD, "name": "Shadow Helmet", "def": 12, "hp": 35, "atk": 4, "crit": 4.0, "speed": 0.1},
     "magma_helmet": {"slot": SLOT_HEAD, "name": "Magma Helmet", "def": 14, "hp": 45, "atk": 5, "crit": 4.0, "speed": 0.1},
     "cryo_helmet": {"slot": SLOT_HEAD, "name": "Cryo Visor", "def": 16, "hp": 50, "atk": 4, "crit": 3.0, "speed": 0.0},
@@ -364,15 +364,30 @@ class Equipment:
 
     def has_light_emitter(self):
         """Checks if equipped headpiece emits light (e.g. Miner Helmet) or any gear has radiance effects."""
+        return self.has_miner_helmet_equipped() or self.has_astral_radiance()
+
+    def has_astral_radiance(self):
+        """Checks if equipped gear emits high-intensity Astral Sparkles / Celestial Radiance."""
         head_item = self.slots.get(SLOT_HEAD)
         if head_item:
             head_id = head_item.item_id if hasattr(head_item, "item_id") else head_item
-            data = ARMOR_DATA.get(head_id, {})
-            if data.get("light", False):
+            if head_id in ("crown_of_potaria", "ancient_helmet", "titan_helmet"):
                 return True
         for eff in self.get_all_active_effects():
             eff_l = eff.lower()
-            if any(k in eff_l for k in ("light radiance", "celestial radiance", "astral sparkles", "supernova")):
+            if any(k in eff_l for k in ("astral sparkles", "celestial radiance", "true spud radiance", "supernova", "radiant gleam")):
+                return True
+        return False
+
+    def has_miner_helmet_equipped(self):
+        """Checks if Potato Miner Helmet is equipped in head slot."""
+        head_item = self.slots.get(SLOT_HEAD)
+        if head_item:
+            head_id = head_item.item_id if hasattr(head_item, "item_id") else head_item
+            if head_id == "miner_helmet":
+                return True
+            data = ARMOR_DATA.get(head_id, {})
+            if data.get("light", False):
                 return True
         return False
 

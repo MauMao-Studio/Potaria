@@ -446,9 +446,11 @@ class CharacterPanel:
             lines.append(("Utility / Mobility Skill", (200, 220, 255), self.font_sm))
 
         # Description
+        from src.ui.theme import wrap_text_lines
         desc = data.get("desc", "")
         if desc:
-            lines.append((desc, (230, 235, 245), self.font_sm))
+            for dl in wrap_text_lines(desc, self.font_sm, 300):
+                lines.append((dl, (230, 235, 245), self.font_sm))
 
         # Assignment Status
         if not is_learned:
@@ -460,18 +462,23 @@ class CharacterPanel:
 
         if is_learned:
             if bound_key:
-                lines.append((f"[Assigned to '{bound_key}'] Click to move to [{self.selected_hotkey}] (or press Q/F/V/R)", (80, 230, 120), self.font_sm))
+                assign_msg = f"[Assigned to '{bound_key}'] Click to move to [{self.selected_hotkey}] (or press Q/F/V/R)"
             else:
-                lines.append((f"[Learned] Click to assign to [{self.selected_hotkey}] (or press Q/F/V/R)", (120, 220, 255), self.font_sm))
-            lines.append(("[Tip] Select slot then click skill, or press hotkey while hovering!", (255, 215, 120), self.font_sm))
+                assign_msg = f"[Learned] Click to assign to [{self.selected_hotkey}] (or press Q/F/V/R)"
+            for al in wrap_text_lines(assign_msg, self.font_sm, 300):
+                lines.append((al, (80, 230, 120) if bound_key else (120, 220, 255), self.font_sm))
+            lines.append(("[Tip] Select slot then click skill", (255, 215, 120), self.font_sm))
             lines.append(("[Tip] Right-click active slot to unbind", (180, 195, 215), self.font_sm))
 
         surfs = [fnt.render(txt, True, col) for txt, col, fnt in lines]
-        tw = max(s.get_width() for s in surfs) + 20
+        content_w = max(s.get_width() for s in surfs)
+        tw = max(160, min(330, content_w + 20))
         th = sum(s.get_height() + 3 for s in surfs) + 12
 
-        tx = min(SCREEN_WIDTH - tw - 12, mx + 16)
-        ty = min(SCREEN_HEIGHT - th - 12, my + 16)
+        tx = max(10, min(SCREEN_WIDTH - tw - 12, mx + 16))
+        ty = my + 16
+        if ty + th > SCREEN_HEIGHT - 10:
+            ty = max(10, my - th - 8)
         if ty < 10:
             ty = 10
 
@@ -556,24 +563,29 @@ class CharacterPanel:
         iid = raw_id.lower()
         rarity_str = str(rarity).lower()
         is_high_tier = rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient")
+        from src.ui.theme import wrap_text_lines
         if "wood" not in iid and is_high_tier:
             if effects:
                 for eff in effects:
-                    lines.append((f"• {eff}", (100, 240, 240), self.font_sm))
+                    for el in wrap_text_lines(f"• {eff}", self.font_sm, 300):
+                        lines.append((el, (100, 240, 240), self.font_sm))
             else:
                 special = reg.get("special") or armor.get("special")
                 if special:
-                    lines.append((f"Special: {special}", (100, 220, 255), self.font_sm))
+                    for sl in wrap_text_lines(f"Special: {special}", self.font_sm, 300):
+                        lines.append((sl, (100, 220, 255), self.font_sm))
 
         desc = reg.get("desc")
         if not desc or str(desc).strip() == "":
             desc = f"A fine {rarity.title()} equipment piece radiating elemental potency."
-        lines.append((desc, (200, 215, 235), self.font_sm))
+        for dl in wrap_text_lines(desc, self.font_sm, 300):
+            lines.append((dl, (200, 215, 235), self.font_sm))
 
         lore = reg.get("lore")
         rarity_str = str(rarity).lower()
         if lore and rarity_str in (RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "legendary", "mythic", "ancient"):
-            lines.append((lore, (235, 200, 110), self.font_sm))
+            for ll in wrap_text_lines(lore, self.font_sm, 300):
+                lines.append((ll, (235, 200, 110), self.font_sm))
 
         if is_held:
             lines.append(("(Selected on hotbar in hand)", (140, 180, 220), self.font_sm))
@@ -581,11 +593,14 @@ class CharacterPanel:
             lines.append(("(Click slot to unequip)", (140, 150, 170), self.font_sm))
 
         surfs = [fnt.render(txt, True, col) for txt, col, fnt in lines]
-        tw = max(s.get_width() for s in surfs) + 20
+        content_w = max(s.get_width() for s in surfs)
+        tw = max(160, min(330, content_w + 20))
         th = sum(s.get_height() + 3 for s in surfs) + 12
 
-        tx = min(SCREEN_WIDTH - tw - 12, mx + 16)
-        ty = min(SCREEN_HEIGHT - th - 12, my + 16)
+        tx = max(10, min(SCREEN_WIDTH - tw - 12, mx + 16))
+        ty = my + 16
+        if ty + th > SCREEN_HEIGHT - 10:
+            ty = max(10, my - th - 8)
         if ty < 10:
             ty = 10
 
