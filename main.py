@@ -2080,6 +2080,12 @@ class PotariaGame:
                     self.inventory.notify("Too far away to cast!")
                 return False
 
+            from src.combat.combat_system import has_line_of_sight
+            if not has_line_of_sight(self.world, self.player.center_x, self.player.center_y, bob_x, bob_y):
+                if hasattr(self.inventory, "notify"):
+                    self.inventory.notify("No line of sight to the water!")
+                return False
+
             self.fishing_bobber = {
                 "x": bob_x,
                 "y": bob_y,
@@ -2099,53 +2105,100 @@ class PotariaGame:
                 rod_info = ITEM_REGISTRY.get(rod_id, {})
                 rod_rarity = str(rod_info.get("rarity", "common")).lower()
 
+                junk_pool = ["dirt_clod", "old_boot", "rusty_can", "seaweed", "driftwood"]
                 pinoy_fishes = [
                     "raw_bangus", "raw_tilapia", "raw_galunggong", "raw_maya_maya",
                     "raw_tanigue", "raw_tambakol", "raw_lapu_lapu", "raw_hito",
                     "raw_dilis", "raw_dalagang_bukid"
                 ]
+                ingredient_food_pool = [
+                    "rice", "garlic", "onion", "ginger", "calamansi", "tamarind",
+                    "soy_sauce", "vinegar", "black_pepper", "salt", "coconut_milk",
+                    "peanut_butter", "eggplant", "string_beans", "pancit_noodles",
+                    "raw_chicken", "raw_duck_meat", "duck_egg", "egg", "raw_pork",
+                    "pork_belly", "raw_beef", "carabao_milk", "raw_goat_meat", "goat_milk",
+                    "chicken_adobo", "pork_adobo", "sinigang", "tinola", "sinangag", "daing_na_bangus"
+                ]
+                skill_books = [
+                    "skillbook_power_slash", "skillbook_whirlwind", "skillbook_dash", "skillbook_fireball",
+                    "skillbook_frost_nova", "skillbook_meteor", "skillbook_celestial_shield", "skillbook_void_singularity"
+                ]
+                common_equipment = ["copper_sword", "copper_pickaxe", "wooden_arrow"]
+                uncommon_equipment = ["copper_sword", "iron_pickaxe", "copper_chestplate", "cactus_sword", "wooden_arrow"]
+                rare_equipment = ["iron_broadsword", "oak_buckler", "spud_quiver", "frost_blade", "sandstorm_spear", "warrior_charm", "guardian_ring"]
+                epic_equipment = [
+                    "zephyr_striders", "talisman_of_vigor", "arcane_orchid", "gilded_russet",
+                    "magma_greatsword", "bone_scythe", "magma_bow", "hermes_boots"
+                ]
+
+                roll = random.random()
 
                 if rod_rarity == "common":
-                    if random.random() < 0.85:
-                        caught_item = random.choice(["raw_bangus", "raw_tilapia", "raw_galunggong", "raw_dilis"])
-                        caught_count = random.randint(2, 5) if caught_item == "raw_dilis" else 1
+                    # Common rod: 60% junk/dirt, 25% fish, 13% food/ingredients, 1.8% common gear, 0.2% skill book
+                    if roll < 0.60:
+                        caught_item = random.choice(junk_pool)
+                    elif roll < 0.85:
+                        caught_item = random.choice(["raw_dilis", "raw_tilapia", "raw_bangus", "raw_galunggong", "raw_hito"])
+                    elif roll < 0.98:
+                        caught_item = random.choice(ingredient_food_pool)
+                    elif roll < 0.998:
+                        caught_item = random.choice(common_equipment)
                     else:
-                        caught_item = random.choice(["copper_coin", "dirt", "stone"])
-                        caught_count = random.randint(1, 3)
+                        caught_item = random.choice(skill_books)
+
                 elif rod_rarity == "uncommon" or rod_id == "spud_angler_rod":
-                    if random.random() < 0.65:
+                    # Uncommon rod: 40% junk, 35% fish, 18% ingredients, 6% uncommon gear, 1.0% skill book
+                    if roll < 0.40:
+                        caught_item = random.choice(junk_pool)
+                    elif roll < 0.75:
                         caught_item = random.choice(["raw_bangus", "raw_tilapia", "raw_galunggong", "raw_maya_maya", "raw_hito", "raw_dilis"])
-                        caught_count = random.randint(2, 5) if caught_item == "raw_dilis" else 1
+                    elif roll < 0.93:
+                        caught_item = random.choice(ingredient_food_pool)
+                    elif roll < 0.99:
+                        caught_item = random.choice(uncommon_equipment)
                     else:
-                        caught_item = random.choice(["silver_coin", "iron_ore", "copper_ore", "healing_potion", "speed_potion", "copper_sword", "iron_pickaxe", "wooden_arrow"])
-                        caught_count = random.randint(1, 3) if caught_item in ("silver_coin", "iron_ore", "copper_ore", "wooden_arrow") else 1
+                        caught_item = random.choice(skill_books)
+
                 elif rod_rarity == "rare" or rod_id == "reinforced_angler_rod":
-                    if random.random() < 0.50:
-                        caught_item = random.choice(["raw_tanigue", "raw_tambakol", "raw_lapu_lapu", "raw_dalagang_bukid"])
-                        caught_count = 1
+                    # Rare rod: 22% junk, 40% fish, 23% ingredients, 13% rare gear, 2.0% skill book
+                    if roll < 0.22:
+                        caught_item = random.choice(junk_pool)
+                    elif roll < 0.62:
+                        caught_item = random.choice(["raw_maya_maya", "raw_tambakol", "raw_tanigue", "raw_dalagang_bukid", "raw_lapu_lapu"])
+                    elif roll < 0.85:
+                        caught_item = random.choice(ingredient_food_pool)
+                    elif roll < 0.98:
+                        caught_item = random.choice(rare_equipment)
                     else:
-                        caught_item = random.choice(["gold_coin", "silver_coin", "iron_broadsword", "oak_buckler", "spud_quiver", "greater_healing_potion", "frost_blade", "sandstorm_spear"])
-                        caught_count = random.randint(1, 3) if caught_item in ("gold_coin", "silver_coin") else 1
+                        caught_item = random.choice(skill_books)
+
                 elif rod_rarity == "epic" or rod_id == "gilded_master_rod":
-                    if random.random() < 0.35:
-                        caught_item = random.choice(["raw_lapu_lapu", "raw_tanigue", "raw_dalagang_bukid"])
-                        caught_count = 1
+                    # Epic rod: 12% junk, 40% fish, 24% ingredients, 21% gear (capped at epic), 3.0% skill book
+                    if roll < 0.12:
+                        caught_item = random.choice(junk_pool)
+                    elif roll < 0.52:
+                        caught_item = random.choice(["raw_tanigue", "raw_tambakol", "raw_dalagang_bukid", "raw_lapu_lapu"])
+                    elif roll < 0.76:
+                        caught_item = random.choice(ingredient_food_pool)
+                    elif roll < 0.97:
+                        caught_item = random.choice(epic_equipment)
                     else:
-                        caught_item = random.choice(["golden_fry", "zephyr_striders", "starch_blade", "shadow_cleaver", "talisman_of_vigor", "lucky_clover", "arcane_orchid", "gold_coin", "gilded_russet"])
-                        caught_count = random.randint(2, 5) if caught_item == "gold_coin" else 1
-                elif rod_rarity in ("mythic", "legendary") or rod_id in ("astral_leviathan_rod", "neptune_tide_rod"):
-                    if random.random() < 0.20:
-                        caught_item = random.choice(["raw_lapu_lapu", "raw_tanigue"])
-                        caught_count = 1
-                    else:
-                        if rod_rarity == "mythic" or rod_id == "astral_leviathan_rod":
-                            caught_item = random.choice(["totem_of_resurgence", "celestial_star", "celestial_fragment", "golden_fry", "zephyr_striders", "gold_coin"])
-                        else:
-                            caught_item = random.choice(["neptune_tide_rod", "totem_of_resurgence", "celestial_bow", "celestial_shard", "starfury", "golden_fry", "gold_coin"])
-                        caught_count = random.randint(3, 8) if caught_item == "gold_coin" else 1
+                        caught_item = random.choice(skill_books)
+
                 else:
-                    caught_item = random.choice(pinoy_fishes)
-                    caught_count = 1
+                    # Mythic/Legendary rods: 5% junk, 40% high-tier fish, 25% ingredients, 25% epic gear (strictly capped at Epic), 5.0% skill book
+                    if roll < 0.05:
+                        caught_item = random.choice(junk_pool)
+                    elif roll < 0.45:
+                        caught_item = random.choice(["raw_lapu_lapu", "raw_tanigue", "raw_dalagang_bukid"])
+                    elif roll < 0.70:
+                        caught_item = random.choice(ingredient_food_pool)
+                    elif roll < 0.95:
+                        caught_item = random.choice(epic_equipment)
+                    else:
+                        caught_item = random.choice(skill_books)
+
+                caught_count = random.randint(2, 5) if caught_item in ("dirt_clod", "seaweed", "raw_dilis", "rice", "salt", "wooden_arrow") else 1
 
                 self.fishing_bobber = None
                 self.fishing_minigame.start(fish_id=caught_item, caught_count=caught_count)
@@ -2573,14 +2626,12 @@ class PotariaGame:
             self.touch_controller.update(dt, player=self.player, inventory=self.inventory)
 
         # Update Fishing Battle Mini-Game
-        if hasattr(self, "fishing_minigame") and self.fishing_minigame.is_active:
+        if hasattr(self, "fishing_minigame") and (self.fishing_minigame.is_active or self.fishing_minigame.result is not None):
             res = self.fishing_minigame.update(dt)
             if res == "caught":
                 fish_id = self.fishing_minigame.fish_id
                 fish_cnt = self.fishing_minigame.caught_count
-                self.combat.dropped_items.append(
-                    DroppedItem(fish_id, fish_cnt, self.player.center_x, self.player.center_y - 20, self.asset_factory)
-                )
+                self.combat._spawn_loot_drop(fish_id, fish_cnt, self.player.center_x, self.player.y + self.player.height)
                 from src.ui.inventory import ITEM_REGISTRY
                 item_name = ITEM_REGISTRY.get(fish_id, {}).get("name", fish_id.replace("_", " ").title())
                 if hasattr(self.hud, "add_chat_message"):
@@ -2590,15 +2641,21 @@ class PotariaGame:
                 self.sound_manager.play("craft")
                 self.particle_system.spawn_sparks(self.player.center_x, self.player.center_y - 10, (100, 220, 255), count=15)
                 self.fishing_minigame.result = None
+                self.fishing_minigame.is_active = False
+                self.fishing_bobber = None
             elif res == "escaped":
                 if hasattr(self.inventory, "notify"):
                     self.inventory.notify("The fish snapped the line and escaped!")
                 self.sound_manager.play("dig_dirt")
                 self.fishing_minigame.result = None
+                self.fishing_minigame.is_active = False
+                self.fishing_bobber = None
             elif res == "cancelled":
                 if hasattr(self.inventory, "notify"):
                     self.inventory.notify("Fishing battle cancelled!")
                 self.fishing_minigame.result = None
+                self.fishing_minigame.is_active = False
+                self.fishing_bobber = None
 
         # Update Fishing Bobber state
         if getattr(self, "fishing_bobber", None):
@@ -3192,7 +3249,8 @@ class PotariaGame:
         if getattr(self, "fishing_bobber", None):
             bob = self.fishing_bobber
             bsx, bsy = self.camera.world_to_screen(bob["x"], bob["y"])
-            psx, psy = self.camera.world_to_screen(self.player.center_x + (10 if self.player.facing_right else -10), self.player.center_y - 2)
+            tip_wx, tip_wy = self.player.get_rod_tip_pos() if hasattr(self.player, "get_rod_tip_pos") else (self.player.center_x + (10 if self.player.facing_right else -10), self.player.center_y - 2)
+            psx, psy = self.camera.world_to_screen(tip_wx, tip_wy)
             pygame.draw.line(self.screen, (220, 220, 220), (psx, psy), (bsx, bsy), 1)
             bob_r = 4
             pygame.draw.circle(self.screen, (240, 240, 240), (bsx, bsy + 2), bob_r)

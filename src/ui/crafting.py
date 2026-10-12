@@ -216,6 +216,79 @@ RECIPES = [
         "result": "cooked_dalagang_bukid", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
         "ingredients": [("raw_dalagang_bukid", 1)]
     },
+    # --- Authentic Filipino Culinary Cuisine & Delicacies ---
+    {
+        "result": "chicken_adobo", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_chicken", 1), ("soy_sauce", 1), ("vinegar", 1), ("garlic", 1)]
+    },
+    {
+        "result": "pork_adobo", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_pork", 1), ("soy_sauce", 1), ("vinegar", 1), ("garlic", 1)]
+    },
+    {
+        "result": "sinigang", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("pork_belly", 1), ("tamarind", 1), ("onion", 1), ("eggplant", 1)]
+    },
+    {
+        "result": "kare_kare", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_beef", 1), ("peanut_butter", 1), ("eggplant", 1), ("string_beans", 1)]
+    },
+    {
+        "result": "bulalo", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_beef", 1), ("onion", 1), ("black_pepper", 1)]
+    },
+    {
+        "result": "tinola", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_chicken", 1), ("ginger", 1), ("onion", 1)]
+    },
+    {
+        "result": "lechon", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("pork_belly", 1), ("garlic", 1), ("vinegar", 1)]
+    },
+    {
+        "result": "pancit_bihon", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("pancit_noodles", 1), ("raw_pork", 1), ("garlic", 1), ("onion", 1)]
+    },
+    {
+        "result": "arroz_caldo", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_chicken", 1), ("rice", 1), ("ginger", 1)]
+    },
+    {
+        "result": "halo_halo", "count": 1, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("shaved_ice", 1), ("condensed_milk", 1), ("ube_halaya", 1)]
+    },
+    {
+        "result": "kaldereta", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_goat_meat", 1), ("onion", 1), ("garlic", 1), ("black_pepper", 1)]
+    },
+    {
+        "result": "balut", "count": 1, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("duck_egg", 1), ("salt", 1)]
+    },
+    {
+        "result": "itlog_na_maalat", "count": 1, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("duck_egg", 1), ("salt", 1)]
+    },
+    {
+        "result": "sinangag", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("rice", 1), ("garlic", 1)]
+    },
+    {
+        "result": "daing_na_bangus", "count": 1, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("raw_bangus", 1), ("garlic", 1), ("vinegar", 1)]
+    },
+    {
+        "result": "salt", "count": 2, "station": "furnace", "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("seaweed", 2)]
+    },
+    {
+        "result": "vinegar", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("spud_sap", 1)]
+    },
+    {
+        "result": "shaved_ice", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("snow_block", 1)]
+    },
     {
         "result": "iron_cauldron", "count": 1, "station": "furnace", "category": CRAFT_CAT_FURNITURE,
         "ingredients": [("iron_bar", 7)]

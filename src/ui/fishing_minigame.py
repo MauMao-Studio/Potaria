@@ -50,8 +50,8 @@ class FishingBattleMiniGame:
         self.ui_scale_pulse = 0.0
 
         # UI Positioning (centered modal)
-        self.width = 380
-        self.height = 190
+        self.width = 420
+        self.height = 205
         self.x = (SCREEN_WIDTH - self.width) // 2
         self.y = (SCREEN_HEIGHT - self.height) // 2 - 20
 
@@ -205,19 +205,23 @@ class FishingBattleMiniGame:
         # Main Box
         box_rect = pygame.Rect(self.x, self.y, self.width, self.height)
         panel_surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        panel_surf.fill((18, 24, 38, 245))
+        panel_surf.fill((16, 22, 34, 248))
         surface.blit(panel_surf, (self.x, self.y))
 
-        # Borders
-        border_col = (215, 175, 75) if not self.is_thrashing else (235, 75, 75)
+        # Borders with Danger Thrash / Snap Warning
+        is_danger = (self.tension >= 80.0 or self.is_thrashing)
+        border_col = (245, 75, 75) if is_danger else (215, 175, 75)
         pygame.draw.rect(surface, border_col, box_rect, 2, border_radius=6)
         pygame.draw.rect(surface, (10, 14, 22), box_rect.inflate(-4, -4), 1, border_radius=4)
+        if self.tension >= 80.0:
+            danger_pulse = (int(self.anim_time * 8.0) % 2) * 2
+            pygame.draw.rect(surface, (255, 50, 50), box_rect.inflate(danger_pulse, danger_pulse), 1, border_radius=7)
 
         # Title & Rarity
         r_col = RARITY_COLORS.get(self.rarity, (220, 220, 220))
         title_txt = f"FISHING BATTLE: {self.fish_name.upper()}"
         rendered_title = self.font_title.render(title_txt, True, r_col)
-        surface.blit(rendered_title, (self.x + 16, self.y + 12))
+        surface.blit(rendered_title, (self.x + 18, self.y + 14))
 
         # Fish sprite or icon
         icon_surf = None
@@ -232,24 +236,24 @@ class FishingBattleMiniGame:
         if not icon_surf and hasattr(self.asset_factory, "items"):
             icon_surf = self.asset_factory.items.get(self.fish_id)
 
-        icon_x = self.x + self.width - 55
+        icon_x = self.x + self.width - 58
         icon_y = self.y + 12
-        pygame.draw.rect(surface, (28, 36, 54), (icon_x - 4, icon_y - 2, 40, 32), border_radius=4)
-        pygame.draw.rect(surface, (70, 90, 130), (icon_x - 4, icon_y - 2, 40, 32), 1, border_radius=4)
+        pygame.draw.rect(surface, (28, 36, 54), (icon_x - 4, icon_y - 2, 44, 34), border_radius=4)
+        pygame.draw.rect(surface, (70, 90, 130), (icon_x - 4, icon_y - 2, 44, 34), 1, border_radius=4)
         if icon_surf:
-            sw_scale = pygame.transform.scale(icon_surf, (32, 24))
-            surface.blit(sw_scale, (icon_x, icon_y + 2))
+            sw_scale = pygame.transform.scale(icon_surf, (34, 26))
+            surface.blit(sw_scale, (icon_x + 1, icon_y + 2))
 
         # Fish Status Text
         status_txt = "FISH IS THRASHING! [EASE OFF!]" if self.is_thrashing else "FISH IS CALM [RIGHT-CLICK TO REEL!]"
         status_col = (255, 95, 95) if self.is_thrashing else (110, 240, 130)
         rendered_status = self.font_main.render(status_txt, True, status_col)
-        surface.blit(rendered_status, (self.x + 16, self.y + 40))
+        surface.blit(rendered_status, (self.x + 18, self.y + 44))
 
         # 1. Reeling Progress Bar
-        bar_x = self.x + 16
-        bar_w = self.width - 32
-        p_y = self.y + 68
+        bar_x = self.x + 18
+        bar_w = self.width - 36
+        p_y = self.y + 72
         pygame.draw.rect(surface, (12, 16, 26), (bar_x, p_y, bar_w, 20), border_radius=4)
         pygame.draw.rect(surface, (60, 80, 115), (bar_x, p_y, bar_w, 20), 1, border_radius=4)
         fill_w = int((self.reeling_progress / 100.0) * (bar_w - 4))
@@ -261,7 +265,7 @@ class FishingBattleMiniGame:
         surface.blit(rendered_prog, (bar_x + 8, p_y + 3))
 
         # 2. Line Tension Meter
-        t_y = self.y + 104
+        t_y = self.y + 110
         pygame.draw.rect(surface, (12, 16, 26), (bar_x, t_y, bar_w, 20), border_radius=4)
         pygame.draw.rect(surface, (60, 80, 115), (bar_x, t_y, bar_w, 20), 1, border_radius=4)
         ten_fill_w = int((self.tension / 100.0) * (bar_w - 4))
@@ -281,8 +285,8 @@ class FishingBattleMiniGame:
         timer_col = (255, 225, 90) if self.time_remaining > 4.0 else (255, 80, 80)
         time_txt = f"Time Remaining: {self.time_remaining:.1f}s"
         rendered_time = self.font_sm.render(time_txt, True, timer_col)
-        surface.blit(rendered_time, (self.x + 16, self.y + 140))
+        surface.blit(rendered_time, (self.x + 18, self.y + 148))
 
         ctrl_txt = "[TAP RIGHT-CLICK TO REEL IN] • Taking enemy damage cancels battle!"
         rendered_ctrl = self.font_sm.render(ctrl_txt, True, (175, 195, 225))
-        surface.blit(rendered_ctrl, (self.x + 16, self.y + 162))
+        surface.blit(rendered_ctrl, (self.x + 18, self.y + 172))

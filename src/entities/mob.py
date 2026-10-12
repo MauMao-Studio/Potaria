@@ -540,6 +540,225 @@ class Skeleton(WalkerMob):
         super().__init__(x, y, asset_factory, sprite_key="skeleton", max_hp=50, damage=24, name="Skeleton", speed=1.65)
         self.mob_type = "skeleton"
 
+class BlightCultist(WalkerMob):
+    mob_type = "blight_cultist"
+    def __init__(self, x, y, asset_factory):
+        super().__init__(x, y, asset_factory, sprite_key="blight_cultist", max_hp=90, damage=32, name="Blight Cultist", speed=1.5)
+        self.mob_type = "blight_cultist"
+
+class Aswang(WalkerMob):
+    mob_type = "aswang"
+    def __init__(self, x, y, asset_factory):
+        super().__init__(x, y, asset_factory, sprite_key="aswang", max_hp=110, damage=38, name="Aswang", speed=2.1)
+        self.mob_type = "aswang"
+
+
+# =============================================================================
+# 2b. PHILIPPINE LAND ANIMALS & POULTRY (Passive / Neutral)
+# =============================================================================
+class PassiveAnimalMob(Mob):
+    """Base class for friendly, non-hostile Philippine land animals & livestock."""
+    def __init__(self, x, y, width, height, max_hp, name, speed, sprite_key, asset_factory):
+        super().__init__(x, y, width, height, max_hp, damage=0, name=name, defense=1)
+        self.is_passive = True
+        self.speed = speed
+        self.asset_factory = asset_factory
+        self.sprite_key = sprite_key
+        self.walk_frames = self.asset_factory.mobs.get(sprite_key, [])
+        if not self.walk_frames:
+            s = pygame.Surface((width, height), pygame.SRCALPHA)
+            pygame.draw.ellipse(s, (160, 110, 60), (0, 0, width, height))
+            self.walk_frames = [s] * 4
+
+        self.anim_idx = 0
+        self.anim_timer = 0.0
+
+        # AI Behavior Timers
+        self.wander_timer = random.uniform(2.0, 5.0)
+        self.is_idling = True
+        self.idle_timer = random.uniform(1.5, 4.0)
+        self.move_dir = random.choice([-1, 1])
+        self.panic_timer = 0.0
+        self.panic_dir = 1.0
+        self.jump_power = -4.8
+
+    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=-3.0, ignore_defense=False):
+        dmg = super().take_damage(amount, knockback_vx, knockback_vy, ignore_defense)
+        self.panic_timer = 4.5
+        self.panic_dir = 1.0 if knockback_vx >= 0 else -1.0
+        self.is_idling = False
+        return dmg
+
+    def update(self, dt, world, player):
+        if self.is_dead:
+            return
+
+        if self.hurt_timer > 0:
+            self.hurt_timer -= dt
+        if self.hp_bar_timer > 0:
+            self.hp_bar_timer -= dt
+
+        self.update_dots(dt)
+
+        # Check in water
+        tx = int(self.center_x // SCALED_TILE)
+        ty = int(self.center_y // SCALED_TILE)
+        in_water = (world.get_tile(tx, ty) == TILE_WATER)
+
+        # AI Logic
+        if self.panic_timer > 0:
+            self.panic_timer -= dt
+            target_speed = self.speed * 2.2 * self.panic_dir
+            self.facing_right = (self.panic_dir > 0)
+        elif self.is_idling:
+            target_speed = 0.0
+            self.idle_timer -= dt
+            if self.idle_timer <= 0:
+                self.is_idling = False
+                self.move_dir = random.choice([-1, 1])
+                self.wander_timer = random.uniform(2.5, 5.0)
+        else:
+            target_speed = self.speed * self.move_dir
+            self.facing_right = (self.move_dir > 0)
+            self.wander_timer -= dt
+            if self.wander_timer <= 0:
+                self.is_idling = True
+                self.idle_timer = random.uniform(1.8, 4.5)
+
+        # Smooth horizontal acceleration
+        self.vx += (target_speed - self.vx) * min(1.0, dt * 8.0)
+
+        # Gravity & Water Buoyancy
+        if in_water:
+            self.vy = min(1.5, self.vy + GRAVITY * 0.3)
+            if self.vy > 0:
+                self.vy -= 0.6
+        else:
+            self.vy = min(TERMINAL_VELOCITY, self.vy + GRAVITY)
+
+        # Obstacle Step-up / Jumping
+        check_dir = 1 if self.facing_right else -1
+        front_tx = int((self.center_x + check_dir * (self.width / 2 + 4)) // SCALED_TILE)
+        foot_ty = int((self.y + self.height - 2) // SCALED_TILE)
+        head_ty = int(self.y // SCALED_TILE)
+
+        if self.on_ground and abs(self.vx) > 0.3:
+            if _is_solid(world, front_tx, foot_ty) and not _is_solid(world, front_tx, head_ty - 1):
+                self.vy = self.jump_power
+                self.on_ground = False
+
+        # Physics: Horizontal movement
+        self.x += self.vx
+        self.rect.x = int(self.x)
+        solids = world.get_solid_rects_in_bounds(self.rect)
+        for tile_rect, is_platform in solids:
+            if not is_platform and self.rect.colliderect(tile_rect):
+                if self.vx > 0:
+                    self.x = tile_rect.left - self.width
+                elif self.vx < 0:
+                    self.x = tile_rect.right
+                self.vx = 0.0
+                self.move_dir = -self.move_dir
+                self.panic_dir = -self.panic_dir
+                self.facing_right = (self.move_dir > 0)
+                break
+
+        # Physics: Vertical movement
+        self.y += self.vy
+        self.rect.y = int(self.y)
+        self.on_ground = False
+        solids = world.get_solid_rects_in_bounds(self.rect)
+        for tile_rect, is_platform in solids:
+            if not is_platform and self.rect.colliderect(tile_rect):
+                if self.vy > 0:
+                    self.y = tile_rect.top - self.height
+                    self.vy = 0.0
+                    self.on_ground = True
+                elif self.vy < 0:
+                    self.y = tile_rect.bottom
+                    self.vy = 0.0
+                break
+
+        # Animation
+        anim_speed = 14.0 if self.panic_timer > 0 else (9.0 if abs(self.vx) > 0.2 else 2.0)
+        self.anim_timer += dt * anim_speed
+        if self.anim_timer >= 1.0:
+            self.anim_timer = 0.0
+            self.anim_idx = (self.anim_idx + 1) % len(self.walk_frames)
+
+    def render(self, target_surf, camera):
+        if self.is_dead:
+            return
+        sx, sy = camera.world_to_screen(self.x, self.y)
+        cur_surf = self.walk_frames[self.anim_idx]
+        if not self.facing_right:
+            cur_surf = pygame.transform.flip(cur_surf, True, False)
+
+        if self.hurt_timer > 0:
+            tinted = cur_surf.copy()
+            tinted.fill((255, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
+            cur_surf = tinted
+
+        cur_surf = self.apply_water_overlay(cur_surf)
+        target_surf.blit(cur_surf, (sx, sy))
+        if self.hp_bar_timer > 0 and self.hp < self.max_hp:
+            self.render_health_bar(target_surf, camera)
+
+
+class ManokMob(PassiveAnimalMob):
+    """Native Philippine Chicken / Rooster with flutter falling."""
+    mob_type = "manok"
+    def __init__(self, x, y, asset_factory):
+        super().__init__(x, y, width=18, height=18, max_hp=20, name="Manok", speed=1.2, sprite_key="manok", asset_factory=asset_factory)
+        self.mob_type = "manok"
+
+    def update(self, dt, world, player):
+        super().update(dt, world, player)
+        # Flutter falling: softens fall speed
+        if self.vy > 1.8:
+            self.vy = min(self.vy, 2.2)
+
+
+class PatoMob(PassiveAnimalMob):
+    """Native Philippine Duck / Itik with buoyant surface swimming."""
+    mob_type = "pato"
+    def __init__(self, x, y, asset_factory):
+        super().__init__(x, y, width=18, height=16, max_hp=22, name="Pato", speed=1.1, sprite_key="pato", asset_factory=asset_factory)
+        self.mob_type = "pato"
+
+    def update(self, dt, world, player):
+        super().update(dt, world, player)
+        tx = int(self.center_x // SCALED_TILE)
+        ty = int(self.center_y // SCALED_TILE)
+        if world.get_tile(tx, ty) == TILE_WATER:
+            self.vy = min(0.3, self.vy - 0.5)
+
+
+class BaboyMob(PassiveAnimalMob):
+    """Native Philippine Pig / Baboy-damo."""
+    mob_type = "baboy"
+    def __init__(self, x, y, asset_factory):
+        super().__init__(x, y, width=22, height=16, max_hp=45, name="Baboy", speed=1.3, sprite_key="baboy", asset_factory=asset_factory)
+        self.mob_type = "baboy"
+
+
+class KalabawMob(PassiveAnimalMob):
+    """National Carabao / Water Buffalo with majestic horns and high resilience."""
+    mob_type = "kalabaw"
+    def __init__(self, x, y, asset_factory):
+        super().__init__(x, y, width=30, height=22, max_hp=120, name="Kalabaw", speed=0.9, sprite_key="kalabaw", asset_factory=asset_factory)
+        self.mob_type = "kalabaw"
+        self.defense = 4
+
+
+class KambingMob(PassiveAnimalMob):
+    """Native Philippine Goat with agile high jumping."""
+    mob_type = "kambing"
+    def __init__(self, x, y, asset_factory):
+        super().__init__(x, y, width=20, height=20, max_hp=35, name="Kambing", speed=1.5, sprite_key="kambing", asset_factory=asset_factory)
+        self.mob_type = "kambing"
+        self.jump_power = -5.8
+
 
 # =============================================================================
 # 3. FLYING MOBS (Demon Eye, Cave Bats, Ice Bats)
@@ -1376,6 +1595,13 @@ MOB_TYPE_REGISTRY = {
     "ice_zombie": IceZombie,
     "mummy": Mummy,
     "skeleton": Skeleton,
+    "blight_cultist": BlightCultist,
+    "aswang": Aswang,
+    "manok": ManokMob,
+    "pato": PatoMob,
+    "baboy": BaboyMob,
+    "kalabaw": KalabawMob,
+    "kambing": KambingMob,
     "demon_eye": DemonEye,
     "night_gazer": DemonEye,
     "cave_bat": CaveBat,
@@ -1394,9 +1620,16 @@ MOB_TYPE_REGISTRY = {
     "night_elite_purple_slime": lambda x, y, af: NightEliteMob(x, y, af, archetype="purple_slime"),
 }
 
-CLASS_TO_MOB_TYPE = {cls: k for k, cls in MOB_TYPE_REGISTRY.items()}
+CLASS_TO_MOB_TYPE = {cls: k for k, cls in MOB_TYPE_REGISTRY.items() if isinstance(cls, type)}
 CLASS_TO_MOB_TYPE[DemonEye] = "demon_eye"
 CLASS_TO_MOB_TYPE[NightEliteMob] = "night_elite"
+CLASS_TO_MOB_TYPE[BlightCultist] = "blight_cultist"
+CLASS_TO_MOB_TYPE[Aswang] = "aswang"
+CLASS_TO_MOB_TYPE[ManokMob] = "manok"
+CLASS_TO_MOB_TYPE[PatoMob] = "pato"
+CLASS_TO_MOB_TYPE[BaboyMob] = "baboy"
+CLASS_TO_MOB_TYPE[KalabawMob] = "kalabaw"
+CLASS_TO_MOB_TYPE[KambingMob] = "kambing"
 NightGazer = DemonEye
 
 def create_mob_by_type(mob_type, x, y, asset_factory):

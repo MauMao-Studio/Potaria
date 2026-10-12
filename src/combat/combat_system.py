@@ -18,7 +18,9 @@ from src.world.chunk_manager import CHUNK_WIDTH
 from src.entities.mob import (
     GreenSlime, PurpleSlime, SandSlime, FrostSlime, CorruptSlime,
     Zombie, IceZombie, Mummy, Skeleton, DemonEye, CaveBat, IceBat,
-    DesertScorpion, ShadowCrawler, RockZombie, ShieldWeaver, DiggerMob
+    DesertScorpion, ShadowCrawler, RockZombie, ShieldWeaver, DiggerMob,
+    BlightCultist, Aswang,
+    ManokMob, PatoMob, BaboyMob, KalabawMob, KambingMob
 )
 from src.entities.boss import (
     LordMalus, IgnisColossus, CryoSpud, NecroTuber,
@@ -883,6 +885,8 @@ class CombatManager:
         # 5. Check Mob Contact Damage to Player
         for mob in self.mobs:
             if mob.is_alive and mob.rect.colliderect(player.rect):
+                if getattr(mob, "is_passive", False):
+                    continue
                 knock_dir = 1.0 if player.center_x > mob.center_x else -1.0
                 damaged = player.take_damage(mob.damage, knockback_vx=knock_dir * 4.5, knockback_vy=-3.5)
                 if damaged:
@@ -1282,6 +1286,45 @@ class CombatManager:
             tuned = getattr(self, "tuned_mob_drops", False)
         mx, my = mob.center_x, mob.center_y
         m_name = getattr(mob, "name", "")
+        m_type = getattr(mob, "mob_type", "").lower()
+
+        if m_type == "manok" or "Chicken" in m_name or "Manok" in m_name:
+            self._spawn_loot_drop("raw_chicken", random.randint(1, 2), mx, my)
+            self._spawn_loot_drop("feather", random.randint(1, 3), mx, my)
+            if random.random() < 0.6:
+                self._spawn_loot_drop("egg", 1, mx, my)
+            return
+        elif m_type == "pato" or "Duck" in m_name or "Pato" in m_name:
+            self._spawn_loot_drop("raw_duck_meat", random.randint(1, 2), mx, my)
+            self._spawn_loot_drop("feather", random.randint(1, 3), mx, my)
+            if random.random() < 0.6:
+                self._spawn_loot_drop("duck_egg", 1, mx, my)
+            return
+        elif m_type == "baboy" or "Pig" in m_name or "Baboy" in m_name:
+            self._spawn_loot_drop("raw_pork", random.randint(1, 3), mx, my)
+            if random.random() < 0.75:
+                self._spawn_loot_drop("pork_belly", 1, mx, my)
+            return
+        elif m_type == "kalabaw" or "Carabao" in m_name or "Kalabaw" in m_name:
+            self._spawn_loot_drop("raw_beef", random.randint(2, 4), mx, my)
+            self._spawn_loot_drop("carabao_milk", random.randint(1, 2), mx, my)
+            return
+        elif m_type == "kambing" or "Goat" in m_name or "Kambing" in m_name:
+            self._spawn_loot_drop("raw_goat_meat", random.randint(1, 2), mx, my)
+            self._spawn_loot_drop("goat_milk", 1, mx, my)
+            return
+        elif m_type == "aswang" or "Aswang" in m_name:
+            self._spawn_loot_drop("bone", random.randint(2, 4), mx, my)
+            self._spawn_loot_drop("copper_coin", random.randint(25, 60), mx, my)
+            if random.random() < 0.35:
+                self._spawn_loot_drop("healing_potion", 1, mx, my)
+            return
+        elif m_type == "blight_cultist" or "Cultist" in m_name:
+            self._spawn_loot_drop("blightstone_block", random.randint(2, 5), mx, my)
+            self._spawn_loot_drop("copper_coin", random.randint(20, 50), mx, my)
+            if random.random() < 0.25:
+                self._spawn_loot_drop("affix_stone", 1, mx, my)
+            return
 
         if tuned:
             if not hasattr(self, "_catalog_rarity_pools"):
@@ -1539,7 +1582,18 @@ class CombatManager:
         cutoff_5pm = 11.0 / 24.0
         is_surface = (ground_ty < 85)
         if (time_of_day < cutoff_5pm) and is_surface:
-            # Daytime Peace: Strictly 0 aggressive surface monsters spawn before 5:00 PM
+            # Daytime Peace: Strictly 0 aggressive surface monsters spawn before 5:00 PM.
+            # Morning peace (< 0.22): serene morning with 0 spawns.
+            if time_of_day < 0.22:
+                return
+            # Daytime surface: spawn friendly Philippine poultry & land animals in forest!
+            biome = world.get_biome_at(spawn_tx, ground_ty)
+            if biome == BIOME_FOREST:
+                animal_count = sum(1 for m in self.mobs if getattr(m, "is_passive", False))
+                if animal_count < 8:
+                    animal_cls = random.choice([ManokMob, PatoMob, BaboyMob, KalabawMob, KambingMob])
+                    new_animal = animal_cls(spawn_x, (ground_ty - 1) * SCALED_TILE, self.asset_factory)
+                    self.spawn_mob(new_animal, player)
             return
 
         # Player-Built House & Base Protection (Minecraft / Terraria Style)
@@ -1600,7 +1654,7 @@ class CombatManager:
                 self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome == BIOME_CORRUPTION:
-            mob_cls = random.choice([CorruptSlime, ShadowCrawler, ShieldWeaver])
+            mob_cls = random.choice([CorruptSlime, ShadowCrawler, ShieldWeaver, BlightCultist])
             self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome in (BIOME_CAVERN, BIOME_MUSHROOM):
@@ -1611,18 +1665,22 @@ class CombatManager:
                 self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         elif biome == BIOME_DUNGEON:
-            mob_cls = random.choice([Skeleton, ShadowCrawler, ShieldWeaver])
+            mob_cls = random.choice([Skeleton, ShadowCrawler, ShieldWeaver, BlightCultist])
             self.spawn_mob(mob_cls(spawn_x, spawn_y, self.asset_factory), player=player)
 
         else: # BIOME_FOREST
             if is_night:
                 r = random.random()
-                if r < 0.35:
+                if r < 0.25:
                     self.spawn_mob(Zombie(spawn_x, spawn_y, self.asset_factory), player=player)
-                elif r < 0.60:
+                elif r < 0.45:
                     self.spawn_mob(DemonEye(spawn_x, player.center_y - 140, self.asset_factory), player=player)
-                elif r < 0.80:
+                elif r < 0.65:
                     self.spawn_mob(RockZombie(spawn_x, spawn_y, self.asset_factory), player=player)
+                elif r < 0.80:
+                    self.spawn_mob(Aswang(spawn_x, spawn_y, self.asset_factory), player=player)
+                elif r < 0.90:
+                    self.spawn_mob(BlightCultist(spawn_x, spawn_y, self.asset_factory), player=player)
                 else:
                     self.spawn_mob(PurpleSlime(spawn_x, spawn_y, self.asset_factory), player=player)
             else:

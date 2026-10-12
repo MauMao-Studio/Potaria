@@ -16,7 +16,7 @@
     "color_grade": "cinematic",
     "lighting_quality": "high",
     "particle_density": "high",
-    "boost_mode": true,
+    "boost_mode": false,
     "damage_numbers": true,
     "tooltips": "compact"
   },

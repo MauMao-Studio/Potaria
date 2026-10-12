@@ -219,15 +219,15 @@ class HUD:
                     pygame.draw.circle(target_surf, (50, 80, 110), (bx + 6, by + 6), 5, 1)
 
     def _render_skill_bar(self, target_surf, player):
-        """Draws active skill icons and cooldown sweeps dynamically from player's hotkey loadout."""
+        """Draws active skill icons and cooldown sweeps dynamically from player's hotkey loadout with sleek badges."""
         skills = list(player.skills.hotkey_bindings.items()) if hasattr(player.skills, "hotkey_bindings") else [
             ("Q", "power_slash"), ("F", "whirlwind"), ("V", "dash"), ("R", "fireball")
         ]
-        bw, bh = 42, 42
+        bw, bh = 46, 54
         gap = 8
         total_w = len(skills) * (bw + gap) - gap
         start_x = (SCREEN_WIDTH - total_w) // 2
-        start_y = SCREEN_HEIGHT - 54
+        start_y = SCREEN_HEIGHT - 62
 
         for i, (key, s_id) in enumerate(skills):
             sx = start_x + i * (bw + gap)
@@ -236,62 +236,90 @@ class HUD:
             is_learned = s_id in player.skills.learned_skills if s_id else False
             cd_left = player.skills.cooldowns.get(s_id, 0.0) if s_id else 0.0
 
-            # Slot box
-            pygame.draw.rect(target_surf, (35, 40, 60, 220), rect, border_radius=6)
-            pygame.draw.rect(target_surf, (120, 140, 180) if is_learned else (60, 65, 80), rect, 1, border_radius=6)
+            # Slot box & backdrop
+            pygame.draw.rect(target_surf, (18, 24, 38, 235), rect, border_radius=6)
+            inner_rect = pygame.Rect(sx + 2, start_y + 2, bw - 4, bh - 4)
+            pygame.draw.rect(target_surf, (26, 34, 50, 220), inner_rect, border_radius=5)
 
-            # Hotkey badge
-            k_txt = self.font.render(key, True, (255, 215, 0) if is_learned else (110, 110, 110))
-            target_surf.blit(k_txt, (sx + 4, start_y + 2))
+            # Evolved skill check
+            is_evolved = hasattr(player.skills, "is_skill_evolved") and player.skills.is_skill_evolved(s_id)
+            if is_evolved:
+                border_col = (255, 215, 60)
+            elif is_learned:
+                border_col = (130, 165, 215)
+            else:
+                border_col = (55, 65, 82)
+            pygame.draw.rect(target_surf, border_col, rect, 2 if is_evolved else 1, border_radius=6)
 
-            # Skill level indicator
+            # Header row: Hotkey Badge (top-left) & Level Badge (top-right)
+            # 1. Hotkey Badge
+            k_badge = pygame.Rect(sx + 4, start_y + 4, 15, 13)
+            pygame.draw.rect(target_surf, (12, 16, 26, 240), k_badge, border_radius=3)
+            pygame.draw.rect(target_surf, (95, 125, 165) if is_learned else (45, 52, 65), k_badge, 1, border_radius=3)
+            k_txt = self.font_sm.render(key, True, (255, 220, 70) if is_learned else (120, 130, 145))
+            target_surf.blit(k_txt, (k_badge.centerx - k_txt.get_width() // 2, k_badge.centery - k_txt.get_height() // 2))
+
+            # 2. Skill Level Badge
             if is_learned and hasattr(player.skills, "get_skill_level"):
                 lvl = player.skills.get_skill_level(s_id)
-                lvl_txt = self.font_sm.render(f"Lv.{lvl}", True, (255, 230, 80))
-                target_surf.blit(lvl_txt, (sx + bw - lvl_txt.get_width() - 3, start_y + 2))
+                lvl_str = f"Lv.{lvl}"
+                lvl_txt = self.font_sm.render(lvl_str, True, (255, 225, 85))
+                lw = lvl_txt.get_width()
+                l_badge = pygame.Rect(sx + bw - lw - 6, start_y + 4, lw + 4, 13)
+                pygame.draw.rect(target_surf, (12, 16, 26, 240), l_badge, border_radius=3)
+                pygame.draw.rect(target_surf, (185, 150, 45), l_badge, 1, border_radius=3)
+                target_surf.blit(lvl_txt, (l_badge.x + 2, l_badge.y))
 
-            # Draw Skill Icon if learned / available
+            # Subtle horizontal separator between badge header and icon
+            pygame.draw.line(target_surf, (40, 50, 70), (sx + 4, start_y + 19), (sx + bw - 5, start_y + 19), 1)
+
+            # Icon Area: 30x30 centered below header
+            icon_x = sx + (bw - 30) // 2
+            icon_y = start_y + 21
             icon_drawn = False
+
             if s_id and hasattr(self.asset_factory, "skill_icons"):
-                # Check for evolved form icon name if evolved
-                is_evolved = hasattr(player.skills, "is_skill_evolved") and player.skills.is_skill_evolved(s_id)
                 s_def = SKILL_DEFINITIONS.get(s_id, {})
                 ev_name = s_def.get("evolved_name", "").lower().replace(" ", "_")
                 icon_surf = self.asset_factory.skill_icons.get(ev_name) if is_evolved else None
                 if not icon_surf:
                     icon_surf = self.asset_factory.skill_icons.get(s_id)
                 if icon_surf:
-                    icon_scaled = pygame.transform.scale(icon_surf, (28, 28))
+                    icon_scaled = pygame.transform.scale(icon_surf, (30, 30))
                     if not is_learned:
-                        # Dim locked / unlearned skill icon
                         dim_surf = icon_scaled.copy()
-                        dim_surf.fill((60, 60, 60, 160), special_flags=pygame.BLEND_RGBA_MULT)
-                        target_surf.blit(dim_surf, (sx + 7, start_y + 9))
+                        dim_surf.fill((55, 55, 60, 170), special_flags=pygame.BLEND_RGBA_MULT)
+                        target_surf.blit(dim_surf, (icon_x, icon_y))
                     else:
-                        target_surf.blit(icon_scaled, (sx + 7, start_y + 9))
+                        target_surf.blit(icon_scaled, (icon_x, icon_y))
                     icon_drawn = True
 
-            # Skill name abbreviation fallback or overlay if no icon
+            # Text fallback if no icon
             if not icon_drawn:
                 if s_id and hasattr(player.skills, "get_skill_name"):
                     s_name = player.skills.get_skill_name(s_id)[:3]
                 else:
                     s_name = SKILL_DEFINITIONS.get(s_id, {}).get("name", "---")[:3] if s_id else "---"
                 n_txt = self.font_sm.render(s_name, True, (255, 255, 255) if is_learned else (110, 110, 110))
-                target_surf.blit(n_txt, (sx + 14, start_y + 20))
+                target_surf.blit(n_txt, (sx + bw // 2 - n_txt.get_width() // 2, icon_y + 8))
 
-            # Cooldown shadow sweep
+            # Cooldown shadow sweep over icon
             if cd_left > 0 and s_id in SKILL_DEFINITIONS:
-                max_cd = SKILL_DEFINITIONS[s_id]["cooldown"]
-                sweep_pct = cd_left / max_cd
-                sweep_h = int(bh * sweep_pct)
-                cd_rect = pygame.Rect(sx, start_y + (bh - sweep_h), bw, sweep_h)
-                cd_surf = pygame.Surface((bw, sweep_h), pygame.SRCALPHA)
-                cd_surf.fill((0, 0, 0, 160))
-                target_surf.blit(cd_surf, cd_rect.topleft)
+                max_cd = max(0.1, SKILL_DEFINITIONS[s_id]["cooldown"])
+                sweep_pct = min(1.0, cd_left / max_cd)
+                sweep_h = int(30 * sweep_pct)
+                if sweep_h > 0:
+                    cd_rect = pygame.Rect(icon_x, icon_y + (30 - sweep_h), 30, sweep_h)
+                    cd_surf = pygame.Surface((30, sweep_h), pygame.SRCALPHA)
+                    cd_surf.fill((0, 0, 0, 175))
+                    target_surf.blit(cd_surf, cd_rect.topleft)
 
                 cd_txt = self.font_sm.render(f"{cd_left:.1f}", True, (255, 255, 255))
-                target_surf.blit(cd_txt, (sx + bw // 2 - cd_txt.get_width() // 2, start_y + 12))
+                shd_txt = self.font_sm.render(f"{cd_left:.1f}", True, (0, 0, 0))
+                tx = sx + bw // 2 - cd_txt.get_width() // 2
+                ty = icon_y + 8
+                target_surf.blit(shd_txt, (tx + 1, ty + 1))
+                target_surf.blit(cd_txt, (tx, ty))
 
     def _render_inventory(self, target_surf, inventory, mouse_x, mouse_y, player=None):
         start_x = 20

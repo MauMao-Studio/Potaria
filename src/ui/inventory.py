@@ -1536,6 +1536,364 @@ ITEM_REGISTRY = {
         "lore": "'Golden savory fish loved at every gathering.'",
         "special": "Restores 60 Health"
     },
+    # ----------------------------------------------------
+    # Recyclable Fishing Junk & River Debris
+    # ----------------------------------------------------
+    "dirt_clod": {
+        "name": "Dirt Clod", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "A clump of damp river mud and loose silt pulled up on a fishing line.",
+        "lore": "'No practical use on its own, but can be recycled or potted.'",
+        "special": "Recyclable Fishing Junk"
+    },
+    "old_boot": {
+        "name": "Waterlogged Boot", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "A soggy, worn leather boot hooked from the seabed. Smells like algae.",
+        "lore": "'Someone was missing their left footwear.'",
+        "special": "Recyclable Fishing Junk"
+    },
+    "rusty_can": {
+        "name": "Rusty Tin Can", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "An oxidized tin can discarded into the river long ago.",
+        "lore": "'Corroded by the tides.'",
+        "special": "Recyclable Fishing Junk"
+    },
+    "seaweed": {
+        "name": "Tangled Seaweed", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Briny dark green kelp ribbons harvested from coastal waters.",
+        "lore": "'Rich in oceanic minerals; can be dried or recycled.'",
+        "special": "Recyclable Fishing Junk"
+    },
+    "driftwood": {
+        "name": "Weathered Driftwood", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Salt-bleached smooth timber branch floating among the river reeds.",
+        "lore": "'Shaped and softened by river currents.'",
+        "special": "Recyclable Fishing Junk"
+    },
+
+    # ----------------------------------------------------
+    # Filipino Land Animals - Poultry, Livestock & Produce
+    # ----------------------------------------------------
+    "raw_chicken": {
+        "name": "Native Chicken Meat", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 16, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Fresh native poultry cut. Lean and flavorful, best stewed in adobo or tinola.",
+        "lore": "'Prized Philippine free-range fowl.'",
+        "special": "Restores 16 Health"
+    },
+    "raw_duck_meat": {
+        "name": "Native Duck Meat", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 18, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Rich, tender dark meat from free-range Pateros duck.",
+        "lore": "'Hearty poultry favored for braised delicacies.'",
+        "special": "Restores 18 Health"
+    },
+    "duck_egg": {
+        "name": "Itik Duck Egg", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Thick-shelled duck egg, key ingredient for Balut and Itlog na Maalat.",
+        "lore": "'Rich yolk with velvety texture.'",
+        "special": "Restores 12 Health"
+    },
+    "egg": {
+        "name": "Native Hen Egg", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 10, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Farm fresh native chicken egg with deep golden yolk.",
+        "lore": "'Wholesome breakfast staple.'",
+        "special": "Restores 10 Health"
+    },
+    "raw_pork": {
+        "name": "Native Pork Cut", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 20, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Succulent cut of native black pig. Essential for classic pork adobo and sinigang.",
+        "lore": "'Naturally flavorful native swine meat.'",
+        "special": "Restores 20 Health"
+    },
+    "pork_belly": {
+        "name": "Liempo Pork Belly", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Layered fatty pork belly slab, prime cut for crispy lechon kawali.",
+        "lore": "'Golden crackling skin and tender juicy fat.'",
+        "special": "Restores 25 Health"
+    },
+    "raw_beef": {
+        "name": "Bulalo Beef Shank", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 28, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Meaty beef shank bone with rich marrow center from native carabao.",
+        "lore": "'The soul of hearty Sunday stews.'",
+        "special": "Restores 28 Health"
+    },
+    "carabao_milk": {
+        "name": "Fresh Carabao Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Rich, creamy milk from Philippine water buffalo. High in butterfat.",
+        "lore": "'Pure white milk prized for making pastillas and cheese.'",
+        "special": "Restores 35 Health"
+    },
+    "raw_goat_meat": {
+        "name": "Native Goat Meat", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 24, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Lean, aromatic goat meat cut, traditional centerpiece for Kaldereta.",
+        "lore": "'Tenderized with spiced aromatics.'",
+        "special": "Restores 24 Health"
+    },
+    "goat_milk": {
+        "name": "Native Goat Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 28, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Easily digestible rich milk from native Philippine goats.",
+        "lore": "'Nutrient-dense nourishing drink.'",
+        "special": "Restores 28 Health"
+    },
+    "feather": {
+        "name": "Poultry Feather", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 999, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Iridescent lightweight feather shed by native fowl. Useful for fletching arrows.",
+        "lore": "'Glides effortlessly on thermal drafts.'",
+        "special": "Crafting Material"
+    },
+
+    # ----------------------------------------------------
+    # Filipino Cooking Spices & Produce Ingredients
+    # ----------------------------------------------------
+    "garlic": {
+        "name": "Bawang Garlic", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Pungent native garlic cloves. The aromatic foundation of Filipino cuisine.",
+        "lore": "'Said to ward off Aswang and evil spirits.'",
+        "special": "Cooking Ingredient"
+    },
+    "onion": {
+        "name": "Sibuyas Red Onion", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Sweet, vibrant red onion bulbs essential for sautéing.",
+        "lore": "'Sizzles aromatically in the pan.'",
+        "special": "Cooking Ingredient"
+    },
+    "ginger": {
+        "name": "Luya Fresh Ginger", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Zesty, warming ginger root that infuses tinola and arroz caldo broth.",
+        "lore": "'Soothes sore throats and warms the stomach.'",
+        "special": "Cooking Ingredient"
+    },
+    "calamansi": {
+        "name": "Calamansi Citrus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 10, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Tart and aromatic Philippine lime. Adds bright acidity to dipping sauces.",
+        "lore": "'Nature's zestiest vitamin booster.'",
+        "special": "Restores 10 Health"
+    },
+    "tamarind": {
+        "name": "Sampalok Tamarind", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Tangy tamarind pods that give Sinigang its signature appetizing sourness.",
+        "lore": "'Puckers the lips with mouth-watering sourness.'",
+        "special": "Cooking Ingredient"
+    },
+    "soy_sauce": {
+        "name": "Toyo Soy Sauce", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Fermented rich black soy sauce. Savory cornerstone of adobo.",
+        "lore": "'Deep umami aged in wooden vats.'",
+        "special": "Cooking Ingredient"
+    },
+    "vinegar": {
+        "name": "Sukang Paombong Vinegar", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Traditional cane and palm vinegar with sharp, clean tartness.",
+        "lore": "'Naturally preserves and balances savory meat dishes.'",
+        "special": "Cooking Ingredient"
+    },
+    "black_pepper": {
+        "name": "Paminta Peppercorns", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Whole black peppercorns from aromatic spice groves.",
+        "lore": "'Packs gentle biting heat and aroma.'",
+        "special": "Cooking Ingredient"
+    },
+    "salt": {
+        "name": "Asin Sea Salt", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Pure crystallized white sea salt harvested from coastal pans.",
+        "lore": "'Brings out every hidden nuance of flavor.'",
+        "special": "Cooking Ingredient"
+    },
+    "rice": {
+        "name": "Milagrosa White Rice", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Fragrant polished grain. A meal in Potaria is never complete without rice.",
+        "lore": "'The heartbeat of every dining table.'",
+        "special": "Cooking Ingredient"
+    },
+    "coconut_milk": {
+        "name": "Gata Coconut Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 20, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Rich, velvety cream pressed from freshly grated mature coconut meat.",
+        "lore": "'Adds luxurious silkiness to coastal curries.'",
+        "special": "Cooking Ingredient"
+    },
+    "peanut_butter": {
+        "name": "Ground Peanut Butter", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 22, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Savory roasted peanut paste that thickens luscious Kare-Kare sauce.",
+        "lore": "'Warm, nutty aroma beloved by all.'",
+        "special": "Cooking Ingredient"
+    },
+    "eggplant": {
+        "name": "Talong Native Eggplant", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Glossy purple tender eggplant, key vegetable for Sinigang and Tortang Talong.",
+        "lore": "'Soaks up rich broths like a sponge.'",
+        "special": "Cooking Ingredient"
+    },
+    "string_beans": {
+        "name": "Sitaw String Beans", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Crisp green yardlong beans harvested fresh from farm trellises.",
+        "lore": "'Snaps with sweet, vegetal freshness.'",
+        "special": "Cooking Ingredient"
+    },
+    "pancit_noodles": {
+        "name": "Bihon Rice Noodles", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Delicate sun-dried translucent rice noodles. Symbolizes long life and health.",
+        "lore": "'Stir-fried for celebrations and good fortune.'",
+        "special": "Cooking Ingredient"
+    },
+    "shaved_ice": {
+        "name": "Yelo Shaved Ice", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Fine snowy ice flakes scooped to create the ultimate tropical cooling treat.",
+        "lore": "'Chills instantly beneath the sweltering sun.'",
+        "special": "Dessert Ingredient"
+    },
+    "condensed_milk": {
+        "name": "Sweet Condensed Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Sweet, golden thick milk syrup poured lavishly over shaved ice desserts.",
+        "lore": "'Pure caramelized dairy bliss.'",
+        "special": "Dessert Ingredient"
+    },
+    "ube_halaya": {
+        "name": "Ube Halaya Jam", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Decadent purple yam jam simmered slowly with butter and milk.",
+        "lore": "'The crowned jewel of Philippine sweets.'",
+        "special": "Restores 35 Health"
+    },
+
+    # ----------------------------------------------------
+    # Authentic Filipino Cooked Dishes & Feasts
+    # ----------------------------------------------------
+    "chicken_adobo": {
+        "name": "Classic Chicken Adobo", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 90, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Simmered native chicken in vinegar, soy sauce, garlic, and cracked pepper. Restores 90 HP.",
+        "lore": "'The undisputed national dish of the Philippines.'",
+        "special": "Restores 90 Health"
+    },
+    "pork_adobo": {
+        "name": "Rich Pork Adobo", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 95, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Tender pork cubes braised with garlic, bay leaves, and tangy soy vinegar sauce. Restores 95 HP.",
+        "lore": "'Even better the next day as the sauce deepens.'",
+        "special": "Restores 95 Health"
+    },
+    "sinigang": {
+        "name": "Sinigang na Baboy", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 105, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Tamarind-sour savory soup with tender pork and crisp vegetables. Restores 105 HP.",
+        "lore": "'The sour broth warms the heart and cleanses all weariness.'",
+        "special": "Restores 105 Health"
+    },
+    "kare_kare": {
+        "name": "Fiesta Kare-Kare", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 115, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Savory peanut stew with tender beef shank, eggplant, and string beans. Restores 115 HP.",
+        "lore": "'Rich golden-orange feast served at grand celebrations.'",
+        "special": "Restores 115 Health"
+    },
+    "bulalo": {
+        "name": "Batangas Bulalo", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 120, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Slow-simmered beef shank marrow soup with sweet corn and peppercorns. Restores 120 HP.",
+        "lore": "'Rich, golden marrow that restores tremendous vitality.'",
+        "special": "Restores 120 Health"
+    },
+    "tinola": {
+        "name": "Tinolang Manok", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 85, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Comforting native chicken soup infused with warming ginger and onions. Restores 85 HP.",
+        "lore": "'A comforting maternal recipe that chases away chills.'",
+        "special": "Restores 85 Health"
+    },
+    "lechon": {
+        "name": "Crispy Lechon Kawali", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Deep-fried pork belly slab with blistering crackling skin and juicy meat. Restores 110 HP.",
+        "lore": "'The unmistakable crunch echoing through the banquet hall.'",
+        "special": "Restores 110 Health"
+    },
+    "pancit_bihon": {
+        "name": "Pancit Guisado", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 80, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Stir-fried bihon noodles with savory meat slivers, garlic, and calamansi. Restores 80 HP.",
+        "lore": "'Long noodles for long life and boundless adventures.'",
+        "special": "Restores 80 Health"
+    },
+    "arroz_caldo": {
+        "name": "Arroz Caldo with Egg", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 75, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Thick chicken and rice porridge topped with toasted garlic and boiled egg. Restores 75 HP.",
+        "lore": "'Warming soul food on rainy cavern days.'",
+        "special": "Restores 75 Health"
+    },
+    "halo_halo": {
+        "name": "Special Halo-Halo", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 90, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Towering shaved ice dessert with ube halaya, condensed milk, and sweet treats. Restores 90 HP.",
+        "lore": "'Mix-mix! The ultimate festive Philippine refreshment.'",
+        "special": "Restores 90 Health"
+    },
+    "kaldereta": {
+        "name": "Kalderetang Kambing", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
+        "rarity": RARITY_RARE,
+        "desc": "Hearty spiced stew of tender goat meat with tomatoes and sweet peppers. Restores 110 HP.",
+        "lore": "'Spicy and robust, a legendary party centerpiece.'",
+        "special": "Restores 110 Health"
+    },
+    "balut": {
+        "name": "Balut with Rock Salt", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 65, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Fertilized duck egg sipped hot with spiced vinegar and sea salt. Restores 65 HP.",
+        "lore": "'Infuses the adventurer with legendary stamina and courage.'",
+        "special": "Restores 65 Health"
+    },
+    "itlog_na_maalat": {
+        "name": "Itlog na Maalat", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 45, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Cured red-dyed salted duck egg paired with fresh tomatoes. Restores 45 HP.",
+        "lore": "'Rich, oily yolk bursting with savory saltiness.'",
+        "special": "Restores 45 Health"
+    },
+    "sinangag": {
+        "name": "Garlic Sinangag Rice", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 50, "max_stack": 99, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Wok-fried rice tossed with golden toasted garlic and sea salt. Restores 50 HP.",
+        "lore": "'The irresistible aroma that awakens sleeping villages.'",
+        "special": "Restores 50 Health"
+    },
+    "daing_na_bangus": {
+        "name": "Daing na Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 75, "max_stack": 99, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Marinated split milkfish in garlic vinegar, fried to a golden crisp. Restores 75 HP.",
+        "lore": "'Crispy fins and savory belly loved by breakfast champions.'",
+        "special": "Restores 75 Health"
+    },
     "dungeon_rune": {
         "name": "Dungeon Teleporter Rune", "cat": CAT_SPECIAL, "power": 0, "damage": 0, "max_stack": 10, "tile": None,
         "rarity": RARITY_EPIC,
