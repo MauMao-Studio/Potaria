@@ -17,6 +17,88 @@ from src.network.protocol import (
     PKT_SYNC_MOBS, PKT_MOB_DAMAGE,
     encode_packet, decode_packets
 )
+import json
+import time
+
+DISCOVERY_PORT = 25566
+
+class LANDiscovery:
+    """Listens for UDP broadcast beacons on DISCOVERY_PORT and tracks active LAN servers."""
+    def __init__(self, port=DISCOVERY_PORT):
+        self.port = port
+        self.running = False
+        self.sock = None
+        self.discovered_servers = {}  # ip -> {server_name, port, players, max_players, is_private, room_key, last_seen}
+        self.lock = threading.Lock()
+
+    def start(self):
+        if self.running:
+            return
+        self.running = True
+        self.thread = threading.Thread(target=self._listen_loop, daemon=True)
+        self.thread.start()
+
+    def _listen_loop(self):
+        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                self.sock.bind(("", self.port))
+            except Exception:
+                # Fallback bind
+                self.sock.bind(("0.0.0.0", self.port))
+            self.sock.settimeout(1.0)
+        except Exception as e:
+            print(f"[LANDiscovery] Socket bind warning: {e}")
+            return
+
+        while self.running:
+            try:
+                data, addr = self.sock.recvfrom(2048)
+                msg = json.loads(data.decode("utf-8").strip())
+                if msg.get("type") == "potaria_lan_beacon":
+                    ip = addr[0]
+                    # Normalize local address
+                    if ip in ("127.0.0.1", "0.0.0.0"):
+                        try:
+                            ip = socket.gethostbyname(socket.gethostname())
+                        except Exception:
+                            ip = "127.0.0.1"
+                    with self.lock:
+                        self.discovered_servers[ip] = {
+                            "ip": ip,
+                            "server_name": msg.get("server_name", "Potaria LAN Server"),
+                            "port": msg.get("port", 25565),
+                            "players": msg.get("players", 1),
+                            "max_players": msg.get("max_players", 5),
+                            "is_private": msg.get("is_private", False),
+                            "room_key": msg.get("room_key", ""),
+                            "last_seen": time.time()
+                        }
+            except (socket.timeout, TimeoutError):
+                pass
+            except Exception:
+                pass
+
+            # Prune servers unseen for > 5 seconds
+            with self.lock:
+                now = time.time()
+                for s_ip in list(self.discovered_servers.keys()):
+                    if now - self.discovered_servers[s_ip]["last_seen"] > 5.0:
+                        del self.discovered_servers[s_ip]
+
+    def get_servers(self):
+        with self.lock:
+            return list(self.discovered_servers.values())
+
+    def stop(self):
+        self.running = False
+        if self.sock:
+            try:
+                self.sock.close()
+            except Exception:
+                pass
+
 
 class LANClient:
     def __init__(self):
@@ -36,7 +118,7 @@ class LANClient:
         from src.ui.theme import font_compact
         self.name_font = font_compact(11)
 
-    def connect(self, host_ip, port=25565, player_name="Spud"):
+    def connect(self, host_ip, port=25565, player_name="Spud", room_key=None):
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((host_ip, port))
@@ -51,7 +133,7 @@ class LANClient:
                     self.player_id = data.get("player_id", 2)
                     self.world_seed = data.get("seed", 12345)
                     print(f"[LANClient] Connected as Player {self.player_id} with World Seed: {self.world_seed}")
-                    join_pkt = encode_packet(PKT_JOIN, {"name": player_name})
+                    join_pkt = encode_packet(PKT_JOIN, {"name": player_name, "room_key": room_key or ""})
                     self.sock.sendall(join_pkt)
                     break
 

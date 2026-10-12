@@ -15,17 +15,22 @@ from src.network.protocol import (
     PKT_SYNC_MOBS, PKT_MOB_DAMAGE,
     encode_packet, decode_packets
 )
+import json
 
 DEFAULT_PORT = 25565
+DISCOVERY_PORT = 25566
 
 class LANServer:
-    def __init__(self, host="0.0.0.0", port=DEFAULT_PORT, max_players=5):
+    def __init__(self, host="0.0.0.0", port=DEFAULT_PORT, max_players=5, server_name="Spud World", room_key=None):
         self.host = host
         self.port = port
         self.max_players = max_players
+        self.server_name = server_name
+        self.room_key = room_key
         
         self.running = False
         self.server_sock = None
+        self.beacon_sock = None
         self.clients = {}  # player_id -> socket
         self.players = {}  # player_id -> state_dict
         self.next_player_id = 1
@@ -60,7 +65,40 @@ class LANServer:
 
         self.sync_thread = threading.Thread(target=self._broadcast_sync_loop, daemon=True)
         self.sync_thread.start()
+
+        # Start UDP Discovery Beacon Broadcast Thread
+        self.beacon_thread = threading.Thread(target=self._beacon_broadcast_loop, daemon=True)
+        self.beacon_thread.start()
         print(f"[LANServer] Started on port {self.port}. Waiting for up to {self.max_players} players...")
+
+    def _beacon_broadcast_loop(self):
+        """Broadcasts UDP presence beacon on DISCOVERY_PORT every 1.5 seconds."""
+        try:
+            self.beacon_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.beacon_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        except Exception as e:
+            print(f"[LANServer] Beacon socket init error: {e}")
+            return
+
+        while self.running:
+            try:
+                beacon_data = {
+                    "type": "potaria_lan_beacon",
+                    "server_name": self.server_name,
+                    "port": self.port,
+                    "max_players": self.max_players,
+                    "players": len(self.players),
+                    "is_private": bool(self.room_key),
+                    "room_key": self.room_key or ""
+                }
+                msg = (json.dumps(beacon_data) + "\n").encode("utf-8")
+                # Send to standard broadcast
+                self.beacon_sock.sendto(msg, ("<broadcast>", DISCOVERY_PORT))
+                # Also loopback broadcast in case subnet broadcast is filtered
+                self.beacon_sock.sendto(msg, ("127.0.0.1", DISCOVERY_PORT))
+            except Exception:
+                pass
+            time.sleep(1.5)
 
     def _accept_loop(self):
         while self.running:
@@ -108,6 +146,11 @@ class LANServer:
                     pdata = pkt.get("data", {})
 
                     if ptype == PKT_JOIN:
+                        req_key = str(pdata.get("room_key", "")).strip()
+                        if self.room_key and req_key != str(self.room_key).strip():
+                            print(f"[LANServer] Player {player_id} rejected: invalid room key.")
+                            sock.close()
+                            break
                         with self.lock:
                             if player_id in self.players:
                                 self.players[player_id]["name"] = pdata.get("name", f"Potato_{player_id}")
@@ -204,6 +247,11 @@ class LANServer:
 
     def stop(self):
         self.running = False
+        if self.beacon_sock:
+            try:
+                self.beacon_sock.close()
+            except Exception:
+                pass
         if self.server_sock:
             try:
                 self.server_sock.close()

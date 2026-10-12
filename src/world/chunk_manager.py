@@ -101,7 +101,7 @@ class ChunkSection:
                         if wall_tex:
                             self.surf.blit(wall_tex, (local_px, local_py))
                     else:
-                        if ty >= 0 and ty >= surf_y:
+                        if ty >= 0 and ty >= surf_y and (t_id not in OPAQUE_EXCLUSIONS):
                             if ty >= DUNGEON_LEVEL - 8 and is_dungeon_col:
                                 sub_w = WALL_DUNGEON
                             elif ty >= CAVERN_LEVEL - 12:

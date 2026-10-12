@@ -37,7 +37,7 @@ from src.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TITLE, DEVELOPER, SCALED_TILE,
     STATE_MENU, STATE_STORY, STATE_CUTSCENE, STATE_CONTROLS, STATE_PLAYING, STATE_VICTORY, STATE_SETTINGS,
     STATE_WORLDS, STATE_NEW_WORLD, STATE_GAME_OVER, STATE_MODS, STATE_ACHIEVEMENTS,
-    DIFFICULTY_NORMAL, DIFFICULTY_HARDCORE, DIFFICULTY_YOLO,
+    DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARDCORE, DIFFICULTY_YOLO,
     WORLD_TYPE_INFINITE, WORLD_TYPE_FINITE, CAVERN_LEVEL, DUNGEON_LEVEL,
     MODE_ADVENTURE, MODE_LAST_MAN_STANDING,
     TILE_AIR, TILE_DIRT, TILE_GRASS, TILE_STONE, TILE_WOOD,
@@ -551,14 +551,15 @@ class PotariaGame:
         if dropped:
             self.drop_item_into_world(dropped[0], dropped[1])
 
-    def start_lan_host(self):
+    def start_lan_host(self, server_name=None, room_key=None):
         """Initializes authoritative LAN host server and connects local client."""
         try:
-            print("[Main] Starting LAN Host Server...")
-            self.server = LANServer(port=25565)
+            name = server_name or getattr(self, "active_world_name", "Spud World")
+            print(f"[Main] Starting LAN Host Server '{name}' (Room Key: {'Set' if room_key else 'None'})...")
+            self.server = LANServer(port=25565, server_name=name, room_key=room_key)
             self.server.start(self.world.seed, host_is_client=True)
             self.client = LANClient()
-            self.client.connect("127.0.0.1", 25565, player_name="Spud (Host)")
+            self.client.connect("127.0.0.1", 25565, player_name="Spud (Host)", room_key=room_key)
             self.combat.is_client = False
             self.combat.client = self.client
             if self.game_mode == MODE_LAST_MAN_STANDING:
@@ -570,12 +571,12 @@ class PotariaGame:
         except Exception as e:
             print(f"[Main] Failed to start LAN Host: {e}")
 
-    def join_lan_game(self, host_ip):
+    def join_lan_game(self, host_ip, room_key=None):
         """Connects to remote LAN host and synchronizes procedural world seed."""
         try:
             print(f"[Main] Connecting to LAN Host at {host_ip}...")
             self.client = LANClient()
-            success, host_seed = self.client.connect(host_ip, 25565, player_name="Spud_Guest")
+            success, host_seed = self.client.connect(host_ip, 25565, player_name="Spud_Guest", room_key=room_key)
             if success and host_seed is not None:
                 print(f"[Main] Connected to host! Generating shared world with seed: {host_seed}")
                 self.combat.is_client = True
@@ -808,6 +809,20 @@ class PotariaGame:
                 self.set_fullscreen_mode(bool(settings["fullscreen"]))
             except Exception:
                 pass
+
+        # Apply audio volumes
+        m_vol = settings.get("master_volume", 1.0)
+        s_vol = settings.get("sfx_volume", 0.85)
+        b_vol = settings.get("bgm_volume", 0.65)
+        if hasattr(self, "sound_manager") and hasattr(self.sound_manager, "set_volumes"):
+            self.sound_manager.set_volumes(master=m_vol, sfx=s_vol)
+        if hasattr(self, "bgm") and hasattr(self.bgm, "set_volumes"):
+            self.bgm.set_volumes(master=m_vol, bgm=b_vol)
+
+        # Apply touch controls
+        if hasattr(self, "touch_controller"):
+            self.touch_controller.set_mode(settings.get("touch_controls", "auto"))
+            self.touch_controller.set_opacity(settings.get("touch_opacity", 0.75))
         self._apply_window_icon()
 
     def set_renderer_mode(self, mode: str):
@@ -887,6 +902,7 @@ class PotariaGame:
         self.difficulty = difficulty
         self.game_mode = game_mode
         self.world = World(self.asset_factory, seed=seed, world_type=self.world_type)
+        self.world.tree_cascade_felling = False  # Newly generated worlds use natural tree decay
         self.block_deltas = {}
         self.wall_deltas = {}
         self.playtime = 0.0
@@ -924,12 +940,17 @@ class PotariaGame:
         self.player.health = self.player.max_health
         self.player.is_dead = False
 
-        # Reset Skills to starting baseline
+        # Reset Skills to starting baseline (Easy mode gets starting skills; Normal/Hardcore/YOLO do not)
         if hasattr(self.player, "skills"):
-            starting_skills = {"power_slash", "dash"}
-            self.player.skills.learned_skills = set(starting_skills)
-            self.player.skills.skill_levels = {s: 1 for s in starting_skills}
-            self.player.skills.hotkey_bindings = {"Q": "power_slash", "F": None, "V": "dash", "R": None}
+            if self.difficulty == DIFFICULTY_EASY:
+                starting_skills = {"power_slash", "dash"}
+                self.player.skills.learned_skills = set(starting_skills)
+                self.player.skills.skill_levels = {s: 1 for s in starting_skills}
+                self.player.skills.hotkey_bindings = {"Q": "power_slash", "F": None, "V": "dash", "R": None}
+            else:
+                self.player.skills.learned_skills = set()
+                self.player.skills.skill_levels = {}
+                self.player.skills.hotkey_bindings = {"Q": None, "F": None, "V": None, "R": None}
             self.player.skills.hotkey_slots = dict(self.player.skills.hotkey_bindings)
 
         # Reset Inventory Loadout & Coin Purse (Zero World State Bleed)
@@ -988,8 +1009,14 @@ class PotariaGame:
             self.running = False
         elif action == "host_lan":
             self.start_lan_host()
+        elif isinstance(action, tuple) and action[0] == "host_lan":
+            s_name = action[1] if len(action) > 1 else None
+            r_key = action[2] if len(action) > 2 else None
+            self.start_lan_host(server_name=s_name, room_key=r_key)
         elif isinstance(action, tuple) and action[0] == "join_lan":
-            self.join_lan_game(action[1])
+            h_ip = action[1]
+            r_key = action[2] if len(action) > 2 else None
+            self.join_lan_game(h_ip, room_key=r_key)
         elif isinstance(action, tuple) and action[0] == "set_fullscreen":
             self.set_fullscreen_mode(action[1])
         elif action == "toggle_fullscreen":
@@ -1001,29 +1028,39 @@ class PotariaGame:
         elif isinstance(action, tuple) and action[0] == "set_shaders":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_shaders_enabled"):
                 self.renderer_manager.set_shaders_enabled(action[1])
+            self.menu.save_settings()
         elif action == "toggle_shaders":
             cur_s = self.menu.settings.get("shaders", True)
             self.menu.settings["shaders"] = not cur_s
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_shaders_enabled"):
                 self.renderer_manager.set_shaders_enabled(not cur_s)
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_bloom":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_bloom_enabled"):
                 self.renderer_manager.set_bloom_enabled(action[1])
+            self.menu.save_settings()
         elif action == "toggle_bloom":
             cur_b = self.menu.settings.get("bloom", True)
             self.menu.settings["bloom"] = not cur_b
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_bloom_enabled"):
                 self.renderer_manager.set_bloom_enabled(not cur_b)
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_vignette":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_vignette_enabled"):
                 self.renderer_manager.set_vignette_enabled(action[1])
+            self.menu.save_settings()
         elif action == "toggle_vignette":
             cur_v = self.menu.settings.get("vignette", True)
             self.menu.settings["vignette"] = not cur_v
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_vignette_enabled"):
                 self.renderer_manager.set_vignette_enabled(not cur_v)
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_resolution":
             self.set_resolution(action[1])
+            self.menu.save_settings()
         elif action == "cycle_resolution":
             cur_r = str(self.menu.settings.get("resolution", "1920x1080"))
             res_list = getattr(self.menu, "resolutions", ["1920x1080", "1600x900", "1366x768", "1280x720"])
@@ -1036,42 +1073,57 @@ class PotariaGame:
         elif isinstance(action, tuple) and action[0] == "set_water_effects":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_water_distortion_enabled"):
                 self.renderer_manager.set_water_distortion_enabled(action[1])
+            self.menu.save_settings()
         elif action == "toggle_water_effects":
             cur_w = self.menu.settings.get("water_effects", True)
             self.menu.settings["water_effects"] = not cur_w
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_water_distortion_enabled"):
                 self.renderer_manager.set_water_distortion_enabled(not cur_w)
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_color_grade":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_color_grading_mode"):
                 self.renderer_manager.set_color_grading_mode(action[1])
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_lighting_quality":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_lighting_quality"):
                 self.renderer_manager.set_lighting_quality(action[1])
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_particle_density":
             if hasattr(self, "renderer_manager") and hasattr(self.renderer_manager, "set_particle_density"):
                 self.renderer_manager.set_particle_density(action[1])
             if hasattr(self, "particle_system"):
                 density_map = {"ultra": 500, "high": 250, "medium": 120, "low": 60}
                 self.particle_system.max_particles = density_map.get(str(action[1]).lower(), 250)
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_shake":
             self.camera.shake_enabled = action[1]
+            self.menu.save_settings()
         elif action == "toggle_shake":
             cur_s = self.menu.settings.get("screen_shake", True)
             self.menu.settings["screen_shake"] = not cur_s
             self.camera.shake_enabled = not cur_s
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_boost_mode":
             self.boost_mode = bool(action[1])
+            self.menu.save_settings()
         elif action == "toggle_boost_mode":
             self.boost_mode = not getattr(self, "boost_mode", True)
             self.menu.settings["boost_mode"] = self.boost_mode
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_damage_numbers":
             if hasattr(self, "combat"):
                 self.combat.show_damage_numbers = bool(action[1])
+            self.menu.save_settings()
         elif action == "toggle_damage_numbers":
             cur_d = self.menu.settings.get("damage_numbers", True)
             self.menu.settings["damage_numbers"] = not cur_d
             if hasattr(self, "combat"):
                 self.combat.show_damage_numbers = not cur_d
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_tooltips":
             tt_mode = str(action[1])
             if hasattr(self, "inventory"):
@@ -1080,6 +1132,7 @@ class PotariaGame:
                 self.hud.tooltip_mode = tt_mode
             if hasattr(self, "chest_ui"):
                 self.chest_ui.tooltip_mode = tt_mode
+            self.menu.save_settings()
         elif action == "toggle_tooltips":
             cur_t = "compact" if self.menu.settings.get("tooltips", "detailed") == "detailed" else "detailed"
             self.menu.settings["tooltips"] = cur_t
@@ -1089,12 +1142,16 @@ class PotariaGame:
                 self.hud.tooltip_mode = cur_t
             if hasattr(self, "chest_ui"):
                 self.chest_ui.tooltip_mode = cur_t
+            self.menu._refresh_settings_button_labels()
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_touch_controls":
             if hasattr(self, "touch_controller"):
                 self.touch_controller.set_mode(action[1])
+            self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_touch_opacity":
             if hasattr(self, "touch_controller"):
                 self.touch_controller.set_opacity(action[1])
+            self.menu.save_settings()
         elif action == "resume_paused":
             self.paused = True
             self.menu.state = STATE_PLAYING
@@ -1110,11 +1167,19 @@ class PotariaGame:
             self.reset_new_session(w_name, w_type, w_diff, w_mode)
             self.save_game_world()
             self.menu.state = STATE_PLAYING
+            if getattr(self.menu, "hosting_lan", False):
+                r_key = getattr(self.menu, "host_room_key", "")
+                self.start_lan_host(server_name=w_name, room_key=r_key)
+                self.menu.hosting_lan = False
         elif isinstance(action, tuple) and action[0] == "load_world":
             w_name = action[1]
             if load_world(w_name, self):
                 self.player.inventory = self.inventory
                 self.menu.state = STATE_PLAYING
+                if getattr(self.menu, "hosting_lan", False):
+                    r_key = getattr(self.menu, "host_room_key", "")
+                    self.start_lan_host(server_name=w_name, room_key=r_key)
+                    self.menu.hosting_lan = False
             else:
                 self.menu.state = STATE_WORLDS
         elif action == "restart_yolo":
@@ -1424,7 +1489,7 @@ class PotariaGame:
                         self.crafting.handle_scroll(event.y)
                     else:
                         self.inventory.selected_slot = (self.inventory.selected_slot - event.y) % 10
-                elif self.menu.state == STATE_ACHIEVEMENTS:
+                elif self.menu.state in (STATE_ACHIEVEMENTS, STATE_WORLDS):
                     self.menu.handle_scroll(event.y)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -2896,6 +2961,12 @@ class PotariaGame:
                 self.player.equipment.recalculate_stats(self.player.stats)
             elif self.difficulty == DIFFICULTY_YOLO:
                 self.menu.state = STATE_GAME_OVER
+                if hasattr(self, "active_world_name") and self.active_world_name:
+                    try:
+                        delete_world(self.active_world_name)
+                        print(f"[YOLO Mode] Player died! Permanently deleted world folder: {self.active_world_name}")
+                    except Exception as e:
+                        print(f"[YOLO Mode] Error deleting world directory: {e}")
 
         if not self.player.is_dead:
             self.player._death_handled = False
@@ -3010,7 +3081,7 @@ class PotariaGame:
         with self.profiler.section("update_lighting"):
             base_min_tx = int(self.camera.x // SCALED_TILE) - 1
             base_max_tx = int((self.camera.x + SCREEN_WIDTH) // SCALED_TILE) + 2
-            base_min_ty = max(0, int(self.camera.y // SCALED_TILE) - 1)
+            base_min_ty = int(self.camera.y // SCALED_TILE) - 1
             base_max_ty = min(self.world.height - 1, int((self.camera.y + SCREEN_HEIGHT) // SCALED_TILE) + 2)
             
             min_tx = base_min_tx - (base_min_tx % 4)
@@ -3148,7 +3219,7 @@ class PotariaGame:
             cam_x = int(round(self.camera.x - self.camera.shake_offset_x))
             cam_y = int(round(self.camera.y - self.camera.shake_offset_y))
             min_tx = self.lighting._last_min_tx if self.lighting._last_min_tx is not None else (int(cam_x // SCALED_TILE) - 1)
-            min_ty = self.lighting._last_min_ty if self.lighting._last_min_ty is not None else max(0, int(cam_y // SCALED_TILE) - 1)
+            min_ty = self.lighting._last_min_ty if self.lighting._last_min_ty is not None else (int(cam_y // SCALED_TILE) - 1)
             light_screen_x = min_tx * SCALED_TILE - cam_x
             light_screen_y = min_ty * SCALED_TILE - cam_y
             self.lighting.render_lighting(self.screen, light_screen_x, light_screen_y)
@@ -3158,11 +3229,11 @@ class PotariaGame:
             for dn in self.combat.damage_numbers:
                 dn.render(ui_surf, self.camera, self.combat.font, self.combat.font_crit)
 
-        # Layer 8: Boss Health Bar (Centered at screen bottom so it never covers the fight)
+        # Layer 8: Boss Health Bar (Positioned cleanly above the player's quick skill bar)
         if self.combat.boss:
-            self.combat.boss.render_boss_bar(ui_surf, self.boss_font, self.title_font)
+            self.combat.boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=SCREEN_HEIGHT - 135)
         if getattr(self.combat, "secondary_boss", None):
-            self.combat.secondary_boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=SCREEN_HEIGHT - 120)
+            self.combat.secondary_boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=SCREEN_HEIGHT - 180)
 
         # Layer 9: HUD, Hotbar, Inventory, Reticle, Party, Minimap & Chat
         with self.profiler.section("render_hud"):
@@ -3282,29 +3353,41 @@ class PotariaGame:
     def _render_pause_menu(self, target_surf=None):
         target = target_surf or getattr(self, "ui_screen", None) or self.screen
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 160))
+        overlay.fill((0, 0, 0, 175))
         target.blit(overlay, (0, 0))
 
-        # Pause modal box
+        # Pause modal box - render onto dedicated opaque panel to prevent background tile bleeding
         pw, ph = 420, 440
         px = SCREEN_WIDTH // 2 - pw // 2
         py = SCREEN_HEIGHT // 2 - ph // 2 - 10
-        pygame.draw.rect(target, (28, 33, 48, 245), (px, py, pw, ph), border_radius=14)
-        pygame.draw.rect(target, (255, 215, 0), (px, py, pw, ph), 2, border_radius=14)
+        panel_surf = pygame.Surface((pw, ph))
+        panel_surf.fill((28, 33, 48))
+        pygame.draw.rect(panel_surf, (255, 215, 0), (0, 0, pw, ph), 2, border_radius=14)
 
         title = self.title_font.render("GAME PAUSED", True, (255, 215, 0))
-        target.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 18))
+        panel_surf.blit(title, (pw // 2 - title.get_width() // 2, 18))
 
         mode_str = f"{self.active_world_name}  •  {self.difficulty.upper()}  •  {self.game_mode.replace('_', ' ').upper()}"
         sub = self.font.render(mode_str, True, (200, 210, 230))
-        target.blit(sub, (SCREEN_WIDTH // 2 - sub.get_width() // 2, py + 52))
+        panel_surf.blit(sub, (pw // 2 - sub.get_width() // 2, 52))
 
-        for btn in self.pause_buttons:
-            btn.render(target, self.menu.font_btn)
-        for btn in getattr(self, "pause_extra_buttons", []):
-            btn.render(target, self.menu.font_btn)
-        for btn in self.save_buttons:
-            btn.render(target, self.menu.font_btn)
+        # Render panel onto target
+        target.blit(panel_surf, (px, py))
+
+        # Render buttons with crisp opaque background
+        all_pause_btns = list(self.pause_buttons) + list(getattr(self, "pause_extra_buttons", [])) + list(self.save_buttons)
+        for btn in all_pause_btns:
+            btn_bg = (55, 65, 95) if not btn.is_hovered else (80, 100, 150)
+            btn_border = (110, 125, 170) if not btn.is_hovered else (255, 230, 80)
+            pygame.draw.rect(target, btn_bg, btn.rect, border_radius=8)
+            pygame.draw.rect(target, btn_border, btn.rect, 2, border_radius=8)
+            if btn.is_hovered:
+                pygame.draw.rect(target, (255, 255, 200), (btn.rect.x + 2, btn.rect.y + 2, btn.rect.w - 4, 2), border_radius=4)
+            text_col = (255, 255, 255) if not btn.is_hovered else (255, 235, 100)
+            txt_surf = self.menu.font_btn.render(btn.text, True, text_col)
+            tx = btn.rect.centerx - txt_surf.get_width() // 2
+            ty = btn.rect.centery - txt_surf.get_height() // 2
+            target.blit(txt_surf, (tx, ty))
 
 if __name__ == "__main__":
     game = PotariaGame()

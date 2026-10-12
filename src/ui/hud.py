@@ -251,7 +251,10 @@ class HUD:
                 target_surf.blit(lvl_txt, (sx + bw - lvl_txt.get_width() - 3, start_y + 2))
 
             # Skill name abbreviation
-            s_name = SKILL_DEFINITIONS.get(s_id, {}).get("name", "---")[:3] if s_id else "---"
+            if s_id and hasattr(player.skills, "get_skill_name"):
+                s_name = player.skills.get_skill_name(s_id)[:3]
+            else:
+                s_name = SKILL_DEFINITIONS.get(s_id, {}).get("name", "---")[:3] if s_id else "---"
             n_txt = self.font_sm.render(s_name, True, (255, 255, 255) if is_learned else (110, 110, 110))
             target_surf.blit(n_txt, (sx + 14, start_y + 20))
 

@@ -15,12 +15,13 @@ from src.constants import (
     STATE_VICTORY, STATE_SETTINGS, STATE_GAME_OVER, STATE_WORLDS, STATE_NEW_WORLD,
     STATE_MODS, STATE_ACHIEVEMENTS,
     COLOR_GOLD, COLOR_WHITE,
-    DIFFICULTY_NORMAL, DIFFICULTY_HARDCORE, DIFFICULTY_YOLO,
+    DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARDCORE, DIFFICULTY_YOLO,
     WORLD_TYPE_INFINITE, WORLD_TYPE_FINITE,
     MODE_ADVENTURE, MODE_LAST_MAN_STANDING, AVAILABLE_MODES
 )
 from src.rpg.achievements import AchievementManager
 from src.ui.cutscene import CutsceneEngine
+from src.network.client import LANDiscovery
 
 STATE_MULTIPLAYER = "multiplayer"
 STATE_INPUT_MAPPING = "input_mapping"
@@ -234,15 +235,31 @@ class MenuManager:
         self.input_reset_button = Button(SCREEN_WIDTH // 2 - 210, SCREEN_HEIGHT - 95, 190, 42, "RESET DEFAULTS", "reset_keys")
         self.input_back_button = Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 95, 190, 42, "< BACK TO SETTINGS", "input_back")
 
-        # Multiplayer Menu Buttons
+        # Multiplayer Menu Buttons & State
+        self.discovery = LANDiscovery()
         self.mp_buttons = [
-            Button(cx, 210, btn_w, btn_h, "HOST LAN GAME", "host_game"),
-            Button(cx, 420, btn_w, btn_h, "JOIN LAN GAME", "join_game"),
-            Button(cx, 510, btn_w, btn_h, "<  BACK TO MENU", "menu"),
+            Button(cx, 160, btn_w, btn_h, "HOST LAN GAME", "host_game"),
+            Button(cx, 460, btn_w, btn_h, "MANUAL IP CONNECT", "join_game"),
+            Button(cx, 515, btn_w, btn_h, "<  BACK TO MENU", "menu"),
         ]
         self.join_ip_input = "127.0.0.1"
         self.typing_ip = False
-        self.ip_box_rect = pygame.Rect(cx - 30, 335, btn_w + 60, 40)
+        self.ip_box_rect = pygame.Rect(cx - 30, 410, btn_w + 60, 36)
+
+        # Room key input modal & server selection
+        self.room_key_modal_active = False
+        self.room_key_modal_target = None  # (ip, port, is_private)
+        self.room_key_input = ""
+        self.room_key_error = ""
+        self.room_key_box_rect = pygame.Rect(SCREEN_WIDTH // 2 - 140, 320, 280, 38)
+        self.room_key_join_btn = Button(SCREEN_WIDTH // 2 - 130, 375, 120, 38, "JOIN", "confirm_room_key")
+        self.room_key_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 120, 38, "CANCEL", "cancel_room_key")
+
+        # LAN Host configuration state
+        self.hosting_lan = False
+        self.host_room_key = ""
+        self.typing_host_key = False
+        self.host_key_box_rect = pygame.Rect(cx - 30, 215, btn_w + 60, 36)
 
         self.back_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 95, 200, 44, "<  BACK TO MENU", "menu")
         self.victory_buttons = [
@@ -256,10 +273,13 @@ class MenuManager:
         except Exception:
             self.local_ip = "127.0.0.1"
 
-        # Worlds Menu Buttons
+        # Worlds Menu Buttons & Scrolling
         self.saved_worlds = []
         self.world_entry_buttons = []
         self.world_rename_buttons = []
+        self.worlds_scroll_y = 0.0
+        self.worlds_dragging = False
+        self.max_worlds_scroll = 0.0
         self.renaming_world_target = None
         self.rename_world_input = ""
         self.rename_error_msg = ""
@@ -269,6 +289,11 @@ class MenuManager:
         self.worlds_create_btn = Button(cx, 160, btn_w, btn_h, "[+] CREATE NEW WORLD", "open_new_world")
         self.worlds_quick_btn = Button(cx, 215, btn_w, btn_h, "QUICK PLAY (NORMAL INFINITE)", "quick_play")
         self.worlds_back_btn = Button(cx, SCREEN_HEIGHT - 85, btn_w, btn_h, "< BACK TO MENU", "menu")
+
+        # YOLO Confirmation Modal Buttons
+        self.show_yolo_warning = False
+        self.yolo_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 375, 130, 40, "ACCEPT RISK", "confirm_yolo")
+        self.yolo_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 130, 40, "CANCEL", "cancel_yolo")
 
         # Mods / Add-Ons
         self.mods_file = os.path.join("saves", "mods.json")
@@ -303,6 +328,16 @@ class MenuManager:
 
         self.settings_file = os.path.join("saves", "settings.json")
         self.load_settings()
+
+    def _apply_audio_volumes(self):
+        """Immediately applies volume settings to sound and bgm managers."""
+        m_vol = self.settings.get("master_volume", 1.0)
+        s_vol = self.settings.get("sfx_volume", 0.85)
+        b_vol = self.settings.get("bgm_volume", 0.65)
+        if self.sound_manager and hasattr(self.sound_manager, "set_volumes"):
+            self.sound_manager.set_volumes(master=m_vol, sfx=s_vol)
+        if self.bgm_manager and hasattr(self.bgm_manager, "set_volumes"):
+            self.bgm_manager.set_volumes(master=m_vol, bgm=b_vol)
 
     def load_settings(self):
         """Loads persistent user settings and key bindings from disk."""
@@ -478,8 +513,12 @@ class MenuManager:
             self.input_reset_button.update(mouse_pos)
             self.input_back_button.update(mouse_pos)
         elif self.state == STATE_MULTIPLAYER:
-            for btn in self.mp_buttons:
-                btn.update(mouse_pos)
+            if getattr(self, "room_key_modal_active", False):
+                self.room_key_join_btn.update(mouse_pos)
+                self.room_key_cancel_btn.update(mouse_pos)
+            else:
+                for btn in self.mp_buttons:
+                    btn.update(mouse_pos)
         elif self.state in (STATE_STORY, STATE_CUTSCENE):
             self.cutscene.update(dt, mouse_pos)
             if self.cutscene.is_finished():
@@ -499,16 +538,31 @@ class MenuManager:
                 self.worlds_create_btn.update(mouse_pos)
                 self.worlds_quick_btn.update(mouse_pos)
                 self.worlds_back_btn.update(mouse_pos)
+                
+                # Check scrollbar dragging
+                track_rect = pygame.Rect(SCREEN_WIDTH // 2 + 252, 275, 14, 255)
+                if pygame.mouse.get_pressed()[0] and (track_rect.collidepoint(mouse_pos) or getattr(self, "worlds_dragging", False)):
+                    self.worlds_dragging = True
+                    if self.max_worlds_scroll > 0:
+                        rel_y = (mouse_pos[1] - 275) / 255.0
+                        self.worlds_scroll_y = max(0.0, min(rel_y * self.max_worlds_scroll, self.max_worlds_scroll))
+                else:
+                    self.worlds_dragging = False
+
                 for load_b, del_b, _ in self.world_entry_buttons:
                     load_b.update(mouse_pos)
                     del_b.update(mouse_pos)
                 for ren_b, _ in self.world_rename_buttons:
                     ren_b.update(mouse_pos)
         elif self.state == STATE_NEW_WORLD:
-            self.nw_btn_type.update(mouse_pos)
-            self.nw_btn_diff.update(mouse_pos)
-            self.nw_btn_create.update(mouse_pos)
-            self.nw_btn_back.update(mouse_pos)
+            if getattr(self, "show_yolo_warning", False):
+                self.yolo_confirm_btn.update(mouse_pos)
+                self.yolo_cancel_btn.update(mouse_pos)
+            else:
+                self.nw_btn_type.update(mouse_pos)
+                self.nw_btn_diff.update(mouse_pos)
+                self.nw_btn_create.update(mouse_pos)
+                self.nw_btn_back.update(mouse_pos)
         elif self.state == STATE_GAME_OVER:
             for btn in self.game_over_buttons:
                 btn.update(mouse_pos)
@@ -523,13 +577,19 @@ class MenuManager:
         self.world_rename_buttons = []
         bx = SCREEN_WIDTH // 2 - 250
         start_y = 280
-        for i, winfo in enumerate(self.saved_worlds[:4]):
+        for i, winfo in enumerate(self.saved_worlds):
             entry_y = start_y + i * 62
             load_b = Button(bx + 265, entry_y + 10, 72, 36, "PLAY", f"load_{i}")
             ren_b = Button(bx + 345, entry_y + 10, 78, 36, "RENAME", f"ren_{i}")
             del_b = Button(bx + 430, entry_y + 10, 56, 36, "DEL", f"del_{i}")
             self.world_entry_buttons.append((load_b, del_b, winfo))
             self.world_rename_buttons.append((ren_b, winfo))
+        
+        # Calculate max scrollable height (viewport displays ~4 entries of 62px = 248px)
+        total_content_h = len(self.saved_worlds) * 62
+        viewport_h = 248
+        self.max_worlds_scroll = max(0.0, float(total_content_h - viewport_h))
+        self.worlds_scroll_y = max(0.0, min(self.worlds_scroll_y, self.max_worlds_scroll))
 
     def rename_saved_world(self, old_name, new_name):
         """Attempts to rename `old_name` to `new_name`. Rejects if `new_name` is empty or already exists."""
@@ -564,6 +624,8 @@ class MenuManager:
                         return "open_worlds"
                     elif btn.action == "multiplayer":
                         self.state = STATE_MULTIPLAYER
+                        if hasattr(self, "discovery"):
+                            self.discovery.start()
                     elif btn.action == "mods":
                         self.previous_state = STATE_MENU
                         self.state = STATE_MODS
@@ -634,32 +696,70 @@ class MenuManager:
                 return "start_singleplayer"
             elif self.worlds_back_btn.rect.collidepoint(mouse_pos):
                 self.sound_manager.play("place")
-                self.state = STATE_MENU
+                if getattr(self, "hosting_lan", False):
+                    self.hosting_lan = False
+                    self.state = STATE_MULTIPLAYER
+                else:
+                    self.state = STATE_MENU
                 return None
 
-            for ren_b, winfo in self.world_rename_buttons:
-                if ren_b.rect.collidepoint(mouse_pos):
+            # Handle scrollbar click
+            track_rect = pygame.Rect(SCREEN_WIDTH // 2 + 252, 275, 14, 255)
+            if track_rect.collidepoint(mouse_pos) and getattr(self, "max_worlds_scroll", 0.0) > 0:
+                rel_y = (mouse_pos[1] - 275) / 255.0
+                self.worlds_scroll_y = max(0.0, min(rel_y * self.max_worlds_scroll, self.max_worlds_scroll))
+                return None
+
+            viewport_rect = pygame.Rect(SCREEN_WIDTH // 2 - 250, 275, 515, 255)
+            scroll_y = getattr(self, "worlds_scroll_y", 0.0)
+
+            for i, (ren_b, winfo) in enumerate(self.world_rename_buttons):
+                adjusted_rect = ren_b.rect.move(0, -scroll_y)
+                if viewport_rect.collidepoint(mouse_pos) and adjusted_rect.collidepoint(mouse_pos):
                     self.sound_manager.play("place")
                     self.renaming_world_target = winfo["name"]
                     self.rename_world_input = winfo["name"]
                     self.rename_error_msg = ""
                     return None
 
-            for load_b, del_b, winfo in self.world_entry_buttons:
-                if load_b.rect.collidepoint(mouse_pos):
-                    self.sound_manager.play("place")
-                    return ("load_world", winfo["name"])
-                elif del_b.rect.collidepoint(mouse_pos):
-                    try:
-                        from src.world.save_manager import delete_world
-                        delete_world(winfo["name"])
-                        self._refresh_saved_worlds()
-                        self.sound_manager.play("craft")
-                    except Exception as e:
-                        print(f"[Menu] Error deleting world: {e}")
-                    return None
+            for i, (load_b, del_b, winfo) in enumerate(self.world_entry_buttons):
+                adj_load = load_b.rect.move(0, -scroll_y)
+                adj_del = del_b.rect.move(0, -scroll_y)
+                if viewport_rect.collidepoint(mouse_pos):
+                    if adj_load.collidepoint(mouse_pos):
+                        self.sound_manager.play("place")
+                        return ("load_world", winfo["name"])
+                    elif adj_del.collidepoint(mouse_pos):
+                        try:
+                            from src.world.save_manager import delete_world
+                            delete_world(winfo["name"])
+                            self._refresh_saved_worlds()
+                            self.sound_manager.play("craft")
+                        except Exception as e:
+                            print(f"[Menu] Error deleting world: {e}")
+                        return None
 
         elif self.state == STATE_NEW_WORLD:
+            if getattr(self, "show_yolo_warning", False):
+                if self.yolo_confirm_btn.rect.collidepoint(mouse_pos):
+                    self.sound_manager.play("place")
+                    self.show_yolo_warning = False
+                    self.state = STATE_PLAYING
+                    self.new_world_mode = MODE_LAST_MAN_STANDING if self.enabled_mods.get("last_man_standing", False) else MODE_ADVENTURE
+                    cfg = {
+                        "name": self.new_world_name.strip() or "Spud World",
+                        "world_type": self.new_world_type,
+                        "difficulty": self.new_world_diff,
+                        "game_mode": self.new_world_mode
+                    }
+                    return ("create_world", cfg)
+                elif self.yolo_cancel_btn.rect.collidepoint(mouse_pos):
+                    self.sound_manager.play("place")
+                    self.show_yolo_warning = False
+                    self.new_world_diff = DIFFICULTY_NORMAL
+                    self.nw_btn_diff.text = f"DIFFICULTY: {self.new_world_diff.upper()}"
+                return None
+
             if self.world_name_rect.collidepoint(mouse_pos):
                 self.typing_world_name = True
                 return None
@@ -672,15 +772,20 @@ class MenuManager:
                 self.nw_btn_type.text = f"WORLD TYPE: {self.new_world_type.upper()}"
             elif self.nw_btn_diff.rect.collidepoint(mouse_pos):
                 self.sound_manager.play("place")
-                if self.new_world_diff == DIFFICULTY_NORMAL:
+                if self.new_world_diff == DIFFICULTY_EASY:
+                    self.new_world_diff = DIFFICULTY_NORMAL
+                elif self.new_world_diff == DIFFICULTY_NORMAL:
                     self.new_world_diff = DIFFICULTY_HARDCORE
                 elif self.new_world_diff == DIFFICULTY_HARDCORE:
                     self.new_world_diff = DIFFICULTY_YOLO
                 else:
-                    self.new_world_diff = DIFFICULTY_NORMAL
+                    self.new_world_diff = DIFFICULTY_EASY
                 self.nw_btn_diff.text = f"DIFFICULTY: {self.new_world_diff.upper()}"
             elif self.nw_btn_create.rect.collidepoint(mouse_pos):
                 self.sound_manager.play("place")
+                if self.new_world_diff == DIFFICULTY_YOLO:
+                    self.show_yolo_warning = True
+                    return None
                 self.state = STATE_PLAYING
                 self.new_world_mode = MODE_LAST_MAN_STANDING if self.enabled_mods.get("last_man_standing", False) else MODE_ADVENTURE
                 cfg = {
@@ -764,16 +869,34 @@ class MenuManager:
                     self.sound_manager.play("place")
                 if btn.action == "vol_master_down":
                     self.settings["master_volume"] = max(0.0, round(self.settings["master_volume"] - 0.1, 2))
+                    self._apply_audio_volumes()
+                    self.save_settings()
+                    return ("volume_updated", self.settings)
                 elif btn.action == "vol_master_up":
                     self.settings["master_volume"] = min(1.0, round(self.settings["master_volume"] + 0.1, 2))
+                    self._apply_audio_volumes()
+                    self.save_settings()
+                    return ("volume_updated", self.settings)
                 elif btn.action == "vol_bgm_down":
                     self.settings["bgm_volume"] = max(0.0, round(self.settings["bgm_volume"] - 0.1, 2))
+                    self._apply_audio_volumes()
+                    self.save_settings()
+                    return ("volume_updated", self.settings)
                 elif btn.action == "vol_bgm_up":
                     self.settings["bgm_volume"] = min(1.0, round(self.settings["bgm_volume"] + 0.1, 2))
+                    self._apply_audio_volumes()
+                    self.save_settings()
+                    return ("volume_updated", self.settings)
                 elif btn.action == "vol_sfx_down":
                     self.settings["sfx_volume"] = max(0.0, round(self.settings["sfx_volume"] - 0.1, 2))
+                    self._apply_audio_volumes()
+                    self.save_settings()
+                    return ("volume_updated", self.settings)
                 elif btn.action == "vol_sfx_up":
                     self.settings["sfx_volume"] = min(1.0, round(self.settings["sfx_volume"] + 0.1, 2))
+                    self._apply_audio_volumes()
+                    self.save_settings()
+                    return ("volume_updated", self.settings)
                 elif btn.action == "toggle_display":
                     target_fs = not self.settings.get("fullscreen", False)
                     self.settings["fullscreen"] = target_fs
@@ -894,17 +1017,6 @@ class MenuManager:
                         self.state = STATE_MENU
                         return None
 
-                    # Apply audio volumes immediately
-                    m_vol = self.settings["master_volume"]
-                    s_vol = self.settings["sfx_volume"]
-                    b_vol = self.settings["bgm_volume"]
-                    if self.sound_manager:
-                        self.sound_manager.set_volumes(master=m_vol, sfx=s_vol)
-                    if self.bgm_manager:
-                        self.bgm_manager.set_volumes(master=m_vol, bgm=b_vol)
-                    self.save_settings()
-                    return ("volume_updated", self.settings)
-
         elif self.state == STATE_INPUT_MAPPING:
             if self.input_reset_button.rect.collidepoint(mouse_pos):
                 self.key_bindings = dict(self.default_key_bindings)
@@ -926,21 +1038,69 @@ class MenuManager:
                     return None
 
         elif self.state == STATE_MULTIPLAYER:
+            # 1. Room Key Modal Interaction
+            if getattr(self, "room_key_modal_active", False):
+                if self.room_key_box_rect.collidepoint(mouse_pos):
+                    return None
+                if self.room_key_join_btn.rect.collidepoint(mouse_pos):
+                    self.sound_manager.play("place")
+                    req_key = self.room_key_input.strip()
+                    sinfo = self.room_key_modal_target
+                    srv_key = sinfo.get("room_key", "")
+                    if srv_key and req_key != srv_key:
+                        self.room_key_error = "Incorrect Room Key! Try again."
+                        return None
+                    self.room_key_modal_active = False
+                    self.room_key_error = ""
+                    self.state = STATE_PLAYING
+                    return ("join_lan", sinfo.get("ip", "127.0.0.1"), req_key)
+                elif self.room_key_cancel_btn.rect.collidepoint(mouse_pos):
+                    self.sound_manager.play("place")
+                    self.room_key_modal_active = False
+                    self.room_key_error = ""
+                    self.room_key_modal_target = None
+                    return None
+                return None
+
+            # 2. Text input activations
             if self.ip_box_rect.collidepoint(mouse_pos):
                 self.typing_ip = True
+                self.typing_host_key = False
+                return None
+            elif getattr(self, "host_key_box_rect", pygame.Rect(0,0,0,0)).collidepoint(mouse_pos):
+                self.typing_host_key = True
+                self.typing_ip = False
                 return None
             else:
                 self.typing_ip = False
+                self.typing_host_key = False
 
+            # 3. Discovered LAN Servers 1-Click Join Buttons
+            for j_btn, sinfo in getattr(self, "lan_join_buttons", []):
+                if j_btn.rect.collidepoint(mouse_pos):
+                    self.sound_manager.play("place")
+                    if sinfo.get("is_private", False):
+                        self.room_key_modal_active = True
+                        self.room_key_modal_target = sinfo
+                        self.room_key_input = ""
+                        self.room_key_error = ""
+                        return None
+                    else:
+                        self.state = STATE_PLAYING
+                        return ("join_lan", sinfo.get("ip", "127.0.0.1"), "")
+
+            # 4. Standard Multiplayer Menu Buttons
             for btn in self.mp_buttons:
                 if btn.rect.collidepoint(mouse_pos):
                     self.sound_manager.play("place")
                     if btn.action == "host_game":
-                        self.state = STATE_PLAYING
-                        return "host_lan"
+                        self.hosting_lan = True
+                        self.state = STATE_WORLDS
+                        self._refresh_saved_worlds()
+                        return "open_worlds"
                     elif btn.action == "join_game":
                         self.state = STATE_PLAYING
-                        return ("join_lan", self.join_ip_input)
+                        return ("join_lan", self.join_ip_input, getattr(self, "host_room_key", ""))
                     elif btn.action == "menu":
                         self.state = STATE_MENU
 
@@ -1004,17 +1164,56 @@ class MenuManager:
                     self.new_world_name += event.unicode
                 return True
 
-        if self.state == STATE_MULTIPLAYER and self.typing_ip:
-            if event.key == pygame.K_BACKSPACE:
-                self.join_ip_input = self.join_ip_input[:-1]
-                return True
-            elif event.key == pygame.K_RETURN:
-                self.typing_ip = False
-                return True
-            elif event.unicode and (event.unicode.isdigit() or event.unicode in ".:" or event.unicode.isalpha()):
-                if len(self.join_ip_input) < 25:
-                    self.join_ip_input += event.unicode
-                return True
+        if self.state == STATE_MULTIPLAYER:
+            if getattr(self, "room_key_modal_active", False):
+                if event.key == pygame.K_BACKSPACE:
+                    self.room_key_input = self.room_key_input[:-1]
+                    self.room_key_error = ""
+                    return True
+                elif event.key == pygame.K_ESCAPE:
+                    self.room_key_modal_active = False
+                    self.room_key_error = ""
+                    return True
+                elif event.key == pygame.K_RETURN:
+                    req_key = self.room_key_input.strip()
+                    sinfo = self.room_key_modal_target
+                    srv_key = sinfo.get("room_key", "")
+                    if srv_key and req_key != srv_key:
+                        self.room_key_error = "Incorrect Room Key! Try again."
+                        return True
+                    self.room_key_modal_active = False
+                    self.room_key_error = ""
+                    self.state = STATE_PLAYING
+                    return ("join_lan", sinfo.get("ip", "127.0.0.1"), req_key)
+                elif event.unicode and len(self.room_key_input) < 20:
+                    if event.unicode.isprintable() and event.unicode not in ("\r", "\n"):
+                        self.room_key_input += event.unicode
+                        self.room_key_error = ""
+                    return True
+
+            if getattr(self, "typing_host_key", False):
+                if event.key == pygame.K_BACKSPACE:
+                    self.host_room_key = self.host_room_key[:-1]
+                    return True
+                elif event.key == pygame.K_RETURN:
+                    self.typing_host_key = False
+                    return True
+                elif event.unicode and len(self.host_room_key) < 20:
+                    if event.unicode.isprintable() and event.unicode not in ("\r", "\n"):
+                        self.host_room_key += event.unicode
+                    return True
+
+            if self.typing_ip:
+                if event.key == pygame.K_BACKSPACE:
+                    self.join_ip_input = self.join_ip_input[:-1]
+                    return True
+                elif event.key == pygame.K_RETURN:
+                    self.typing_ip = False
+                    return True
+                elif event.unicode and (event.unicode.isdigit() or event.unicode in ".:" or event.unicode.isalpha()):
+                    if len(self.join_ip_input) < 25:
+                        self.join_ip_input += event.unicode
+                    return True
 
         if self.state == STATE_INPUT_MAPPING:
             if self.rebinding_action:
@@ -1352,30 +1551,90 @@ class MenuManager:
     def _render_multiplayer_menu(self, target_surf):
         self._render_background(target_surf)
 
-        pw, ph = 600, 520
+        pw, ph = 680, 560
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 50
-        pygame.draw.rect(target_surf, (30, 35, 50, 245), (px, py, pw, ph), border_radius=12)
-        pygame.draw.rect(target_surf, COLOR_GOLD, (px, py, pw, ph), 2, border_radius=12)
+        py = 40
+        pygame.draw.rect(target_surf, (24, 28, 44, 245), (px, py, pw, ph), border_radius=14)
+        pygame.draw.rect(target_surf, COLOR_GOLD, (px, py, pw, ph), 2, border_radius=14)
 
         title = self.font_title.render("LAN MULTIPLAYER (1-5 PLAYERS)", True, COLOR_GOLD)
-        target_surf.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 22))
+        target_surf.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, py + 16))
 
         # Host instructions & IP
         host_info = self.font_body.render(f"Your Local Host IP: {self.local_ip}  (Port: 25565)", True, (100, 220, 255))
-        target_surf.blit(host_info, (SCREEN_WIDTH // 2 - host_info.get_width() // 2, py + 75))
+        target_surf.blit(host_info, (SCREEN_WIDTH // 2 - host_info.get_width() // 2, py + 52))
 
-        desc = self.font_sub.render("Host a cooperative session for friends on your local Wi-Fi or LAN network.", True, (200, 210, 225))
-        target_surf.blit(desc, (SCREEN_WIDTH // 2 - desc.get_width() // 2, py + 105))
+        # Room key input for hosting
+        key_lbl = self.font_sm.render("Host Room Key (Optional):", True, (200, 215, 235))
+        target_surf.blit(key_lbl, (px + 45, py + 86))
 
-        # Join Input Box
-        join_lbl = self.font_btn.render("Or Enter Host's LAN IP to Join:", True, (255, 230, 100))
-        target_surf.blit(join_lbl, (SCREEN_WIDTH // 2 - join_lbl.get_width() // 2, py + 245))
+        key_box_col = (50, 60, 90) if getattr(self, "typing_host_key", False) else (35, 40, 60)
+        key_border_col = COLOR_GOLD if getattr(self, "typing_host_key", False) else (100, 120, 160)
+        pygame.draw.rect(target_surf, key_box_col, self.host_key_box_rect, border_radius=6)
+        pygame.draw.rect(target_surf, key_border_col, self.host_key_box_rect, 1, border_radius=6)
 
-        box_col = (50, 60, 90) if self.typing_ip else (35, 40, 60)
-        border_col = COLOR_GOLD if self.typing_ip else (100, 120, 160)
-        pygame.draw.rect(target_surf, box_col, self.ip_box_rect, border_radius=8)
-        pygame.draw.rect(target_surf, border_col, self.ip_box_rect, 2, border_radius=8)
+        hcursor = "_" if (getattr(self, "typing_host_key", False) and (pygame.time.get_ticks() // 500) % 2 == 0) else ""
+        hk_val = getattr(self, "host_room_key", "")
+        hk_display = hk_val if hk_val else ("(No Password)" if not getattr(self, "typing_host_key", False) else "")
+        hk_col = (255, 255, 255) if hk_val else (140, 155, 175)
+        hk_surf = self.font_btn.render(f"{hk_display}{hcursor}", True, hk_col)
+        target_surf.blit(hk_surf, (self.host_key_box_rect.x + 12, self.host_key_box_rect.centery - hk_surf.get_height() // 2))
+
+        # Active LAN Servers Header
+        sep_y = py + 180
+        pygame.draw.line(target_surf, (70, 85, 120), (px + 30, sep_y), (px + pw - 30, sep_y), 1)
+        srv_title = self.font_sm.render("ACTIVE LOCAL LAN SERVERS (AUTO-DISCOVERED)", True, (255, 220, 100))
+        target_surf.blit(srv_title, (SCREEN_WIDTH // 2 - srv_title.get_width() // 2, sep_y - 8))
+
+        # Discovered servers list
+        servers = self.discovery.get_servers() if hasattr(self, "discovery") else []
+        self.lan_join_buttons = []
+        list_y = sep_y + 16
+
+        if not servers:
+            no_srv = self.font_sm.render("Searching for local LAN servers on port 25566... (No hosts detected)", True, (160, 175, 200))
+            target_surf.blit(no_srv, (SCREEN_WIDTH // 2 - no_srv.get_width() // 2, list_y + 24))
+        else:
+            for i, sinfo in enumerate(servers[:3]):
+                ey = list_y + i * 50
+                entry_rect = pygame.Rect(px + 35, ey, pw - 70, 44)
+                pygame.draw.rect(target_surf, (36, 42, 65), entry_rect, border_radius=6)
+                pygame.draw.rect(target_surf, (70, 85, 125), entry_rect, 1, border_radius=6)
+
+                s_name = sinfo.get("server_name", "Potaria LAN Server")
+                s_ip = sinfo.get("ip", "127.0.0.1")
+                s_port = sinfo.get("port", 25565)
+                p_cnt = sinfo.get("players", 1)
+                p_max = sinfo.get("max_players", 5)
+                is_priv = sinfo.get("is_private", False)
+
+                name_txt = self.font_btn.render(f"{s_name}", True, (255, 235, 120))
+                target_surf.blit(name_txt, (entry_rect.x + 12, entry_rect.y + 4))
+
+                detail_txt = self.font_sm.render(f"{s_ip}:{s_port}  •  Players: {p_cnt}/{p_max}", True, (180, 200, 230))
+                target_surf.blit(detail_txt, (entry_rect.x + 14, entry_rect.y + 24))
+
+                # Badge
+                badge_txt = "PRIVATE (KEY)" if is_priv else "PUBLIC"
+                badge_col = (255, 200, 80) if is_priv else (100, 240, 120)
+                badge_surf = self.font_sm.render(badge_txt, True, badge_col)
+                target_surf.blit(badge_surf, (entry_rect.right - 170, entry_rect.centery - badge_surf.get_height() // 2))
+
+                # Join button
+                j_btn = Button(entry_rect.right - 80, entry_rect.y + 6, 70, 32, "JOIN", ("join_server", sinfo))
+                j_btn.render(target_surf, self.font_btn)
+                self.lan_join_buttons.append((j_btn, sinfo))
+
+        # Manual IP input section
+        manual_sep = py + 360
+        pygame.draw.line(target_surf, (70, 85, 120), (px + 30, manual_sep), (px + pw - 30, manual_sep), 1)
+        manual_lbl = self.font_sm.render("DIRECT MANUAL CONNECT", True, (255, 220, 100))
+        target_surf.blit(manual_lbl, (SCREEN_WIDTH // 2 - manual_lbl.get_width() // 2, manual_sep - 8))
+
+        ip_box_col = (50, 60, 90) if self.typing_ip else (35, 40, 60)
+        ip_border_col = COLOR_GOLD if self.typing_ip else (100, 120, 160)
+        pygame.draw.rect(target_surf, ip_box_col, self.ip_box_rect, border_radius=6)
+        pygame.draw.rect(target_surf, ip_border_col, self.ip_box_rect, 1, border_radius=6)
 
         cursor = "_" if (self.typing_ip and (pygame.time.get_ticks() // 500) % 2 == 0) else ""
         txt_surf = self.font_btn.render(f"{self.join_ip_input}{cursor}", True, (255, 255, 255))
@@ -1383,6 +1642,39 @@ class MenuManager:
 
         for btn in self.mp_buttons:
             btn.render(target_surf, self.font_btn)
+
+        # Room Key Modal if active
+        if getattr(self, "room_key_modal_active", False):
+            dim = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            dim.fill((10, 12, 22, 210))
+            target_surf.blit(dim, (0, 0))
+
+            mw, mh = 440, 220
+            mx = SCREEN_WIDTH // 2 - mw // 2
+            my = 230
+            m_rect = pygame.Rect(mx, my, mw, mh)
+            pygame.draw.rect(target_surf, (26, 32, 52, 252), m_rect, border_radius=12)
+            pygame.draw.rect(target_surf, COLOR_GOLD, m_rect, 2, border_radius=12)
+
+            m_title = self.font_title.render("ENTER ROOM KEY", True, COLOR_GOLD)
+            target_surf.blit(m_title, (SCREEN_WIDTH // 2 - m_title.get_width() // 2, my + 16))
+
+            m_sub = self.font_sm.render("This private LAN server requires a password key to join:", True, (190, 210, 240))
+            target_surf.blit(m_sub, (SCREEN_WIDTH // 2 - m_sub.get_width() // 2, my + 50))
+
+            pygame.draw.rect(target_surf, (45, 56, 88), self.room_key_box_rect, border_radius=6)
+            pygame.draw.rect(target_surf, COLOR_GOLD, self.room_key_box_rect, 2, border_radius=6)
+
+            rk_cursor = "_" if (pygame.time.get_ticks() % 800 < 400) else ""
+            inp_surf = self.font_btn.render(self.room_key_input + rk_cursor, True, (255, 255, 255))
+            target_surf.blit(inp_surf, (self.room_key_box_rect.x + 12, self.room_key_box_rect.centery - inp_surf.get_height() // 2))
+
+            if getattr(self, "room_key_error", ""):
+                err_surf = self.font_sm.render(self.room_key_error, True, (255, 95, 95))
+                target_surf.blit(err_surf, (SCREEN_WIDTH // 2 - err_surf.get_width() // 2, my + 122))
+
+            self.room_key_join_btn.render(target_surf, self.font_btn)
+            self.room_key_cancel_btn.render(target_surf, self.font_btn)
 
     def _render_story_screen(self, target_surf):
         self.cutscene.render(target_surf)
@@ -1491,12 +1783,19 @@ class MenuManager:
             empty_msg = self.font_body.render("No saved worlds found. Click '[+] CREATE NEW WORLD' to begin!", True, (170, 180, 205))
             target_surf.blit(empty_msg, (SCREEN_WIDTH // 2 - empty_msg.get_width() // 2, 330))
         else:
-            bx = SCREEN_WIDTH // 2 - 250
+            viewport_rect = pygame.Rect(SCREEN_WIDTH // 2 - 250, 275, 515, 255)
+            clip_surf = pygame.Surface((viewport_rect.width, viewport_rect.height), pygame.SRCALPHA)
+            scroll_y = getattr(self, "worlds_scroll_y", 0.0)
+
             for i, (load_b, del_b, winfo) in enumerate(self.world_entry_buttons):
-                entry_y = 280 + i * 62
-                entry_rect = pygame.Rect(bx, entry_y, 495, 54)
-                pygame.draw.rect(target_surf, (36, 42, 65), entry_rect, border_radius=6)
-                pygame.draw.rect(target_surf, (70, 85, 125), entry_rect, 1, border_radius=6)
+                local_y = 5 + i * 62 - int(scroll_y)
+                # Only render if within or near viewport
+                if local_y + 54 < 0 or local_y > viewport_rect.height:
+                    continue
+
+                entry_rect = pygame.Rect(0, local_y, 495, 54)
+                pygame.draw.rect(clip_surf, (36, 42, 65), entry_rect, border_radius=6)
+                pygame.draw.rect(clip_surf, (70, 85, 125), entry_rect, 1, border_radius=6)
 
                 w_name = winfo.get("name", "Unknown")
                 w_type = winfo.get("world_type", "infinite").upper()
@@ -1506,20 +1805,45 @@ class MenuManager:
                 lp_str = winfo.get("last_played", "Never")
 
                 name_surf = self.font_btn.render(w_name, True, (255, 235, 120))
-                target_surf.blit(name_surf, (bx + 12, entry_y + 3))
+                clip_surf.blit(name_surf, (12, local_y + 3))
 
                 detail_str = f"{w_type}  •  {w_diff}  •  {w_mode}"
                 detail_surf = self.font_sm.render(detail_str, True, (180, 195, 220))
-                target_surf.blit(detail_surf, (bx + 14, entry_y + 20))
+                clip_surf.blit(detail_surf, (14, local_y + 20))
 
                 time_str = f"Playtime: {pt_str}  •  Last Played: {lp_str}"
                 time_surf = self.font_sm.render(time_str, True, (130, 215, 240))
-                target_surf.blit(time_surf, (bx + 14, entry_y + 36))
+                clip_surf.blit(time_surf, (14, local_y + 36))
 
-                load_b.render(target_surf, self.font_btn)
+                # Render button components into clipped surface
+                orig_load_pos = load_b.rect.topleft
+                orig_del_pos = del_b.rect.topleft
+                load_b.rect.topleft = (265, local_y + 10)
+                del_b.rect.topleft = (430, local_y + 10)
+                load_b.render(clip_surf, self.font_btn)
+                del_b.render(clip_surf, self.font_btn)
+                load_b.rect.topleft = orig_load_pos
+                del_b.rect.topleft = orig_del_pos
+
                 if i < len(self.world_rename_buttons):
-                    self.world_rename_buttons[i][0].render(target_surf, self.font_btn)
-                del_b.render(target_surf, self.font_btn)
+                    ren_b = self.world_rename_buttons[i][0]
+                    orig_ren_pos = ren_b.rect.topleft
+                    ren_b.rect.topleft = (345, local_y + 10)
+                    ren_b.render(clip_surf, self.font_btn)
+                    ren_b.rect.topleft = orig_ren_pos
+
+            target_surf.blit(clip_surf, viewport_rect.topleft)
+
+            # Render scrollbar track and thumb if content exceeds viewport
+            if getattr(self, "max_worlds_scroll", 0.0) > 0:
+                track_rect = pygame.Rect(viewport_rect.right - 10, viewport_rect.y, 8, viewport_rect.height)
+                pygame.draw.rect(target_surf, (22, 26, 38), track_rect, border_radius=4)
+                
+                thumb_ratio = viewport_rect.height / float(len(self.saved_worlds) * 62)
+                thumb_h = max(24, int(viewport_rect.height * thumb_ratio))
+                thumb_y = track_rect.y + int((scroll_y / self.max_worlds_scroll) * (track_rect.height - thumb_h))
+                thumb_rect = pygame.Rect(track_rect.x, thumb_y, 8, thumb_h)
+                pygame.draw.rect(target_surf, (120, 140, 185), thumb_rect, border_radius=4)
 
         self.worlds_back_btn.render(target_surf, self.font_btn)
 
@@ -1597,13 +1921,15 @@ class MenuManager:
         t_surf = self.font_sm.render(type_desc, True, (160, 190, 230))
         target_surf.blit(t_surf, (SCREEN_WIDTH // 2 - t_surf.get_width() // 2, 308))
 
-        if self.new_world_diff == DIFFICULTY_NORMAL:
-            diff_desc = "Normal: Starts with wooden axe, retain all inventory upon death."
+        if self.new_world_diff == DIFFICULTY_EASY:
+            diff_desc = "Easy: Starts with basic skills (Power Slash, Dash) and starter wooden axe."
+        elif self.new_world_diff == DIFFICULTY_NORMAL:
+            diff_desc = "Normal: Starts with 1 wooden axe & 5 torches. NO starting skills."
         elif self.new_world_diff == DIFFICULTY_HARDCORE:
             diff_desc = "Hardcore: Starts with 0 items, all items scatter onto the ground on death."
         else:
-            diff_desc = "YOLO: Starts with 0 items, locked to 1 HEART (20 HP) PERMADEATH!"
-        d_surf = self.font_sm.render(diff_desc, True, (255, 200, 120) if self.new_world_diff != DIFFICULTY_YOLO else (255, 120, 120))
+            diff_desc = "YOLO: 1 Life, 1 Heart (20 HP). Death PERMANENTLY deletes world folder!"
+        d_surf = self.font_sm.render(diff_desc, True, (120, 230, 160) if self.new_world_diff == DIFFICULTY_EASY else ((255, 200, 120) if self.new_world_diff != DIFFICULTY_YOLO else (255, 120, 120)))
         target_surf.blit(d_surf, (SCREEN_WIDTH // 2 - d_surf.get_width() // 2, 378))
 
         # Active Add-On Status indicator
@@ -1613,6 +1939,36 @@ class MenuManager:
 
         self.nw_btn_create.render(target_surf, self.font_btn)
         self.nw_btn_back.render(target_surf, self.font_btn)
+
+        # YOLO Warning Modal
+        if getattr(self, "show_yolo_warning", False):
+            dim = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            dim.fill((20, 5, 5, 210))
+            target_surf.blit(dim, (0, 0))
+
+            mw, mh = 480, 240
+            mx = SCREEN_WIDTH // 2 - mw // 2
+            my = 220
+            m_rect = pygame.Rect(mx, my, mw, mh)
+            pygame.draw.rect(target_surf, (35, 14, 18, 252), m_rect, border_radius=12)
+            pygame.draw.rect(target_surf, (240, 60, 60), m_rect, 2, border_radius=12)
+
+            warn_title = self.font_title.render("WARNING: YOLO PERMADEATH", True, (255, 75, 75))
+            target_surf.blit(warn_title, (SCREEN_WIDTH // 2 - warn_title.get_width() // 2, my + 18))
+
+            warn_lines = [
+                "You have selected YOLO mode.",
+                "Spud is locked to 1 HEART (20 HP) with ZERO starting skills.",
+                "If you perish, your WORLD FOLDER WILL BE PERMANENTLY DELETED!",
+                "Are you absolutely certain you want to proceed?"
+            ]
+            for idx, wline in enumerate(warn_lines):
+                col = (255, 200, 200) if idx != 2 else (255, 90, 90)
+                ws = self.font_sm.render(wline, True, col)
+                target_surf.blit(ws, (SCREEN_WIDTH // 2 - ws.get_width() // 2, my + 58 + idx * 22))
+
+            self.yolo_confirm_btn.render(target_surf, self.font_btn)
+            self.yolo_cancel_btn.render(target_surf, self.font_btn)
 
     def _render_mods_screen(self, target_surf, mouse_pos):
         self._render_background(target_surf)
@@ -1679,7 +2035,7 @@ class MenuManager:
         self.mods_back_btn.render(target_surf, self.font_btn)
 
     def handle_scroll(self, scroll_delta):
-        """Handles mouse wheel scrolling in menus (e.g. Achievements browser)."""
+        """Handles mouse wheel scrolling in menus (e.g. Achievements browser, Worlds list)."""
         if self.state == STATE_ACHIEVEMENTS:
             max_s = getattr(self.achievement_manager, "max_scroll", 0.0)
             self.achievements_scroll_y -= scroll_delta * 45.0
@@ -1687,6 +2043,10 @@ class MenuManager:
                 self.achievements_scroll_y = max(0.0, min(self.achievements_scroll_y, max_s))
             else:
                 self.achievements_scroll_y = max(0.0, self.achievements_scroll_y)
+        elif self.state == STATE_WORLDS:
+            if getattr(self, "max_worlds_scroll", 0.0) > 0:
+                self.worlds_scroll_y -= scroll_delta * 45.0
+                self.worlds_scroll_y = max(0.0, min(self.worlds_scroll_y, self.max_worlds_scroll))
 
     def _render_achievements_screen(self, target_surf, mouse_pos):
         self._render_background(target_surf)

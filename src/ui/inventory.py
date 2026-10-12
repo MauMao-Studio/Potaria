@@ -2459,10 +2459,13 @@ class Inventory:
     def set_difficulty_loadout(self, difficulty="normal"):
         """Initializes starter inventory according to difficulty mode."""
         self.slots = [None] * INV_TOTAL_SLOTS
-        self.held_item = None
-        if difficulty == "normal":
-            # Normal: Starts with a basic axe. Destroy trees to craft workbench/swords/tools.
+        if difficulty == "easy":
+            # Easy: Starts with wood axe and starter skills
             self.slots[0] = ItemStack("wood_axe", 1)
+        elif difficulty == "normal":
+            # Normal: Starts with 1 wooden axe and 5 torches
+            self.slots[0] = ItemStack("wood_axe", 1)
+            self.slots[1] = ItemStack("torch", 5)
         elif difficulty in ("hardcore", "yolo"):
             # Hardcore & YOLO: Starts with 0 items (empty inventory). Punch trees for wood.
             pass

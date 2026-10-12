@@ -207,37 +207,41 @@ class DayNightCycle:
     def get_altitude_sky_colors(self, camera_y_tile):
         """
         Transitions sky colors naturally based on altitude:
-        - Troposphere (ty >= 20): Surface day/night cycle colors
-        - Stratosphere (20 > ty >= -40): Deepening cobalt twilight
-        - Mesosphere (-40 > ty >= -100): Dark indigo & midnight violet
-        - Thermosphere / Space (ty < -100): Pitch black space void (0, 0, 4) to (0, 0, 0)
+        - Troposphere (ty >= 45): Surface day/night cycle colors
+        - Stratosphere (45 > ty >= -20): Deepening cobalt twilight (day) or deep navy (night)
+        - Mesosphere (-20 > ty >= -80): Dark indigo & midnight violet
+        - Thermosphere / Space (ty < -80): Pitch black space void (2, 2, 6) to (0, 0, 2)
+        Interpolation is smoothly shaped with Hermite smoothstep to eliminate color banding/abrupt clamps.
         """
         base_top, base_bot = self.get_sky_colors()
 
         if camera_y_tile >= 45:
             return base_top, base_bot
 
-        # Stratosphere transition (45 -> -20)
-        c_strato_top = (25, 38, 70)
-        c_strato_bot = (50, 75, 110)
+        # Smooth day vs night factor for intermediate stratosphere & mesosphere targets
+        day_factor = min(1.0, max(0.0, (self.ambient_sunlight - 3) / 12.0))
+        c_strato_top = self._lerp_color((10, 15, 30), (25, 38, 70), day_factor)
+        c_strato_bot = self._lerp_color((18, 25, 48), (50, 75, 110), day_factor)
 
-        # Mesosphere transition (-20 -> -80)
-        c_meso_top = (8, 12, 32)
-        c_meso_bot = (18, 22, 48)
+        c_meso_top = self._lerp_color((5, 8, 20), (8, 12, 32), day_factor)
+        c_meso_bot = self._lerp_color((10, 14, 30), (18, 22, 48), day_factor)
 
-        # Deep space void (ty <= -80)
-        c_space_top = (2, 2, 8)
+        # Deep space void (ty <= -140)
+        c_space_top = (2, 2, 6)
         c_space_bot = (0, 0, 2)
 
         if camera_y_tile >= -20:
             frac = (45.0 - camera_y_tile) / 65.0
-            return self._lerp_color(base_top, c_strato_top, frac), self._lerp_color(base_bot, c_strato_bot, frac)
+            s_frac = frac * frac * (3.0 - 2.0 * frac)
+            return self._lerp_color(base_top, c_strato_top, s_frac), self._lerp_color(base_bot, c_strato_bot, s_frac)
         elif camera_y_tile >= -80:
             frac = (-20.0 - camera_y_tile) / 60.0
-            return self._lerp_color(c_strato_top, c_meso_top, frac), self._lerp_color(c_strato_bot, c_meso_bot, frac)
+            s_frac = frac * frac * (3.0 - 2.0 * frac)
+            return self._lerp_color(c_strato_top, c_meso_top, s_frac), self._lerp_color(c_strato_bot, c_meso_bot, s_frac)
         else:
             frac = min(1.0, (-80.0 - camera_y_tile) / 60.0)
-            return self._lerp_color(c_meso_top, c_space_top, frac), self._lerp_color(c_meso_bot, c_space_bot, frac)
+            s_frac = frac * frac * (3.0 - 2.0 * frac)
+            return self._lerp_color(c_meso_top, c_space_top, s_frac), self._lerp_color(c_meso_bot, c_space_bot, s_frac)
 
     def _create_mountain_silhouette(self):
         w, h = SCREEN_WIDTH, SCREEN_HEIGHT
@@ -334,21 +338,18 @@ class DayNightCycle:
         # 3. Celestial Orbit (Sun & Moon Arc - Philippine timing)
         # 6:00 AM (t = 0.0) is the start of the sun rising; sets at 6:00 PM (t = 0.50)
         t = self.time_of_day
-        if t <= 0.51 and not in_space:
-            sun_t = min(1.0, t / 0.50)
+        if t <= 0.51:
+            sun_t = min(1.0, max(0.0, t / 0.50))
             sun_x = sun_t * sw
             sun_y = sh * 0.7 - math.sin(sun_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.sun_surf, (sun_x - 20, sun_y - 20))
 
         if (t >= 0.49 or t < 0.02) or in_space:
-            if not in_space:
-                if t >= 0.49:
-                    moon_t = (t - 0.49) / 0.53
-                else:
-                    moon_t = (t + 1.0 - 0.49) / 0.53
-                moon_t = max(0.0, min(1.0, moon_t))
+            if t >= 0.49:
+                moon_t = (t - 0.49) / 0.53
             else:
-                moon_t = 0.5
+                moon_t = (t + 1.0 - 0.49) / 0.53
+            moon_t = max(0.0, min(1.0, moon_t))
             moon_x = moon_t * sw
             moon_y = sh * 0.7 - math.sin(moon_t * math.pi) * (sh * 0.55)
             target_surf.blit(self.moon_surf, (moon_x - 16, moon_y - 16))

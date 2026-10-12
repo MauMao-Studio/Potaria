@@ -378,8 +378,8 @@ class DungeonMiniBoss:
         if bar_y is None:
             bar_y = SCREEN_HEIGHT - 60
         self.bar_y = bar_y
-        bar_w = 480
-        bar_h = 20
+        bar_w = 360
+        bar_h = 14
         bar_x = (SCREEN_WIDTH - bar_w) // 2
 
         # Smooth ghost damage lag interpolation
@@ -391,26 +391,26 @@ class DungeonMiniBoss:
             self.display_hp = float(self.hp)
 
         panel_x = bar_x - 10
-        panel_y = bar_y - 24
+        panel_y = bar_y - 20
         panel_w = bar_w + 20
-        panel_h = bar_h + 32
+        panel_h = bar_h + 26
 
         # 1. Backing Plate with Drop Shadow
-        pygame.draw.rect(target_surf, (5, 6, 12, 170), (panel_x + 2, panel_y + 3, panel_w, panel_h), border_radius=8)
-        pygame.draw.rect(target_surf, (15, 18, 28, 245), (panel_x, panel_y, panel_w, panel_h), border_radius=8)
+        pygame.draw.rect(target_surf, (5, 6, 12, 190), (panel_x + 2, panel_y + 3, panel_w, panel_h), border_radius=6)
+        pygame.draw.rect(target_surf, (15, 18, 28, 245), (panel_x, panel_y, panel_w, panel_h), border_radius=6)
         # Double Metallic Border
-        pygame.draw.rect(target_surf, (120, 95, 45), (panel_x, panel_y, panel_w, panel_h), 1, border_radius=8)
-        pygame.draw.rect(target_surf, (245, 205, 75), (panel_x + 2, panel_y + 2, panel_w - 4, panel_h - 4), 1, border_radius=6)
+        pygame.draw.rect(target_surf, (120, 95, 45), (panel_x, panel_y, panel_w, panel_h), 1, border_radius=6)
+        pygame.draw.rect(target_surf, (245, 205, 75), (panel_x + 2, panel_y + 2, panel_w - 4, panel_h - 4), 1, border_radius=5)
 
         # 2. Boss Crest & Name Header
         crest_txt = font.render("☠", True, (255, 80, 80))
-        target_surf.blit(crest_txt, (bar_x, bar_y - 20))
+        target_surf.blit(crest_txt, (bar_x, bar_y - 18))
 
         title_str = f"MINI-BOSS: {self.name.upper()}"
         sh_title = font.render(title_str, True, (0, 0, 0))
         title_txt = font.render(title_str, True, (255, 230, 100))
-        target_surf.blit(sh_title, (bar_x + 19, bar_y - 19))
-        target_surf.blit(title_txt, (bar_x + 18, bar_y - 20))
+        target_surf.blit(sh_title, (bar_x + 17, bar_y - 17))
+        target_surf.blit(title_txt, (bar_x + 16, bar_y - 18))
 
         # 3. Bar Trench (Abyssal Red)
         pygame.draw.rect(target_surf, (35, 15, 22), (bar_x, bar_y, bar_w, bar_h), border_radius=4)
@@ -426,7 +426,7 @@ class DungeonMiniBoss:
         fill_w = int(bar_w * pct)
         if fill_w > 0:
             pygame.draw.rect(target_surf, (220, 38, 58), (bar_x, bar_y, fill_w, bar_h), border_radius=4)
-            pygame.draw.rect(target_surf, (255, 125, 145), (bar_x, bar_y, fill_w, 3), border_top_left_radius=4, border_top_right_radius=4)
+            pygame.draw.rect(target_surf, (255, 135, 155), (bar_x, bar_y, fill_w, 2), border_top_left_radius=4, border_top_right_radius=4)
 
         # 6. Phase Threshold Markers (25%, 50%, 75%)
         for t in (0.25, 0.50, 0.75):
@@ -441,8 +441,8 @@ class DungeonMiniBoss:
         sh_num = font.render(hp_str, True, (0, 0, 0))
         num_txt = font.render(hp_str, True, (255, 255, 255))
         cx = SCREEN_WIDTH // 2
-        target_surf.blit(sh_num, (cx - num_txt.get_width() // 2 + 1, bar_y + 3))
-        target_surf.blit(num_txt, (cx - num_txt.get_width() // 2, bar_y + 2))
+        target_surf.blit(sh_num, (cx - num_txt.get_width() // 2 + 1, bar_y))
+        target_surf.blit(num_txt, (cx - num_txt.get_width() // 2, bar_y - 1))
 
 
 # Specific Mini-Boss Classes with Signature Bullet-Hell Patterns
@@ -1570,11 +1570,11 @@ class GrandBossSolRho:
     def render_boss_bar(self, target_surf, font, font_title, bar_y=None):
         if self.is_dead:
             return
-        bar_w = 520
-        bar_h = 22
+        bar_w = 390
+        bar_h = 16
         bar_x = (SCREEN_WIDTH - bar_w) // 2
         if bar_y is None:
-            bar_y = SCREEN_HEIGHT - 60  # Centered at screen bottom with ample clearance
+            bar_y = SCREEN_HEIGHT - 60  # Centered with ample clearance
         self.bar_y = bar_y
 
         # Smooth ghost damage lag interpolation
@@ -1586,9 +1586,9 @@ class GrandBossSolRho:
             self.display_hp = float(self.hp)
 
         panel_x = bar_x - 12
-        panel_y = bar_y - 25
+        panel_y = bar_y - 22
         panel_w = bar_w + 24
-        panel_h = bar_h + 35
+        panel_h = bar_h + 28
 
         # Dynamic Phase Themes
         if self.phase == 1:
@@ -1613,21 +1613,21 @@ class GrandBossSolRho:
             crest_col = (220, 80, 255)
 
         # 1. Backing Plate with Drop Shadow
-        pygame.draw.rect(target_surf, (5, 6, 12, 180), (panel_x + 3, panel_y + 4, panel_w, panel_h), border_radius=9)
-        pygame.draw.rect(target_surf, (16, 18, 30, 248), (panel_x, panel_y, panel_w, panel_h), border_radius=9)
+        pygame.draw.rect(target_surf, (5, 6, 12, 190), (panel_x + 3, panel_y + 4, panel_w, panel_h), border_radius=7)
+        pygame.draw.rect(target_surf, (16, 18, 30, 248), (panel_x, panel_y, panel_w, panel_h), border_radius=7)
         # Double Metallic Ornate Border
-        pygame.draw.rect(target_surf, outer_rim, (panel_x, panel_y, panel_w, panel_h), 1, border_radius=9)
-        pygame.draw.rect(target_surf, inner_rim, (panel_x + 2, panel_y + 2, panel_w - 4, panel_h - 4), 1, border_radius=7)
+        pygame.draw.rect(target_surf, outer_rim, (panel_x, panel_y, panel_w, panel_h), 1, border_radius=7)
+        pygame.draw.rect(target_surf, inner_rim, (panel_x + 2, panel_y + 2, panel_w - 4, panel_h - 4), 1, border_radius=5)
 
         # 2. Crest & Boss Title Header
         crest_txt = font.render(crest_symbol, True, crest_col)
-        target_surf.blit(crest_txt, (bar_x, bar_y - 21))
+        target_surf.blit(crest_txt, (bar_x, bar_y - 19))
 
         title_str = f"{self.name.upper()}  [{p_tag}]"
         sh_title = font.render(title_str, True, (0, 0, 0))
         title_txt = font.render(title_str, True, t_col)
-        target_surf.blit(sh_title, (bar_x + 21, bar_y - 20))
-        target_surf.blit(title_txt, (bar_x + 20, bar_y - 21))
+        target_surf.blit(sh_title, (bar_x + 19, bar_y - 18))
+        target_surf.blit(title_txt, (bar_x + 18, bar_y - 19))
 
         # 3. Bar Trench (Abyssal Void)
         pygame.draw.rect(target_surf, (30, 14, 30), (bar_x, bar_y, bar_w, bar_h), border_radius=4)
@@ -1643,7 +1643,7 @@ class GrandBossSolRho:
         fill_w = int(bar_w * pct)
         if fill_w > 0:
             pygame.draw.rect(target_surf, fill_col, (bar_x, bar_y, fill_w, bar_h), border_radius=4)
-            pygame.draw.rect(target_surf, hi_col, (bar_x, bar_y, fill_w, 4), border_top_left_radius=4, border_top_right_radius=4)
+            pygame.draw.rect(target_surf, hi_col, (bar_x, bar_y, fill_w, 3), border_top_left_radius=4, border_top_right_radius=4)
 
         # 6. Phase Threshold Markers (25%, 50%, 75%)
         for t in (0.25, 0.50, 0.75):
@@ -1666,8 +1666,8 @@ class GrandBossSolRho:
             num_txt = font.render(hp_str, True, (255, 255, 255))
 
         cx = SCREEN_WIDTH // 2
-        target_surf.blit(sh_num, (cx - num_txt.get_width() // 2 + 1, bar_y + 4))
-        target_surf.blit(num_txt, (cx - num_txt.get_width() // 2, bar_y + 3))
+        target_surf.blit(sh_num, (cx - num_txt.get_width() // 2 + 1, bar_y + 1))
+        target_surf.blit(num_txt, (cx - num_txt.get_width() // 2, bar_y))
 
 
 BOSS_TYPE_REGISTRY = {

@@ -30,6 +30,7 @@ SKILL_DEFINITIONS = {
     "dash": {
         "id": "dash",
         "name": "Swift Dash",
+        "evolved_name": "Phantom Dash",
         "hotkey": "V",
         "mp_cost": 5,
         "cooldown": 1.5,
@@ -95,6 +96,8 @@ class SkillManager:
         
         # Cooldown trackers: skill_id -> remaining_time
         self.cooldowns = {}
+        # Skill combos / charge windows: skill_id -> {"charges_left": int, "window_timer": float, "cd": float}
+        self.skill_combos = {}
         
         # Active Skill Slots & Hotkey Bindings
         self.active_slots = ["power_slash", "whirlwind", "dash", "fireball"]
@@ -106,6 +109,16 @@ class SkillManager:
 
     def get_skill_level(self, skill_id):
         return self.skill_levels.get(skill_id, 1)
+
+    def is_skill_evolved(self, skill_id):
+        """Returns True if skill has reached evolution tier (Lv. 3+)."""
+        return self.get_skill_level(skill_id) >= 3 and ("evolved_name" in SKILL_DEFINITIONS.get(skill_id, {}))
+
+    def get_skill_name(self, skill_id):
+        data = SKILL_DEFINITIONS.get(skill_id, {})
+        if self.is_skill_evolved(skill_id):
+            return data.get("evolved_name", data.get("name", "---"))
+        return data.get("name", "---")
 
     def get_skill_mp_cost(self, skill_id, player=None):
         data = SKILL_DEFINITIONS.get(skill_id, {})
@@ -177,6 +190,15 @@ class SkillManager:
     def can_use_skill(self, skill_id, stats, player=None):
         if skill_id not in self.learned_skills:
             return False, "Skill not learned!"
+        
+        # Check combo charges window
+        combo = self.skill_combos.get(skill_id)
+        if combo and combo.get("charges_left", 0) > 0 and combo.get("window_timer", 0.0) > 0:
+            cost = self.get_skill_mp_cost(skill_id, player=player)
+            if stats.mp < cost:
+                return False, "Not enough MP!"
+            return True, "Combo Ready"
+
         if self.cooldowns.get(skill_id, 0.0) > 0:
             return False, "Skill on cooldown!"
         
@@ -193,11 +215,44 @@ class SkillManager:
         cost = self.get_skill_mp_cost(skill_id, player=player)
         cd = self.get_skill_cooldown(skill_id, player=player)
         stats.mp -= cost
-        self.cooldowns[skill_id] = cd
+
+        # Check if currently inside a combo window (e.g. 2nd dash of Phantom Dash)
+        combo = self.skill_combos.get(skill_id)
+        if combo and combo.get("charges_left", 0) > 0:
+            combo["charges_left"] -= 1
+            if combo["charges_left"] <= 0:
+                final_cd = combo.get("cd", cd)
+                del self.skill_combos[skill_id]
+                self.cooldowns[skill_id] = final_cd
+            return True
+
+        # First cast
+        if skill_id == "dash" and self.is_skill_evolved("dash"):
+            # Phantom Dash: grants 1 additional consecutive dash within 1.2s window
+            self.skill_combos[skill_id] = {
+                "charges_left": 1,
+                "window_timer": 1.2,
+                "cd": cd
+            }
+            # Cooldown is NOT started yet while window is active
+        else:
+            self.cooldowns[skill_id] = cd
+
         return True
 
     def update(self, dt):
-        """Ticks down active skill cooldowns."""
+        """Ticks down active skill cooldowns and combo window timers."""
+        # Update combo charge windows
+        for s_id in list(self.skill_combos.keys()):
+            combo = self.skill_combos[s_id]
+            combo["window_timer"] -= dt
+            if combo["window_timer"] <= 0:
+                # Window expired without using remaining charge -> trigger cooldown
+                cd = combo.get("cd", self.get_skill_cooldown(s_id))
+                del self.skill_combos[s_id]
+                self.cooldowns[s_id] = cd
+
+        # Update active cooldowns
         for s_id in list(self.cooldowns.keys()):
             self.cooldowns[s_id] = max(0.0, self.cooldowns[s_id] - dt)
             if self.cooldowns[s_id] <= 0:

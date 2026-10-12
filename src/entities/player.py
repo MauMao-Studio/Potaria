@@ -397,20 +397,24 @@ class Player:
                 self.vfx_manager.spawn("cryo_frost_shatter", self.center_x, self.center_y, duration=0.50, scale=1.2)
 
         elif s_id == "dash":
+            is_phantom = hasattr(self.skills, "is_skill_evolved") and self.skills.is_skill_evolved("dash")
             self.dash_timer = 0.35
-            self.i_frame_timer = 0.4
-            dash_speed = 11.5
+            self.i_frame_timer = 0.45 if is_phantom else 0.4
+            dash_speed = 13.0 if is_phantom else 11.5
             self.vx = math.cos(self.aim_angle) * dash_speed
             self.vy = math.sin(self.aim_angle) * dash_speed
             if abs(self.vx) > 0.3:
                 self.facing_right = (self.vx > 0)
             if self.vy < 0:
                 self.on_ground = False
-            particle_system.spawn_sparks(self.center_x, self.center_y, (255, 255, 255), count=20)
+            spark_color = (180, 100, 255) if is_phantom else (255, 255, 255)
+            particle_system.spawn_sparks(self.center_x, self.center_y, spark_color, count=25 if is_phantom else 20)
             dash_rot = -math.degrees(self.aim_angle)
             if self.vfx_manager:
-                self.vfx_manager.spawn("dash", self.center_x, self.center_y, duration=0.35, scale=1.3, rot_deg=dash_rot)
-                self.vfx_manager.spawn("starlight_volley_burst", self.center_x, self.center_y, duration=0.35, scale=1.1, rot_deg=dash_rot)
+                self.vfx_manager.spawn("dash", self.center_x, self.center_y, duration=0.35, scale=1.4 if is_phantom else 1.3, rot_deg=dash_rot)
+                self.vfx_manager.spawn("starlight_volley_burst", self.center_x, self.center_y, duration=0.35, scale=1.2 if is_phantom else 1.1, rot_deg=dash_rot)
+                if is_phantom:
+                    self.vfx_manager.spawn("quantum_fold_rift", self.center_x, self.center_y, duration=0.4, scale=1.2)
 
         elif s_id == "fireball":
             angle = self.aim_angle

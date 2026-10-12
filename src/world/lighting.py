@@ -88,6 +88,9 @@ class LightingEngine:
             sun_val = ambient_sunlight
             for ly in range(grid_h):
                 ty = min_ty + ly
+                if ty < 0:
+                    light[lx][ly] = sun_val
+                    continue
                 if not (0 <= ty < world.height):
                     continue
 
