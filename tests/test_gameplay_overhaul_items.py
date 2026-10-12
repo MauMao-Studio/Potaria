@@ -199,6 +199,18 @@ class TestGameplayOverhaulItems:
         font = pygame.font.Font(None, 24)
         play_btn.render(surf, font)
 
+        # Button with both icon and text side-by-side
+        combo_btn = Button(50, 50, 160, 36, "CREATE WORLD", "create", icon="plus", tooltip="Create World")
+        combo_btn.render(surf, font)
+        assert combo_btn.icon == "plus"
+        assert combo_btn.text == "CREATE WORLD"
+
+        # Verify active_tooltip propagates when hovering
+        menu.state = "menu"
+        menu.menu_buttons[0].is_hovered = True
+        menu.update(0.016, (menu.menu_buttons[0].rect.centerx, menu.menu_buttons[0].rect.centery))
+        assert menu.active_tooltip == menu.menu_buttons[0].tooltip
+
     # =========================================================================
     # ITEM 7: Skill Icons Standard & Evolved
     # =========================================================================
@@ -224,3 +236,113 @@ class TestGameplayOverhaulItems:
             assert os.path.exists(icon_file), f"Missing skill icon: {sk}.png"
             img = pygame.image.load(icon_file)
             assert img.get_size() == (32, 32), f"Skill icon {sk}.png must be 32x32, got {img.get_size()}"
+
+    # =========================================================================
+    # DEEP VERIFICATION: Tree Decay & Sapling Save/Load Roundtrip
+    # =========================================================================
+    def test_decay_and_saplings_save_load_roundtrip(self):
+        """Verifies decaying blocks and planted saplings persist accurately across save/load cycles."""
+        from src.world.save_manager import save_world, load_world, delete_world
+        from src.world.chunk_manager import ChunkManager
+
+        test_wname = "pytest_decay_roundtrip_test"
+        class MockGame:
+            def __init__(self, asset_factory):
+                from src.ui.inventory import Inventory
+                self.asset_factory = asset_factory
+                self.sound_manager = SoundManager()
+                self.camera = Camera(800, 600)
+                self.world = World(asset_factory, seed=42)
+                self.inventory = Inventory(asset_factory)
+                self.player = Player(0, 0, asset_factory, self.sound_manager)
+                self.player.inventory = self.inventory
+                self.block_deltas = {}
+                self.wall_deltas = {}
+                self.playtime = 120.0
+                self.combat = CombatManager(asset_factory, self.sound_manager, self.camera, ParticleSystem())
+                self.world.game = self
+
+        game1 = MockGame(self.asset_factory)
+        game1.world.decaying_blocks[(15, 20)] = {
+            "timer": 4.5,
+            "max_timer": 8.0,
+            "days_left": 2,
+            "max_days": 3,
+            "phase": 1,
+            "type": TILE_WOOD_TRUNK
+        }
+        game1.world.planted_saplings[(30, 40)] = {
+            "growth_days": 1,
+            "sapling_type": "oak_sapling"
+        }
+
+        try:
+            saved = save_world(test_wname, game1)
+            assert bool(saved), "save_world should succeed"
+
+            game2 = MockGame(self.asset_factory)
+            loaded = load_world(test_wname, game2)
+            assert loaded is True, "load_world should succeed"
+
+            assert (15, 20) in game2.world.decaying_blocks
+            d_info = game2.world.decaying_blocks[(15, 20)]
+            assert d_info["days_left"] == 2
+            assert d_info["max_days"] == 3
+            assert d_info["phase"] == 1
+            assert d_info["type"] == TILE_WOOD_TRUNK
+            assert abs(d_info["timer"] - 4.5) < 0.01
+
+            assert (30, 40) in game2.world.planted_saplings
+            s_info = game2.world.planted_saplings[(30, 40)]
+            assert s_info["growth_days"] == 1
+            assert s_info["sapling_type"] == "oak_sapling"
+        finally:
+            delete_world(test_wname)
+
+    # =========================================================================
+    # DEEP VERIFICATION: Secondary Boss Unarmed Strike
+    # =========================================================================
+    def test_secondary_boss_unarmed_damage_strictly_one(self):
+        """Verifies bare-hand attacks against secondary boss deal strictly 1 damage."""
+        from src.entities.boss import LordMalus
+        from src.ui.inventory import Inventory
+
+        self.player.stats.base_atk = 999
+        self.player.equipment.recalculate_stats(self.player.stats)
+        self.player.inventory = Inventory(self.asset_factory)
+        for i in range(len(self.player.inventory.slots)):
+            self.player.inventory.slots[i] = None
+        self.player.equipment.slots[SLOT_WEAPON] = None
+
+        sec_boss = LordMalus(220, 200, self.asset_factory, self.sound_manager)
+        self.combat.secondary_boss = sec_boss
+        initial_hp = sec_boss.hp
+
+        self.player.x = 200
+        self.player.y = 200
+        self.player.aim_angle = 0.0
+        self.player.swing_timer = 0.15
+        self.player.swing_hit_targets = set()
+
+        self.combat._check_weapon_hits(self.player, self.world)
+        assert sec_boss.hp == initial_hp - 1, f"Secondary boss should take strictly 1 damage, took {initial_hp - sec_boss.hp}"
+        assert len(self.combat.damage_numbers) > 0
+        assert self.combat.damage_numbers[-1].amount == 1
+
+    # =========================================================================
+    # DEEP VERIFICATION: OPAQUE_EXCLUSIONS Completeness
+    # =========================================================================
+    def test_opaque_exclusions_prop_completeness(self):
+        """Verifies all placed props and furniture are in OPAQUE_EXCLUSIONS to ensure transparency."""
+        from src.constants import (
+            TILE_FURNACE, TILE_LAMP, TILE_DUNGEON_ALTAR, TILE_SAPLING, TILE_CACTUS,
+            TILE_MUSHROOM_STEM, TILE_MUSHROOM_CAP, TILE_BARRIER
+        )
+        required_props = [
+            TILE_WORK_BENCH, TILE_FURNACE, TILE_LAMP, TILE_DUNGEON_ALTAR,
+            TILE_SAPLING, TILE_CACTUS, TILE_MUSHROOM_STEM, TILE_MUSHROOM_CAP,
+            TILE_BARRIER
+        ]
+        for prop_id in required_props:
+            assert prop_id in OPAQUE_EXCLUSIONS, f"Prop tile ID {prop_id} must be in OPAQUE_EXCLUSIONS"
+

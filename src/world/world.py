@@ -438,6 +438,8 @@ class World:
         """Advances tree decay by a daily step."""
         if not hasattr(self, "decaying_blocks") or not self.decaying_blocks:
             return
+        if game is None and hasattr(self, "game"):
+            game = self.game
         for coord, info in list(self.decaying_blocks.items()):
             if "days_left" in info:
                 info["days_left"] -= 1
@@ -452,7 +454,7 @@ class World:
 
     def grow_plants_daily(self):
         """Called once per day at dawn/daylight transition: grows planted/wild saplings in sunlight into full trees."""
-        self.decay_trees_daily()
+        self.decay_trees_daily(game=getattr(self, "game", None))
         sapling_coords = list(self.planted_saplings.keys())
         for tx, ty in sapling_coords:
             if self.get_tile(tx, ty) != TILE_SAPLING:
@@ -799,6 +801,15 @@ class World:
             if info["timer"] <= 0:
                 expired.append(coord)
                 self.set_tile(coord[0], coord[1], TILE_AIR)
+                if game:
+                    if hasattr(game, "block_deltas"):
+                        game.block_deltas[coord] = TILE_AIR
+                    if getattr(game, "client", None) and getattr(game.client, "connected", False):
+                        game.client.send_block_delta(coord[0], coord[1], TILE_AIR)
+                    if hasattr(game, "lighting"):
+                        game.lighting.dirty = True
+                    if hasattr(game, "hud") and hasattr(game.hud, "minimap"):
+                        game.hud.minimap.mark_dirty()
                 cx = coord[0] * self.scaled_tile + self.scaled_tile / 2
                 cy = coord[1] * self.scaled_tile + self.scaled_tile / 2
 

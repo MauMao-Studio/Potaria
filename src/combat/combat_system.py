@@ -1245,6 +1245,29 @@ class CombatManager:
                 if not is_ancient:
                     return
 
+        # Check Secondary Boss (Rematch duo battles)
+        if self.secondary_boss and not self.secondary_boss.is_dead and hitbox.colliderect(self.secondary_boss.rect):
+            if not getattr(player, "swing_hit_targets", None) or self.secondary_boss not in player.swing_hit_targets:
+                getattr(player, "swing_hit_targets", set()).add(self.secondary_boss)
+                knock_x = math.cos(player.aim_angle) * (1.5 if is_hand else 3.0)
+                self.secondary_boss.take_damage(final_dmg, knockback_vx=knock_x)
+                if is_crit:
+                    self.sound_manager.play("crit_hit")
+                    self.particle_system.spawn_sparks(hx, hy, (255, 235, 50), count=18)
+                    self.camera.add_shake(5.0, 0.22)
+                else:
+                    self.sound_manager.play("hit_mob")
+                    self.particle_system.spawn_sparks(hx, hy, (255, 230, 100), count=8)
+                    self.camera.add_shake(3.0, 0.15)
+                self.spawn_damage_number(self.secondary_boss.center_x, self.secondary_boss.y - 12, final_dmg, color=(255, 230, 40) if is_crit else (255, 210, 50), is_crit=is_crit)
+                if not is_hand and hasattr(player, "has_effect"):
+                    if (player.has_effect("molten blaze") or player.has_effect("superheated impact")) and hasattr(self.secondary_boss, "apply_burn"):
+                        self.secondary_boss.apply_burn(dps=12, duration=4.0)
+                    if (player.has_effect("lacerating strike") or player.has_effect("lacerate")) and hasattr(self.secondary_boss, "apply_bleed"):
+                        self.secondary_boss.apply_bleed(dps=10, duration=5.0)
+                if not is_ancient:
+                    return
+
     def _spawn_loot_drop(self, item_id, count, mx, my):
         """Spawns a DroppedItem with natural horizontal scatter so multiple drops spread apart."""
         ox = mx + random.uniform(-6.0, 6.0)

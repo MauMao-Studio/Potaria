@@ -38,6 +38,63 @@ class Button:
     def update(self, mouse_pos):
         self.is_hovered = self.rect.collidepoint(mouse_pos)
 
+    def _render_icon(self, target_surf, cx, cy):
+        if self.icon == "play":
+            # Sleek emerald/gold right-pointing triangle with inner highlight
+            tri_pts = [(cx - 6, cy - 8), (cx + 9, cy), (cx - 6, cy + 8)]
+            tri_col = (255, 240, 100) if self.is_hovered else (80, 230, 120)
+            # Drop shadow
+            pygame.draw.polygon(target_surf, (15, 20, 30), [(cx - 5, cy - 7), (cx + 10, cy + 1), (cx - 5, cy + 9)])
+            pygame.draw.polygon(target_surf, tri_col, tri_pts)
+            pygame.draw.polygon(target_surf, (255, 255, 220), tri_pts, 1)
+        elif self.icon == "rename":
+            # Sleek cyan/gold quill/pencil icon
+            pen_col = (130, 245, 255) if self.is_hovered else (90, 195, 235)
+            # Drop shadow
+            pygame.draw.line(target_surf, (15, 20, 30), (cx - 5, cy + 7), (cx + 7, cy - 5), 3)
+            pygame.draw.line(target_surf, pen_col, (cx - 6, cy + 6), (cx + 6, cy - 6), 3)
+            pygame.draw.circle(target_surf, (255, 225, 100) if self.is_hovered else pen_col, (cx + 7, cy - 7), 3)
+            pygame.draw.line(target_surf, (255, 255, 255), (cx - 7, cy + 8), (cx - 4, cy + 8), 2)
+        elif self.icon == "delete":
+            # Sleek crimson trashcan icon with lid & vertical slats
+            del_col = (255, 95, 95) if self.is_hovered else (225, 75, 75)
+            # Drop shadow
+            pygame.draw.rect(target_surf, (15, 20, 30), (cx - 5, cy - 3, 12, 11), 2, border_radius=2)
+            # Can body
+            pygame.draw.rect(target_surf, del_col, (cx - 6, cy - 4, 12, 11), 2, border_radius=2)
+            # Lid & handle
+            pygame.draw.line(target_surf, del_col, (cx - 8, cy - 5), (cx + 8, cy - 5), 2)
+            pygame.draw.line(target_surf, (255, 220, 220) if self.is_hovered else del_col, (cx - 3, cy - 7), (cx + 3, cy - 7), 2)
+            # Ribs
+            pygame.draw.line(target_surf, del_col, (cx - 2, cy - 2), (cx - 2, cy + 4), 1)
+            pygame.draw.line(target_surf, del_col, (cx + 2, cy - 2), (cx + 2, cy + 4), 1)
+        elif self.icon in ("plus", "+"):
+            p_col = (120, 240, 160) if self.is_hovered else (80, 215, 130)
+            pygame.draw.line(target_surf, (15, 20, 30), (cx - 6, cy + 1), (cx + 8, cy + 1), 3)
+            pygame.draw.line(target_surf, (15, 20, 30), (cx + 1, cy - 6), (cx + 1, cy + 8), 3)
+            pygame.draw.line(target_surf, p_col, (cx - 7, cy), (cx + 7, cy), 3)
+            pygame.draw.line(target_surf, p_col, (cx, cy - 7), (cx, cy + 7), 3)
+            pygame.draw.line(target_surf, (255, 255, 255), (cx - 6, cy), (cx + 6, cy), 1)
+            pygame.draw.line(target_surf, (255, 255, 255), (cx, cy - 6), (cx, cy + 6), 1)
+        elif self.icon in ("back", "<"):
+            b_col = (255, 220, 110) if self.is_hovered else (220, 180, 80)
+            pts = [(cx + 4, cy - 7), (cx - 5, cy), (cx + 4, cy + 7)]
+            sh_pts = [(cx + 5, cy - 6), (cx - 4, cy + 1), (cx + 5, cy + 8)]
+            pygame.draw.lines(target_surf, (15, 20, 30), False, sh_pts, 3)
+            pygame.draw.lines(target_surf, b_col, False, pts, 3)
+            pygame.draw.lines(target_surf, (255, 255, 230), False, pts, 1)
+        elif self.icon == "join":
+            j_col = (120, 220, 255) if self.is_hovered else (70, 180, 230)
+            arr = [(cx - 1, cy - 5), (cx + 6, cy), (cx - 1, cy + 5)]
+            pygame.draw.line(target_surf, (15, 20, 30), (cx - 6, cy + 1), (cx + 3, cy + 1), 3)
+            pygame.draw.polygon(target_surf, (15, 20, 30), [(p[0]+1, p[1]+1) for p in arr])
+            pygame.draw.line(target_surf, j_col, (cx - 7, cy), (cx + 3, cy), 2)
+            pygame.draw.polygon(target_surf, j_col, arr)
+        elif isinstance(self.icon, pygame.Surface):
+            ix = cx - self.icon.get_width() // 2
+            iy = cy - self.icon.get_height() // 2
+            target_surf.blit(self.icon, (ix, iy))
+
     def render(self, target_surf, font):
         bg_col = (55, 65, 95, 230) if not self.is_hovered else (80, 105, 155, 245)
         border_col = (110, 125, 170) if not self.is_hovered else (255, 230, 80)
@@ -48,43 +105,23 @@ class Button:
         if self.is_hovered:
             pygame.draw.rect(target_surf, (255, 255, 180, 90), (self.rect.x + 2, self.rect.y + 2, self.rect.w - 4, 3), border_radius=4)
 
-        if self.icon:
+        if self.icon and self.text:
+            text_col = (255, 255, 255) if not self.is_hovered else (255, 235, 100)
+            txt_surf = font.render(self.text, True, text_col)
+            icon_w = 20
+            gap = 8
+            total_w = icon_w + gap + txt_surf.get_width()
+            start_x = self.rect.centerx - total_w // 2
+            cx = start_x + icon_w // 2
+            cy = self.rect.centery
+            tx = start_x + icon_w + gap
+            ty = self.rect.centery - txt_surf.get_height() // 2
+            self._render_icon(target_surf, cx, cy)
+            target_surf.blit(txt_surf, (tx, ty))
+        elif self.icon:
             cx, cy = self.rect.centerx, self.rect.centery
-            if self.icon == "play":
-                # Sleek emerald/gold right-pointing triangle with inner highlight
-                tri_pts = [(cx - 6, cy - 8), (cx + 9, cy), (cx - 6, cy + 8)]
-                tri_col = (255, 240, 100) if self.is_hovered else (80, 230, 120)
-                # Drop shadow
-                pygame.draw.polygon(target_surf, (15, 20, 30), [(cx - 5, cy - 7), (cx + 10, cy + 1), (cx - 5, cy + 9)])
-                pygame.draw.polygon(target_surf, tri_col, tri_pts)
-                pygame.draw.polygon(target_surf, (255, 255, 220), tri_pts, 1)
-            elif self.icon == "rename":
-                # Sleek cyan/gold quill/pencil icon
-                pen_col = (130, 245, 255) if self.is_hovered else (90, 195, 235)
-                # Drop shadow
-                pygame.draw.line(target_surf, (15, 20, 30), (cx - 5, cy + 7), (cx + 7, cy - 5), 3)
-                pygame.draw.line(target_surf, pen_col, (cx - 6, cy + 6), (cx + 6, cy - 6), 3)
-                pygame.draw.circle(target_surf, (255, 225, 100) if self.is_hovered else pen_col, (cx + 7, cy - 7), 3)
-                pygame.draw.line(target_surf, (255, 255, 255), (cx - 7, cy + 8), (cx - 4, cy + 8), 2)
-            elif self.icon == "delete":
-                # Sleek crimson trashcan icon with lid & vertical slats
-                del_col = (255, 95, 95) if self.is_hovered else (225, 75, 75)
-                # Drop shadow
-                pygame.draw.rect(target_surf, (15, 20, 30), (cx - 5, cy - 3, 12, 11), 2, border_radius=2)
-                # Can body
-                pygame.draw.rect(target_surf, del_col, (cx - 6, cy - 4, 12, 11), 2, border_radius=2)
-                # Lid & handle
-                pygame.draw.line(target_surf, del_col, (cx - 8, cy - 5), (cx + 8, cy - 5), 2)
-                pygame.draw.line(target_surf, (255, 220, 220) if self.is_hovered else del_col, (cx - 3, cy - 7), (cx + 3, cy - 7), 2)
-                # Ribs
-                pygame.draw.line(target_surf, del_col, (cx - 2, cy - 2), (cx - 2, cy + 4), 1)
-                pygame.draw.line(target_surf, del_col, (cx + 2, cy - 2), (cx + 2, cy + 4), 1)
-            elif isinstance(self.icon, pygame.Surface):
-                ix = cx - self.icon.get_width() // 2
-                iy = cy - self.icon.get_height() // 2
-                target_surf.blit(self.icon, (ix, iy))
-
-        if self.text:
+            self._render_icon(target_surf, cx, cy)
+        elif self.text:
             text_col = (255, 255, 255) if not self.is_hovered else (255, 235, 100)
             txt_surf = font.render(self.text, True, text_col)
             tx = self.rect.centerx - txt_surf.get_width() // 2
@@ -140,14 +177,14 @@ class MenuManager:
         gap = 46
 
         self.menu_buttons = [
-            Button(cx, start_y, btn_w, btn_h, "SINGLEPLAYER", "play_single"),
-            Button(cx, start_y + gap, btn_w, btn_h, "LAN MULTIPLAYER (1-5P)", "multiplayer"),
-            Button(cx, start_y + gap * 2, btn_w, btn_h, "MODS / ADD-ONS", "mods"),
-            Button(cx, start_y + gap * 3, btn_w, btn_h, "ACHIEVEMENTS", "achievements"),
-            Button(cx, start_y + gap * 4, btn_w, btn_h, "SETTINGS & AUDIO", "settings"),
-            Button(cx, start_y + gap * 5, btn_w, btn_h, "PROLOGUE CUTSCENE", "cutscene"),
-            Button(cx, start_y + gap * 6, btn_w, btn_h, "CONTROLS & HELP", "controls"),
-            Button(cx, start_y + gap * 7, btn_w, btn_h, "QUIT", "quit"),
+            Button(cx, start_y, btn_w, btn_h, "SINGLEPLAYER", "play_single", tooltip="Start your solo sandbox adventure"),
+            Button(cx, start_y + gap, btn_w, btn_h, "LAN MULTIPLAYER (1-5P)", "multiplayer", tooltip="Host or join a local multiplayer session (1-5 players)"),
+            Button(cx, start_y + gap * 2, btn_w, btn_h, "MODS / ADD-ONS", "mods", tooltip="Configure game modifiers and custom modes"),
+            Button(cx, start_y + gap * 3, btn_w, btn_h, "ACHIEVEMENTS", "achievements", tooltip="View unlocked achievements and progression milestones"),
+            Button(cx, start_y + gap * 4, btn_w, btn_h, "SETTINGS & AUDIO", "settings", tooltip="Configure graphics, audio, gameplay and input bindings"),
+            Button(cx, start_y + gap * 5, btn_w, btn_h, "PROLOGUE CUTSCENE", "cutscene", tooltip="Replay the story prologue animated cutscene"),
+            Button(cx, start_y + gap * 6, btn_w, btn_h, "CONTROLS & HELP", "controls", tooltip="View keyboard controls, key bindings and game guide"),
+            Button(cx, start_y + gap * 7, btn_w, btn_h, "QUIT", "quit", tooltip="Exit game and return to desktop"),
         ]
 
         # Settings Configuration
@@ -258,7 +295,7 @@ class MenuManager:
         self.controls_buttons = [self.btn_touch_ctrl, self.btn_touch_opac, self.btn_input_map]
 
         # 6. Global Settings Back Button
-        self.settings_back_btn = Button(SCREEN_WIDTH // 2 - 110, py + ph - 52, 220, 38, "<  BACK TO MENU", "settings_back")
+        self.settings_back_btn = Button(SCREEN_WIDTH // 2 - 110, py + ph - 52, 220, 38, "<  BACK TO MENU", "settings_back", icon="back", tooltip="Return to main menu")
 
         # Master settings buttons collection (preserves all button searches across test suites)
         self.settings_buttons = (
@@ -271,8 +308,8 @@ class MenuManager:
         )
 
         # Buttons for Input Mapping view
-        self.input_reset_button = Button(SCREEN_WIDTH // 2 - 210, SCREEN_HEIGHT - 95, 190, 42, "RESET DEFAULTS", "reset_keys")
-        self.input_back_button = Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 95, 190, 42, "< BACK TO SETTINGS", "input_back")
+        self.input_reset_button = Button(SCREEN_WIDTH // 2 - 210, SCREEN_HEIGHT - 95, 190, 42, "RESET DEFAULTS", "reset_keys", tooltip="Restore default keybindings")
+        self.input_back_button = Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 95, 190, 42, "< BACK TO SETTINGS", "input_back", icon="back", tooltip="Return to settings menu")
 
         # Multiplayer Menu Buttons & State
         self.discovery = LANDiscovery()
@@ -284,9 +321,9 @@ class MenuManager:
         mp_btn_h = 38
 
         self.mp_buttons = [
-            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 176, mp_btn_w, mp_btn_h, "HOST LAN GAME", "host_game", tooltip="Host world on local LAN port 25565"),
-            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 502, mp_btn_w, mp_btn_h, "CONNECT TO IP", "join_game", tooltip="Connect to specified IP address"),
-            Button(SCREEN_WIDTH // 2 - 100, 572, 200, 38, "<  BACK TO MENU", "menu"),
+            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 176, mp_btn_w, mp_btn_h, "HOST LAN GAME", "host_game", icon="plus", tooltip="Host world on local LAN port 25565"),
+            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 502, mp_btn_w, mp_btn_h, "CONNECT TO IP", "join_game", icon="join", tooltip="Connect to specified IP address"),
+            Button(SCREEN_WIDTH // 2 - 100, 572, 200, 38, "<  BACK TO MENU", "menu", icon="back", tooltip="Return to main menu"),
         ]
         self.join_ip_input = "127.0.0.1"
         self.typing_ip = False
@@ -298,8 +335,8 @@ class MenuManager:
         self.room_key_input = ""
         self.room_key_error = ""
         self.room_key_box_rect = pygame.Rect(SCREEN_WIDTH // 2 - 140, 320, 280, 38)
-        self.room_key_join_btn = Button(SCREEN_WIDTH // 2 - 130, 375, 120, 38, "JOIN", "confirm_room_key")
-        self.room_key_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 120, 38, "CANCEL", "cancel_room_key")
+        self.room_key_join_btn = Button(SCREEN_WIDTH // 2 - 130, 375, 120, 38, "JOIN", "confirm_room_key", icon="join", tooltip="Connect to server with entered room key")
+        self.room_key_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 120, 38, "CANCEL", "cancel_room_key", tooltip="Cancel and return to multiplayer lobby")
 
         # LAN Host configuration state
         self.hosting_lan = False
@@ -307,10 +344,10 @@ class MenuManager:
         self.typing_host_key = False
         self.host_key_box_rect = pygame.Rect(mp_card_x + 18, 178, 320, 36)
 
-        self.back_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 95, 200, 44, "<  BACK TO MENU", "menu")
+        self.back_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 95, 200, 44, "<  BACK TO MENU", "menu", icon="back", tooltip="Return to main menu")
         self.victory_buttons = [
-            Button(SCREEN_WIDTH // 2 - 220, SCREEN_HEIGHT - 120, 200, 46, "CONTINUE EXPLORING", "play"),
-            Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 120, 200, 46, "MAIN MENU", "menu"),
+            Button(SCREEN_WIDTH // 2 - 220, SCREEN_HEIGHT - 120, 200, 46, "CONTINUE EXPLORING", "play", tooltip="Continue playing in the current world"),
+            Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 120, 200, 46, "MAIN MENU", "menu", icon="back", tooltip="Save and return to main menu"),
         ]
 
         # Determine Local LAN IP for hosting
@@ -330,16 +367,16 @@ class MenuManager:
         self.rename_world_input = ""
         self.rename_error_msg = ""
         self.rename_box_rect = pygame.Rect(SCREEN_WIDTH // 2 - 180, 325, 360, 40)
-        self.rename_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 385, 130, 40, "SAVE NAME", "confirm_rename")
-        self.rename_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 385, 130, 40, "CANCEL", "cancel_rename")
-        self.worlds_create_btn = Button(cx, 160, btn_w, btn_h, "[+] CREATE NEW WORLD", "open_new_world")
-        self.worlds_quick_btn = Button(cx, 215, btn_w, btn_h, "QUICK PLAY (NORMAL INFINITE)", "quick_play")
-        self.worlds_back_btn = Button(cx, SCREEN_HEIGHT - 85, btn_w, btn_h, "< BACK TO MENU", "menu")
+        self.rename_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 385, 130, 40, "SAVE NAME", "confirm_rename", tooltip="Save new world name")
+        self.rename_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 385, 130, 40, "CANCEL", "cancel_rename", tooltip="Cancel renaming")
+        self.worlds_create_btn = Button(cx, 160, btn_w, btn_h, "[+] CREATE NEW WORLD", "open_new_world", icon="plus", tooltip="Configure and generate a new world")
+        self.worlds_quick_btn = Button(cx, 215, btn_w, btn_h, "QUICK PLAY (NORMAL INFINITE)", "quick_play", icon="play", tooltip="Quickly jump into a default infinite world")
+        self.worlds_back_btn = Button(cx, SCREEN_HEIGHT - 85, btn_w, btn_h, "< BACK TO MENU", "menu", icon="back", tooltip="Return to main menu")
 
         # YOLO Confirmation Modal Buttons
         self.show_yolo_warning = False
-        self.yolo_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 375, 130, 40, "ACCEPT RISK", "confirm_yolo")
-        self.yolo_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 130, 40, "CANCEL", "cancel_yolo")
+        self.yolo_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 375, 130, 40, "ACCEPT RISK", "confirm_yolo", tooltip="Confirm YOLO mode and start game")
+        self.yolo_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 130, 40, "CANCEL", "cancel_yolo", tooltip="Cancel and select another difficulty")
 
         # Mods / Add-Ons
         self.mods_file = os.path.join("saves", "mods.json")
@@ -347,9 +384,9 @@ class MenuManager:
         self.load_mods()
 
         # Dedicated Buttons for MODS & ACHIEVEMENTS screens
-        self.mods_toggle_lms_btn = Button(cx + 175, 255, 120, 36, "ENABLE", "toggle_lms")
-        self.mods_back_btn = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 85, 200, 44, "<  BACK TO MENU", "menu")
-        self.achievements_back_btn = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 85, 200, 44, "<  BACK TO MENU", "menu")
+        self.mods_toggle_lms_btn = Button(cx + 175, 255, 120, 36, "ENABLE", "toggle_lms", tooltip="Toggle Last Man Standing battle royale survival mode")
+        self.mods_back_btn = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 85, 200, 44, "<  BACK TO MENU", "menu", icon="back", tooltip="Return to main menu")
+        self.achievements_back_btn = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 85, 200, 44, "<  BACK TO MENU", "menu", icon="back", tooltip="Return to previous screen")
         self._refresh_mods_button_labels()
 
         # New World Configuration (Clean layout with Type & Difficulty only)
@@ -359,16 +396,16 @@ class MenuManager:
         self.new_world_mode = MODE_LAST_MAN_STANDING if self.enabled_mods.get("last_man_standing", False) else MODE_ADVENTURE
         self.typing_world_name = False
         self.world_name_rect = pygame.Rect(cx - 30, 205, btn_w + 60, 38)
-        self.nw_btn_type = Button(cx, 265, btn_w, btn_h, "WORLD TYPE: INFINITE", "toggle_type")
-        self.nw_btn_diff = Button(cx, 335, btn_w, btn_h, "DIFFICULTY: NORMAL", "toggle_diff")
+        self.nw_btn_type = Button(cx, 265, btn_w, btn_h, "WORLD TYPE: INFINITE", "toggle_type", tooltip="Switch between Infinite open world and Finite bounded world")
+        self.nw_btn_diff = Button(cx, 335, btn_w, btn_h, "DIFFICULTY: NORMAL", "toggle_diff", tooltip="Select difficulty: Easy, Normal, Hardcore, or YOLO")
         # Hidden/off-screen legacy attribute to retain backwards compatibility
-        self.nw_btn_mode = Button(cx, -100, btn_w, btn_h, "MODE: ADVENTURE", "toggle_mode")
-        self.nw_btn_create = Button(cx, 435, btn_w, btn_h, "CREATE & PLAY WORLD", "create_confirm")
-        self.nw_btn_back = Button(cx, 495, btn_w, btn_h, "< CANCEL", "cancel_new_world")
+        self.nw_btn_mode = Button(cx, -100, btn_w, btn_h, "MODE: ADVENTURE", "toggle_mode", tooltip="Toggle game mode")
+        self.nw_btn_create = Button(cx, 435, btn_w, btn_h, "CREATE & PLAY WORLD", "create_confirm", icon="plus", tooltip="Generate world and begin adventure")
+        self.nw_btn_back = Button(cx, 495, btn_w, btn_h, "< CANCEL", "cancel_new_world", icon="back", tooltip="Cancel world creation and go back")
 
         # Game Over / Permadeath Screen Buttons (YOLO Mode)
         self.game_over_buttons = [
-            Button(cx, 420, btn_w, btn_h, "Try Harder (Main Menu)", "menu"),
+            Button(cx, 420, btn_w, btn_h, "Try Harder (Main Menu)", "menu", tooltip="Purge world and return to main menu"),
         ]
 
         self.settings_file = os.path.join("saves", "settings.json")
@@ -510,13 +547,13 @@ class MenuManager:
     def update(self, dt, mouse_pos):
         self.last_mouse_pos = mouse_pos
         # Update Menu BGM if in any menu-related state
-        if self.bgm_manager and self.state in (
+        if self.bgm_manager and hasattr(self.bgm_manager, "update") and self.state in (
             STATE_MENU, STATE_SETTINGS, STATE_INPUT_MAPPING, STATE_MULTIPLAYER,
             STATE_CONTROLS, STATE_WORLDS, STATE_NEW_WORLD,
             STATE_MODS, STATE_ACHIEVEMENTS
         ):
             self.bgm_manager.update(dt, scene="menu")
-        elif self.bgm_manager and self.state in (STATE_STORY, STATE_CUTSCENE):
+        elif self.bgm_manager and hasattr(self.bgm_manager, "update") and self.state in (STATE_STORY, STATE_CUTSCENE):
             self.bgm_manager.update(dt, scene="cutscene")
 
         t = pygame.time.get_ticks() / 1000.0
@@ -536,9 +573,15 @@ class MenuManager:
         elif self.state == STATE_MODS:
             self.mods_toggle_lms_btn.update(mouse_pos)
             self.mods_back_btn.update(mouse_pos)
+            if self.mods_toggle_lms_btn.is_hovered and self.mods_toggle_lms_btn.tooltip:
+                self.active_tooltip = self.mods_toggle_lms_btn.tooltip
+            elif self.mods_back_btn.is_hovered and self.mods_back_btn.tooltip:
+                self.active_tooltip = self.mods_back_btn.tooltip
         elif self.state == STATE_ACHIEVEMENTS:
             self.achievements_back_btn.text = "<  BACK TO GAME" if self.previous_state == STATE_PLAYING else "<  BACK TO MENU"
             self.achievements_back_btn.update(mouse_pos)
+            if self.achievements_back_btn.is_hovered and self.achievements_back_btn.tooltip:
+                self.active_tooltip = self.achievements_back_btn.tooltip
             if pygame.mouse.get_pressed()[0]:
                 pw, ph = 760, 560
                 px = (SCREEN_WIDTH - pw) // 2
@@ -562,15 +605,27 @@ class MenuManager:
         elif self.state == STATE_INPUT_MAPPING:
             self.input_reset_button.update(mouse_pos)
             self.input_back_button.update(mouse_pos)
+            if self.input_reset_button.is_hovered and self.input_reset_button.tooltip:
+                self.active_tooltip = self.input_reset_button.tooltip
+            elif self.input_back_button.is_hovered and self.input_back_button.tooltip:
+                self.active_tooltip = self.input_back_button.tooltip
         elif self.state == STATE_MULTIPLAYER:
             if getattr(self, "room_key_modal_active", False):
                 self.room_key_join_btn.update(mouse_pos)
                 self.room_key_cancel_btn.update(mouse_pos)
+                if self.room_key_join_btn.is_hovered and self.room_key_join_btn.tooltip:
+                    self.active_tooltip = self.room_key_join_btn.tooltip
+                elif self.room_key_cancel_btn.is_hovered and self.room_key_cancel_btn.tooltip:
+                    self.active_tooltip = self.room_key_cancel_btn.tooltip
             else:
                 for btn in self.mp_buttons:
                     btn.update(mouse_pos)
                     if btn.is_hovered and btn.tooltip:
                         self.active_tooltip = btn.tooltip
+                for j_btn, _ in getattr(self, "lan_join_buttons", []):
+                    j_btn.update(mouse_pos)
+                    if j_btn.is_hovered and j_btn.tooltip:
+                        self.active_tooltip = j_btn.tooltip
         elif self.state in (STATE_STORY, STATE_CUTSCENE):
             self.cutscene.update(dt, mouse_pos)
             if self.cutscene.is_finished():
@@ -579,17 +634,31 @@ class MenuManager:
                     self.bgm_manager.update(dt, scene="menu")
         elif self.state == STATE_CONTROLS:
             self.back_button.update(mouse_pos)
+            if self.back_button.is_hovered and self.back_button.tooltip:
+                self.active_tooltip = self.back_button.tooltip
         elif self.state == STATE_VICTORY:
             for btn in self.victory_buttons:
                 btn.update(mouse_pos)
+                if btn.is_hovered and btn.tooltip:
+                    self.active_tooltip = btn.tooltip
         elif self.state == STATE_WORLDS:
             if self.renaming_world_target is not None:
                 self.rename_confirm_btn.update(mouse_pos)
                 self.rename_cancel_btn.update(mouse_pos)
+                if self.rename_confirm_btn.is_hovered and self.rename_confirm_btn.tooltip:
+                    self.active_tooltip = self.rename_confirm_btn.tooltip
+                elif self.rename_cancel_btn.is_hovered and self.rename_cancel_btn.tooltip:
+                    self.active_tooltip = self.rename_cancel_btn.tooltip
             else:
                 self.worlds_create_btn.update(mouse_pos)
                 self.worlds_quick_btn.update(mouse_pos)
                 self.worlds_back_btn.update(mouse_pos)
+                if self.worlds_create_btn.is_hovered and self.worlds_create_btn.tooltip:
+                    self.active_tooltip = self.worlds_create_btn.tooltip
+                elif self.worlds_quick_btn.is_hovered and self.worlds_quick_btn.tooltip:
+                    self.active_tooltip = self.worlds_quick_btn.tooltip
+                elif self.worlds_back_btn.is_hovered and self.worlds_back_btn.tooltip:
+                    self.active_tooltip = self.worlds_back_btn.tooltip
                 
                 # Check scrollbar dragging
                 track_rect = pygame.Rect(SCREEN_WIDTH // 2 + 252, 275, 14, 255)
@@ -621,14 +690,28 @@ class MenuManager:
             if getattr(self, "show_yolo_warning", False):
                 self.yolo_confirm_btn.update(mouse_pos)
                 self.yolo_cancel_btn.update(mouse_pos)
+                if self.yolo_confirm_btn.is_hovered and self.yolo_confirm_btn.tooltip:
+                    self.active_tooltip = self.yolo_confirm_btn.tooltip
+                elif self.yolo_cancel_btn.is_hovered and self.yolo_cancel_btn.tooltip:
+                    self.active_tooltip = self.yolo_cancel_btn.tooltip
             else:
                 self.nw_btn_type.update(mouse_pos)
                 self.nw_btn_diff.update(mouse_pos)
                 self.nw_btn_create.update(mouse_pos)
                 self.nw_btn_back.update(mouse_pos)
+                if self.nw_btn_type.is_hovered and self.nw_btn_type.tooltip:
+                    self.active_tooltip = self.nw_btn_type.tooltip
+                elif self.nw_btn_diff.is_hovered and self.nw_btn_diff.tooltip:
+                    self.active_tooltip = self.nw_btn_diff.tooltip
+                elif self.nw_btn_create.is_hovered and self.nw_btn_create.tooltip:
+                    self.active_tooltip = self.nw_btn_create.tooltip
+                elif self.nw_btn_back.is_hovered and self.nw_btn_back.tooltip:
+                    self.active_tooltip = self.nw_btn_back.tooltip
         elif self.state == STATE_GAME_OVER:
             for btn in self.game_over_buttons:
                 btn.update(mouse_pos)
+                if btn.is_hovered and btn.tooltip:
+                    self.active_tooltip = btn.tooltip
 
     def _refresh_saved_worlds(self):
         try:
@@ -1332,8 +1415,9 @@ class MenuManager:
             tx = min(mpos[0] + 12, SCREEN_WIDTH - tw - 8)
             ty = max(8, mpos[1] - th - 6)
             tip_rect = pygame.Rect(tx, ty, tw, th)
-            pygame.draw.rect(target_surf, (15, 20, 32, 245), tip_rect, border_radius=5)
-            pygame.draw.rect(target_surf, (255, 215, 60), tip_rect, 1, border_radius=5)
+            pygame.draw.rect(target_surf, (10, 12, 18, 160), (tx + 3, ty + 3, tw, th), border_radius=6)
+            pygame.draw.rect(target_surf, (15, 20, 32, 248), tip_rect, border_radius=6)
+            pygame.draw.rect(target_surf, (255, 215, 60), tip_rect, 1, border_radius=6)
             target_surf.blit(tt_surf, (tx + 8, ty + 5))
 
     def _render_settings_screen(self, target_surf):
@@ -1716,7 +1800,7 @@ class MenuManager:
                 badge_surf = self.font_sm.render(badge_txt, True, badge_col)
                 target_surf.blit(badge_surf, (entry_rect.right - 180, entry_rect.centery - badge_surf.get_height() // 2))
 
-                j_btn = Button(entry_rect.right - 85, entry_rect.y + 5, 75, 32, "JOIN", ("join_server", sinfo))
+                j_btn = Button(entry_rect.right - 85, entry_rect.y + 5, 75, 32, "JOIN", ("join_server", sinfo), icon="join", tooltip="Connect to this LAN server")
                 j_btn.render(target_surf, self.font_btn)
                 self.lan_join_buttons.append((j_btn, sinfo))
 

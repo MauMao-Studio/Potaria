@@ -208,6 +208,30 @@ def save_world(world_name, game):
             if hasattr(chest_obj, "to_dict"):
                 chests_data.append(chest_obj.to_dict())
 
+    decaying_blocks_data = []
+    if hasattr(game, "world") and hasattr(game.world, "decaying_blocks"):
+        for (tx, ty), dinfo in game.world.decaying_blocks.items():
+            decaying_blocks_data.append({
+                "tx": tx,
+                "ty": ty,
+                "timer": float(dinfo.get("timer", 0.0)),
+                "max_timer": float(dinfo.get("max_timer", 0.0)),
+                "days_left": int(dinfo.get("days_left", 1)),
+                "max_days": int(dinfo.get("max_days", 1)),
+                "phase": int(dinfo.get("phase", 0)),
+                "type": int(dinfo.get("type", 0))
+            })
+
+    planted_saplings_data = []
+    if hasattr(game, "world") and hasattr(game.world, "planted_saplings"):
+        for (tx, ty), sdata in game.world.planted_saplings.items():
+            planted_saplings_data.append({
+                "tx": tx,
+                "ty": ty,
+                "growth_days": int(sdata.get("growth_days", 0)),
+                "sapling_type": str(sdata.get("sapling_type", "oak_sapling"))
+            })
+
     w_type = getattr(game, "world_type", getattr(game.world, "world_type", WORLD_TYPE_INFINITE))
     if hasattr(game, "world") and hasattr(game.world, "world_type") and hasattr(game, "world_type"):
         game.world.world_type = game.world_type
@@ -245,6 +269,8 @@ def save_world(world_name, game):
         "wall_deltas": wall_deltas,
         "town_npcs": [npc.to_dict() for npc in getattr(game.world, "town_npcs", []) if hasattr(npc, "to_dict")],
         "chests": chests_data,
+        "decaying_blocks": decaying_blocks_data,
+        "planted_saplings": planted_saplings_data,
     }
 
     # Flush active chunks to world cache under saves/<world_name>/cache/
@@ -493,6 +519,27 @@ def load_world(world_name, game):
             except Exception as e:
                 print(f"[SaveManager] Error restoring chest: {e}")
 
+    # Restore Tree Decay Blocks & Planted Saplings
+    if hasattr(game, "world"):
+        if "decaying_blocks" in data and hasattr(game.world, "decaying_blocks"):
+            game.world.decaying_blocks.clear()
+            for d in data["decaying_blocks"]:
+                game.world.decaying_blocks[(d["tx"], d["ty"])] = {
+                    "timer": float(d.get("timer", 0.0)),
+                    "max_timer": float(d.get("max_timer", 0.0)),
+                    "days_left": int(d.get("days_left", 1)),
+                    "max_days": int(d.get("max_days", 1)),
+                    "phase": int(d.get("phase", 0)),
+                    "type": int(d.get("type", 0))
+                }
+        if "planted_saplings" in data and hasattr(game.world, "planted_saplings"):
+            game.world.planted_saplings.clear()
+            for s in data["planted_saplings"]:
+                game.world.planted_saplings[(s["tx"], s["ty"])] = {
+                    "growth_days": int(s.get("growth_days", 0)),
+                    "sapling_type": str(s.get("sapling_type", "oak_sapling"))
+                }
+
     # Restore Playtime
     game.playtime = float(data.get("playtime", 0.0))
 
@@ -501,7 +548,8 @@ def load_world(world_name, game):
         game.crafting.update_recipes(game.inventory, game.world, game.player)
 
     # Re-center camera
-    game.camera.set_target(game.player.center_x, game.player.center_y, instant=True)
+    if hasattr(game, "camera") and game.camera:
+        game.camera.set_target(game.player.center_x, game.player.center_y, instant=True)
     print(f"[SaveManager] World '{world_name}' loaded successfully.")
     return True
 
