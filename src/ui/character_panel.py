@@ -215,6 +215,13 @@ class CharacterPanel:
             target_surf.blit(hw_none, (px + 78, hw_y + 6))
             target_surf.blit(hw_sub, (px + 78, hw_y + 22))
 
+        # Active Equipment Set Display
+        active_set_key, active_set = player.equipment.get_active_set()
+        if active_set:
+            set_name = active_set.get("name", "Active Set")
+            set_lbl = self.font_sm.render(f"Set: {set_name}", True, (255, 215, 100))
+            target_surf.blit(set_lbl, (px + 30, py + 314))
+
         # ----------------------------------------------------
         # 2. Right Side: RPG Stats Breakdown
         # ----------------------------------------------------
@@ -559,6 +566,45 @@ class CharacterPanel:
         if armor.get("mp_regen", 0) > 0 or reg.get("mp_regen", 0) > 0:
             reg_val = armor.get("mp_regen", reg.get("mp_regen", 0))
             lines.append((f"+{reg_val:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
+
+        # Rolled Base Stats
+        base_rolls = getattr(item_id, "base_rolls", None)
+        if base_rolls:
+            roll_parts = [f"+{v} {k.upper()}" for k, v in base_rolls.items()]
+            lines.append((f"Rolled: {', '.join(roll_parts)}", (255, 230, 140), self.font_sm))
+
+        # Special Tags
+        item_tags = getattr(item_id, "tags", None) or reg.get("tags") or armor.get("tags", [])
+        if item_tags:
+            from src.rpg.equipment_update import TAG_REGISTRY
+            tag_labels = [TAG_REGISTRY.get(t, {}).get("display_name", t.replace("_", " ").title()) for t in item_tags]
+            lines.append((f"Tags: {' • '.join(tag_labels)}", (100, 220, 255), self.font_sm))
+
+        # Affix Slots & Available Slots
+        aff_slots = getattr(item_id, "affix_slots", 0)
+        if aff_slots > 0:
+            aff_cnt = len(item_affixes)
+            avail = max(0, aff_slots - aff_cnt)
+            slot_txt = f"Affix Slots: {aff_cnt}/{aff_slots}"
+            if avail > 0:
+                slot_txt += f" ({avail} Available)"
+            lines.append((slot_txt, (255, 215, 80), self.font_sm))
+            if avail > 0:
+                lines.append((f"• [Available Slot] {avail} Open", (140, 240, 180), self.font_sm))
+
+        # Additional Affix Slot Capacity
+        from src.rpg.equipment_update import get_max_additional_slots
+        max_add = get_max_additional_slots(rarity)
+        if max_add > 0:
+            cur_add = getattr(item_id, "additional_affix_slots", 0)
+            lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
+
+        # Set Membership
+        from src.rpg.equipment_update import PROGRESSIVE_SETS
+        for s_id, s_data in PROGRESSIVE_SETS.items():
+            if raw_id in s_data.get("pieces", []):
+                lines.append((f"Set: {s_data['name']}", (255, 215, 100), self.font_sm))
+                break
 
         # Imbued Affixes
         if item_affixes:

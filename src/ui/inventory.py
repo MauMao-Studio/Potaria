@@ -2623,7 +2623,7 @@ def load_custom_items():
 load_custom_items()
 
 class ItemStack:
-    def __init__(self, item_id, count=1, enhancement_level=0, is_broken=False, affix_slots=0, affixes=None, removed_stats=None):
+    def __init__(self, item_id, count=1, enhancement_level=0, is_broken=False, affix_slots=0, affixes=None, removed_stats=None, base_rolls=None, additional_affix_slots=0, tags=None, roll_if_empty=False):
         self.item_id = item_id
         self.count = count
         self.enhancement_level = int(enhancement_level)
@@ -2631,9 +2631,22 @@ class ItemStack:
         self.affix_slots = int(affix_slots)
         self.affixes = list(affixes) if affixes else []
         self.removed_stats = list(removed_stats) if removed_stats else []
+        self.additional_affix_slots = int(additional_affix_slots)
+        self.tags = list(tags) if tags else None
+
+        if base_rolls is not None:
+            self.base_rolls = dict(base_rolls)
+        elif roll_if_empty:
+            try:
+                from src.rpg.equipment_update import roll_item_stat_ranges
+                self.base_rolls = roll_item_stat_ranges(item_id)
+            except Exception:
+                self.base_rolls = None
+        else:
+            self.base_rolls = None
 
     def clone(self, count=None):
-        """Creates an independent clone of this ItemStack with all enhancement and affix metadata intact."""
+        """Creates an independent clone of this ItemStack with all enhancement, affix, and roll metadata intact."""
         return ItemStack(
             self.item_id,
             self.count if count is None else int(count),
@@ -2641,18 +2654,36 @@ class ItemStack:
             is_broken=self.is_broken,
             affix_slots=self.affix_slots,
             affixes=list(self.affixes),
-            removed_stats=list(self.removed_stats)
+            removed_stats=list(self.removed_stats),
+            base_rolls=dict(self.base_rolls) if self.base_rolls else None,
+            additional_affix_slots=self.additional_affix_slots,
+            tags=list(self.tags) if self.tags else None
         )
 
     @property
     def data(self):
         canon = ITEM_ALIASES.get(self.item_id, self.item_id)
         base = ITEM_REGISTRY.get(self.item_id) or ITEM_REGISTRY.get(canon, {})
-        if not self.enhancement_level and not self.is_broken and not self.affixes and not self.removed_stats:
+        if (not self.enhancement_level and not self.is_broken and not self.affixes 
+                and not self.removed_stats and not self.base_rolls and not self.tags):
             return base
 
         # Clone and apply modifications
         d = dict(base)
+
+        # Apply persistent rolled base stats
+        if self.base_rolls:
+            for stat_k, stat_v in self.base_rolls.items():
+                d[stat_k] = stat_v
+                if stat_k == "atk" and "damage" in d:
+                    d["damage"] = stat_v
+                elif stat_k == "damage" and "atk" in d:
+                    d["atk"] = stat_v
+
+        # Apply tags metadata
+        if self.tags:
+            d["tags"] = list(self.tags)
+
         if self.enhancement_level > 0:
             mult = 1.0 + (self.enhancement_level / 7.0)
             if "damage" in d and d["damage"] > 0:
@@ -2970,7 +3001,10 @@ class Inventory:
                 for existing in compacted:
                     if (existing.item_id == s.item_id and
                         getattr(existing, "enhancement_level", 0) == getattr(s, "enhancement_level", 0) and
-                        not getattr(existing, "is_broken", False) and not getattr(s, "is_broken", False)):
+                        not getattr(existing, "is_broken", False) and not getattr(s, "is_broken", False) and
+                        getattr(existing, "base_rolls", None) is None and getattr(s, "base_rolls", None) is None and
+                        getattr(existing, "additional_affix_slots", 0) == 0 and getattr(s, "additional_affix_slots", 0) == 0 and
+                        getattr(existing, "tags", None) is None and getattr(s, "tags", None) is None):
                         space = existing.max_stack - existing.count
                         if space > 0:
                             take = min(space, s.count)
@@ -3049,14 +3083,30 @@ class Inventory:
         max_s = data.get("max_stack", 999)
 
         # Non-modified stackable items can merge into existing slots
-        is_modified = stack_source and (stack_source.enhancement_level > 0 or stack_source.is_broken or stack_source.affixes or stack_source.removed_stats)
+        is_modified = stack_source and (
+            stack_source.enhancement_level > 0 or 
+            stack_source.is_broken or 
+            stack_source.affixes or 
+            stack_source.removed_stats or 
+            getattr(stack_source, "base_rolls", None) or 
+            getattr(stack_source, "additional_affix_slots", 0) > 0 or 
+            getattr(stack_source, "tags", None)
+        )
         if max_s > 1 and not is_modified:
             merge_slots = list(reversed(self.slots)) if from_back else self.slots
             for slot in merge_slots:
                 if slot:
                     slot_canon = ITEM_ALIASES.get(slot.item_id, slot.item_id)
                     if (slot.item_id == target_id or slot_canon == target_id) and slot.count < max_s:
-                        if not (slot.enhancement_level > 0 or slot.is_broken or slot.affixes or slot.removed_stats):
+                        if not (
+                            slot.enhancement_level > 0 or 
+                            slot.is_broken or 
+                            slot.affixes or 
+                            slot.removed_stats or 
+                            getattr(slot, "base_rolls", None) or 
+                            getattr(slot, "additional_affix_slots", 0) > 0 or 
+                            getattr(slot, "tags", None)
+                        ):
                             space = max_s - slot.count
                             transfer = min(space, count)
                             slot.count += transfer
@@ -3368,9 +3418,36 @@ class Inventory:
             if is_broken:
                 lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
 
+            # Rolled Base Stats indicator
+            base_rolls = getattr(item, "base_rolls", None)
+            if base_rolls:
+                roll_parts = [f"+{v} {k.upper()}" for k, v in base_rolls.items()]
+                lines.append((f"Rolled Base Stats: {', '.join(roll_parts)}", (255, 230, 140), self.font_sm))
+
+            # Special Tags
+            item_tags = getattr(item, "tags", None) or data.get("tags", [])
+            if item_tags:
+                from src.rpg.equipment_update import TAG_REGISTRY
+                tag_labels = [TAG_REGISTRY.get(t, {}).get("display_name", t.replace("_", " ").title()) for t in item_tags]
+                lines.append((f"Tags: {' • '.join(tag_labels)}", (100, 220, 255), self.font_sm))
+
             if getattr(item, "affix_slots", 0) > 0:
                 aff_cnt = len(getattr(item, "affixes", []))
-                lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
+                avail_slots = max(0, item.affix_slots - aff_cnt)
+                slot_info = f"Affix Slots: {aff_cnt}/{item.affix_slots}"
+                if avail_slots > 0:
+                    slot_info += f" ({avail_slots} Available)"
+                lines.append((slot_info, (255, 215, 80), self.font_sm))
+                if avail_slots > 0:
+                    lines.append((f"• [Available Slot] {avail_slots} Open", (140, 240, 180), self.font_sm))
+
+            # Additional Affix Slot Capacity
+            from src.rpg.equipment_update import get_max_additional_slots
+            max_add = get_max_additional_slots(rarity)
+            if max_add > 0:
+                cur_add = getattr(item, "additional_affix_slots", 0)
+                lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
+
             from src.ui.theme import wrap_text_lines
             for aff in getattr(item, "affixes", []):
                 from src.rpg.enhancement import GOD_TIER_AFFIXES

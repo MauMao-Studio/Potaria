@@ -36,7 +36,7 @@ class SoundManager:
         except Exception as e:
             print(f"[SoundManager] Audio initialization notice: {e}. Running in silent mode.")
 
-    def set_volumes(self, master=None, sfx=None):
+    def set_volumes(self, master=None, sfx=None, bgm=None, **kwargs):
         if master is not None:
             self.master_volume = max(0.0, min(1.0, master))
         if sfx is not None:
@@ -56,19 +56,22 @@ class SoundManager:
         sr = pygame.mixer.get_init()[0] if pygame.mixer.get_init() else 22050
         rng = random.Random(1337)
 
-        # 1. Player Jump: rising frequency sweep (160 Hz -> 380 Hz)
+        # 1. Player Jump: smooth rising chirp (160 Hz -> 380 Hz) with soft attack & pleasant harmonics
         jump_samples = []
-        dur = 0.16
+        dur = 0.15
         total = int(dur * sr)
         phase = 0.0
         for i in range(total):
             t = i / total
-            freq = 150 + 260 * (t ** 0.8)
+            freq = 160 + 240 * (t ** 0.8)
             phase += 2.0 * math.pi * freq / sr
-            # Square wave + triangle mix with decay envelope
-            amp = (1.0 - t) * 0.4
-            sq = 1.0 if math.sin(phase) > 0 else -1.0
-            jump_samples.append(sq * amp)
+            # Smooth rounded wave (sine + subtle harmonic) prevents harsh buzzing square-wave start
+            wave = math.sin(phase) * 0.82 + math.sin(phase * 2.0) * 0.18
+            # 5ms attack envelope removes onset click/pop when re-triggering rapidly
+            attack = min(1.0, i / max(1, int(0.005 * sr)))
+            decay = (1.0 - t) ** 1.15
+            amp = attack * decay * 0.35
+            jump_samples.append(wave * amp)
         self.sounds["jump"] = self._make_sound(jump_samples, sr)
 
         # 2. Dig Dirt: low crunchy filtered noise
@@ -517,6 +520,14 @@ class SoundManager:
         """Plays a sound uniformly at given volume."""
         if not self.enabled:
             return None
+        if sound_name == "jump":
+            import time
+            now = time.time()
+            if not hasattr(self, "_last_jump_play"):
+                self._last_jump_play = 0.0
+            if now - self._last_jump_play < 0.16:
+                return None
+            self._last_jump_play = now
         snd = self.sounds.get(sound_name)
         if snd:
             ch = snd.play()

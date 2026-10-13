@@ -319,9 +319,35 @@ class ChestStorageWindow:
                 lines.append((f"Enhanced: +{item.enhancement_level} (Double Stats at +7)", (80, 240, 255), self.font_sm))
             if getattr(item, "is_broken", False):
                 lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
+
+            # Rolled Base Stats indicator
+            base_rolls = getattr(item, "base_rolls", None)
+            if base_rolls:
+                roll_parts = [f"+{v} {k.upper()}" for k, v in base_rolls.items()]
+                lines.append((f"Rolled Base Stats: {', '.join(roll_parts)}", (255, 230, 140), self.font_sm))
+
+            # Special Tags
+            item_tags = getattr(item, "tags", None) or data.get("tags", [])
+            if item_tags:
+                from src.rpg.equipment_update import TAG_REGISTRY
+                tag_labels = [TAG_REGISTRY.get(t, {}).get("display_name", t.replace("_", " ").title()) for t in item_tags]
+                lines.append((f"Tags: {' • '.join(tag_labels)}", (100, 220, 255), self.font_sm))
+
             if getattr(item, "affix_slots", 0) > 0:
                 aff_cnt = len(getattr(item, "affixes", []))
-                lines.append((f"Affix Slots: {aff_cnt}/{item.affix_slots}", (255, 215, 80), self.font_sm))
+                avail_slots = max(0, item.affix_slots - aff_cnt)
+                slot_info = f"Affix Slots: {aff_cnt}/{item.affix_slots}"
+                if avail_slots > 0:
+                    slot_info += f" ({avail_slots} Available)"
+                lines.append((slot_info, (255, 215, 80), self.font_sm))
+                if avail_slots > 0:
+                    lines.append((f"• [Available Slot] {avail_slots} Open", (140, 240, 180), self.font_sm))
+
+            from src.rpg.equipment_update import get_max_additional_slots
+            max_add = get_max_additional_slots(rarity)
+            if max_add > 0:
+                cur_add = getattr(item, "additional_affix_slots", 0)
+                lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
             from src.ui.theme import wrap_text_lines
             for aff in getattr(item, "affixes", []):
                 from src.rpg.enhancement import GOD_TIER_AFFIXES

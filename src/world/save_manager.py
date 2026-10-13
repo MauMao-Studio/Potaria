@@ -93,6 +93,9 @@ def save_world(world_name, game):
                 "affix_slots": getattr(slot, "affix_slots", 0),
                 "affixes": getattr(slot, "affixes", []),
                 "removed_stats": getattr(slot, "removed_stats", []),
+                "base_rolls": getattr(slot, "base_rolls", None),
+                "additional_affix_slots": getattr(slot, "additional_affix_slots", 0),
+                "tags": getattr(slot, "tags", None),
             })
 
     # 2. Equipment serialization
@@ -112,6 +115,9 @@ def save_world(world_name, game):
                 "affix_slots": getattr(item, "affix_slots", 0),
                 "affixes": getattr(item, "affixes", []),
                 "removed_stats": getattr(item, "removed_stats", []),
+                "base_rolls": getattr(item, "base_rolls", None),
+                "additional_affix_slots": getattr(item, "additional_affix_slots", 0),
+                "tags": getattr(item, "tags", None),
             }
         else:
             equip_data[slot_k] = None
@@ -281,6 +287,13 @@ def save_world(world_name, game):
             for cx, chk in list(cm.chunks.items()):
                 cm.world_cache.save_chunk(cx, chk)
 
+    try:
+        from src.rpg.equipment_update import compute_save_signature
+        payload_raw = json.dumps(payload, sort_keys=True).encode("utf-8")
+        payload["save_signature"] = compute_save_signature(payload_raw)
+    except Exception:
+        pass
+
     with open(save_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
 
@@ -304,6 +317,20 @@ def load_world(world_name, game):
     if not isinstance(data, dict):
         print(f"[SaveManager] Invalid world data format in '{save_path}'")
         return False
+
+    # Anti-cheat cryptographic HMAC verification
+    if "save_signature" in data:
+        expected_sig = data["save_signature"]
+        verify_dict = {k: v for k, v in data.items() if k != "save_signature"}
+        verify_raw = json.dumps(verify_dict, sort_keys=True).encode("utf-8")
+        try:
+            from src.rpg.equipment_update import verify_save_signature
+            is_valid = verify_save_signature(verify_raw, expected_sig)
+            setattr(game, "save_file_tampered", not is_valid)
+            if not is_valid:
+                print(f"[SaveManager] WARNING: Save file '{world_name}' signature mismatch (possible manual modification).")
+        except Exception:
+            pass
 
     seed = data.get("seed", 123456)
     world_type = data.get("world_type", WORLD_TYPE_INFINITE)
@@ -383,7 +410,10 @@ def load_world(world_name, game):
                 is_broken=item.get("is_broken", False),
                 affix_slots=item.get("affix_slots", 0),
                 affixes=item.get("affixes", []),
-                removed_stats=item.get("removed_stats", [])
+                removed_stats=item.get("removed_stats", []),
+                base_rolls=item.get("base_rolls"),
+                additional_affix_slots=item.get("additional_affix_slots", 0),
+                tags=item.get("tags")
             )
             game.inventory.slots[slot_idx] = st
 
@@ -399,12 +429,18 @@ def load_world(world_name, game):
     for slot_k in (SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_WEAPON, SLOT_ACCESSORY):
         raw_val = equip_data.get(slot_k, None)
         if isinstance(raw_val, dict) and "item_id" in raw_val:
-            item = ItemStack(raw_val["item_id"], raw_val.get("count", 1))
-            item.enhancement_level = raw_val.get("enhancement_level", 0)
-            item.is_broken = raw_val.get("is_broken", False)
-            item.affix_slots = raw_val.get("affix_slots", 0)
-            item.affixes = list(raw_val.get("affixes", []))
-            item.removed_stats = list(raw_val.get("removed_stats", []))
+            item = ItemStack(
+                raw_val["item_id"],
+                raw_val.get("count", 1),
+                enhancement_level=raw_val.get("enhancement_level", 0),
+                is_broken=raw_val.get("is_broken", False),
+                affix_slots=raw_val.get("affix_slots", 0),
+                affixes=list(raw_val.get("affixes", [])),
+                removed_stats=list(raw_val.get("removed_stats", [])),
+                base_rolls=raw_val.get("base_rolls"),
+                additional_affix_slots=raw_val.get("additional_affix_slots", 0),
+                tags=raw_val.get("tags")
+            )
             game.player.equipment.slots[slot_k] = item
         else:
             game.player.equipment.slots[slot_k] = raw_val

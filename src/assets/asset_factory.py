@@ -369,7 +369,7 @@ class AssetFactory:
 
         # Removed noise pixel
 
-    def _draw_fishing_rod_sprite(self, surf, item_id="fishing_rod"):
+    def _draw_fishing_rod_sprite(self, surf, item_id="fishing_rod", with_string=True):
         rod_palettes = {
             "spud_angler_rod": ((120, 150, 70), (160, 195, 95), (140, 220, 100)),
             "reinforced_angler_rod": ((90, 100, 120), (160, 175, 195), (60, 180, 240)),
@@ -384,14 +384,29 @@ class AssetFactory:
             col = c_dark if (i % 4 == 0) else c_light
             surf.set_at((px, py), col)
             surf.set_at((px + 1, py), c_dark)
-        surf.set_at((21, 2), (210, 215, 225))
-        for ly in range(3, 16):
-            surf.set_at((21, ly), (230, 230, 235))
-        pygame.draw.circle(surf, c_bobber, (21, 16), 2)
-        pygame.draw.circle(surf, (245, 245, 250), (21, 18), 2)
-        surf.set_at((21, 16), c_light)
+        if with_string:
+            surf.set_at((21, 2), (210, 215, 225))
+            for ly in range(3, 16):
+                surf.set_at((21, ly), (230, 230, 235))
+            pygame.draw.circle(surf, c_bobber, (21, 16), 2)
+            pygame.draw.circle(surf, (245, 245, 250), (21, 18), 2)
+            surf.set_at((21, 16), c_light)
         pygame.draw.circle(surf, (160, 170, 185), (6, 18), 2)
         surf.set_at((6, 18), (220, 230, 240))
+
+    def get_rod_sprite(self, item_id, in_use=False):
+        """Returns the fishing rod sprite asset. If in_use=True, returns rod without string to avoid redundancy when casting/fishing."""
+        key = f"{item_id}_in_use" if in_use else item_id
+        if key in self.items:
+            return self.items[key]
+        if not in_use and item_id in self.items:
+            return self.items[item_id]
+        clean_id = item_id.replace("_in_use", "").replace("_cast", "")
+        surf = pygame.Surface((24, 24), pygame.SRCALPHA)
+        self._draw_fishing_rod_sprite(surf, clean_id, with_string=not in_use)
+        scaled = pygame.transform.scale(surf, (48, 48))
+        self.items[key] = scaled
+        return scaled
 
     def _draw_pinoy_fish(self, surf, item_id, h):
         fish_key = item_id.replace("raw_", "")
@@ -849,8 +864,14 @@ class AssetFactory:
             self._draw_sapling_sprite(surf, item_id, h)
             return surf
 
+        if id_lower.endswith("_in_use"):
+            base_rod = id_lower[:-7]
+            if base_rod in ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod") or "angler_rod" in base_rod:
+                self._draw_fishing_rod_sprite(surf, base_rod, with_string=False)
+                return surf
+
         if id_lower in ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod") or "angler_rod" in id_lower:
-            self._draw_fishing_rod_sprite(surf, id_lower)
+            self._draw_fishing_rod_sprite(surf, id_lower, with_string=True)
             return surf
         elif id_lower.startswith("raw_") and any(id_lower == f"raw_{k}" for k in ("bangus", "tilapia", "galunggong", "maya_maya", "tanigue", "tambakol", "lapu_lapu", "hito", "dilis", "dalagang_bukid")):
             self._draw_pinoy_fish(surf, id_lower, h)

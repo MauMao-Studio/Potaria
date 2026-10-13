@@ -173,26 +173,27 @@ class HUD:
             else:
                 target_surf.blit(self.heart_empty, (hx, hy))
 
-        # Mana Bar (Fixed 260px wide bar beneath hearts)
-        mp_y = start_y + rows * 24 + 2
+        # Mana Bar (Positioned with clean 8px padding below hearts to eliminate visual collision)
+        mp_h = 12
+        mp_y = start_y + rows * 24 + 8
         mp_w = container_w
         mp_pct = max(0.0, min(1.0, player.stats.mp / float(max(1, player.stats.max_mp))))
         
-        pygame.draw.rect(target_surf, (15, 25, 45), (start_x, mp_y, mp_w, 10), border_radius=3)
+        pygame.draw.rect(target_surf, (15, 25, 45), (start_x, mp_y, mp_w, mp_h), border_radius=4)
         if mp_pct > 0:
-            pygame.draw.rect(target_surf, (50, 160, 255), (start_x, mp_y, int(mp_w * mp_pct), 10), border_radius=3)
-        pygame.draw.rect(target_surf, (80, 120, 180), (start_x, mp_y, mp_w, 10), 1, border_radius=3)
+            pygame.draw.rect(target_surf, (50, 160, 255), (start_x, mp_y, int(mp_w * mp_pct), mp_h), border_radius=4)
+        pygame.draw.rect(target_surf, (80, 120, 180), (start_x, mp_y, mp_w, mp_h), 1, border_radius=4)
 
         int_mp = int(player.stats.mp)
         mp_key = (int_mp, player.stats.max_mp)
         if mp_key != self._cached_mp_key:
             self._cached_mp_key = mp_key
             self._cached_mp_surf = self.font_sm.render(f"MP: {int_mp} / {player.stats.max_mp}", True, (200, 230, 255))
-        target_surf.blit(self._cached_mp_surf, (start_x + mp_w // 2 - self._cached_mp_surf.get_width() // 2, mp_y - 1))
+        target_surf.blit(self._cached_mp_surf, (start_x + mp_w // 2 - self._cached_mp_surf.get_width() // 2, mp_y + (mp_h - self._cached_mp_surf.get_height()) // 2))
 
         # Oxygen / Breath Meter (Minecraft-style 10 Air Bubbles displayed when swimming or depleted)
         if getattr(player, "in_water", False) or getattr(player, "oxygen", 100.0) < 99.0:
-            bubble_y = mp_y + 14
+            bubble_y = mp_y + mp_h + 4
             cur_bubbles = int(math.ceil(getattr(player, "oxygen", 100.0) / 10.0))
             is_low = getattr(player, "oxygen", 100.0) < 30.0
 
@@ -720,8 +721,52 @@ class HUD:
             if data.get("heal", 0) > 0:
                 lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
 
-            # 4. Special Effects (Bulleted for upper rarities: Epic, Mythic, Legendary, Ancient)
+            enh_lvl = getattr(item, "enhancement_level", 0)
+            if enh_lvl > 0:
+                lines.append((f"Enhanced: +{enh_lvl} (Double Stats at +7)", (80, 240, 255), self.font_sm))
+            if getattr(item, "is_broken", False):
+                lines.append(("[BROKEN] Requires repair at Mystic Trader!", (255, 70, 70), self.font_sm))
+
+            # Rolled Base Stats indicator
+            base_rolls = getattr(item, "base_rolls", None)
+            if base_rolls:
+                roll_parts = [f"+{v} {k.upper()}" for k, v in base_rolls.items()]
+                lines.append((f"Rolled Base Stats: {', '.join(roll_parts)}", (255, 230, 140), self.font_sm))
+
+            # Special Tags
+            item_tags = getattr(item, "tags", None) or data.get("tags", [])
+            if item_tags:
+                from src.rpg.equipment_update import TAG_REGISTRY
+                tag_labels = [TAG_REGISTRY.get(t, {}).get("display_name", t.replace("_", " ").title()) for t in item_tags]
+                lines.append((f"Tags: {' • '.join(tag_labels)}", (100, 220, 255), self.font_sm))
+
+            affix_slots = getattr(item, "affix_slots", 0)
+            affixes = getattr(item, "affixes", [])
+            if affix_slots > 0:
+                aff_cnt = len(affixes)
+                avail_slots = max(0, affix_slots - aff_cnt)
+                slot_info = f"Affix Slots: {aff_cnt}/{affix_slots}"
+                if avail_slots > 0:
+                    slot_info += f" ({avail_slots} Available)"
+                lines.append((slot_info, (255, 215, 80), self.font_sm))
+                if avail_slots > 0:
+                    lines.append((f"• [Available Slot] {avail_slots} Open", (140, 240, 180), self.font_sm))
+
+            from src.rpg.equipment_update import get_max_additional_slots
+            max_add = get_max_additional_slots(rarity)
+            if max_add > 0:
+                cur_add = getattr(item, "additional_affix_slots", 0)
+                lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
+
             from src.ui.theme import wrap_text_lines
+            for aff in affixes:
+                from src.rpg.enhancement import GOD_TIER_AFFIXES
+                aff_desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
+                aff_text = f"★ {aff}: {aff_desc}" if aff_desc else f"★ {aff}"
+                for al in wrap_text_lines(aff_text, self.font_sm, 300):
+                    lines.append((al, (255, 230, 90), self.font_sm))
+
+            # 4. Special Effects (Bulleted for upper rarities: Epic, Mythic, Legendary, Ancient)
             effects = data.get("effects", [])
             iid = item.item_id.lower()
             rarity_str = str(rarity).lower()

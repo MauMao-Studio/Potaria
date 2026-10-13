@@ -236,6 +236,12 @@ def load_equipment_catalog():
     except Exception:
         pass
 
+    try:
+        from src.rpg.equipment_update import register_new_equipment_into_catalogs
+        register_new_equipment_into_catalogs()
+    except Exception:
+        pass
+
 load_equipment_catalog()
 
 EQUIPMENT_SETS = {
@@ -312,6 +318,12 @@ EQUIPMENT_SETS = {
         "aura": "cactus",
     },
 }
+
+try:
+    from src.rpg.equipment_update import register_new_equipment_into_catalogs
+    register_new_equipment_into_catalogs()
+except Exception:
+    pass
 
 
 class Equipment:
@@ -425,7 +437,7 @@ class Equipment:
         return False
 
     def get_active_set(self):
-        """Returns (set_key, set_info) if all head, chest, and legs pieces form an active equipment set."""
+        """Returns (set_key, set_info) if all head, chest, and legs pieces form an active equipment set, or highest active progressive set."""
         def _get_id(s):
             if not s:
                 return None
@@ -434,17 +446,30 @@ class Equipment:
         h = _get_id(self.slots.get(SLOT_HEAD))
         c = _get_id(self.slots.get(SLOT_CHEST))
         l = _get_id(self.slots.get(SLOT_LEGS))
-        if not h or not c or not l:
-            return None, None
+        w = _get_id(self.slots.get(SLOT_WEAPON))
+        a = _get_id(self.slots.get(SLOT_ACCESSORY))
 
-        for set_key, set_data in EQUIPMENT_SETS.items():
-            req = set_data["pieces"]
-            if h == req["head"] and c == req["chest"] and l == req["legs"]:
-                return set_key, set_data
+        if h and c and l:
+            for set_key, set_data in EQUIPMENT_SETS.items():
+                req = set_data.get("pieces", {})
+                if req.get("head") == h and req.get("chest") == c and req.get("legs") == l:
+                    return set_key, set_data
 
-        # Fallback check for any ancient-themed gear
-        if "ancient" in h and "ancient" in c and "ancient" in l:
-            return "ancient", EQUIPMENT_SETS["ancient"]
+            # Fallback check for any ancient-themed gear
+            if "ancient" in h and "ancient" in c and "ancient" in l:
+                return "ancient", EQUIPMENT_SETS.get("ancient")
+
+        # Check progressive sets (including 2-piece sets, Filipino sets, Sins, Virtues)
+        try:
+            from src.rpg.equipment_update import get_active_threshold_bonuses
+            all_ids = [x for x in (h, c, l, w, a) if x]
+            active_bonuses = get_active_threshold_bonuses(all_ids)
+            if active_bonuses:
+                best_set_id, best_tier, best_bonus = max(active_bonuses, key=lambda x: x[1])
+                if best_set_id in EQUIPMENT_SETS:
+                    return best_set_id, EQUIPMENT_SETS[best_set_id]
+        except Exception:
+            pass
 
         return None, None
 
@@ -454,10 +479,35 @@ class Equipment:
         return set_key == "ancient"
 
     def get_active_aura(self):
-        """Returns aura type string ('ancient', 'titan', 'magma', 'cryo', 'shadow', 'spud', 'cactus') or None."""
-        set_key, set_data = self.get_active_set()
-        if set_data:
-            return set_data.get("aura")
+        """Returns aura type string ('ancient', 'titan', 'magma', 'cryo', 'shadow', 'spud', 'cactus', etc.) or None."""
+        try:
+            from src.rpg.equipment_update import get_active_threshold_bonuses
+            def _get_id(s):
+                if not s:
+                    return None
+                return s.item_id if hasattr(s, "item_id") else str(s)
+            all_ids = [_get_id(v) for v in self.slots.values() if v]
+            for set_id, tier, t_bonus in get_active_threshold_bonuses(all_ids):
+                if t_bonus.get("aura"):
+                    return t_bonus["aura"]
+        except Exception:
+            pass
+
+        # Check full legacy sets requiring head, chest, and legs
+        def _get_id(s):
+            if not s:
+                return None
+            return s.item_id if hasattr(s, "item_id") else str(s)
+        h = _get_id(self.slots.get(SLOT_HEAD))
+        c = _get_id(self.slots.get(SLOT_CHEST))
+        l = _get_id(self.slots.get(SLOT_LEGS))
+        if h and c and l:
+            for set_key, set_data in EQUIPMENT_SETS.items():
+                req = set_data.get("pieces", {})
+                if req.get("head") == h and req.get("chest") == c and req.get("legs") == l:
+                    if set_data.get("aura"):
+                        return set_data.get("aura")
+
         # Check active effects for radiance aura
         for eff in self.get_all_active_effects():
             eff_l = eff.lower()
@@ -565,9 +615,33 @@ class Equipment:
                 bonus_atk_speed += aff_data.get("bonus_atk_speed", 0.0)
                 atk_mult_total += aff_data.get("atk_mult", 0.0)
 
-        # Apply Equipment Set Bonuses
+        # Apply Progressive Set Threshold Bonuses
+        applied_set_ids = set()
+        try:
+            from src.rpg.equipment_update import get_active_threshold_bonuses
+            all_equipped_ids = []
+            for slot_val in self.slots.values():
+                if slot_val:
+                    eid = slot_val.item_id if hasattr(slot_val, "item_id") else str(slot_val)
+                    all_equipped_ids.append(eid)
+            if held_id and held_id != eq_id:
+                all_equipped_ids.append(held_id)
+
+            for set_id, tier, t_bonus in get_active_threshold_bonuses(all_equipped_ids):
+                applied_set_ids.add(set_id)
+                bonus_atk += int((stats.base_atk + bonus_atk) * t_bonus.get("atk_mult", 0.0))
+                bonus_def += int((stats.base_def + bonus_def) * t_bonus.get("def_mult", 0.0))
+                bonus_hp += t_bonus.get("bonus_hp", 0)
+                bonus_crit += t_bonus.get("bonus_crit", 0.0)
+                bonus_speed += t_bonus.get("bonus_speed", 0.0)
+                bonus_atk_speed += t_bonus.get("bonus_atk_speed", 0.0)
+                bonus_mp_regen += t_bonus.get("bonus_mp_regen", 0.0)
+        except Exception:
+            pass
+
+        # Apply Equipment Set Bonuses fallback (for any set not processed above)
         active_set_key, active_set = self.get_active_set()
-        if active_set:
+        if active_set and active_set_key not in applied_set_ids:
             bonus_atk += int((stats.base_atk + bonus_atk) * active_set.get("atk_mult", 0.0))
             bonus_def += int((stats.base_def + bonus_def) * active_set.get("def_mult", 0.0))
             bonus_hp += active_set.get("bonus_hp", 0)

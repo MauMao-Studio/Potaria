@@ -53,33 +53,41 @@ class StorageChest:
                     return True
         return needed <= 0
 
-    def add_item(self, item_id, count=1, enhancement_level=0, is_broken=False, affix_slots=0, affixes=None, removed_stats=None):
+    def add_item(self, item_id, count=1, enhancement_level=0, is_broken=False, affix_slots=0, affixes=None, removed_stats=None, base_rolls=None, additional_affix_slots=0, tags=None):
         """Adds items into chest, stacking where applicable. Returns remaining count."""
         canon = ITEM_ALIASES.get(item_id, item_id)
         data = ITEM_REGISTRY.get(item_id) or ITEM_REGISTRY.get(canon, {})
         max_s = data.get("max_stack", 999)
 
         # 1. Stack into existing slots (only if non-equipment or identical modifiers)
-        if max_s > 1:
+        is_modified = enhancement_level > 0 or is_broken or affixes or removed_stats or base_rolls or additional_affix_slots > 0 or tags
+        if max_s > 1 and not is_modified:
             for slot in self.slots:
                 if slot and (slot.item_id == item_id or slot.item_id == canon) and slot.count < max_s:
-                    space = max_s - slot.count
-                    transfer = min(space, count)
-                    slot.count += transfer
-                    count -= transfer
-                    if count <= 0:
-                        return 0
+                    if not (slot.enhancement_level > 0 or slot.is_broken or slot.affixes or slot.removed_stats or getattr(slot, "base_rolls", None) or getattr(slot, "additional_affix_slots", 0) > 0 or getattr(slot, "tags", None)):
+                        space = max_s - slot.count
+                        transfer = min(space, count)
+                        slot.count += transfer
+                        count -= transfer
+                        if count <= 0:
+                            return 0
 
         # 2. Place into empty slots
         for idx in range(self.capacity):
             if self.slots[idx] is None:
                 transfer = min(max_s, count)
-                st = ItemStack(item_id, transfer)
-                st.enhancement_level = enhancement_level
-                st.is_broken = is_broken
-                st.affix_slots = affix_slots
-                st.affixes = list(affixes) if affixes else []
-                st.removed_stats = list(removed_stats) if removed_stats else []
+                st = ItemStack(
+                    item_id,
+                    transfer,
+                    enhancement_level=enhancement_level,
+                    is_broken=is_broken,
+                    affix_slots=affix_slots,
+                    affixes=list(affixes) if affixes else [],
+                    removed_stats=list(removed_stats) if removed_stats else [],
+                    base_rolls=dict(base_rolls) if base_rolls else None,
+                    additional_affix_slots=additional_affix_slots,
+                    tags=list(tags) if tags else None
+                )
                 self.slots[idx] = st
                 count -= transfer
                 if count <= 0:
@@ -99,6 +107,9 @@ class StorageChest:
             affix_slots=getattr(stack, "affix_slots", 0),
             affixes=getattr(stack, "affixes", []),
             removed_stats=getattr(stack, "removed_stats", []),
+            base_rolls=getattr(stack, "base_rolls", None),
+            additional_affix_slots=getattr(stack, "additional_affix_slots", 0),
+            tags=getattr(stack, "tags", None),
         )
         if rem <= 0:
             return None
@@ -186,6 +197,9 @@ class StorageChest:
                     "affix_slots": getattr(s, "affix_slots", 0),
                     "affixes": getattr(s, "affixes", []),
                     "removed_stats": getattr(s, "removed_stats", []),
+                    "base_rolls": getattr(s, "base_rolls", None),
+                    "additional_affix_slots": getattr(s, "additional_affix_slots", 0),
+                    "tags": getattr(s, "tags", None),
                 })
         return {
             "tx": self.tx,
@@ -207,11 +221,18 @@ class StorageChest:
         for sdata in data.get("slots", []):
             idx = sdata.get("slot")
             if idx is not None and 0 <= idx < capacity:
-                st = ItemStack(sdata["item_id"], sdata.get("count", 1))
-                st.enhancement_level = sdata.get("enhancement_level", 0)
-                st.is_broken = sdata.get("is_broken", False)
-                st.affix_slots = sdata.get("affix_slots", 0)
-                st.affixes = list(sdata.get("affixes", []))
-                st.removed_stats = list(sdata.get("removed_stats", []))
+                st = ItemStack(
+                    sdata["item_id"],
+                    sdata.get("count", 1),
+                    enhancement_level=sdata.get("enhancement_level", 0),
+                    is_broken=sdata.get("is_broken", False),
+                    affix_slots=sdata.get("affix_slots", 0),
+                    affixes=list(sdata.get("affixes", [])),
+                    removed_stats=list(sdata.get("removed_stats", [])),
+                    base_rolls=sdata.get("base_rolls"),
+                    additional_affix_slots=sdata.get("additional_affix_slots", 0),
+                    tags=sdata.get("tags")
+                )
                 chest.slots[idx] = st
         return chest
+
