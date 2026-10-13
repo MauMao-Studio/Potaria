@@ -111,9 +111,19 @@ class TestTorchlightSetsAndCharacterUI(unittest.TestCase):
         # Render panel
         self.char_panel.render(surf, self.player, mouse_x=300, mouse_y=300)
 
-        # Verify click on active skill slot does not crash
+        # Verify all grimoire cards (including bottom row) fit strictly inside panel bounds with >= 40px margin
         px = (SCREEN_WIDTH - self.char_panel.pw) // 2
         py = (SCREEN_HEIGHT - self.char_panel.ph) // 2
+        panel_bottom = py + self.char_panel.ph
+        self.assertEqual(len(self.char_panel.grimoire_rects), len(SKILL_DEFINITIONS))
+        for s_id, rect in self.char_panel.grimoire_rects.items():
+            self.assertGreaterEqual(
+                panel_bottom - rect.bottom,
+                40,
+                f"Grimoire card {s_id} bottom ({rect.bottom}) must be >= 40px above panel bottom ({panel_bottom})"
+            )
+
+        # Verify click on active skill slot does not crash
         slot0_x = px + 155
         slot0_y = py + 354
         handled = self.char_panel.handle_click(slot0_x, slot0_y, self.player)
@@ -253,6 +263,28 @@ class TestTorchlightSetsAndCharacterUI(unittest.TestCase):
         eq.equip(ItemStack("pride_blade", 1), stats)
         eq.equip(ItemStack("pride_ring", 1), stats)
         self.assertEqual(eq.get_active_aura(), "solar")
+
+    def test_held_weapon_set_activation(self):
+        """Verifies weapon held in hand from hotbar contributes to progressive sets and auras."""
+        eq = Equipment()
+        stats = self.player.stats
+
+        # Equip 2 armor pieces: ancient helmet + chestplate
+        eq.equip(ItemStack("ancient_helmet", 1), stats)
+        eq.equip(ItemStack("ancient_chestplate", 1), stats)
+        eq.recalculate_stats(stats)
+        hp_2_piece = stats.bonus_max_hp
+
+        # Hold ancient sword in hand from hotbar (not in paperdoll weapon slot)
+        sword_stack = ItemStack("ancient_sword", 1)
+        eq.recalculate_stats(stats, active_item=sword_stack)
+        hp_with_held = stats.bonus_max_hp
+
+        # 3rd piece should be recognized from held weapon
+        self.assertGreater(hp_with_held, hp_2_piece, "Held weapon should activate 3-piece set bonus")
+        set_key, set_info = eq.get_active_set()
+        self.assertEqual(set_key, "ancient")
+        self.assertEqual(eq.get_active_aura(), "ancient")
 
     # =========================================================================
     # 4. TOOLTIP RENDERING & FORMATTING ACROSS UI

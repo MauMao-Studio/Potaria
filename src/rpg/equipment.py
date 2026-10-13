@@ -461,13 +461,19 @@ class Equipment:
 
         # Check progressive sets (including 2-piece sets, Filipino sets, Sins, Virtues)
         try:
-            from src.rpg.equipment_update import get_active_threshold_bonuses
+            from src.rpg.equipment_update import get_active_threshold_bonuses, PROGRESSIVE_SETS
             all_ids = [x for x in (h, c, l, w, a) if x]
+            held_obj = getattr(self, "active_weapon_item", None)
+            held_id = held_obj.item_id if (held_obj and hasattr(held_obj, "item_id")) else getattr(self, "active_weapon_id", None)
+            if held_id and held_id not in all_ids:
+                all_ids.append(held_id)
             active_bonuses = get_active_threshold_bonuses(all_ids)
             if active_bonuses:
                 best_set_id, best_tier, best_bonus = max(active_bonuses, key=lambda x: x[1])
                 if best_set_id in EQUIPMENT_SETS:
                     return best_set_id, EQUIPMENT_SETS[best_set_id]
+                elif best_set_id in PROGRESSIVE_SETS:
+                    return best_set_id, PROGRESSIVE_SETS[best_set_id]
         except Exception:
             pass
 
@@ -487,6 +493,10 @@ class Equipment:
                     return None
                 return s.item_id if hasattr(s, "item_id") else str(s)
             all_ids = [_get_id(v) for v in self.slots.values() if v]
+            held_obj = getattr(self, "active_weapon_item", None)
+            held_id = held_obj.item_id if (held_obj and hasattr(held_obj, "item_id")) else getattr(self, "active_weapon_id", None)
+            if held_id and held_id not in all_ids:
+                all_ids.append(held_id)
             for set_id, tier, t_bonus in sorted(get_active_threshold_bonuses(all_ids, cumulative=True), key=lambda x: x[1], reverse=True):
                 if t_bonus.get("aura"):
                     return t_bonus["aura"]
