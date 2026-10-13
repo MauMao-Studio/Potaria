@@ -38,6 +38,7 @@ from src.ui.inventory import Inventory, ItemStack
 from src.ui.character_panel import CharacterPanel, CharacterStatusPanel
 from src.ui.hud import HUD
 from src.ui.chest_ui import ChestStorageWindow
+from src.ui.npc_dialogue import NPCDialogueWindow
 from src.rpg.skills import SKILL_DEFINITIONS
 from src.rpg.equipment_update import (
     PROGRESSIVE_SETS,
@@ -84,15 +85,18 @@ class TestTorchlightSetsAndCharacterUI(unittest.TestCase):
         loadout_y = py + 332
         self.assertGreater(loadout_y, py + 300)
 
-        # Grimoire learned skills start at py + 418
-        grimoire_start_y = py + 418
-        card_h = 54
-        card_gap = 10
-        # 2 rows of grimoire cards: row 0 (start_y) and row 1 (start_y + 64)
-        row1_bottom = grimoire_start_y + (card_h + card_gap) + card_h  # py + 418 + 64 + 54 = py + 536
+        # Grimoire learned skills: gy = by + 68 = py + 400
+        # 10 skills in SKILL_DEFINITIONS across 4 columns = 3 rows (row 0, 1, 2)
+        by = py + 332
+        gy = by + 68
+        card_h = 34
+        row_gap = 40
+        # Row 2 (skills 8 & 9: celestial_shield, void_singularity):
+        row2_y = gy + 22 + 2 * row_gap
+        row2_bottom = row2_y + card_h  # py + 400 + 22 + 80 + 34 = py + 536
 
         # The bottom-most card edge must be strictly above panel_bottom with >= 40px margin
-        bottom_margin = panel_bottom - row1_bottom
+        bottom_margin = panel_bottom - row2_bottom
         self.assertGreaterEqual(
             bottom_margin,
             40,
@@ -249,7 +253,7 @@ class TestTorchlightSetsAndCharacterUI(unittest.TestCase):
         self.assertEqual(stats.bonus_max_hp, hp_2_piece, "Unequipping greaves should return bonus HP to 2-piece level")
 
     def test_highest_active_aura_selection(self):
-        """Verifies aura selection prioritizes the highest active milestone tier."""
+        """Verifies aura selection prioritizes the highest active milestone tier and does not activate prematurely."""
         eq = Equipment()
         stats = self.player.stats
 
@@ -258,11 +262,26 @@ class TestTorchlightSetsAndCharacterUI(unittest.TestCase):
         eq.equip(ItemStack("pride_robe", 1), stats)
         self.assertIsNone(eq.get_active_aura())
 
-        # Equip full 5 pieces: threshold 5 has 'solar' aura
+        # Equip 3 pieces of Pride sin set: threshold 3 has no aura
         eq.equip(ItemStack("pride_boots", 1), stats)
+        self.assertIsNone(eq.get_active_aura(), "3 of 5 pieces must NOT prematurely activate solar aura")
+
+        # Equip 4 pieces of Pride sin set: no threshold at 4
         eq.equip(ItemStack("pride_blade", 1), stats)
+        self.assertIsNone(eq.get_active_aura(), "4 of 5 pieces must NOT activate solar aura")
+
+        # Equip full 5 pieces: threshold 5 has 'solar' aura
         eq.equip(ItemStack("pride_ring", 1), stats)
         self.assertEqual(eq.get_active_aura(), "solar")
+
+    def test_single_piece_does_not_grant_aura(self):
+        """Verifies equipping 1 piece of ancient set (helmet) does not grant pulsing aura or set bonuses."""
+        eq = Equipment()
+        stats = self.player.stats
+        eq.equip(ItemStack("ancient_helmet", 1), stats)
+        self.assertIsNone(eq.get_active_aura(), "Single ancient helmet must NOT grant pulsing ancient aura")
+        set_key, set_info = eq.get_active_set()
+        self.assertIsNone(set_key, "Single piece must NOT activate equipment set")
 
     def test_held_weapon_set_activation(self):
         """Verifies weapon held in hand from hotbar contributes to progressive sets and auras."""
@@ -370,6 +389,15 @@ class TestTorchlightSetsAndCharacterUI(unittest.TestCase):
         text_joined = " ".join(t[0] for t in lines)
         self.assertIn("Set:", text_joined)
         self.assertIn("(2) Set:", text_joined)
+
+    def test_npc_dialogue_tooltip_renders_set_lines(self):
+        """Verifies NPC dialogue shop item tooltip renders set lines."""
+        npc_ui = NPCDialogueWindow(self.asset_factory, self.sound_manager)
+        surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        entry = {"item_id": "ancient_helmet", "price": 100, "currency": "copper_coin"}
+        npc_ui.active_player = self.player
+        lines = []
+        npc_ui._render_shop_item_tooltip(surf, 50, 50, entry)
 
 
 if __name__ == "__main__":

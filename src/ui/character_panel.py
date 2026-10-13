@@ -225,7 +225,7 @@ class CharacterPanel:
         if active_set:
             set_name = active_set.get("name", "Active Set")
             set_lbl = self.font_sm.render(f"Set: {set_name}", True, (255, 215, 100))
-            target_surf.blit(set_lbl, (px + 30, py + 314))
+            target_surf.blit(set_lbl, (px + 30, py + 312))
 
         # ----------------------------------------------------
         # 2. Right Side: RPG Stats Breakdown

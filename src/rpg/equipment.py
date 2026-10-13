@@ -437,7 +437,7 @@ class Equipment:
         return False
 
     def get_active_set(self):
-        """Returns (set_key, set_info) if all head, chest, and legs pieces form an active equipment set, or highest active progressive set."""
+        """Returns (set_key, set_info) if qualifying progressive set threshold or equipment set is active."""
         def _get_id(s):
             if not s:
                 return None
@@ -449,43 +449,45 @@ class Equipment:
         w = _get_id(self.slots.get(SLOT_WEAPON))
         a = _get_id(self.slots.get(SLOT_ACCESSORY))
 
-        if h and c and l:
-            for set_key, set_data in EQUIPMENT_SETS.items():
-                req = set_data.get("pieces", {})
-                if req.get("head") == h and req.get("chest") == c and req.get("legs") == l:
-                    return set_key, set_data
+        all_ids = [x for x in (h, c, l, w, a) if x]
+        held_obj = getattr(self, "active_weapon_item", None)
+        held_id = held_obj.item_id if (held_obj and hasattr(held_obj, "item_id")) else getattr(self, "active_weapon_id", None)
+        if held_id and held_id not in all_ids:
+            all_ids.append(held_id)
 
-            # Fallback check for any ancient-themed gear
-            if "ancient" in h and "ancient" in c and "ancient" in l:
-                return "ancient", EQUIPMENT_SETS.get("ancient")
-
-        # Check progressive sets (including 2-piece sets, Filipino sets, Sins, Virtues)
+        # 1. Check progressive sets first (Torchlight 2 tiered milestone thresholds)
         try:
             from src.rpg.equipment_update import get_active_threshold_bonuses, PROGRESSIVE_SETS
-            all_ids = [x for x in (h, c, l, w, a) if x]
-            held_obj = getattr(self, "active_weapon_item", None)
-            held_id = held_obj.item_id if (held_obj and hasattr(held_obj, "item_id")) else getattr(self, "active_weapon_id", None)
-            if held_id and held_id not in all_ids:
-                all_ids.append(held_id)
             active_bonuses = get_active_threshold_bonuses(all_ids)
             if active_bonuses:
                 best_set_id, best_tier, best_bonus = max(active_bonuses, key=lambda x: x[1])
-                if best_set_id in EQUIPMENT_SETS:
-                    return best_set_id, EQUIPMENT_SETS[best_set_id]
-                elif best_set_id in PROGRESSIVE_SETS:
+                if best_set_id in PROGRESSIVE_SETS:
                     return best_set_id, PROGRESSIVE_SETS[best_set_id]
+                elif best_set_id in EQUIPMENT_SETS:
+                    return best_set_id, EQUIPMENT_SETS[best_set_id]
         except Exception:
             pass
+
+        # 2. Legacy fallback: full set where ALL required pieces in req are equipped
+        equipped_dict = {k: _get_id(v) for k, v in self.slots.items() if v}
+        if held_id and SLOT_WEAPON not in equipped_dict:
+            equipped_dict[SLOT_WEAPON] = held_id
+
+        for set_key, set_data in EQUIPMENT_SETS.items():
+            req = set_data.get("pieces", {})
+            if isinstance(req, dict) and req:
+                if all(equipped_dict.get(slot) == piece_id for slot, piece_id in req.items()):
+                    return set_key, set_data
 
         return None, None
 
     def has_ancient_set(self):
-        """Checks if the player has the full Ancient equipment set equipped."""
+        """Checks if the player has an active Ancient equipment set bonus."""
         set_key, _ = self.get_active_set()
         return set_key == "ancient"
 
     def get_active_aura(self):
-        """Returns aura type string ('ancient', 'titan', 'magma', 'cryo', 'shadow', 'spud', 'cactus', etc.) or None."""
+        """Returns aura type string ('ancient', 'titan', 'magma', 'cryo', 'shadow', 'spud', 'cactus', 'solar', etc.) or None."""
         try:
             from src.rpg.equipment_update import get_active_threshold_bonuses
             def _get_id(s):
@@ -497,34 +499,34 @@ class Equipment:
             held_id = held_obj.item_id if (held_obj and hasattr(held_obj, "item_id")) else getattr(self, "active_weapon_id", None)
             if held_id and held_id not in all_ids:
                 all_ids.append(held_id)
-            for set_id, tier, t_bonus in sorted(get_active_threshold_bonuses(all_ids, cumulative=True), key=lambda x: x[1], reverse=True):
-                if t_bonus.get("aura"):
-                    return t_bonus["aura"]
+            active_bonuses = get_active_threshold_bonuses(all_ids, cumulative=True)
+            if active_bonuses:
+                for set_id, tier, t_bonus in sorted(active_bonuses, key=lambda x: x[1], reverse=True):
+                    if t_bonus.get("aura"):
+                        return t_bonus["aura"]
+                # Active progressive set bonuses found, but none grant an aura at currently unlocked tiers
+                return None
         except Exception:
             pass
 
-        # Check full legacy sets requiring head, chest, and legs
+        # Check full legacy sets requiring all pieces
         def _get_id(s):
             if not s:
                 return None
             return s.item_id if hasattr(s, "item_id") else str(s)
-        h = _get_id(self.slots.get(SLOT_HEAD))
-        c = _get_id(self.slots.get(SLOT_CHEST))
-        l = _get_id(self.slots.get(SLOT_LEGS))
-        if h and c and l:
-            for set_key, set_data in EQUIPMENT_SETS.items():
-                req = set_data.get("pieces", {})
-                if req.get("head") == h and req.get("chest") == c and req.get("legs") == l:
+        equipped_dict = {k: _get_id(v) for k, v in self.slots.items() if v}
+        held_obj = getattr(self, "active_weapon_item", None)
+        held_id = held_obj.item_id if (held_obj and hasattr(held_obj, "item_id")) else getattr(self, "active_weapon_id", None)
+        if held_id and SLOT_WEAPON not in equipped_dict:
+            equipped_dict[SLOT_WEAPON] = held_id
+
+        for set_key, set_data in EQUIPMENT_SETS.items():
+            req = set_data.get("pieces", {})
+            if isinstance(req, dict) and req:
+                if all(equipped_dict.get(slot) == piece_id for slot, piece_id in req.items()):
                     if set_data.get("aura"):
                         return set_data.get("aura")
 
-        # Check active effects for radiance aura
-        for eff in self.get_all_active_effects():
-            eff_l = eff.lower()
-            if "ancient" in eff_l:
-                return "ancient"
-            if "radiant shield" in eff_l or "celestial radiance" in eff_l:
-                return "titan"
         return None
 
     def recalculate_stats(self, stats, active_item_id=_NO_UPDATE, active_item=_NO_UPDATE):

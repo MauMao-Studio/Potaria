@@ -474,6 +474,7 @@ class NPCDialogueWindow:
         if not self.is_open or not self.active_npc:
             return
 
+        self.active_player = player
         npc = self.active_npc
 
         # Panel Background & Shadow
