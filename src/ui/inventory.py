@@ -3324,10 +3324,12 @@ class Inventory:
                 return True
         return False
 
-    def render_tooltip(self, target_surf, item, mx, my):
+    def render_tooltip(self, target_surf, item, mx, my, player=None):
         """Renders rich RPG tooltip for an item or ItemStack with Compact and Detailed modes."""
         if isinstance(item, (int, float)) and not isinstance(my, (int, float)):
             item, mx, my = my, item, mx
+        if player is None:
+            player = getattr(self, "player", None)
         if not item:
             return []
         data = item.data if hasattr(item, "data") else {}
@@ -3467,6 +3469,12 @@ class Inventory:
                 aff_desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
                 for al in wrap_text_lines(f"★ {aff}: {aff_desc}", self.font_sm, 300):
                     lines.append((al, (255, 230, 90), self.font_sm))
+
+            # Set Membership & Torchlight 2 Tiered Milestones
+            from src.rpg.equipment_update import build_set_tooltip_lines
+            raw_id = getattr(item, "item_id", item if isinstance(item, str) else "")
+            set_lines = build_set_tooltip_lines(raw_id, player=player, font=self.font_sm, wrap_width=300)
+            lines.extend(set_lines)
 
             desc = data.get("desc")
             if desc:

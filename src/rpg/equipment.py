@@ -487,7 +487,7 @@ class Equipment:
                     return None
                 return s.item_id if hasattr(s, "item_id") else str(s)
             all_ids = [_get_id(v) for v in self.slots.values() if v]
-            for set_id, tier, t_bonus in get_active_threshold_bonuses(all_ids):
+            for set_id, tier, t_bonus in sorted(get_active_threshold_bonuses(all_ids, cumulative=True), key=lambda x: x[1], reverse=True):
                 if t_bonus.get("aura"):
                     return t_bonus["aura"]
         except Exception:
@@ -627,7 +627,7 @@ class Equipment:
             if held_id and held_id != eq_id:
                 all_equipped_ids.append(held_id)
 
-            for set_id, tier, t_bonus in get_active_threshold_bonuses(all_equipped_ids):
+            for set_id, tier, t_bonus in get_active_threshold_bonuses(all_equipped_ids, cumulative=True):
                 applied_set_ids.add(set_id)
                 bonus_atk += int((stats.base_atk + bonus_atk) * t_bonus.get("atk_mult", 0.0))
                 bonus_def += int((stats.base_def + bonus_def) * t_bonus.get("def_mult", 0.0))

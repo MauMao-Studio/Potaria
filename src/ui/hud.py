@@ -101,7 +101,7 @@ class HUD:
 
         # 7. Item Tooltip (Rich Rarity, Stats, Description, Special Effects & Lore)
         if hovered_slot and hovered_slot.data:
-            self._render_tooltip(target_surf, mouse_x, mouse_y, hovered_slot)
+            self._render_tooltip(target_surf, mouse_x, mouse_y, hovered_slot, player=player)
 
         # 8. Held Dragging Item
         if render_dragged:
@@ -647,12 +647,14 @@ class HUD:
         target_surf.blit(sh, (SCREEN_WIDTH // 2 - txt.get_width() // 2 + 1, by + 14))
         target_surf.blit(txt, (SCREEN_WIDTH // 2 - txt.get_width() // 2, by + 13))
 
-    def _render_tooltip(self, target_surf, mx, my, item):
+    def _render_tooltip(self, target_surf, mx, my, item, player=None):
         """Rich Diablo/Torchlight-style item tooltip with rarity tiers, stats, lore, and descriptions."""
         if not isinstance(mx, (int, float)) and isinstance(item, (int, float)):
             item, mx, my = mx, my, item
         if not item or not hasattr(item, "data"):
             return []
+        if player is None:
+            player = getattr(item, "player", None)
         data = item.data
         name = data.get("name", item.item_id)
         cat = data.get("cat", "item").replace("_", " ").title()
@@ -778,6 +780,12 @@ class HUD:
                 aff_text = f"★ {aff}: {aff_desc}" if aff_desc else f"★ {aff}"
                 for al in wrap_text_lines(aff_text, self.font_sm, 300):
                     lines.append((al, (255, 230, 90), self.font_sm))
+
+            # Set Membership & Torchlight 2 Tiered Milestones
+            from src.rpg.equipment_update import build_set_tooltip_lines
+            raw_id = getattr(item, "item_id", item if isinstance(item, str) else "")
+            set_lines = build_set_tooltip_lines(raw_id, player=player, font=self.font_sm, wrap_width=300)
+            lines.extend(set_lines)
 
             # 4. Special Effects (Bulleted for upper rarities: Epic, Mythic, Legendary, Ancient)
             effects = data.get("effects", [])

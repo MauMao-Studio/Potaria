@@ -35,6 +35,10 @@ class CharacterPanel:
         self.font_reg_sm = font_regular(12)
         self.font_reg_xs = font_regular(11)
 
+        # Panel dimensions
+        self.pw = 560
+        self.ph = 580
+
         # Slot bounding rects for mouse interaction
         self.slot_rects = {}
         self.hotkey_rects = {}
@@ -43,7 +47,7 @@ class CharacterPanel:
     def toggle(self):
         self.is_open = not self.is_open
 
-    def handle_click(self, mouse_x, mouse_y, player, inventory, is_right_click=False):
+    def handle_click(self, mouse_x, mouse_y, player, inventory=None, is_right_click=False):
         """Allows clicking equipped slots to unequip, or selecting and assigning combat skills."""
         if not self.is_open:
             return False
@@ -52,7 +56,7 @@ class CharacterPanel:
         for slot_name, rect in self.slot_rects.items():
             if rect.collidepoint(mouse_x, mouse_y):
                 current_item = player.equipment.slots[slot_name]
-                if current_item:
+                if current_item and inventory is not None:
                     remaining = inventory.add_item(current_item, 1)
                     if remaining == 0:
                         player.equipment.unequip(slot_name, player.stats)
@@ -90,7 +94,7 @@ class CharacterPanel:
                     return True
 
         # 4. Consume click inside panel boundaries to prevent accidental attacks/mining
-        pw, ph = 560, 520
+        pw, ph = self.pw, self.ph
         px = SCREEN_WIDTH // 2 - pw // 2
         py = SCREEN_HEIGHT // 2 - ph // 2
         if pygame.Rect(px, py, pw, ph).collidepoint(mouse_x, mouse_y):
@@ -133,7 +137,7 @@ class CharacterPanel:
         if not self.is_open:
             return
 
-        pw, ph = 560, 520
+        pw, ph = self.pw, self.ph
         px = SCREEN_WIDTH // 2 - pw // 2
         py = SCREEN_HEIGHT // 2 - ph // 2
 
@@ -299,7 +303,7 @@ class CharacterPanel:
         # ----------------------------------------------------
         # 3. Bottom Section: Active Skill Loadout (Q, F, V, R)
         # ----------------------------------------------------
-        by = py + 322
+        by = py + 332
         active_title = self.font_bold.render("ACTIVE SKILL LOADOUT (Select Hotkey):", True, (255, 230, 100))
         target_surf.blit(active_title, (px + 30, by))
 
@@ -308,7 +312,7 @@ class CharacterPanel:
 
         for i, (key, def_sid) in enumerate(hotkeys):
             hx = px + 30 + i * 126
-            hy = by + 20
+            hy = by + 22
             h_rect = pygame.Rect(hx, hy, 120, 36)
             self.hotkey_rects[key] = h_rect
 
@@ -629,12 +633,10 @@ class CharacterPanel:
             else:
                 lines.append((f"• [Carve Limit Reached] Max {max_add} Slots Carved", (180, 170, 190), self.font_sm))
 
-        # Set Membership
-        from src.rpg.equipment_update import PROGRESSIVE_SETS
-        for s_id, s_data in PROGRESSIVE_SETS.items():
-            if raw_id in s_data.get("pieces", []):
-                lines.append((f"Set: {s_data['name']}", (255, 215, 100), self.font_sm))
-                break
+        # Set Membership & Torchlight 2 Tiered Milestones
+        from src.rpg.equipment_update import build_set_tooltip_lines
+        set_lines = build_set_tooltip_lines(raw_id, player=player, font=self.font_sm, wrap_width=300)
+        lines.extend(set_lines)
 
         # Imbued Affixes
         if item_affixes:
@@ -696,3 +698,8 @@ class CharacterPanel:
         for s in surfs:
             target_surf.blit(s, (tx + 10, cy))
             cy += s.get_height() + 3
+
+
+# Alias for backward compatibility
+CharacterStatusPanel = CharacterPanel
+

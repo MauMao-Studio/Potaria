@@ -52,6 +52,7 @@ class NPCDialogueWindow:
 
         self.is_open = True
         self.active_npc = npc
+        self.active_player = player
         self.active_npc.is_talking = True
         self.current_view = "dialogue"
         self.status_message = ""
@@ -725,6 +726,12 @@ class NPCDialogueWindow:
             if armor.get("speed", 0) > 0 or reg.get("speed", 0) > 0:
                 sp = armor.get("speed", reg.get("speed", 0))
                 lines.append((f"+{sp} Movement Speed", (200, 210, 255), self.font_sm))
+
+            # Set Membership & Torchlight 2 Tiered Milestones
+            from src.rpg.equipment_update import build_set_tooltip_lines
+            p = getattr(self, "active_player", None)
+            set_lines = build_set_tooltip_lines(iid, player=p, font=self.font_sm, wrap_width=300)
+            lines.extend(set_lines)
 
             # Effects for high tier
             from src.ui.theme import wrap_text_lines

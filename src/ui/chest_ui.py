@@ -167,7 +167,7 @@ class ChestStorageWindow:
 
         return True
 
-    def render(self, target_surf, inventory, mouse_x, mouse_y, render_dragged=True):
+    def render(self, target_surf, inventory, mouse_x, mouse_y, render_dragged=True, player=None):
         if not self.is_open or not self.active_chest:
             return
 
@@ -269,7 +269,8 @@ class ChestStorageWindow:
 
         # Tooltip for hovered item
         if hovered_item:
-            self.render_tooltip(target_surf, hovered_item, mouse_x, mouse_y)
+            p = player if player is not None else (getattr(inventory, "player", None) if inventory else None)
+            self.render_tooltip(target_surf, hovered_item, mouse_x, mouse_y, player=p)
 
         # Foreground Dragged Item (ensures dragged items appear on top of the chest panel)
         if render_dragged and inventory and getattr(inventory, "held_item", None):
@@ -281,7 +282,7 @@ class ChestStorageWindow:
                 cnt_txt = self.font_drag.render(str(held.count), True, (255, 255, 255))
                 target_surf.blit(cnt_txt, (mouse_x + 4, mouse_y + 4))
 
-    def render_tooltip(self, target_surf, item, mx, my):
+    def render_tooltip(self, target_surf, item, mx, my, player=None):
         """Renders rich item tooltip for chest slots."""
         if isinstance(item, (int, float)) and not isinstance(my, (int, float)):
             item, mx, my = my, item, mx
@@ -367,6 +368,13 @@ class ChestStorageWindow:
                 desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
                 for al in wrap_text_lines(f"★ {aff}: {desc}", self.font_sm, 300):
                     lines.append((al, (255, 230, 90), self.font_sm))
+
+            # Set Membership & Torchlight 2 Tiered Milestones
+            from src.rpg.equipment_update import build_set_tooltip_lines
+            raw_id = getattr(item, "item_id", item if isinstance(item, str) else "")
+            set_lines = build_set_tooltip_lines(raw_id, player=player, font=self.font_sm, wrap_width=300)
+            lines.extend(set_lines)
+
             desc = data.get("desc")
             if desc:
                 for dl in wrap_text_lines(desc, self.font_sm, 300):

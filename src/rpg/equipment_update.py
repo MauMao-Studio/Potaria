@@ -498,15 +498,17 @@ def add_additional_affix_slot(item: Any, inventory: Any = None, cost_copper: int
 # -----------------------------------------------------------------------------
 
 PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
-    # Existing core sets extended with 2-piece and full-set thresholds
+    # Existing core sets extended with 2-piece, 3-piece, and 4-piece thresholds
     "ancient": {
         "set_id": "ancient",
         "name": "Ancient Resonating Set",
         "pieces": ["ancient_helmet", "ancient_chestplate", "ancient_greaves", "ancient_sword"],
         "thresholds": {
             2: {"desc": "2-Piece: Ancient Gleam (+15% ATK, +15% DEF, +20 HP)", "atk_mult": 0.15, "def_mult": 0.15, "bonus_hp": 20},
-            3: {"desc": "Full Set: Ancient Cosmic Resonance (+35% ATK, +30% DEF, +50 HP, +20% Crit, Radiant Pulsing Aura)",
-                "atk_mult": 0.35, "def_mult": 0.30, "bonus_hp": 50, "bonus_crit": 20.0, "aura": "ancient"}
+            3: {"desc": "3-Piece: Ancient Cosmic Resonance (+35% ATK, +30% DEF, +50 HP, +20% Crit, Radiant Pulsing Aura)",
+                "atk_mult": 0.35, "def_mult": 0.30, "bonus_hp": 50, "bonus_crit": 20.0, "aura": "ancient"},
+            4: {"desc": "Full Set: Sovereign of Antiquity (+45% ATK, +40% DEF, +75 HP, +25% Crit, Radiant Pulsing Aura)",
+                "atk_mult": 0.45, "def_mult": 0.40, "bonus_hp": 75, "bonus_crit": 25.0, "aura": "ancient"}
         }
     },
     "titan": {
@@ -515,8 +517,10 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["titan_helmet", "titan_chestplate", "titan_greaves", "celestial_greatsword"],
         "thresholds": {
             2: {"desc": "2-Piece: Titan Bulwark (+12% DEF, +15 HP)", "def_mult": 0.12, "bonus_hp": 15},
-            3: {"desc": "Full Set: Celestial Aegis (+25% DEF, +30 HP, +15% ATK, Celestial Ward Aura)",
-                "atk_mult": 0.15, "def_mult": 0.25, "bonus_hp": 30, "bonus_crit": 5.0, "aura": "titan"}
+            3: {"desc": "3-Piece: Celestial Aegis (+25% DEF, +30 HP, +15% ATK, Celestial Ward Aura)",
+                "atk_mult": 0.15, "def_mult": 0.25, "bonus_hp": 30, "bonus_crit": 5.0, "aura": "titan"},
+            4: {"desc": "Full Set: Colossus Bastion (+35% DEF, +50 HP, +25% ATK, Celestial Ward Aura)",
+                "atk_mult": 0.25, "def_mult": 0.35, "bonus_hp": 50, "bonus_crit": 10.0, "aura": "titan"}
         }
     },
     "magma": {
@@ -525,8 +529,10 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["magma_helmet", "magma_chestplate", "magma_greaves", "magma_greatsword"],
         "thresholds": {
             2: {"desc": "2-Piece: Magma Spark (+10% ATK, +5 Fire Thorns)", "atk_mult": 0.10, "bonus_crit": 4.0},
-            3: {"desc": "Full Set: Molten Crucible (+20% ATK, +15 Fire Thorns, Magma Aura)",
-                "atk_mult": 0.20, "def_mult": 0.10, "bonus_hp": 25, "bonus_crit": 8.0, "aura": "magma"}
+            3: {"desc": "3-Piece: Molten Crucible (+20% ATK, +15 Fire Thorns, Magma Aura)",
+                "atk_mult": 0.20, "def_mult": 0.10, "bonus_hp": 25, "bonus_crit": 8.0, "aura": "magma"},
+            4: {"desc": "Full Set: Volcanic Core (+30% ATK, +25 Fire Thorns, +40 HP, Magma Aura)",
+                "atk_mult": 0.30, "def_mult": 0.15, "bonus_hp": 40, "bonus_crit": 12.0, "aura": "magma"}
         }
     },
     "cryo": {
@@ -545,8 +551,10 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["shadow_helmet", "shadow_plate", "shadow_greaves", "shadow_cleaver"],
         "thresholds": {
             2: {"desc": "2-Piece: Shadow Veil (+10% Crit, +0.10 Speed)", "bonus_crit": 10.0, "bonus_speed": 0.10},
-            3: {"desc": "Full Set: Shadow Phantom (+20% Crit, +20% ATK, +0.20 Speed, Void Aura)",
-                "atk_mult": 0.20, "def_mult": 0.10, "bonus_hp": 20, "bonus_crit": 20.0, "bonus_speed": 0.20, "aura": "shadow"}
+            3: {"desc": "3-Piece: Shadow Phantom (+20% Crit, +20% ATK, +0.20 Speed, Void Aura)",
+                "atk_mult": 0.20, "def_mult": 0.10, "bonus_hp": 20, "bonus_crit": 20.0, "bonus_speed": 0.20, "aura": "shadow"},
+            4: {"desc": "Full Set: Eclipse Nightmare (+30% Crit, +30% ATK, +0.30 Speed, Void Aura)",
+                "atk_mult": 0.30, "def_mult": 0.15, "bonus_hp": 35, "bonus_crit": 30.0, "bonus_speed": 0.30, "aura": "shadow"}
         }
     },
     "spud": {
@@ -565,19 +573,22 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["cactus_helmet", "cactus_chestplate", "cactus_greaves", "cactus_sword"],
         "thresholds": {
             2: {"desc": "2-Piece: Prickly Barbs (+5 Thorns, +5% ATK)", "atk_mult": 0.05},
-            3: {"desc": "Full Set: Thorn Barbs (+15 Reflected Thorns, +10% ATK, Prickly Aura)",
-                "atk_mult": 0.10, "def_mult": 0.10, "bonus_hp": 15, "bonus_crit": 4.0, "aura": "cactus"}
+            3: {"desc": "3-Piece: Thorn Barbs (+15 Reflected Thorns, +10% ATK, Prickly Aura)",
+                "atk_mult": 0.10, "def_mult": 0.10, "bonus_hp": 15, "bonus_crit": 4.0, "aura": "cactus"},
+            4: {"desc": "Full Set: Desert Spine (+30 Reflected Thorns, +20% ATK, +30 HP, Prickly Aura)",
+                "atk_mult": 0.20, "def_mult": 0.15, "bonus_hp": 30, "bonus_crit": 8.0, "aura": "cactus"}
         }
     },
 
-    # Seven Deadly Sins Sets
+    # Seven Deadly Sins Sets (5-piece sets: 2-piece, 3-piece, and 5-piece thresholds)
     "sin_pride": {
         "set_id": "sin_pride",
         "name": "Pride: Sovereign of the Sun",
         "pieces": ["pride_crown", "pride_robe", "pride_boots", "pride_blade", "pride_ring"],
         "thresholds": {
             2: {"desc": "2-Piece: Solar Precision (+15% Crit Chance, +10% ATK)", "atk_mult": 0.10, "bonus_crit": 15.0},
-            3: {"desc": "Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage against healthy targets, Solar Aura)",
+            3: {"desc": "3-Piece: Solar Radiance (+20% ATK, +10% Crit, +35 HP)", "atk_mult": 0.20, "bonus_crit": 10.0, "bonus_hp": 35},
+            5: {"desc": "Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage against healthy targets, Solar Aura)",
                 "atk_mult": 0.30, "bonus_crit": 25.0, "bonus_hp": 35, "aura": "solar"}
         }
     },
@@ -587,7 +598,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["greed_mask", "greed_mantle", "greed_striders", "greed_scepter", "greed_amulet"],
         "thresholds": {
             2: {"desc": "2-Piece: Coin Scavenger (+20% Gold Drops, +0.10 Speed)", "bonus_speed": 0.10, "bonus_hp": 20},
-            3: {"desc": "Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25 Speed on defeat, Gilded Shimmer Aura)",
+            3: {"desc": "3-Piece: Gilded Fortune (+15% ATK, +15% DEF, +0.15 Speed)", "atk_mult": 0.15, "def_mult": 0.15, "bonus_speed": 0.15},
+            5: {"desc": "Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25 Speed on defeat, Gilded Shimmer Aura)",
                 "atk_mult": 0.25, "def_mult": 0.20, "bonus_speed": 0.25, "aura": "gold"}
         }
     },
@@ -597,7 +609,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["lust_veil", "lust_corslet", "lust_wraps", "lust_rapier", "lust_perfume"],
         "thresholds": {
             2: {"desc": "2-Piece: Captivating Allure (+15% Status Duration, +2.0 MP/s)", "bonus_mp_regen": 2.0, "bonus_crit": 8.0},
-            3: {"desc": "Full Set: Siren's Enchantment (+25% ATK, +30% Damage vs Debuffed, +3.5 MP/s, Pink Mist Aura)",
+            3: {"desc": "3-Piece: Mesmerizing Glamour (+15% ATK, +2.5 MP/s, +0.10 Speed)", "atk_mult": 0.15, "bonus_mp_regen": 2.5, "bonus_speed": 0.10},
+            5: {"desc": "Full Set: Siren's Enchantment (+25% ATK, +30% Damage vs Debuffed, +3.5 MP/s, Pink Mist Aura)",
                 "atk_mult": 0.25, "bonus_mp_regen": 3.5, "bonus_speed": 0.15, "aura": "charm"}
         }
     },
@@ -607,7 +620,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["envy_cowl", "envy_shroud", "envy_treads", "envy_daggers", "envy_eye"],
         "thresholds": {
             2: {"desc": "2-Piece: Phantom Step (+15% Evasion, +12% ATK)", "atk_mult": 0.12, "bonus_speed": 0.15},
-            3: {"desc": "Full Set: Mirror Retribution (Reflects 150% damage on dodge/hit, +25% ATK, Mirror Mirage Aura)",
+            3: {"desc": "3-Piece: Mirror Glare (+15% ATK, +10% Crit, +0.15 Speed)", "atk_mult": 0.15, "bonus_crit": 10.0, "bonus_speed": 0.15},
+            5: {"desc": "Full Set: Mirror Retribution (Reflects 150% damage on dodge/hit, +25% ATK, Mirror Mirage Aura)",
                 "atk_mult": 0.25, "bonus_crit": 15.0, "bonus_speed": 0.25, "aura": "mirror"}
         }
     },
@@ -617,7 +631,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["gluttony_jaw", "gluttony_carapace", "gluttony_tassets", "gluttony_cleaver", "gluttony_stomach"],
         "thresholds": {
             2: {"desc": "2-Piece: Insatiable Hunger (+8% Lifesteal, +35 Max HP)", "bonus_hp": 35},
-            3: {"desc": "Full Set: Abyssal Feast (+20% ATK, +60 Max HP, +5 HP leech per strike, Crimson Maw Aura)",
+            3: {"desc": "3-Piece: Voracious Appetite (+15% ATK, +10% DEF, +45 Max HP)", "atk_mult": 0.15, "def_mult": 0.10, "bonus_hp": 45},
+            5: {"desc": "Full Set: Abyssal Feast (+20% ATK, +60 Max HP, +5 HP leech per strike, Crimson Maw Aura)",
                 "atk_mult": 0.20, "def_mult": 0.15, "bonus_hp": 60, "aura": "maw"}
         }
     },
@@ -627,7 +642,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["wrath_helm", "wrath_cuirass", "wrath_greaves", "wrath_greatsword", "wrath_brand"],
         "thresholds": {
             2: {"desc": "2-Piece: Fury Unleashed (+20% Attack Speed, +15% ATK)", "atk_mult": 0.15, "bonus_atk_speed": 0.20},
-            3: {"desc": "Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30% ATK below 50% HP, Crimson Rage Aura)",
+            3: {"desc": "3-Piece: Berserker Frenzy (+25% ATK, +25% Atk Speed, +8% Crit)", "atk_mult": 0.25, "bonus_atk_speed": 0.25, "bonus_crit": 8.0},
+            5: {"desc": "Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30% ATK below 50% HP, Crimson Rage Aura)",
                 "atk_mult": 0.35, "bonus_atk_speed": 0.30, "bonus_crit": 12.0, "aura": "rage"}
         }
     },
@@ -637,19 +653,21 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["sloth_nightcap", "sloth_pajamas", "sloth_slippers", "sloth_pillow", "sloth_pendulum"],
         "thresholds": {
             2: {"desc": "2-Piece: Restful Slumber (+25% DEF, +3.0 MP/s)", "def_mult": 0.25, "bonus_mp_regen": 3.0},
-            3: {"desc": "Full Set: Slumber Fortitude (50-HP Dream Shield every 5s undamaged, +80% burst attack, Dream Mist Aura)",
+            3: {"desc": "3-Piece: Deep Trance (+30% DEF, +35 Max HP, +3.5 MP/s)", "def_mult": 0.30, "bonus_hp": 35, "bonus_mp_regen": 3.5},
+            5: {"desc": "Full Set: Slumber Fortitude (50-HP Dream Shield every 5s undamaged, +80% burst attack, Dream Mist Aura)",
                 "def_mult": 0.40, "bonus_hp": 50, "bonus_mp_regen": 4.5, "aura": "dream"}
         }
     },
 
-    # Seven Heavenly Virtues Sets
+    # Seven Heavenly Virtues Sets (5-piece sets: 2-piece, 3-piece, and 5-piece thresholds)
     "virtue_humility": {
         "set_id": "virtue_humility",
         "name": "Humility: The Quiet Crown",
         "pieces": ["humility_circlet", "humility_vestment", "humility_sandals", "humility_staff", "humility_pendant"],
         "thresholds": {
             2: {"desc": "2-Piece: Serene Grounding (+15% DEF, +15% ATK, +25 Max HP)", "atk_mult": 0.15, "def_mult": 0.15, "bonus_hp": 25},
-            3: {"desc": "Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity, Serene Pearl Aura)",
+            3: {"desc": "3-Piece: Humble Ascendance (+20% All Stats, +35 Max HP, +5% Crit)", "atk_mult": 0.20, "def_mult": 0.20, "bonus_hp": 35, "bonus_crit": 5.0},
+            5: {"desc": "Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity, Serene Pearl Aura)",
                 "atk_mult": 0.25, "def_mult": 0.25, "bonus_hp": 50, "bonus_crit": 10.0, "aura": "pearl"}
         }
     },
@@ -659,7 +677,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["charity_cowl", "charity_tunic", "charity_trousers", "charity_wand", "charity_chalice"],
         "thresholds": {
             2: {"desc": "2-Piece: Hearth Warmth (+4 HP/s Health Regen, +30 Max HP)", "bonus_hp": 30},
-            3: {"desc": "Full Set: Communal Hearth (+6 HP/s Regen, +20% Party Damage Mitigation, Warm Hearth Gold Aura)",
+            3: {"desc": "3-Piece: Generous Hearth (+15% DEF, +5 HP/s Regen, +45 Max HP)", "def_mult": 0.15, "bonus_hp": 45, "bonus_mp_regen": 1.5},
+            5: {"desc": "Full Set: Communal Hearth (+6 HP/s Regen, +20% Party Damage Mitigation, Warm Hearth Gold Aura)",
                 "def_mult": 0.20, "bonus_hp": 60, "bonus_mp_regen": 2.0, "aura": "hearth"}
         }
     },
@@ -669,7 +688,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["chastity_sallet", "chastity_breastplate", "chastity_greaves", "chastity_lance", "chastity_aegis"],
         "thresholds": {
             2: {"desc": "2-Piece: Spotless Ward (+25% DEF, 50% Debuff Resistance)", "def_mult": 0.25, "bonus_hp": 25},
-            3: {"desc": "Full Set: Unblemished Ward (Absorbs 60 damage every 10s, Debuff Immunity, Brilliant White Aura)",
+            3: {"desc": "3-Piece: Pure Aegis (+30% DEF, +40 Max HP, 75% Debuff Resistance)", "def_mult": 0.30, "bonus_hp": 40},
+            5: {"desc": "Full Set: Unblemished Ward (Absorbs 60 damage every 10s, Debuff Immunity, Brilliant White Aura)",
                 "def_mult": 0.40, "bonus_hp": 60, "aura": "sanctum"}
         }
     },
@@ -679,7 +699,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["gratitude_crown", "gratitude_chasuble", "gratitude_striders", "gratitude_scepter", "gratitude_locket"],
         "thresholds": {
             2: {"desc": "2-Piece: Joyful Abundance (-25% MP Skill Cost, +2.5 MP/s)", "bonus_mp_regen": 2.5},
-            3: {"desc": "Full Set: Radiance of Thanks (30% MP Refund Chance, +50 True Solar Flash, Golden Sunburst Aura)",
+            3: {"desc": "3-Piece: Heart of Thanksgiving (+15% ATK, +3.0 MP/s, +10% Crit)", "atk_mult": 0.15, "bonus_mp_regen": 3.0, "bonus_crit": 10.0},
+            5: {"desc": "Full Set: Radiance of Thanks (30% MP Refund Chance, +50 True Solar Flash, Golden Sunburst Aura)",
                 "atk_mult": 0.20, "bonus_mp_regen": 4.0, "bonus_crit": 15.0, "aura": "sunburst"}
         }
     },
@@ -689,7 +710,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["temperance_circlet", "temperance_robe", "temperance_leggings", "temperance_trident", "temperance_pearl"],
         "thresholds": {
             2: {"desc": "2-Piece: Tidal Pacing (+20% Cooldown Reduction, +15% Atk Speed)", "bonus_atk_speed": 0.15},
-            3: {"desc": "Full Set: Tranquil Flow (Crits/Dodges refund 1s Cooldown & 15 MP, Azure Water Ripple Aura)",
+            3: {"desc": "3-Piece: Serene Flow (+10% ATK, +20% Atk Speed, +2.0 MP/s)", "atk_mult": 0.10, "bonus_atk_speed": 0.20, "bonus_mp_regen": 2.0},
+            5: {"desc": "Full Set: Tranquil Flow (Crits/Dodges refund 1s Cooldown & 15 MP, Azure Water Ripple Aura)",
                 "atk_mult": 0.15, "bonus_atk_speed": 0.25, "bonus_speed": 0.20, "bonus_mp_regen": 3.0, "aura": "tidal"}
         }
     },
@@ -699,7 +721,8 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["kindness_wreath", "kindness_cuirass", "kindness_striders", "kindness_bow", "kindness_seed"],
         "thresholds": {
             2: {"desc": "2-Piece: Gentle Bloom (+3 HP/s Regen, +20 Max HP, +10 Reflected Thorns)", "bonus_hp": 20},
-            3: {"desc": "Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring 40% HP, Emerald Sprout Aura)",
+            3: {"desc": "3-Piece: Verdant Grace (+15% DEF, +35 Max HP, +15 Reflected Thorns)", "def_mult": 0.15, "bonus_hp": 35, "bonus_mp_regen": 1.5},
+            5: {"desc": "Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring 40% HP, Emerald Sprout Aura)",
                 "def_mult": 0.20, "bonus_hp": 50, "bonus_mp_regen": 2.0, "aura": "verdant"}
         }
     },
@@ -709,12 +732,13 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["diligence_helm", "diligence_plate", "diligence_greaves", "diligence_warhammer", "diligence_anvil_charm"],
         "thresholds": {
             2: {"desc": "2-Piece: Tireless Rhythm (+15% ATK, +15% DEF, +10% Atk Speed)", "atk_mult": 0.15, "def_mult": 0.15, "bonus_atk_speed": 0.10},
-            3: {"desc": "Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk Speed in sustained combat, Steel Spark Aura)",
+            3: {"desc": "3-Piece: Resolute Striking (+20% ATK, +20% DEF, +15% Atk Speed)", "atk_mult": 0.20, "def_mult": 0.20, "bonus_atk_speed": 0.15, "bonus_hp": 25},
+            5: {"desc": "Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk Speed in sustained combat, Steel Spark Aura)",
                 "atk_mult": 0.30, "def_mult": 0.25, "bonus_atk_speed": 0.25, "bonus_hp": 40, "aura": "steel"}
         }
     },
 
-    # Filipino Folklore Sets
+    # Filipino Folklore Sets (3-piece sets: 2-piece and 3-piece thresholds)
     "diwata_bloom": {
         "set_id": "diwata_bloom",
         "name": "Diwata's Bloom Regalia",
@@ -770,22 +794,112 @@ def get_equipped_set_counts(equipped_ids: List[str]) -> Dict[str, int]:
             counts[set_id] = match_cnt
     return counts
 
-def get_active_threshold_bonuses(equipped_ids: List[str]) -> List[Tuple[str, int, Dict[str, Any]]]:
+def get_active_threshold_bonuses(equipped_ids: List[str], cumulative: bool = False) -> List[Tuple[str, int, Dict[str, Any]]]:
     """
-    Returns list of tuples (set_id, threshold, bonus_dict) for all active progressive thresholds.
-    Ensures non-stacking within same threshold tier and no duplicate application.
+    Returns list of tuples (set_id, threshold, bonus_dict) for active progressive thresholds.
+    When cumulative=True (Torchlight 2 style), returns all qualifying thresholds where count >= threshold.
+    When cumulative=False (legacy single-tier mode), returns the highest qualifying threshold per set.
     """
     active_bonuses: List[Tuple[str, int, Dict[str, Any]]] = []
     counts = get_equipped_set_counts(equipped_ids)
     for set_id, count in counts.items():
         s_data = PROGRESSIVE_SETS.get(set_id, {})
         thresholds = s_data.get("thresholds", {})
-        # Find highest qualifying threshold
-        qualifying = [t for t in thresholds.keys() if count >= t]
+        qualifying = sorted([t for t in thresholds.keys() if count >= t])
         if qualifying:
-            highest_tier = max(qualifying)
-            active_bonuses.append((set_id, highest_tier, thresholds[highest_tier]))
+            if cumulative:
+                for tier in qualifying:
+                    active_bonuses.append((set_id, tier, thresholds[tier]))
+            else:
+                highest_tier = qualifying[-1]
+                active_bonuses.append((set_id, highest_tier, thresholds[highest_tier]))
     return active_bonuses
+
+def get_all_active_threshold_bonuses(equipped_ids: List[str]) -> List[Tuple[str, int, Dict[str, Any]]]:
+    """Returns all active progressive thresholds where count >= threshold (cumulative Torchlight 2 style)."""
+    return get_active_threshold_bonuses(equipped_ids, cumulative=True)
+
+def build_set_tooltip_lines(item_id: Any, player: Any = None, font: Any = None, wrap_width: int = 300) -> List[Tuple[str, Tuple[int, int, int], Any]]:
+    """
+    Builds rich Torchlight 2-style equipment set tooltip lines for an item or ItemStack:
+    - Displays 'Set: <Set Name> (X/Y Pieces)' in radiant purple
+    - Lists piece milestones: '(2) Set: ...', '(3) Set: ...', '(5) Set: ...'
+    - Highlights active bonuses ((100, 245, 135) bright green/gold)
+    - Dims inactive bonuses ((150, 115, 175) muted purple/gray)
+    """
+    from src.ui.theme import wrap_text_lines, font_compact
+    used_font = font if font is not None else font_compact(11)
+
+    raw_id = str(getattr(item_id, "item_id", item_id)).lower()
+    lines: List[Tuple[str, Tuple[int, int, int], Any]] = []
+
+    # Find matching sets in PROGRESSIVE_SETS
+    matched_sets = []
+    for s_id, s_data in PROGRESSIVE_SETS.items():
+        pieces = [str(p).lower() for p in s_data.get("pieces", [])]
+        if raw_id in pieces:
+            matched_sets.append((s_id, s_data))
+
+    # Fallback to EQUIPMENT_SETS if needed
+    if not matched_sets:
+        from src.rpg import equipment
+        for s_id, s_data in getattr(equipment, "EQUIPMENT_SETS", {}).items():
+            p_dict = s_data.get("pieces", {})
+            p_list = list(p_dict.values()) if isinstance(p_dict, dict) else list(p_dict)
+            if raw_id in [str(p).lower() for p in p_list]:
+                matched_sets.append((s_id, s_data))
+
+    if not matched_sets:
+        return lines
+
+    # Calculate equipped count for the player
+    equipped_ids: List[str] = []
+    if player and hasattr(player, "equipment") and hasattr(player.equipment, "slots"):
+        for s in player.equipment.slots.values():
+            if s:
+                equipped_ids.append(getattr(s, "item_id", str(s)))
+        held = getattr(player.equipment, "active_weapon_item", None) or getattr(player.equipment, "active_weapon_id", None)
+        if held:
+            equipped_ids.append(getattr(held, "item_id", str(held)))
+    counts = get_equipped_set_counts(equipped_ids)
+
+    for s_id, s_data in matched_sets:
+        equipped_count = counts.get(s_id, 0)
+        pieces_list = s_data.get("pieces", [])
+        total_pieces = len(pieces_list) if isinstance(pieces_list, list) else len(pieces_list.keys())
+
+        # Set Header (Torchlight 2 purple style)
+        if equipped_count > 0:
+            header_str = f"Set: {s_data.get('name', s_id)} ({equipped_count}/{total_pieces} Pieces)"
+        else:
+            header_str = f"Set: {s_data.get('name', s_id)}"
+
+        lines.append((header_str, (220, 120, 245), used_font))
+
+        # Milestones
+        thresholds = s_data.get("thresholds", {})
+        if thresholds:
+            for tier in sorted(thresholds.keys()):
+                t_data = thresholds[tier]
+                desc = t_data.get("desc", "")
+                clean_desc = desc
+                for prefix in (f"{tier}-Piece: ", f"{tier}-piece: ", f"{tier} Pieces: ", f"{tier} pieces: ", "Full Set: ", "full set: "):
+                    if clean_desc.startswith(prefix):
+                        clean_desc = clean_desc[len(prefix):]
+                        break
+                is_active = (equipped_count >= tier)
+                prefix_str = f"({tier}) Set: {clean_desc}"
+                color = (110, 245, 140) if is_active else (150, 115, 175)
+                for sub_line in wrap_text_lines(f"  {prefix_str}", used_font, wrap_width):
+                    lines.append((sub_line, color, used_font))
+        else:
+            desc = s_data.get("desc", "")
+            is_active = (equipped_count >= total_pieces)
+            color = (110, 245, 140) if is_active else (150, 115, 175)
+            for sub_line in wrap_text_lines(f"  Full Set: {desc}", used_font, wrap_width):
+                lines.append((sub_line, color, used_font))
+
+    return lines
 
 
 # -----------------------------------------------------------------------------
