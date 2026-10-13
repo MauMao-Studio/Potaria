@@ -8,6 +8,7 @@ Developer: Kurados
 import os
 import json
 import time
+import shutil
 from src.constants import (
     DIFFICULTY_NORMAL, DIFFICULTY_HARDCORE, DIFFICULTY_YOLO,
     MODE_ADVENTURE, MODE_LAST_MAN_STANDING,
@@ -16,6 +17,9 @@ from src.constants import (
 )
 from src.rpg.equipment import SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_WEAPON, SLOT_ACCESSORY
 from src.ui.inventory import ItemStack
+
+MAX_BACKUP_SNAPSHOTS = 5
+RESTORE_NOTIFICATION_MSG = "World restored from recent backup due to abnormal shutdown."
 
 
 def ensure_saves_dir():
@@ -31,6 +35,163 @@ def get_world_dir(world_name):
 def get_world_file(world_name):
     return os.path.join(get_world_dir(world_name), "world.json")
 
+def get_backup_file(world_name):
+    """Returns path to immediate backup saves/<world_name>/world.json.bak."""
+    return get_world_file(world_name) + ".bak"
+
+def get_backups_dir(world_name):
+    """Returns directory path to rolling snapshots saves/<world_name>/backups/."""
+    return os.path.join(get_world_dir(world_name), "backups")
+
+def atomic_write_json(target_path, data, indent=2):
+    """
+    Atomically writes JSON data to target_path using:
+    1. Temporary file (.tmp)
+    2. Buffer flush and hardware disk sync (os.fsync)
+    3. Atomic file replacement (os.replace)
+    """
+    target_dir = os.path.dirname(target_path)
+    if target_dir:
+        os.makedirs(target_dir, exist_ok=True)
+    tmp_path = target_path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=indent)
+        f.flush()
+        try:
+            os.fsync(f.fileno())
+        except (AttributeError, OSError):
+            pass
+    os.replace(tmp_path, target_path)
+
+def verify_save_data(data):
+    """
+    Validates dictionary structure and HMAC-SHA256 signature integrity.
+    Returns (is_valid: bool, reason: str).
+    """
+    if not isinstance(data, dict):
+        return False, "Save data is not a dictionary"
+    if "world_name" not in data and "seed" not in data and "player" not in data:
+        return False, "Missing essential world save keys"
+    if "save_signature" in data:
+        expected_sig = data["save_signature"]
+        if not isinstance(expected_sig, str) or not expected_sig:
+            return False, "Invalid save signature format"
+        verify_dict = {k: v for k, v in data.items() if k != "save_signature"}
+        verify_raw = json.dumps(verify_dict, sort_keys=True).encode("utf-8")
+        try:
+            from src.rpg.equipment_update import verify_save_signature
+            if not verify_save_signature(verify_raw, expected_sig):
+                return False, "HMAC signature mismatch (tampered or corrupted save)"
+        except Exception as e:
+            return False, f"HMAC verification error: {e}"
+    return True, "OK"
+
+def verify_save_file(file_path):
+    """
+    Reads a save JSON file and validates its JSON syntax, structure, and integrity.
+    Returns (is_valid: bool, data: dict or None, reason: str).
+    """
+    if not file_path or not os.path.isfile(file_path):
+        return False, None, "File does not exist"
+    try:
+        size = os.path.getsize(file_path)
+        if size == 0:
+            return False, None, "File is truncated (0 bytes)"
+    except OSError as e:
+        return False, None, f"Cannot stat file: {e}"
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as e:
+        return False, None, f"JSON parse error: {e}"
+
+    is_valid, reason = verify_save_data(data)
+    if not is_valid:
+        return False, data, reason
+
+    return True, data, "OK"
+
+def prune_backup_snapshots(world_name, max_backups=MAX_BACKUP_SNAPSHOTS):
+    """
+    Auto-prunes historical snapshots in saves/<world_name>/backups/.
+    Keeps only the most recent `max_backups` (default 5) and deletes older ones.
+    """
+    backups_dir = get_backups_dir(world_name)
+    if not os.path.exists(backups_dir):
+        return []
+
+    cand_files = []
+    for fname in os.listdir(backups_dir):
+        if fname.endswith(".json") and not fname.endswith(".tmp"):
+            cand_files.append(os.path.join(backups_dir, fname))
+
+    cand_files.sort(key=lambda p: (os.path.getmtime(p), os.path.basename(p)), reverse=True)
+    kept = cand_files[:max_backups]
+    pruned = cand_files[max_backups:]
+    for old_path in pruned:
+        try:
+            os.remove(old_path)
+            print(f"[SaveManager] Pruned old backup: {os.path.basename(old_path)}")
+        except OSError as e:
+            print(f"[SaveManager] Failed to prune {old_path}: {e}")
+    return kept
+
+def list_world_backups(world_name):
+    """Returns list of snapshot file paths in saves/<world_name>/backups/ sorted newest first."""
+    backups_dir = get_backups_dir(world_name)
+    if not os.path.exists(backups_dir):
+        return []
+    cand_files = [
+        os.path.join(backups_dir, f)
+        for f in os.listdir(backups_dir)
+        if f.endswith(".json") and not f.endswith(".tmp")
+    ]
+    cand_files.sort(key=lambda p: (os.path.getmtime(p), os.path.basename(p)), reverse=True)
+    return cand_files
+
+def create_backup_snapshot(world_name, game=None, payload=None, reason=None, max_backups=MAX_BACKUP_SNAPSHOTS):
+    """
+    Creates a timestamped snapshot in saves/<world_name>/backups/world_YYYY-MM-DD_HHMM.json.
+    Auto-prunes older snapshots to keep at most `max_backups`.
+    Returns the created snapshot path on success, or None on failure.
+    """
+    backups_dir = get_backups_dir(world_name)
+    os.makedirs(backups_dir, exist_ok=True)
+
+    ts_base = time.strftime("%Y-%m-%d_%H%M")
+    cand_name = f"world_{ts_base}.json"
+    target_path = os.path.join(backups_dir, cand_name)
+
+    if os.path.exists(target_path):
+        ts_sec = time.strftime("%Y-%m-%d_%H%M%S")
+        target_path = os.path.join(backups_dir, f"world_{ts_sec}.json")
+        idx = 1
+        while os.path.exists(target_path):
+            target_path = os.path.join(backups_dir, f"world_{ts_sec}_{idx}.json")
+            idx += 1
+
+    if payload is not None:
+        atomic_write_json(target_path, payload)
+    elif game is not None:
+        save_world(world_name, game, create_snapshot=False)
+        primary = get_world_file(world_name)
+        if os.path.exists(primary):
+            shutil.copy2(primary, target_path)
+        else:
+            return None
+    else:
+        primary = get_world_file(world_name)
+        if os.path.exists(primary) and os.path.getsize(primary) > 0:
+            shutil.copy2(primary, target_path)
+        else:
+            return None
+
+    reason_str = f" ({reason})" if reason else ""
+    print(f"[SaveManager] Created backup snapshot{reason_str}: {os.path.basename(target_path)}")
+    prune_backup_snapshots(world_name, max_backups=max_backups)
+    return target_path
+
 def list_saved_worlds():
     """Returns a list of dictionaries with metadata for all saved worlds."""
     ensure_saves_dir()
@@ -42,10 +203,48 @@ def list_saved_worlds():
         entry_path = os.path.join(SAVES_DIR, entry)
         if os.path.isdir(entry_path):
             json_file = os.path.join(entry_path, "world.json")
+            data = None
             if os.path.exists(json_file):
                 try:
                     with open(json_file, "r", encoding="utf-8") as f:
-                        data = json.load(f)
+                        cand = json.load(f)
+                    if isinstance(cand, dict):
+                        data = cand
+                except Exception:
+                    data = None
+
+            if not isinstance(data, dict):
+                bak_file = json_file + ".bak"
+                if os.path.exists(bak_file):
+                    try:
+                        with open(bak_file, "r", encoding="utf-8") as f:
+                            cand = json.load(f)
+                        if isinstance(cand, dict):
+                            data = cand
+                    except Exception:
+                        data = None
+
+            if not isinstance(data, dict):
+                b_dir = os.path.join(entry_path, "backups")
+                if os.path.exists(b_dir):
+                    bfiles = [
+                        os.path.join(b_dir, f)
+                        for f in os.listdir(b_dir)
+                        if f.endswith(".json") and not f.endswith(".tmp")
+                    ]
+                    bfiles.sort(key=lambda p: (os.path.getmtime(p), os.path.basename(p)), reverse=True)
+                    for bf in bfiles:
+                        try:
+                            with open(bf, "r", encoding="utf-8") as f:
+                                cand = json.load(f)
+                            if isinstance(cand, dict):
+                                data = cand
+                                break
+                        except Exception:
+                            continue
+
+            if isinstance(data, dict):
+                try:
                     pt = float(data.get("playtime", 0.0))
                     hours = int(pt // 3600)
                     minutes = int((pt % 3600) // 60)
@@ -68,12 +267,12 @@ def list_saved_worlds():
                         "last_played": lp,
                     })
                 except Exception as e:
-                    print(f"[SaveManager] Error reading {json_file}: {e}")
+                    print(f"[SaveManager] Error reading metadata for {entry}: {e}")
     # Sort worlds by most recently saved
     worlds.sort(key=lambda w: w.get("timestamp", 0), reverse=True)
     return worlds
 
-def save_world(world_name, game):
+def save_world(world_name, game, create_snapshot=False, reason=None, max_backups=MAX_BACKUP_SNAPSHOTS):
     """Serializes the active game session to saves/<world_name>/world.json."""
     ensure_saves_dir()
     world_dir = get_world_dir(world_name)
@@ -124,13 +323,14 @@ def save_world(world_name, game):
 
     # 3. Skills serialization
     learned_skills = []
-    if hasattr(game.player, "skills") and hasattr(game.player.skills, "learned_skills"):
-        if isinstance(game.player.skills.learned_skills, (set, list)):
-            learned_skills = list(game.player.skills.learned_skills)
-        elif isinstance(game.player.skills.learned_skills, dict):
-            learned_skills = list(game.player.skills.learned_skills.keys())
-    skill_levels = dict(getattr(game.player.skills, "skill_levels", {}))
-    skill_hotkeys = dict(getattr(game.player.skills, "hotkey_bindings", getattr(game.player.skills, "hotkey_slots", {})))
+    p_skills = getattr(game.player, "skills", None)
+    if p_skills and hasattr(p_skills, "learned_skills"):
+        if isinstance(p_skills.learned_skills, (set, list)):
+            learned_skills = list(p_skills.learned_skills)
+        elif isinstance(p_skills.learned_skills, dict):
+            learned_skills = list(p_skills.learned_skills.keys())
+    skill_levels = dict(getattr(p_skills, "skill_levels", {})) if p_skills else {}
+    skill_hotkeys = dict(getattr(p_skills, "hotkey_bindings", getattr(p_skills, "hotkey_slots", {}))) if p_skills else {}
 
     # 4. Stats serialization
     stats = game.player.stats
@@ -282,9 +482,10 @@ def save_world(world_name, game):
     # Flush active chunks to world cache under saves/<world_name>/cache/
     if hasattr(game, "world") and hasattr(game.world, "chunk_manager"):
         cm = game.world.chunk_manager
-        cm.set_world_name(world_name)
+        if hasattr(cm, "set_world_name"):
+            cm.set_world_name(world_name)
         if getattr(cm, "world_cache", None):
-            for cx, chk in list(cm.chunks.items()):
+            for cx, chk in list(getattr(cm, "chunks", {}).items()):
                 cm.world_cache.save_chunk(cx, chk)
 
     try:
@@ -294,32 +495,122 @@ def save_world(world_name, game):
     except Exception:
         pass
 
-    with open(save_path, "w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2)
+    bak_path = get_backup_file(world_name)
+
+    # A. The Immediate Backup (world.json.bak)
+    # Before atomic replacement overwrites active world.json, copy current valid world.json to world.json.bak
+    if os.path.exists(save_path) and os.path.getsize(save_path) > 0:
+        try:
+            with open(save_path, "r", encoding="utf-8") as cf:
+                cur_data = json.load(cf)
+            if isinstance(cur_data, dict):
+                shutil.copy2(save_path, bak_path)
+        except Exception:
+            pass
+
+    # B. Atomic File Writes: Write to .tmp first, fsync disk commit, atomic os.replace
+    atomic_write_json(save_path, payload)
+
+    # C. Rolling Historical Snapshots (if requested by milestone or autosave)
+    if create_snapshot:
+        create_backup_snapshot(world_name, payload=payload, reason=reason, max_backups=max_backups)
 
     print(f"[SaveManager] World '{world_name}' successfully saved to {save_path}.")
     return save_path
 
 def load_world(world_name, game):
-    """Loads a world from saves/<world_name>/world.json into the running game."""
+    """
+    Loads a world from saves/<world_name>/world.json into the running game
+    using a Self-Healing Recovery Pipeline:
+    1. Try Primary: Read world.json and verify its JSON structure and HMAC signature.
+    2. First Fallback (.bak): If world.json is missing, truncated (0 bytes), or corrupt,
+       catch the exception and immediately attempt to load world.json.bak.
+    3. Second Fallback (Backups Folder): If world.json.bak is also damaged, scan
+       saves/<world_name>/backups/ for the most recent valid timestamped JSON file.
+    4. Restore & Notify: Once a valid backup is found, copy it back over world.json
+       to repair the world, and display: 'World restored from recent backup due to abnormal shutdown.'
+    """
     save_path = get_world_file(world_name)
-    if not os.path.exists(save_path):
-        print(f"[SaveManager] Save file not found: {save_path}")
+    bak_path = get_backup_file(world_name)
+    backups_dir = get_backups_dir(world_name)
+
+    valid_data = None
+    recovered_from = None
+    tampered_fallback_data = None
+
+    # 1. Try Primary: Read world.json and verify its JSON structure and HMAC signature
+    prim_ok, prim_data, prim_reason = verify_save_file(save_path)
+    if prim_ok:
+        valid_data = prim_data
+    else:
+        if isinstance(prim_data, dict) and prim_reason == "HMAC signature mismatch (tampered or corrupted save)":
+            tampered_fallback_data = prim_data
+        print(f"[SaveManager] Primary save file '{save_path}' invalid or corrupted: {prim_reason}")
+
+        # 2. First Fallback: world.json.bak
+        if os.path.exists(bak_path):
+            bak_ok, b_data, b_reason = verify_save_file(bak_path)
+            if bak_ok:
+                valid_data = b_data
+                recovered_from = bak_path
+                print(f"[SaveManager] Successfully recovered world from immediate backup: {bak_path}")
+            else:
+                print(f"[SaveManager] Immediate backup '{bak_path}' also corrupted: {b_reason}")
+
+        # 3. Second Fallback: Historical Snapshots in backups/
+        if not valid_data and os.path.exists(backups_dir):
+            cand_files = []
+            for fname in os.listdir(backups_dir):
+                if fname.endswith(".json") and not fname.endswith(".tmp"):
+                    cand_files.append(os.path.join(backups_dir, fname))
+            cand_files.sort(key=lambda p: (os.path.getmtime(p), os.path.basename(p)), reverse=True)
+
+            for cand in cand_files:
+                c_ok, c_data, c_reason = verify_save_file(cand)
+                if c_ok:
+                    valid_data = c_data
+                    recovered_from = cand
+                    print(f"[SaveManager] Successfully recovered world from historical backup: {cand}")
+                    break
+                else:
+                    print(f"[SaveManager] Historical backup '{cand}' invalid: {c_reason}")
+
+    # Fallback if primary only had signature mismatch and no clean backups exist
+    if not valid_data and tampered_fallback_data is not None:
+        valid_data = tampered_fallback_data
+        setattr(game, "save_file_tampered", True)
+        print(f"[SaveManager] WARNING: Save file '{world_name}' signature mismatch (possible manual modification).")
+
+    if not valid_data:
+        print(f"[SaveManager] Failed to load world '{world_name}': No valid primary save or backup found.")
         return False
 
-    try:
-        with open(save_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except Exception as e:
-        print(f"[SaveManager] Failed to load world file '{save_path}': {e}")
-        return False
+    # 4. Restore & Notify: copy backup over world.json to repair world and display notification
+    if recovered_from:
+        try:
+            atomic_write_json(save_path, valid_data)
+            print(f"[SaveManager] Repaired '{save_path}' from backup '{recovered_from}'.")
+        except Exception as e:
+            print(f"[SaveManager] Warning: Failed to write repaired world.json: {e}")
 
-    if not isinstance(data, dict):
-        print(f"[SaveManager] Invalid world data format in '{save_path}'")
-        return False
+        msg = RESTORE_NOTIFICATION_MSG
+        setattr(game, "world_restored_from_backup", True)
+        setattr(game, "restored_backup_path", recovered_from)
+        setattr(game, "restore_message", msg)
 
-    # Anti-cheat cryptographic HMAC verification
-    if "save_signature" in data:
+        if hasattr(game, "inventory") and hasattr(game.inventory, "notify"):
+            game.inventory.notify(msg)
+
+        if hasattr(game, "hud"):
+            if hasattr(game.hud, "add_chat_message"):
+                game.hud.add_chat_message("[SYSTEM]", msg)
+            elif hasattr(game.hud, "local_chat_history"):
+                game.hud.local_chat_history.append(("[SYSTEM]", msg))
+
+        print(f"[SaveManager] {msg}")
+
+    data = valid_data
+    if "save_signature" in data and not getattr(game, "save_file_tampered", False):
         expected_sig = data["save_signature"]
         verify_dict = {k: v for k, v in data.items() if k != "save_signature"}
         verify_raw = json.dumps(verify_dict, sort_keys=True).encode("utf-8")
@@ -477,11 +768,10 @@ def load_world(world_name, game):
     # Reset combat engine entities completely
     if hasattr(game, "combat"):
         game.combat.boss = None
-        game.combat.mobs.clear()
-        game.combat.projectiles.clear()
-        game.combat.enemy_projectiles.clear()
-        game.combat.dropped_items.clear()
-        game.combat.damage_numbers.clear()
+        for attr in ("mobs", "projectiles", "enemy_projectiles", "dropped_items", "damage_numbers"):
+            lst = getattr(game.combat, attr, None)
+            if isinstance(lst, list):
+                lst.clear()
 
     # Restore Day/Night cycle
     if hasattr(game, "sky"):
@@ -697,8 +987,15 @@ def rename_world(old_name, new_name):
             with open(json_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
             data["world_name"] = new_clean
-            with open(json_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
+            if "save_signature" in data:
+                try:
+                    from src.rpg.equipment_update import compute_save_signature
+                    verify_dict = {k: v for k, v in data.items() if k != "save_signature"}
+                    raw = json.dumps(verify_dict, sort_keys=True).encode("utf-8")
+                    data["save_signature"] = compute_save_signature(raw)
+                except Exception:
+                    pass
+            atomic_write_json(json_file, data)
         os.rename(old_dir, new_dir)
         print(f"[SaveManager] World '{old_name}' renamed to '{new_clean}'.")
         return True

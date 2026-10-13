@@ -330,6 +330,8 @@ class CombatManager:
                     )
                     self.sound_manager.play("craft")
                     print("[Combat] TRUE VICTORY! Grand Boss Sol-Rho has been defeated!")
+                    if hasattr(world, "game") and hasattr(world.game, "save_game_world"):
+                        world.game.save_game_world(create_snapshot=True, reason="Boss Milestone (Grand Boss Sol-Rho)")
 
                     # Victory return: Player retains all items, teleports back to home / bed!
                     sp = getattr(player, "spawn_point", None) or getattr(world, "spawn_point", (0, 70 * SCALED_TILE))
@@ -369,7 +371,10 @@ class CombatManager:
                     self.dropped_items.append(
                         DroppedItem("gold_coin", 1, self.boss.center_x - 15, self.boss.center_y - 10, self.asset_factory)
                     )
+                    b_name = getattr(self.boss, "name", "Mini-Boss")
                     print(f"[Combat] Mini-Boss Slain! Dropped {shards_count} Celestial Portal Shards and Royal Coins!")
+                    if hasattr(world, "game") and hasattr(world.game, "save_game_world"):
+                        world.game.save_game_world(create_snapshot=True, reason=f"Boss Milestone ({b_name})")
                     
                     # Boss-specific weapons & materials
                     b_name = getattr(self.boss, "name", "")

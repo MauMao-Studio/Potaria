@@ -186,6 +186,8 @@ class PotariaGame:
         self.chest_ui = ChestStorageWindow(self.asset_factory, self.sound_manager)
         self.fishing_minigame = FishingBattleMiniGame(self.asset_factory, self.sound_manager)
         self.playtime = 0.0
+        self.autosave_timer = 0.0
+        self.snapshot_timer = 0.0
         self.achievement_manager = AchievementManager(sound_manager=self.sound_manager)
         self.menu = MenuManager(
             self.asset_factory,
@@ -512,15 +514,16 @@ class PotariaGame:
             if hasattr(self.inventory, "notify"):
                 self.inventory.notify(feedback)
 
-    def save_game_world(self):
+    def save_game_world(self, create_snapshot=False, reason=None):
         """Saves current world progress to saves/<active_world_name>/world.json."""
         try:
-            save_world(self.active_world_name, self)
+            save_world(self.active_world_name, self, create_snapshot=create_snapshot, reason=reason)
             if hasattr(self, "menu") and hasattr(self.menu, "save_settings"):
                 self.menu.save_settings()
             print(f"[Main] Saved world '{self.active_world_name}' successfully.")
         except Exception as e:
             print(f"[Main] Failed to save world: {e}")
+
 
 
     def drop_item_into_world(self, item_id, count=1, world_pos=None):
@@ -931,6 +934,8 @@ class PotariaGame:
         self.block_deltas = {}
         self.wall_deltas = {}
         self.playtime = 0.0
+        self.autosave_timer = 0.0
+        self.snapshot_timer = 0.0
 
         # Clear Equipment & Held Weapon
         for slot_k in list(self.player.equipment.slots.keys()):
@@ -1856,6 +1861,7 @@ class PotariaGame:
                     self.sound_manager.play("place")
                     self.particle_system.spawn_sparks(tile_world_x + 16, tile_world_y + 8, (120, 200, 255), count=20)
                     self.inventory.notify("Spawn point saved! (You can only sleep at night)")
+                    self.save_game_world(create_snapshot=True, reason="Bed Interaction (Spawn Saved)")
                     return
 
                 # Check monsters within 6 blocks radius (6 * SCALED_TILE)
@@ -1889,6 +1895,7 @@ class PotariaGame:
                 self.sound_manager.play("place")
                 self.particle_system.spawn_sparks(tile_world_x + 16, tile_world_y + 8, (120, 200, 255), count=25)
                 self.inventory.notify("Spawn point set! Resting in bed... (+HP)")
+                self.save_game_world(create_snapshot=True, reason="Bed Rest Started")
                 return
 
             # 0e. Grandfather Clock: Display Time
@@ -2649,6 +2656,18 @@ class PotariaGame:
 
     def update_gameplay(self, dt):
         self.playtime = getattr(self, "playtime", 0.0) + dt
+        self.autosave_timer = getattr(self, "autosave_timer", 0.0) + dt
+        self.snapshot_timer = getattr(self, "snapshot_timer", 0.0) + dt
+
+        # Periodic autosave: regular atomic save every 60s, historical snapshot every 600s (10m)
+        if self.snapshot_timer >= 600.0:
+            self.snapshot_timer = 0.0
+            self.autosave_timer = 0.0
+            self.save_game_world(create_snapshot=True, reason="Periodic Autosave (10m)")
+        elif self.autosave_timer >= 60.0:
+            self.autosave_timer = 0.0
+            self.save_game_world(create_snapshot=False)
+
         self.profiler.start_section("update_other")
         keys = pygame.key.get_pressed()
         mouse_x, mouse_y = self.get_mouse_pos()
@@ -2989,6 +3008,7 @@ class PotariaGame:
                         self.player.stats.hp = self.player.stats.max_hp
                         self.player.stats.mp = getattr(self.player.stats, "max_mp", 100)
                     self.inventory.notify("Morning has broken! Woke up refreshed.")
+                    self.save_game_world(create_snapshot=True, reason="Bed Sleep (Morning)")
 
         self.profiler.end_section("update_other")
         # 7. Combat, Mobs & Boss
