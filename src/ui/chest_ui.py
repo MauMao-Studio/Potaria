@@ -283,8 +283,10 @@ class ChestStorageWindow:
 
     def render_tooltip(self, target_surf, item, mx, my):
         """Renders rich item tooltip for chest slots."""
+        if isinstance(item, (int, float)) and not isinstance(my, (int, float)):
+            item, mx, my = my, item, mx
         if not item:
-            return
+            return []
         data = item.data if hasattr(item, "data") else {}
         name = data.get("name", getattr(item, "item_id", "Item"))
         rarity = str(data.get("rarity", "common")).lower()
@@ -333,21 +335,32 @@ class ChestStorageWindow:
                 tag_labels = [TAG_REGISTRY.get(t, {}).get("display_name", t.replace("_", " ").title()) for t in item_tags]
                 lines.append((f"Tags: {' • '.join(tag_labels)}", (100, 220, 255), self.font_sm))
 
-            if getattr(item, "affix_slots", 0) > 0:
-                aff_cnt = len(getattr(item, "affixes", []))
-                avail_slots = max(0, item.affix_slots - aff_cnt)
-                slot_info = f"Affix Slots: {aff_cnt}/{item.affix_slots}"
+            affix_slots = getattr(item, "affix_slots", 0)
+            affixes = getattr(item, "affixes", [])
+            aff_cnt = len(affixes)
+            avail_slots = max(0, affix_slots - aff_cnt)
+
+            from src.rpg.equipment_update import get_max_additional_slots
+            max_add = get_max_additional_slots(rarity)
+            cur_add = getattr(item, "additional_affix_slots", 0)
+            avail_carve = max(0, max_add - cur_add) if max_add > 0 else 0
+
+            if affix_slots > 0:
+                slot_info = f"Affix Slots: {aff_cnt}/{affix_slots}"
                 if avail_slots > 0:
                     slot_info += f" ({avail_slots} Available)"
                 lines.append((slot_info, (255, 215, 80), self.font_sm))
                 if avail_slots > 0:
-                    lines.append((f"• [Available Slot] {avail_slots} Open", (140, 240, 180), self.font_sm))
+                    lines.append((f"• [Available Slot] {avail_slots} Open for Affix Stones", (140, 240, 180), self.font_sm))
+            elif max_add > 0:
+                lines.append((f"Affix Slots: 0/0 (Carve at Mystic Trader)", (180, 190, 210), self.font_sm))
 
-            from src.rpg.equipment_update import get_max_additional_slots
-            max_add = get_max_additional_slots(rarity)
             if max_add > 0:
-                cur_add = getattr(item, "additional_affix_slots", 0)
                 lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
+                if avail_carve > 0:
+                    lines.append((f"• [Available to Carve] {avail_carve} Slot(s) Open at Mystic Trader", (130, 220, 255), self.font_sm))
+                else:
+                    lines.append((f"• [Carve Limit Reached] Max {max_add} Slots Carved", (180, 170, 190), self.font_sm))
             from src.ui.theme import wrap_text_lines
             for aff in getattr(item, "affixes", []):
                 from src.rpg.enhancement import GOD_TIER_AFFIXES

@@ -194,7 +194,8 @@ class CharacterPanel:
         pygame.draw.rect(target_surf, (32, 38, 55), hw_rect, border_radius=6)
         pygame.draw.rect(target_surf, (140, 160, 210), hw_rect, 1, border_radius=6)
         
-        held_weapon = getattr(player.equipment, "active_weapon_id", None)
+        held_item_obj = getattr(player.equipment, "active_weapon_item", None)
+        held_weapon = held_item_obj if held_item_obj else getattr(player.equipment, "active_weapon_id", None)
         if held_weapon:
             raw_hw = getattr(held_weapon, "item_id", held_weapon)
             hw_icon = self.asset_factory.items.get(raw_hw)
@@ -426,8 +427,9 @@ class CharacterPanel:
         # ----------------------------------------------------
         if hovered_item:
             held_id = getattr(player.equipment, "active_weapon_id", None)
-            is_held = (hovered_item == held_id and hovered_item not in [player.equipment.slots.get(s) for s in [SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_ACCESSORY]])
-            self._render_equipped_tooltip(target_surf, mouse_x, mouse_y, hovered_item, is_held=is_held)
+            held_obj = getattr(player.equipment, "active_weapon_item", None)
+            is_held = (hovered_item in (held_id, held_obj) and hovered_item not in [player.equipment.slots.get(s) for s in [SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_ACCESSORY]])
+            self._render_equipped_tooltip(target_surf, mouse_x, mouse_y, hovered_item, is_held=is_held, player=player)
         elif self.hovered_skill_id and self.hovered_skill_id in SKILL_DEFINITIONS:
             self._render_skill_tooltip(target_surf, mouse_x, mouse_y, player, self.hovered_skill_id)
 
@@ -506,11 +508,34 @@ class CharacterPanel:
             target_surf.blit(s, (tx + 10, cy))
             cy += s.get_height() + 3
 
-    def _render_equipped_tooltip(self, target_surf, mx, my, item_id, is_held=False):
+    def _render_equipped_tooltip(self, target_surf, mx, my, item_id, is_held=False, player=None):
         raw_id = str(getattr(item_id, "item_id", item_id))
         enh_lvl = getattr(item_id, "enhancement_level", 0)
         is_broken = getattr(item_id, "is_broken", False)
-        item_affixes = getattr(item_id, "affixes", [])
+        item_affixes = list(getattr(item_id, "affixes", []))
+
+        base_rolls = getattr(item_id, "base_rolls", None)
+        item_tags = getattr(item_id, "tags", None)
+        aff_slots = getattr(item_id, "affix_slots", 0)
+        cur_add = getattr(item_id, "additional_affix_slots", 0)
+
+        # Resolve ItemStack from player if item_id was passed as a raw string ID
+        if player and (base_rolls is None or aff_slots == 0):
+            for slot_obj in list(player.equipment.slots.values()) + [getattr(player.equipment, "active_weapon_item", None)]:
+                if slot_obj and getattr(slot_obj, "item_id", None) == raw_id:
+                    if base_rolls is None:
+                        base_rolls = getattr(slot_obj, "base_rolls", None)
+                    if not item_tags:
+                        item_tags = getattr(slot_obj, "tags", None)
+                    if aff_slots == 0:
+                        aff_slots = getattr(slot_obj, "affix_slots", 0)
+                    if cur_add == 0:
+                        cur_add = getattr(slot_obj, "additional_affix_slots", 0)
+                    if not item_affixes:
+                        item_affixes = list(getattr(slot_obj, "affixes", []))
+                    if enh_lvl == 0:
+                        enh_lvl = getattr(slot_obj, "enhancement_level", 0)
+                    break
 
         armor = ARMOR_DATA.get(raw_id, {})
         reg = ITEM_REGISTRY.get(raw_id, {})
@@ -568,36 +593,41 @@ class CharacterPanel:
             lines.append((f"+{reg_val:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
 
         # Rolled Base Stats
-        base_rolls = getattr(item_id, "base_rolls", None)
         if base_rolls:
             roll_parts = [f"+{v} {k.upper()}" for k, v in base_rolls.items()]
             lines.append((f"Rolled: {', '.join(roll_parts)}", (255, 230, 140), self.font_sm))
 
         # Special Tags
-        item_tags = getattr(item_id, "tags", None) or reg.get("tags") or armor.get("tags", [])
+        item_tags = item_tags or reg.get("tags") or armor.get("tags", [])
         if item_tags:
             from src.rpg.equipment_update import TAG_REGISTRY
             tag_labels = [TAG_REGISTRY.get(t, {}).get("display_name", t.replace("_", " ").title()) for t in item_tags]
             lines.append((f"Tags: {' • '.join(tag_labels)}", (100, 220, 255), self.font_sm))
 
         # Affix Slots & Available Slots
-        aff_slots = getattr(item_id, "affix_slots", 0)
+        aff_cnt = len(item_affixes)
+        avail = max(0, aff_slots - aff_cnt)
+        from src.rpg.equipment_update import get_max_additional_slots
+        max_add = get_max_additional_slots(rarity)
+        avail_carve = max(0, max_add - cur_add) if max_add > 0 else 0
+
         if aff_slots > 0:
-            aff_cnt = len(item_affixes)
-            avail = max(0, aff_slots - aff_cnt)
             slot_txt = f"Affix Slots: {aff_cnt}/{aff_slots}"
             if avail > 0:
                 slot_txt += f" ({avail} Available)"
             lines.append((slot_txt, (255, 215, 80), self.font_sm))
             if avail > 0:
-                lines.append((f"• [Available Slot] {avail} Open", (140, 240, 180), self.font_sm))
+                lines.append((f"• [Available Slot] {avail} Open for Affix Stones", (140, 240, 180), self.font_sm))
+        elif max_add > 0:
+            lines.append((f"Affix Slots: 0/0 (Carve at Mystic Trader)", (180, 190, 210), self.font_sm))
 
         # Additional Affix Slot Capacity
-        from src.rpg.equipment_update import get_max_additional_slots
-        max_add = get_max_additional_slots(rarity)
         if max_add > 0:
-            cur_add = getattr(item_id, "additional_affix_slots", 0)
             lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
+            if avail_carve > 0:
+                lines.append((f"• [Available to Carve] {avail_carve} Slot(s) Open at Mystic Trader", (130, 220, 255), self.font_sm))
+            else:
+                lines.append((f"• [Carve Limit Reached] Max {max_add} Slots Carved", (180, 170, 190), self.font_sm))
 
         # Set Membership
         from src.rpg.equipment_update import PROGRESSIVE_SETS

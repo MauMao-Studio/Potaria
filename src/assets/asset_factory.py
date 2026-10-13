@@ -6367,6 +6367,13 @@ class AssetFactory:
             for item_key in ITEM_REGISTRY:
                 if item_key not in self.items:
                     self.items[item_key] = self.generate_item_icon(item_key)
+
+            # Pre-populate dual assets for fishing rods (idle with string, in-use without string)
+            rod_catalog = ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod")
+            for r_id in rod_catalog:
+                in_use_key = f"{r_id}_in_use"
+                if in_use_key not in self.items:
+                    self.items[in_use_key] = self.generate_item_icon(in_use_key)
         except Exception:
             pass
 

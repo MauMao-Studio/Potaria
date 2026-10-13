@@ -184,24 +184,29 @@ def repair_item(item, inventory, sound_manager=None):
 def can_add_affix_slot(item):
     """
     Checks if item is eligible for an Affix Slot.
-    Strictly Legendary to Ancient equipment only.
+    Allows Epic (1 slot), Mythic (2 slots), and Legendary/Ancient (up to 3 slots).
     """
     if not item:
         return False, "No item selected."
     data = item.data if hasattr(item, "data") else {}
     rarity = str(data.get("rarity", "")).lower()
-    if rarity not in (RARITY_LEGENDARY, RARITY_ANCIENT, "legendary", "ancient"):
-        return False, "Only Legendary and Ancient items can receive an Affix Slot!"
+    if rarity not in (RARITY_EPIC, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "epic", "legendary", "mythic", "ancient"):
+        return False, "Only Epic, Mythic, Legendary and Ancient items can receive an Affix Slot!"
 
     if getattr(item, "is_broken", False):
         return False, "Cannot carve affix slot into a broken item! Repair it first."
 
-    # Max 3 affix slots
-    cur_slots = getattr(item, "affix_slots", 0)
-    if cur_slots >= 3:
-        return False, "This item has already reached the maximum of 3 Affix Slots!"
+    if rarity in (RARITY_EPIC, "epic"):
+        max_slots = 1
+    elif rarity in (RARITY_MYTHIC, "mythic"):
+        max_slots = 2
+    else:
+        max_slots = 3
 
-    # Check for basic stats to replace
+    cur_slots = getattr(item, "affix_slots", 0)
+    if cur_slots >= max_slots:
+        return False, f"This item has already reached the maximum limit of {max_slots} Affix Slots (maximum of {max_slots}) for {rarity.title()} rarity!"
+
     stat_candidates = []
     removed = set(getattr(item, "removed_stats", []))
     for s in ("atk", "def", "crit", "speed", "hp", "mp", "damage"):
@@ -215,16 +220,17 @@ def can_add_affix_slot(item):
 
 def add_affix_slot_to_item(item, inventory=None, cost_copper=5000, sound_manager=None):
     """
-    Carves an Affix Slot into a Legendary or Ancient item by sacrificing a random basic stat.
+    Carves an Affix Slot into an eligible piece by sacrificing a random basic stat.
     """
     can_add, reason = can_add_affix_slot(item)
     if not can_add:
         return False, reason
 
     if inventory and cost_copper > 0:
-        if inventory.total_coins_value() < cost_copper:
+        if hasattr(inventory, "total_coins_value") and inventory.total_coins_value() < cost_copper:
             return False, f"Carving an Affix Slot requires {cost_copper} Copper Coins."
-        inventory.remove_coins(cost_copper)
+        if hasattr(inventory, "remove_coins"):
+            inventory.remove_coins(cost_copper)
 
     data = item.data if hasattr(item, "data") else {}
     removed = set(getattr(item, "removed_stats", []))
@@ -233,22 +239,23 @@ def add_affix_slot_to_item(item, inventory=None, cost_copper=5000, sound_manager
         if s not in removed and data.get(s, 0) > 0:
             stat_candidates.append(s)
 
-    # Pick a random basic stat to sacrifice
     chosen_stat = random.choice(stat_candidates)
     old_val = data.get(chosen_stat, 0)
 
-    if not hasattr(item, "removed_stats"):
+    if not hasattr(item, "removed_stats") or item.removed_stats is None:
         item.removed_stats = []
     item.removed_stats.append(chosen_stat)
 
     item.affix_slots = getattr(item, "affix_slots", 0) + 1
-    if not hasattr(item, "affixes"):
+    item.additional_affix_slots = getattr(item, "additional_affix_slots", 0) + 1
+
+    if not hasattr(item, "affixes") or item.affixes is None:
         item.affixes = []
 
-    if sound_manager:
+    if sound_manager and hasattr(sound_manager, "play"):
         sound_manager.play("craft")
 
-    item_name = data.get("name", item.item_id)
+    item_name = data.get("name", getattr(item, "item_id", "Item"))
     stat_label = chosen_stat.upper()
     return True, f"Affix Slot Carved into {item_name}! Replaced {stat_label} (-{old_val}) with 1 Open Affix Slot (Total Slots: {item.affix_slots})."
 
@@ -258,8 +265,8 @@ def can_apply_affix_stone(item):
         return False, "No item selected."
     data = item.data if hasattr(item, "data") else {}
     rarity = str(data.get("rarity", "")).lower()
-    if rarity not in (RARITY_LEGENDARY, RARITY_ANCIENT, "legendary", "ancient"):
-        return False, "Affix Stones can only be embedded into Legendary or Ancient equipment."
+    if rarity not in (RARITY_EPIC, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "epic", "legendary", "mythic", "ancient"):
+        return False, "Affix Stones can only be embedded into Epic, Legendary, Mythic, or Ancient equipment."
     total_slots = getattr(item, "affix_slots", 0)
     current_affixes = getattr(item, "affixes", [])
     if len(current_affixes) >= total_slots:
@@ -268,7 +275,7 @@ def can_apply_affix_stone(item):
 
 def apply_affix_stone(item, inventory, sound_manager=None):
     """
-    Embeds an Affix Stone into an open affix slot on an eligible Legendary/Ancient item.
+    Embeds an Affix Stone into an open affix slot on an eligible Epic/Legendary/Mythic/Ancient item.
     Grants a god-tier affix from GOD_TIER_AFFIXES.
     """
     if not item:
@@ -276,8 +283,8 @@ def apply_affix_stone(item, inventory, sound_manager=None):
 
     data = item.data if hasattr(item, "data") else {}
     rarity = str(data.get("rarity", "")).lower()
-    if rarity not in (RARITY_LEGENDARY, RARITY_ANCIENT, "legendary", "ancient"):
-        return False, "Affix Stones can only be embedded into Legendary or Ancient equipment."
+    if rarity not in (RARITY_EPIC, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT, "epic", "legendary", "mythic", "ancient"):
+        return False, "Affix Stones can only be embedded into Epic, Legendary, Mythic, or Ancient equipment."
 
     total_slots = getattr(item, "affix_slots", 0)
     current_affixes = getattr(item, "affixes", [])

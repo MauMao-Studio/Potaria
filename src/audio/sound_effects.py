@@ -525,9 +525,21 @@ class SoundManager:
             now = time.time()
             if not hasattr(self, "_last_jump_play"):
                 self._last_jump_play = 0.0
-            if now - self._last_jump_play < 0.16:
+                self._jump_consecutive_count = 0
+            time_since = now - self._last_jump_play
+            if time_since < 0.22:
                 return None
+            if time_since < 0.65:
+                self._jump_consecutive_count = getattr(self, "_jump_consecutive_count", 0) + 1
+            else:
+                self._jump_consecutive_count = 1
             self._last_jump_play = now
+
+            # Smoothly attenuate rapidly repeating jumps to eliminate annoying auditory fatigue
+            if self._jump_consecutive_count == 2:
+                volume *= 0.55
+            elif self._jump_consecutive_count >= 3:
+                volume *= 0.25
         snd = self.sounds.get(sound_name)
         if snd:
             ch = snd.play()

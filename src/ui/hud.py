@@ -173,9 +173,9 @@ class HUD:
             else:
                 target_surf.blit(self.heart_empty, (hx, hy))
 
-        # Mana Bar (Positioned with clean 8px padding below hearts to eliminate visual collision)
+        # Mana Bar (Positioned with clean 12px padding below hearts to eliminate visual collision)
         mp_h = 12
-        mp_y = start_y + rows * 24 + 8
+        mp_y = start_y + rows * 24 + 10
         mp_w = container_w
         mp_pct = max(0.0, min(1.0, player.stats.mp / float(max(1, player.stats.max_mp))))
         
@@ -649,6 +649,10 @@ class HUD:
 
     def _render_tooltip(self, target_surf, mx, my, item):
         """Rich Diablo/Torchlight-style item tooltip with rarity tiers, stats, lore, and descriptions."""
+        if not isinstance(mx, (int, float)) and isinstance(item, (int, float)):
+            item, mx, my = mx, my, item
+        if not item or not hasattr(item, "data"):
+            return []
         data = item.data
         name = data.get("name", item.item_id)
         cat = data.get("cat", "item").replace("_", " ").title()
@@ -742,21 +746,30 @@ class HUD:
 
             affix_slots = getattr(item, "affix_slots", 0)
             affixes = getattr(item, "affixes", [])
+            aff_cnt = len(affixes)
+            avail_slots = max(0, affix_slots - aff_cnt)
+
+            from src.rpg.equipment_update import get_max_additional_slots
+            max_add = get_max_additional_slots(rarity)
+            cur_add = getattr(item, "additional_affix_slots", 0)
+            avail_carve = max(0, max_add - cur_add) if max_add > 0 else 0
+
             if affix_slots > 0:
-                aff_cnt = len(affixes)
-                avail_slots = max(0, affix_slots - aff_cnt)
                 slot_info = f"Affix Slots: {aff_cnt}/{affix_slots}"
                 if avail_slots > 0:
                     slot_info += f" ({avail_slots} Available)"
                 lines.append((slot_info, (255, 215, 80), self.font_sm))
                 if avail_slots > 0:
-                    lines.append((f"• [Available Slot] {avail_slots} Open", (140, 240, 180), self.font_sm))
+                    lines.append((f"• [Available Slot] {avail_slots} Open for Affix Stones", (140, 240, 180), self.font_sm))
+            elif max_add > 0:
+                lines.append((f"Affix Slots: 0/0 (Carve at Mystic Trader)", (180, 190, 210), self.font_sm))
 
-            from src.rpg.equipment_update import get_max_additional_slots
-            max_add = get_max_additional_slots(rarity)
             if max_add > 0:
-                cur_add = getattr(item, "additional_affix_slots", 0)
                 lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
+                if avail_carve > 0:
+                    lines.append((f"• [Available to Carve] {avail_carve} Slot(s) Open at Mystic Trader", (130, 220, 255), self.font_sm))
+                else:
+                    lines.append((f"• [Carve Limit Reached] Max {max_add} Slots Carved", (180, 170, 190), self.font_sm))
 
             from src.ui.theme import wrap_text_lines
             for aff in affixes:

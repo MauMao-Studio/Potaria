@@ -672,10 +672,11 @@ class NPCDialogueWindow:
         if entry.get("is_affix_service"):
             lines = [
                 ("Affix Slot Carving Voucher", (220, 160, 255), self.font_bold),
-                ("[LEGENDARY ENCHANTMENT SERVICE]", (220, 160, 255), self.font_sm),
+                ("[EQUIPMENT ENCHANTMENT SERVICE]", (220, 160, 255), self.font_sm),
                 ("Service: Carves an open Affix Slot into gear", (180, 240, 255), self.font_sm),
-                ("Requirements: Hold a Legendary or Ancient weapon or armor piece in your hands.", (255, 215, 100), self.font_sm),
-                ("• Replaces one minor attribute with an imbuable celestial Affix Slot.", (140, 230, 255), self.font_sm),
+                ("Requirements: Hold an Epic, Legendary, Mythic, or Ancient item in your hands.", (255, 215, 100), self.font_sm),
+                ("• Limits: Epic (1), Legendary (1), Mythic (2), Ancient (2).", (140, 230, 255), self.font_sm),
+                ("• Sacrifices one basic attribute for an open imbuable Affix Slot.", (140, 230, 255), self.font_sm),
                 ("• Allows embedding Affix Stones crafted at the Work Bench.", (140, 230, 255), self.font_sm),
                 (f"Cost: {price} {curr_name} Coins", (255, 220, 90), self.font_bold),
                 ("'The stars whisper of hidden potentials waiting to be unlocked.'", (240, 205, 120), self.font_lore)

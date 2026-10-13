@@ -3295,8 +3295,14 @@ class PotariaGame:
         # Layer 5: Spud the Potato Hero
         active_item = self.inventory.get_active_item()
         is_fishing_active = bool(getattr(self, "fishing_bobber", None) or (hasattr(self, "fishing_minigame") and self.fishing_minigame and self.fishing_minigame.is_active))
-        if active_item and is_fishing_active and hasattr(self.asset_factory, "get_rod_sprite") and (active_item.item_id in ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod") or "angler_rod" in active_item.item_id):
-            held_icon = self.asset_factory.get_rod_sprite(active_item.item_id, in_use=True)
+        if active_item and is_fishing_active and (active_item.item_id in ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod") or "angler_rod" in active_item.item_id):
+            in_use_key = f"{active_item.item_id}_in_use"
+            if in_use_key in self.asset_factory.items:
+                held_icon = self.asset_factory.items[in_use_key]
+            elif hasattr(self.asset_factory, "get_rod_sprite"):
+                held_icon = self.asset_factory.get_rod_sprite(active_item.item_id, in_use=True)
+            else:
+                held_icon = self.asset_factory.items.get(active_item.item_id)
         else:
             held_icon = self.asset_factory.items.get(active_item.item_id) if active_item else None
         self.player.render(self.screen, self.camera, held_item_icon=held_icon, held_item=active_item)

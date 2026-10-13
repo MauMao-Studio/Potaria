@@ -346,7 +346,18 @@ class Player:
             if (is_down(k_jump) or is_down(pygame.K_UP)) and self.on_ground:
                 self.vy = PLAYER_JUMP_FORCE
                 self.on_ground = False
-                self.sound_manager.play("jump")
+
+                # Suppress loud jump whoosh when standing directly under a solid ceiling with zero gap
+                has_headroom = True
+                if world is not None and hasattr(world, "get_solid_rects_in_bounds"):
+                    head_box = pygame.Rect(int(self.x + 4), int(self.y - 6), int(self.width - 8), 6)
+                    for s_rect, is_plat in world.get_solid_rects_in_bounds(head_box):
+                        if not is_plat and head_box.colliderect(s_rect):
+                            has_headroom = False
+                            break
+
+                if has_headroom:
+                    self.sound_manager.play("jump")
 
     def cast_skill_hotkey(self, key_name, particle_system, camera):
         """Executes active skill mapped to hotkey (Q, F, V, R)."""

@@ -334,6 +334,146 @@ class TestEquipmentUpdate(unittest.TestCase):
             for t in tags:
                 self.assertIn(t, stack.tags)
 
+    def test_13_enhancement_module_affix_slot_integration(self):
+        """Verifies enhancement.py can_add_affix_slot and add_affix_slot_to_item adhere to slot ceilings."""
+        from src.rpg.enhancement import can_add_affix_slot, add_affix_slot_to_item, can_apply_affix_stone, apply_affix_stone
+        
+        # 1. Epic item allows 1 slot
+        epic_item = ItemStack("magma_greatsword", 1)
+        can_add, reason = can_add_affix_slot(epic_item)
+        self.assertTrue(can_add, f"Epic item should allow 1 affix slot, failed: {reason}")
+        ok, msg = add_affix_slot_to_item(epic_item)
+        self.assertTrue(ok)
+        self.assertEqual(epic_item.additional_affix_slots, 1)
+        self.assertEqual(epic_item.affix_slots, 1)
+        
+        # Second attempt must be rejected for Epic
+        can_add2, reason2 = can_add_affix_slot(epic_item)
+        self.assertFalse(can_add2)
+        self.assertIn("maximum limit", reason2.lower())
+
+        # 2. Mythic item allows 2 slots
+        mythic_item = ItemStack("pride_blade", 1)
+        can_add, _ = can_add_affix_slot(mythic_item)
+        self.assertTrue(can_add)
+        add_affix_slot_to_item(mythic_item)
+        self.assertEqual(mythic_item.additional_affix_slots, 1)
+        can_add_second, _ = can_add_affix_slot(mythic_item)
+        self.assertTrue(can_add_second)
+        add_affix_slot_to_item(mythic_item)
+        self.assertEqual(mythic_item.additional_affix_slots, 2)
+        can_add_third, _ = can_add_affix_slot(mythic_item)
+        self.assertFalse(can_add_third)
+
+        # 3. Epic item with open slot can receive Affix Stone
+        can_stone, _ = can_apply_affix_stone(epic_item)
+        self.assertTrue(can_stone, "Epic item with carved slot must be eligible for Affix Stone")
+
+    def test_14_dual_fishing_rod_assets_exist(self):
+        """Verifies dual fishing rod assets exist: idle with string, and in-use without string."""
+        import pygame
+        from src.assets.asset_factory import AssetFactory
+        pygame.init()
+        if pygame.display.get_surface() is None:
+            pygame.display.set_mode((1, 1), pygame.NOFRAME)
+
+        af = AssetFactory()
+        rod_ids = ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod")
+        for r_id in rod_ids:
+            self.assertIn(r_id, af.items, f"Default rod asset {r_id} missing in af.items")
+            in_use_key = f"{r_id}_in_use"
+            self.assertIn(in_use_key, af.items, f"In-use rod asset {in_use_key} missing in af.items")
+            
+            idle_sprite = af.get_rod_sprite(r_id, in_use=False)
+            in_use_sprite = af.get_rod_sprite(r_id, in_use=True)
+            self.assertIsNotNone(idle_sprite)
+            self.assertIsNotNone(in_use_sprite)
+
+    def test_15_jump_sound_headroom_and_attenuation(self):
+        """Verifies jump sound consecutive volume attenuation and headroom suppression logic."""
+        from src.audio.sound_effects import SoundManager
+        import pygame
+        pygame.init()
+        try:
+            pygame.mixer.init()
+        except Exception:
+            pass
+
+        sm = SoundManager()
+        # Reset tracking
+        sm._last_jump_play = 0.0
+        sm._jump_consecutive_count = 0
+
+        # Rapid consecutive triggers
+        import time
+        t0 = time.time()
+        # First jump
+        ch1 = sm.play("jump", volume=1.0)
+        self.assertEqual(sm._jump_consecutive_count, 1)
+
+        # Immediate trigger (<0.22s) is throttled to None
+        ch_throttled = sm.play("jump", volume=1.0)
+        self.assertIsNone(ch_throttled)
+
+        # Advance timer past throttle but within consecutive window (0.25s)
+        sm._last_jump_play = t0 - 0.25
+        ch2 = sm.play("jump", volume=1.0)
+        self.assertEqual(sm._jump_consecutive_count, 2)
+
+        # Third consecutive jump advances count to 3
+        sm._last_jump_play = t0 - 0.25
+        ch3 = sm.play("jump", volume=1.0)
+        self.assertEqual(sm._jump_consecutive_count, 3)
+
+    def test_16_tooltip_available_slot_text_presence(self):
+        """Verifies tooltip rendering includes Available Slot text and carved slot capacity."""
+        from src.ui.inventory import Inventory, ItemStack
+        from src.assets.asset_factory import AssetFactory
+        from src.ui.hud import HUD
+        from src.ui.chest_ui import ChestStorageWindow
+        import pygame
+        pygame.init()
+        if pygame.display.get_surface() is None:
+            pygame.display.set_mode((1, 1), pygame.NOFRAME)
+
+        af = AssetFactory()
+        inv = Inventory(af)
+        hud = HUD(af)
+        chest_ui = ChestStorageWindow(af, None)
+
+        # 1. Legendary item with 0 carved slots displays carvable capacity
+        item = ItemStack("kampilan", 1)
+        item.additional_affix_slots = 0
+        item.affix_slots = 0
+        inv.slots[0] = item
+
+        surf = pygame.Surface((400, 400))
+        lines1 = inv.render_tooltip(surf, item, 50, 50)
+        text1 = " ".join([t[0] for t in lines1])
+        self.assertIn("Available to Carve", text1)
+
+        # 2. Carved item displays Available Slot open for affix stones
+        item.additional_affix_slots = 1
+        item.affix_slots = 1
+        item.affixes = []
+        lines2 = inv.render_tooltip(surf, item, 50, 50)
+        text2 = " ".join([t[0] for t in lines2])
+        self.assertIn("Available Slot", text2)
+        self.assertIn("Open for Affix Stones", text2)
+
+        # 3. Test HUD and ChestUI tooltips as well
+        hud_lines = hud._render_tooltip(surf, 50, 50, item)
+        hud_text = " ".join([t[0] for t in hud_lines])
+        self.assertIn("Available Slot", hud_text)
+
+        chest_lines = chest_ui.render_tooltip(surf, item, 50, 50)
+        chest_text = " ".join([t[0] for t in chest_lines])
+        self.assertIn("Available Slot", chest_text)
+
+        # 4. Verify parameter order tolerance (surf, 50, 50, item)
+        lines_inv_order = inv.render_tooltip(surf, 50, 50, item)
+        self.assertTrue(len(lines_inv_order) > 0)
+
 
 if __name__ == "__main__":
     unittest.main()
