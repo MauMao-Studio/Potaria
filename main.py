@@ -103,14 +103,20 @@ class PotariaGame:
         pygame.init()
         pygame.display.set_caption(f"{TITLE}  |  By {DEVELOPER}")
         self._pre_load_window_icon()
+        # 0. Load persistent user settings FIRST before creating window/renderer
+        from src.settings_manager import load_settings, save_settings
+        self.settings, self.key_bindings = load_settings()
+        self.fullscreen = bool(self.settings.get("fullscreen", False))
+        req_renderer = self.settings.get("renderer", RENDERER_HARDWARE)
+
         # Initialize Renderer Hardware Abstraction Layer (HAL)
         self.renderer_manager = get_renderer_manager()
         self.renderer_manager.initialize(
             width=SCREEN_WIDTH,
             height=SCREEN_HEIGHT,
             title=f"{TITLE}  |  By {DEVELOPER}",
-            fullscreen=False,
-            requested_type=RENDERER_HARDWARE,
+            fullscreen=self.fullscreen,
+            requested_type=req_renderer,
         )
         self.renderer = self.renderer_manager.renderer
         self.screen = self.renderer_manager.surface
@@ -119,11 +125,11 @@ class PotariaGame:
         self.running = True
         self.paused = False
         self.show_debug = False
-        self.fullscreen = False
         self.profiler = PotariaProfiler(history_size=120)
         self.profiler.enabled = True
         self.show_profiler = False
-        self.boost_mode = True
+        self.boost_mode = bool(self.settings.get("boost_mode", True))
+
 
         # Fonts (Centralized Typography Theme)
         from src.ui.theme import font_regular, font_bold, font_title, font_compact
@@ -181,8 +187,18 @@ class PotariaGame:
         self.fishing_minigame = FishingBattleMiniGame(self.asset_factory, self.sound_manager)
         self.playtime = 0.0
         self.achievement_manager = AchievementManager(sound_manager=self.sound_manager)
-        self.menu = MenuManager(self.asset_factory, self.sound_manager, self.bgm, self.achievement_manager)
+        self.menu = MenuManager(
+            self.asset_factory,
+            self.sound_manager,
+            self.bgm,
+            self.achievement_manager,
+            settings=self.settings,
+            key_bindings=self.key_bindings
+        )
         self._apply_graphics_settings()
+
+
+
 
         # 7b. Modding & DLC Expansion System
         from src.modding.mod_manager import get_mod_manager
@@ -500,9 +516,12 @@ class PotariaGame:
         """Saves current world progress to saves/<active_world_name>/world.json."""
         try:
             save_world(self.active_world_name, self)
+            if hasattr(self, "menu") and hasattr(self.menu, "save_settings"):
+                self.menu.save_settings()
             print(f"[Main] Saved world '{self.active_world_name}' successfully.")
         except Exception as e:
             print(f"[Main] Failed to save world: {e}")
+
 
     def drop_item_into_world(self, item_id, count=1, world_pos=None):
         """Drops an item into the world as a physical DroppedItem entity with throw physics."""
@@ -1023,7 +1042,19 @@ class PotariaGame:
             h_ip = action[1]
             r_key = action[2] if len(action) > 2 else None
             self.join_lan_game(h_ip, room_key=r_key)
+        elif isinstance(action, tuple) and action[0] == "volume_updated":
+            cfg = action[1] if len(action) > 1 else self.settings
+            m_vol = float(cfg.get("master_volume", 1.0))
+            s_vol = float(cfg.get("sfx_volume", 0.85))
+            b_vol = float(cfg.get("bgm_volume", 0.65))
+            if hasattr(self, "sound_manager") and hasattr(self.sound_manager, "set_volumes"):
+                self.sound_manager.set_volumes(master=m_vol, sfx=s_vol)
+            if hasattr(self, "bgm") and hasattr(self.bgm, "set_volumes"):
+                self.bgm.set_volumes(master=m_vol, bgm=b_vol)
+            if hasattr(self, "menu") and hasattr(self.menu, "save_settings"):
+                self.menu.save_settings()
         elif isinstance(action, tuple) and action[0] == "set_fullscreen":
+
             self.set_fullscreen_mode(action[1])
         elif action == "toggle_fullscreen":
             self.toggle_fullscreen()
@@ -1161,6 +1192,10 @@ class PotariaGame:
         elif action == "resume_paused":
             self.paused = True
             self.menu.state = STATE_PLAYING
+            self._apply_graphics_settings()
+            if hasattr(self, "menu") and hasattr(self.menu, "save_settings"):
+                self.menu.save_settings()
+
         elif action == "start_singleplayer":
             self.reset_new_session("Quick Play World", WORLD_TYPE_INFINITE, DIFFICULTY_NORMAL, MODE_ADVENTURE)
             self.menu.state = STATE_PLAYING

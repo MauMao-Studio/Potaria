@@ -9,7 +9,11 @@ import os
 import json
 import time
 import pygame
-from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_GOLD, COLOR_WHITE
+from src.constants import (
+    SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_GOLD, COLOR_WHITE,
+    ACHIEVEMENTS_CATALOG, ACHIEVEMENTS_FILE
+)
+
 
 class AchievementToast:
     def __init__(self, achievement_data):
@@ -70,7 +74,7 @@ class AchievementToast:
 
 
 class AchievementManager:
-    def __init__(self, catalog_path="data/achievements.json", save_path="saves/achievements.json", sound_manager=None):
+    def __init__(self, catalog_path=ACHIEVEMENTS_CATALOG, save_path=ACHIEVEMENTS_FILE, sound_manager=None):
         self.catalog_path = catalog_path
         self.save_path = save_path
         self.sound_manager = sound_manager

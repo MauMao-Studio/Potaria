@@ -11,12 +11,12 @@ import time
 from src.constants import (
     DIFFICULTY_NORMAL, DIFFICULTY_HARDCORE, DIFFICULTY_YOLO,
     MODE_ADVENTURE, MODE_LAST_MAN_STANDING,
-    WORLD_TYPE_INFINITE, WORLD_TYPE_FINITE
+    WORLD_TYPE_INFINITE, WORLD_TYPE_FINITE,
+    PROJECT_ROOT, SAVES_DIR
 )
 from src.rpg.equipment import SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_WEAPON, SLOT_ACCESSORY
 from src.ui.inventory import ItemStack
 
-SAVES_DIR = "saves"
 
 def ensure_saves_dir():
     if not os.path.exists(SAVES_DIR):

@@ -17,11 +17,19 @@ from src.constants import (
     COLOR_GOLD, COLOR_WHITE,
     DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARDCORE, DIFFICULTY_YOLO,
     WORLD_TYPE_INFINITE, WORLD_TYPE_FINITE,
-    MODE_ADVENTURE, MODE_LAST_MAN_STANDING, AVAILABLE_MODES
+    MODE_ADVENTURE, MODE_LAST_MAN_STANDING, AVAILABLE_MODES,
+    SETTINGS_FILE
+)
+from src.settings_manager import (
+    load_settings as load_settings_disk,
+    save_settings as save_settings_disk,
+    DEFAULT_SETTINGS,
+    DEFAULT_KEY_BINDINGS
 )
 from src.rpg.achievements import AchievementManager
 from src.ui.cutscene import CutsceneEngine
 from src.network.client import LANDiscovery
+
 
 STATE_MULTIPLAYER = "multiplayer"
 STATE_INPUT_MAPPING = "input_mapping"
@@ -129,7 +137,7 @@ class Button:
             target_surf.blit(txt_surf, (tx, ty))
 
 class MenuManager:
-    def __init__(self, asset_factory, sound_manager, bgm_manager=None, achievement_manager=None):
+    def __init__(self, asset_factory, sound_manager, bgm_manager=None, achievement_manager=None, settings=None, key_bindings=None):
         from src.audio.sound_effects import SoundManager
         from src.assets.asset_factory import AssetFactory
 
@@ -188,47 +196,22 @@ class MenuManager:
         ]
 
         # Settings Configuration
-        self.settings = {
-            "master_volume": 1.0,
-            "bgm_volume": 0.65,
-            "sfx_volume": 0.85,
-            "fullscreen": False,
-            "screen_shake": True,
-            "touch_controls": "auto",
-            "touch_opacity": 0.75,
-            "renderer": "hardware",
-            "bloom": True,
-            "shaders": True,
-            "vignette": True,
-            "water_effects": False,
-            "resolution": "1920x1080",
-            "color_grade": "vibrant",
-            "lighting_quality": "high",
-            "particle_density": "high",
-            "boost_mode": True,
-            "damage_numbers": True,
-            "tooltips": "detailed",
-        }
+        if settings is not None:
+            self.settings = settings
+        else:
+            self.settings = dict(DEFAULT_SETTINGS)
         self.resolutions = ["1920x1080", "1600x900", "1366x768", "1280x720"]
         self.settings_tab = "graphics"
 
         # Key Bindings / Input Mapping
-        self.default_key_bindings = {
-            "Move Left": pygame.K_a,
-            "Move Right": pygame.K_d,
-            "Jump": pygame.K_SPACE,
-            "Drop Platform": pygame.K_s,
-            "Inventory": pygame.K_e,
-            "Character Status": pygame.K_c,
-            "Toggle Mini-Map": pygame.K_m,
-            "Skill Q": pygame.K_q,
-            "Skill F": pygame.K_f,
-            "Skill V": pygame.K_v,
-            "Skill R": pygame.K_r,
-        }
-        self.key_bindings = dict(self.default_key_bindings)
+        self.default_key_bindings = dict(DEFAULT_KEY_BINDINGS)
+        if key_bindings is not None:
+            self.key_bindings = key_bindings
+        else:
+            self.key_bindings = dict(self.default_key_bindings)
         self.rebinding_action = None
         self.key_bind_rects = {}
+
 
         # Categorized Settings Layout (Stardew Valley / Modern RPG Inspired)
         pw, ph = 840, 570
@@ -408,14 +391,18 @@ class MenuManager:
             Button(cx, 420, btn_w, btn_h, "Try Harder (Main Menu)", "menu", tooltip="Purge world and return to main menu"),
         ]
 
-        self.settings_file = os.path.join("saves", "settings.json")
-        self.load_settings()
+        self.settings_file = SETTINGS_FILE
+        if settings is None:
+            self.load_settings()
+        else:
+            self._apply_audio_volumes()
+            self._refresh_settings_button_labels()
 
     def _apply_audio_volumes(self):
         """Immediately applies volume settings to sound and bgm managers."""
-        m_vol = self.settings.get("master_volume", 1.0)
-        s_vol = self.settings.get("sfx_volume", 0.85)
-        b_vol = self.settings.get("bgm_volume", 0.65)
+        m_vol = float(self.settings.get("master_volume", 1.0))
+        s_vol = float(self.settings.get("sfx_volume", 0.85))
+        b_vol = float(self.settings.get("bgm_volume", 0.65))
         if self.sound_manager and hasattr(self.sound_manager, "set_volumes"):
             self.sound_manager.set_volumes(master=m_vol, sfx=s_vol)
         if self.bgm_manager and hasattr(self.bgm_manager, "set_volumes"):
@@ -423,49 +410,16 @@ class MenuManager:
 
     def load_settings(self):
         """Loads persistent user settings and key bindings from disk."""
-        if os.path.exists(self.settings_file):
-            try:
-                with open(self.settings_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                if isinstance(data, dict):
-                    saved_cfg = data.get("settings", {})
-                    for k in (
-                        "master_volume", "bgm_volume", "sfx_volume", "fullscreen",
-                        "screen_shake", "touch_controls", "touch_opacity", "renderer",
-                        "bloom", "shaders", "vignette", "water_effects", "resolution", "color_grade",
-                        "lighting_quality", "particle_density", "boost_mode",
-                        "damage_numbers", "tooltips"
-                    ):
-                        if k in saved_cfg:
-                            self.settings[k] = saved_cfg[k]
-                    saved_keys = data.get("key_bindings", {})
-                    for action, key_code in saved_keys.items():
-                        if action in self.key_bindings:
-                            self.key_bindings[action] = int(key_code)
-                # Apply volumes immediately
-                m_vol = self.settings["master_volume"]
-                s_vol = self.settings["sfx_volume"]
-                b_vol = self.settings["bgm_volume"]
-                if self.sound_manager and hasattr(self.sound_manager, "set_volumes"):
-                    self.sound_manager.set_volumes(master=m_vol, sfx=s_vol)
-                if self.bgm_manager and hasattr(self.bgm_manager, "set_volumes"):
-                    self.bgm_manager.set_volumes(master=m_vol, bgm=b_vol)
-            except Exception as e:
-                print(f"[MenuManager] Error loading settings: {e}")
+        loaded_cfg, loaded_keys = load_settings_disk(self.settings_file)
+        self.settings.update(loaded_cfg)
+        self.key_bindings.update(loaded_keys)
+        self._apply_audio_volumes()
         self._refresh_settings_button_labels()
 
     def save_settings(self):
-        """Persists current user settings and key bindings to saves/settings.json."""
-        try:
-            os.makedirs("saves", exist_ok=True)
-            payload = {
-                "settings": self.settings,
-                "key_bindings": self.key_bindings,
-            }
-            with open(self.settings_file, "w", encoding="utf-8") as f:
-                json.dump(payload, f, indent=2)
-        except Exception as e:
-            print(f"[MenuManager] Error saving settings: {e}")
+        """Persists current user settings and key bindings to disk atomically."""
+        save_settings_disk(self.settings, self.key_bindings, path=self.settings_file)
+
 
     def open_settings(self, from_state=STATE_MENU):
         self.previous_state = from_state

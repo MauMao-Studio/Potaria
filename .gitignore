@@ -42,9 +42,12 @@ venv.bak/
 
 # Player world save directories (preserve default template configs)
 saves/*/
+saves/*.bak
+saves/*.tmp
 !saves/settings.json
 !saves/achievements.json
 !saves/mods.json
+
 
 # OS generated files
 .DS_Store

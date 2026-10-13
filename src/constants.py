@@ -3,6 +3,16 @@ Potaria - Constants and Game Definitions
 Developer: Kurados
 """
 
+import os
+
+# Project Canonical Root & File Paths
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SAVES_DIR = os.path.join(PROJECT_ROOT, "saves")
+SETTINGS_FILE = os.path.join(SAVES_DIR, "settings.json")
+MODS_CONFIG_FILE = os.path.join(PROJECT_ROOT, "mods", "mods_config.json")
+ACHIEVEMENTS_FILE = os.path.join(SAVES_DIR, "achievements.json")
+ACHIEVEMENTS_CATALOG = os.path.join(PROJECT_ROOT, "data", "achievements.json")
+
 # Screen & Display Settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
