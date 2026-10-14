@@ -97,6 +97,7 @@ class MiniMap:
         self._cached_min_ty = None
         self._cached_chests = []
         self._dirty = True
+        self._last_rebuild_time = 0.0
 
         from src.ui.theme import font_compact
         self.font = font_compact(11)
@@ -130,14 +131,22 @@ class MiniMap:
         min_tx = ptx - self.grid_w // 2
         min_ty = pty - self.grid_h // 2
 
-        needs_rebuild = (self._dirty or
-                         self._cached_min_tx != min_tx or
-                         self._cached_min_ty != min_ty)
+        import time
+        now = time.time()
 
-        # 1. Bake terrain scan to map surface (Cached: only rebuilds when player crosses tile or world changes)
+        dx = abs(min_tx - self._cached_min_tx) if self._cached_min_tx is not None else 999
+        dy = abs(min_ty - self._cached_min_ty) if self._cached_min_ty is not None else 999
+
+        needs_rebuild = (self._dirty or
+                         self._cached_min_tx is None or
+                         self._cached_min_ty is None or
+                         ((dx >= 2 or dy >= 3) and (now - self._last_rebuild_time >= 0.15)))
+
+        # 1. Bake terrain scan to map surface (Cached: only rebuilds when threshold exceeded or dirty)
         if needs_rebuild:
             self._cached_min_tx = min_tx
             self._cached_min_ty = min_ty
+            self._last_rebuild_time = now
             self._cached_chests = []
             self._dirty = False
 
@@ -245,9 +254,12 @@ class MiniMap:
         target_surf.blit(self._cached_hdr, (mx + 6, my + 3))
 
         # Helper: world coordinates to minimap screen coordinates
+        base_tx = self._cached_min_tx if self._cached_min_tx is not None else min_tx
+        base_ty = self._cached_min_ty if self._cached_min_ty is not None else min_ty
+
         def world_to_map(wx, wy):
-            fx = (wx / SCALED_TILE - min_tx) / float(self.grid_w)
-            fy = (wy / SCALED_TILE - min_ty) / float(self.grid_h)
+            fx = (wx / SCALED_TILE - base_tx) / float(self.grid_w)
+            fy = (wy / SCALED_TILE - base_ty) / float(self.grid_h)
             px = mx + 4 + int(fx * inner_w)
             py = my + 18 + int(fy * inner_h)
             return px, py

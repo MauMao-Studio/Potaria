@@ -805,7 +805,11 @@ class TouchController:
             game.player.vy = PLAYER_JUMP_FORCE
             game.player.on_ground = False
             if game.sound_manager:
-                game.sound_manager.play("jump")
+                has_clearance = True
+                if hasattr(game.player, "is_head_blocked"):
+                    has_clearance = not game.player.is_head_blocked(getattr(game, "world", None))
+                if has_clearance:
+                    game.sound_manager.play("jump")
 
     def _execute_dash(self, game):
         """Triggers dash skill or dodge roll."""

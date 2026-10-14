@@ -199,10 +199,12 @@ def load_equipment_catalog():
                     "tile": None,
                     "rarity": rarity,
                     "color": RARITY_HEX_COLORS.get(rarity, "#9E9E9E"),
-                    "desc": f"A {rarity.title()} {c} piece.",
+                    "desc": eq_data.get("desc") or f"A {rarity.title()} {c} piece.",
                     "lore": eq_data.get("lore", ""),
                     "effects": eq_data.get("effects", []),
                     "special": " • ".join(eq_data.get("effects", [])),
+                    "tags": eq_data.get("tags", []),
+                    "stat_ranges": eq_data.get("stat_ranges"),
                 }
                 try:
                     import sys

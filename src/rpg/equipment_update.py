@@ -201,6 +201,70 @@ TAG_REGISTRY: Dict[str, Dict[str, Any]] = {
         "color": (245, 220, 100),
         "badge_bg": (50, 45, 15),
     },
+
+    # Special Classification Tags (Exclusivity & Bordered Badges)
+    "seven_deadly_sins": {
+        "tag_id": "seven_deadly_sins",
+        "display_name": "Seven Deadly Sins",
+        "short_tag": "SDS",
+        "category": "collection",
+        "description": "The Seven Deadly Sins relic collection: Tempting, forbidden power of antiquity.",
+        "color": (255, 65, 80),
+        "badge_bg": (50, 12, 18),
+    },
+    "sds": {
+        "tag_id": "sds",
+        "display_name": "Seven Deadly Sins",
+        "short_tag": "SDS",
+        "category": "collection",
+        "description": "Seven Deadly Sins special edition badge.",
+        "color": (255, 65, 80),
+        "badge_bg": (50, 12, 18),
+    },
+    "seven_heavenly_virtues": {
+        "tag_id": "seven_heavenly_virtues",
+        "display_name": "Seven Heavenly Virtues",
+        "short_tag": "SHV",
+        "category": "collection",
+        "description": "The Seven Heavenly Virtues relic collection: Luminous discipline and sacred warding.",
+        "color": (255, 235, 120),
+        "badge_bg": (45, 40, 15),
+    },
+    "shv": {
+        "tag_id": "shv",
+        "display_name": "Seven Heavenly Virtues",
+        "short_tag": "SHV",
+        "category": "collection",
+        "description": "Seven Heavenly Virtues special edition badge.",
+        "color": (255, 235, 120),
+        "badge_bg": (45, 40, 15),
+    },
+    "katipunero": {
+        "tag_id": "katipunero",
+        "display_name": "Katipunero",
+        "short_tag": "KATIPUNERO",
+        "category": "cultural_collection",
+        "description": "Katipunero equipment forged during the Philippine struggle for freedom.",
+        "color": (255, 175, 60),
+        "badge_bg": (55, 25, 10),
+    },
+    "special": {
+        "tag_id": "special",
+        "display_name": "Special",
+        "short_tag": "SPECIAL",
+        "category": "exclusivity",
+        "description": "Super special ancient tier exclusive equipment.",
+        "color": (255, 215, 80),
+        "badge_bg": (45, 35, 10),
+    },
+    "virtue_patience": {
+        "tag_id": "virtue_patience",
+        "display_name": "Patience",
+        "category": "set_identity",
+        "description": "The Long Vigil: Enduring patience, steady fortitude, and lethal counter-strikes.",
+        "color": (180, 200, 240),
+        "badge_bg": (25, 35, 60),
+    },
 }
 
 def get_tag_info(tag_id: str) -> Optional[Dict[str, Any]]:
@@ -238,6 +302,38 @@ ITEM_STAT_RANGES: Dict[str, Dict[str, Dict[str, Union[int, float]]]] = {
         "atk": {"min": 28, "max": 38},
         "crit": {"min": 8.0, "max": 12.0},
     },
+    "katipunero_bolo": {
+        "atk": {"min": 46, "max": 58},
+        "crit": {"min": 10.0, "max": 16.0},
+        "speed": {"min": 0.10, "max": 0.20},
+    },
+    "barong_tagalog": {
+        "def": {"min": 28, "max": 38},
+        "hp": {"min": 75, "max": 105},
+        "speed": {"min": 0.20, "max": 0.35},
+        "mp_regen": {"min": 1.4, "max": 2.2},
+    },
+    "salakot": {
+        "def": {"min": 20, "max": 28},
+        "hp": {"min": 55, "max": 75},
+        "atk": {"min": 6, "max": 12},
+        "speed": {"min": 0.14, "max": 0.22},
+    },
+    "bakya": {
+        "def": {"min": 18, "max": 26},
+        "hp": {"min": 45, "max": 65},
+        "speed": {"min": 0.24, "max": 0.36},
+    },
+    "tabak": {
+        "atk": {"min": 44, "max": 56},
+        "crit": {"min": 8.0, "max": 14.0},
+        "speed": {"min": 0.08, "max": 0.18},
+    },
+    "patience_circlet": {"def": {"min": 20, "max": 28}, "hp": {"min": 55, "max": 80}},
+    "patience_mantle": {"def": {"min": 32, "max": 44}, "hp": {"min": 85, "max": 125}},
+    "patience_greaves": {"def": {"min": 18, "max": 26}, "hp": {"min": 50, "max": 75}, "speed": {"min": 0.20, "max": 0.35}},
+    "patience_hands": {"atk": {"min": 42, "max": 54}, "def": {"min": 6, "max": 12}},
+    "patience_bell": {"def": {"min": 12, "max": 18}, "hp": {"min": 40, "max": 65}, "mp_regen": {"min": 1.5, "max": 2.5}},
 
     # Filipino Folklore Sets
     "diwata_crown": {"def": {"min": 8, "max": 12}, "hp": {"min": 25, "max": 40}, "mp_regen": {"min": 0.8, "max": 1.4}},
@@ -580,14 +676,14 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         }
     },
 
-    # Seven Deadly Sins Sets (5-piece sets: 2-piece, 3-piece, and 5-piece thresholds)
+    # Seven Deadly Sins Sets (5-piece sets: 2-piece, 3-piece, 4-piece, and 5-piece thresholds)
     "sin_pride": {
         "set_id": "sin_pride",
         "name": "Pride: Sovereign of the Sun",
         "pieces": ["pride_crown", "pride_robe", "pride_boots", "pride_blade", "pride_ring"],
         "thresholds": {
             2: {"desc": "2-Piece: Solar Precision (+15% Crit Chance, +10% ATK)", "atk_mult": 0.10, "bonus_crit": 15.0},
-            3: {"desc": "3-Piece: Solar Radiance (+20% ATK, +10% Crit, +35 HP)", "atk_mult": 0.20, "bonus_crit": 10.0, "bonus_hp": 35},
+            4: {"desc": "4-Piece: Flawless Bearing (+25% ATK, +18% Crit, +0.10 Speed)", "atk_mult": 0.25, "bonus_crit": 18.0, "bonus_speed": 0.10, "bonus_hp": 35},
             5: {"desc": "Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage against healthy targets, Solar Aura)",
                 "atk_mult": 0.30, "bonus_crit": 25.0, "bonus_hp": 35, "aura": "solar"}
         }
@@ -598,7 +694,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["greed_mask", "greed_mantle", "greed_striders", "greed_scepter", "greed_amulet"],
         "thresholds": {
             2: {"desc": "2-Piece: Coin Scavenger (+20% Gold Drops, +0.10 Speed)", "bonus_speed": 0.10, "bonus_hp": 20},
-            3: {"desc": "3-Piece: Gilded Fortune (+15% ATK, +15% DEF, +0.15 Speed)", "atk_mult": 0.15, "def_mult": 0.15, "bonus_speed": 0.15},
+            4: {"desc": "4-Piece: Hoarder's Momentum (+20% ATK, +18% DEF, +0.20 Speed, +30% Gold Drops)", "atk_mult": 0.20, "def_mult": 0.18, "bonus_speed": 0.20, "bonus_hp": 25},
             5: {"desc": "Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25 Speed on defeat, Gilded Shimmer Aura)",
                 "atk_mult": 0.25, "def_mult": 0.20, "bonus_speed": 0.25, "aura": "gold"}
         }
@@ -609,7 +705,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["lust_veil", "lust_corslet", "lust_wraps", "lust_rapier", "lust_perfume"],
         "thresholds": {
             2: {"desc": "2-Piece: Captivating Allure (+15% Status Duration, +2.0 MP/s)", "bonus_mp_regen": 2.0, "bonus_crit": 8.0},
-            3: {"desc": "3-Piece: Mesmerizing Glamour (+15% ATK, +2.5 MP/s, +0.10 Speed)", "atk_mult": 0.15, "bonus_mp_regen": 2.5, "bonus_speed": 0.10},
+            4: {"desc": "4-Piece: Open Invitation (+20% ATK, +3.0 MP/s, +0.12 Speed, +10% Crit)", "atk_mult": 0.20, "bonus_mp_regen": 3.0, "bonus_speed": 0.12, "bonus_crit": 10.0},
             5: {"desc": "Full Set: Siren's Enchantment (+25% ATK, +30% Damage vs Debuffed, +3.5 MP/s, Pink Mist Aura)",
                 "atk_mult": 0.25, "bonus_mp_regen": 3.5, "bonus_speed": 0.15, "aura": "charm"}
         }
@@ -620,7 +716,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["envy_cowl", "envy_shroud", "envy_treads", "envy_daggers", "envy_eye"],
         "thresholds": {
             2: {"desc": "2-Piece: Phantom Step (+15% Evasion, +12% ATK)", "atk_mult": 0.12, "bonus_speed": 0.15},
-            3: {"desc": "3-Piece: Mirror Glare (+15% ATK, +10% Crit, +0.15 Speed)", "atk_mult": 0.15, "bonus_crit": 10.0, "bonus_speed": 0.15},
+            4: {"desc": "4-Piece: Borrowed Opening (+20% ATK, +12% Crit, +0.20 Speed)", "atk_mult": 0.20, "bonus_crit": 12.0, "bonus_speed": 0.20},
             5: {"desc": "Full Set: Mirror Retribution (Reflects 150% damage on dodge/hit, +25% ATK, Mirror Mirage Aura)",
                 "atk_mult": 0.25, "bonus_crit": 15.0, "bonus_speed": 0.25, "aura": "mirror"}
         }
@@ -631,7 +727,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["gluttony_jaw", "gluttony_carapace", "gluttony_tassets", "gluttony_cleaver", "gluttony_stomach"],
         "thresholds": {
             2: {"desc": "2-Piece: Insatiable Hunger (+8% Lifesteal, +35 Max HP)", "bonus_hp": 35},
-            3: {"desc": "3-Piece: Voracious Appetite (+15% ATK, +10% DEF, +45 Max HP)", "atk_mult": 0.15, "def_mult": 0.10, "bonus_hp": 45},
+            4: {"desc": "4-Piece: Feast in the Fray (+18% ATK, +12% DEF, +50 Max HP, +3 HP leech)", "atk_mult": 0.18, "def_mult": 0.12, "bonus_hp": 50},
             5: {"desc": "Full Set: Abyssal Feast (+20% ATK, +60 Max HP, +5 HP leech per strike, Crimson Maw Aura)",
                 "atk_mult": 0.20, "def_mult": 0.15, "bonus_hp": 60, "aura": "maw"}
         }
@@ -642,7 +738,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["wrath_helm", "wrath_cuirass", "wrath_greaves", "wrath_greatsword", "wrath_brand"],
         "thresholds": {
             2: {"desc": "2-Piece: Fury Unleashed (+20% Attack Speed, +15% ATK)", "atk_mult": 0.15, "bonus_atk_speed": 0.20},
-            3: {"desc": "3-Piece: Berserker Frenzy (+25% ATK, +25% Atk Speed, +8% Crit)", "atk_mult": 0.25, "bonus_atk_speed": 0.25, "bonus_crit": 8.0},
+            4: {"desc": "4-Piece: Retaliatory Ember (+30% ATK, +28% Atk Speed, +10% Crit)", "atk_mult": 0.30, "bonus_atk_speed": 0.28, "bonus_crit": 10.0},
             5: {"desc": "Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30% ATK below 50% HP, Crimson Rage Aura)",
                 "atk_mult": 0.35, "bonus_atk_speed": 0.30, "bonus_crit": 12.0, "aura": "rage"}
         }
@@ -653,20 +749,20 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["sloth_nightcap", "sloth_pajamas", "sloth_slippers", "sloth_pillow", "sloth_pendulum"],
         "thresholds": {
             2: {"desc": "2-Piece: Restful Slumber (+25% DEF, +3.0 MP/s)", "def_mult": 0.25, "bonus_mp_regen": 3.0},
-            3: {"desc": "3-Piece: Deep Trance (+30% DEF, +35 Max HP, +3.5 MP/s)", "def_mult": 0.30, "bonus_hp": 35, "bonus_mp_regen": 3.5},
+            4: {"desc": "4-Piece: Rooted Resolve (+35% DEF, +40 Max HP, +4.0 MP/s)", "def_mult": 0.35, "bonus_hp": 40, "bonus_mp_regen": 4.0},
             5: {"desc": "Full Set: Slumber Fortitude (50-HP Dream Shield every 5s undamaged, +80% burst attack, Dream Mist Aura)",
                 "def_mult": 0.40, "bonus_hp": 50, "bonus_mp_regen": 4.5, "aura": "dream"}
         }
     },
 
-    # Seven Heavenly Virtues Sets (5-piece sets: 2-piece, 3-piece, and 5-piece thresholds)
+    # Seven Heavenly Virtues Sets (5-piece sets: 2-piece, 3-piece, 4-piece, and 5-piece thresholds)
     "virtue_humility": {
         "set_id": "virtue_humility",
         "name": "Humility: The Quiet Crown",
         "pieces": ["humility_circlet", "humility_vestment", "humility_sandals", "humility_staff", "humility_pendant"],
         "thresholds": {
             2: {"desc": "2-Piece: Serene Grounding (+15% DEF, +15% ATK, +25 Max HP)", "atk_mult": 0.15, "def_mult": 0.15, "bonus_hp": 25},
-            3: {"desc": "3-Piece: Humble Ascendance (+20% All Stats, +35 Max HP, +5% Crit)", "atk_mult": 0.20, "def_mult": 0.20, "bonus_hp": 35, "bonus_crit": 5.0},
+            4: {"desc": "4-Piece: Learn from the Fall (+22% All Stats, +40 Max HP, +8% Crit)", "atk_mult": 0.22, "def_mult": 0.22, "bonus_hp": 40, "bonus_crit": 8.0},
             5: {"desc": "Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity, Serene Pearl Aura)",
                 "atk_mult": 0.25, "def_mult": 0.25, "bonus_hp": 50, "bonus_crit": 10.0, "aura": "pearl"}
         }
@@ -677,7 +773,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["charity_cowl", "charity_tunic", "charity_trousers", "charity_wand", "charity_chalice"],
         "thresholds": {
             2: {"desc": "2-Piece: Hearth Warmth (+4 HP/s Health Regen, +30 Max HP)", "bonus_hp": 30},
-            3: {"desc": "3-Piece: Generous Hearth (+15% DEF, +5 HP/s Regen, +45 Max HP)", "def_mult": 0.15, "bonus_hp": 45, "bonus_mp_regen": 1.5},
+            4: {"desc": "4-Piece: Give and Receive (+18% DEF, +5.5 HP/s Regen, +50 Max HP)", "def_mult": 0.18, "bonus_hp": 50, "bonus_mp_regen": 1.8},
             5: {"desc": "Full Set: Communal Hearth (+6 HP/s Regen, +20% Party Damage Mitigation, Warm Hearth Gold Aura)",
                 "def_mult": 0.20, "bonus_hp": 60, "bonus_mp_regen": 2.0, "aura": "hearth"}
         }
@@ -688,7 +784,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["chastity_sallet", "chastity_breastplate", "chastity_greaves", "chastity_lance", "chastity_aegis"],
         "thresholds": {
             2: {"desc": "2-Piece: Spotless Ward (+25% DEF, 50% Debuff Resistance)", "def_mult": 0.25, "bonus_hp": 25},
-            3: {"desc": "3-Piece: Pure Aegis (+30% DEF, +40 Max HP, 75% Debuff Resistance)", "def_mult": 0.30, "bonus_hp": 40},
+            4: {"desc": "4-Piece: Hold the Line (+35% DEF, +50 Max HP, 80% Debuff Resistance)", "def_mult": 0.35, "bonus_hp": 50},
             5: {"desc": "Full Set: Unblemished Ward (Absorbs 60 damage every 10s, Debuff Immunity, Brilliant White Aura)",
                 "def_mult": 0.40, "bonus_hp": 60, "aura": "sanctum"}
         }
@@ -699,7 +795,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["gratitude_crown", "gratitude_chasuble", "gratitude_striders", "gratitude_scepter", "gratitude_locket"],
         "thresholds": {
             2: {"desc": "2-Piece: Joyful Abundance (-25% MP Skill Cost, +2.5 MP/s)", "bonus_mp_regen": 2.5},
-            3: {"desc": "3-Piece: Heart of Thanksgiving (+15% ATK, +3.0 MP/s, +10% Crit)", "atk_mult": 0.15, "bonus_mp_regen": 3.0, "bonus_crit": 10.0},
+            4: {"desc": "4-Piece: Measured Bounty (+18% ATK, +3.5 MP/s, +12% Crit)", "atk_mult": 0.18, "bonus_mp_regen": 3.5, "bonus_crit": 12.0},
             5: {"desc": "Full Set: Radiance of Thanks (30% MP Refund Chance, +50 True Solar Flash, Golden Sunburst Aura)",
                 "atk_mult": 0.20, "bonus_mp_regen": 4.0, "bonus_crit": 15.0, "aura": "sunburst"}
         }
@@ -710,7 +806,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["temperance_circlet", "temperance_robe", "temperance_leggings", "temperance_trident", "temperance_pearl"],
         "thresholds": {
             2: {"desc": "2-Piece: Tidal Pacing (+20% Cooldown Reduction, +15% Atk Speed)", "bonus_atk_speed": 0.15},
-            3: {"desc": "3-Piece: Serene Flow (+10% ATK, +20% Atk Speed, +2.0 MP/s)", "atk_mult": 0.10, "bonus_atk_speed": 0.20, "bonus_mp_regen": 2.0},
+            4: {"desc": "4-Piece: Balanced Exchange (+12% ATK, +22% Atk Speed, +2.5 MP/s, +0.15 Speed)", "atk_mult": 0.12, "bonus_atk_speed": 0.22, "bonus_mp_regen": 2.5, "bonus_speed": 0.15},
             5: {"desc": "Full Set: Tranquil Flow (Crits/Dodges refund 1s Cooldown & 15 MP, Azure Water Ripple Aura)",
                 "atk_mult": 0.15, "bonus_atk_speed": 0.25, "bonus_speed": 0.20, "bonus_mp_regen": 3.0, "aura": "tidal"}
         }
@@ -721,7 +817,7 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["kindness_wreath", "kindness_cuirass", "kindness_striders", "kindness_bow", "kindness_seed"],
         "thresholds": {
             2: {"desc": "2-Piece: Gentle Bloom (+3 HP/s Regen, +20 Max HP, +10 Reflected Thorns)", "bonus_hp": 20},
-            3: {"desc": "3-Piece: Verdant Grace (+15% DEF, +35 Max HP, +15 Reflected Thorns)", "def_mult": 0.15, "bonus_hp": 35, "bonus_mp_regen": 1.5},
+            4: {"desc": "4-Piece: Stand Between (+18% DEF, +40 Max HP, +20 Reflected Thorns)", "def_mult": 0.18, "bonus_hp": 40, "bonus_mp_regen": 1.8},
             5: {"desc": "Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring 40% HP, Emerald Sprout Aura)",
                 "def_mult": 0.20, "bonus_hp": 50, "bonus_mp_regen": 2.0, "aura": "verdant"}
         }
@@ -732,9 +828,32 @@ PROGRESSIVE_SETS: Dict[str, Dict[str, Any]] = {
         "pieces": ["diligence_helm", "diligence_plate", "diligence_greaves", "diligence_warhammer", "diligence_anvil_charm"],
         "thresholds": {
             2: {"desc": "2-Piece: Tireless Rhythm (+15% ATK, +15% DEF, +10% Atk Speed)", "atk_mult": 0.15, "def_mult": 0.15, "bonus_atk_speed": 0.10},
-            3: {"desc": "3-Piece: Resolute Striking (+20% ATK, +20% DEF, +15% Atk Speed)", "atk_mult": 0.20, "def_mult": 0.20, "bonus_atk_speed": 0.15, "bonus_hp": 25},
+            4: {"desc": "4-Piece: Workmanlike Rhythm (+25% ATK, +22% DEF, +20% Atk Speed)", "atk_mult": 0.25, "def_mult": 0.22, "bonus_atk_speed": 0.20, "bonus_hp": 30},
             5: {"desc": "Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk Speed in sustained combat, Steel Spark Aura)",
                 "atk_mult": 0.30, "def_mult": 0.25, "bonus_atk_speed": 0.25, "bonus_hp": 40, "aura": "steel"}
+        }
+    },
+    "virtue_patience": {
+        "set_id": "virtue_patience",
+        "name": "Patience: The Long Vigil",
+        "pieces": ["patience_circlet", "patience_mantle", "patience_greaves", "patience_hands", "patience_bell"],
+        "thresholds": {
+            2: {"desc": "2-Piece: Steady Heart (+20% DEF, +30 Max HP)", "def_mult": 0.20, "bonus_hp": 30},
+            4: {"desc": "4-Piece: Wait for the Opening (+30% DEF, +20% ATK, +10% Crit)", "atk_mult": 0.20, "def_mult": 0.30, "bonus_hp": 55, "bonus_crit": 10.0},
+            5: {"desc": "Full Set: Unbroken Vigil (Absorbs 80 damage every 12s, +35% DEF, Vigilant Starlight Aura)", "def_mult": 0.35, "bonus_hp": 70, "aura": "vigil"}
+        }
+    },
+
+    # Katipunero Set (Philippine Revolution & Heritage)
+    "katipunero": {
+        "set_id": "katipunero",
+        "name": "Katipunero: Spirit of Freedom",
+        "pieces": ["katipunero_bolo", "barong_tagalog", "salakot", "bakya", "tabak", "balisong", "kampilan"],
+        "thresholds": {
+            2: {"desc": "2-Piece: Sigaw ng Pugad Lawin (+15% ATK, +15% DEF, +25 Max HP)", "atk_mult": 0.15, "def_mult": 0.15, "bonus_hp": 25},
+            3: {"desc": "3-Piece: Sandugo Resolve (+20% ATK, +20% DEF, +0.15 Speed)", "atk_mult": 0.20, "def_mult": 0.20, "bonus_speed": 0.15, "bonus_hp": 35},
+            4: {"desc": "4-Piece: KKK Brotherhood (+28% ATK, +25% DEF, +0.25 Speed, +15% Crit)", "atk_mult": 0.28, "def_mult": 0.25, "bonus_speed": 0.25, "bonus_crit": 15.0},
+            5: {"desc": "Full Set: Kalayaan Awakening (+35% ATK, +30% DEF, +0.35 Speed, +20% Crit, Tri-Star & Sun Aura)", "atk_mult": 0.35, "def_mult": 0.30, "bonus_speed": 0.35, "bonus_crit": 20.0, "aura": "katipunero"}
         }
     },
 
@@ -907,16 +1026,71 @@ def build_set_tooltip_lines(item_id: Any, player: Any = None, font: Any = None, 
 # -----------------------------------------------------------------------------
 
 NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
-    # ---------------- Filipino Weapons ----------------
+    # ---------------- Filipino Equipment (Ancient Tier & Katipunero) ----------------
+    "katipunero_bolo": {
+        "slot": "weapon",
+        "name": "Katipunero Bolo — Blade of Freedom",
+        "atk": 52, "def": 4, "hp": 25, "crit": 12.0, "speed": 0.15,
+        "rarity": "ancient",
+        "effects": ["Resolute Follow-Through (+25% Damage on consecutive hits)", "Vanguard Resolve (+15% Defense below 50% HP)"],
+        "lore": "A battle-tested bolo blade forged with unyielding resolve, embodying the spirit of the Philippine revolution.",
+        "desc": "A traditional fighting bolo crafted from tempered steel, delivering decisive cleaving strikes with historical courage.",
+        "tags": ["katipunero", "pinoy_heritage", "combat_offensive", "special"],
+        "stat_ranges": ITEM_STAT_RANGES["katipunero_bolo"],
+    },
+    "barong_tagalog": {
+        "slot": "chest",
+        "name": "Barong Tagalog — Weave of Honor",
+        "def": 34, "hp": 88, "atk": 6, "crit": 4.0, "speed": 0.25, "mp_regen": 1.8,
+        "rarity": "ancient",
+        "effects": ["Graceful Bearing (+25% Move Speed and +2.0 MP/s out of combat)", "Piña Weave (+20% Status Resistance)"],
+        "lore": "An exquisite formal garment woven from translucent piña fibers, embroidered with intricate traditional patterns.",
+        "desc": "Translucent embroidered tunic offering refined defensive protection, spiritual clarity, and unmatched agility.",
+        "tags": ["katipunero", "pinoy_heritage", "combat_defensive", "special"],
+        "stat_ranges": ITEM_STAT_RANGES["barong_tagalog"],
+    },
+    "salakot": {
+        "slot": "head",
+        "name": "Salakot — Traveler's Crown",
+        "def": 24, "hp": 65, "atk": 8, "crit": 5.0, "speed": 0.18,
+        "rarity": "ancient",
+        "effects": ["Traveler's Shade (Reduces environmental hazards by 35%)", "Wayfarer's Eye (+12% Vision Range)"],
+        "lore": "Woven from split bamboo, rattan, and polished metal fittings, worn through long marches under the tropical sun.",
+        "desc": "A wide-brimmed traditional headpiece shielding the wearer from sun, storm, and incoming blows.",
+        "tags": ["katipunero", "pinoy_heritage", "combat_defensive", "special"],
+        "stat_ranges": ITEM_STAT_RANGES["salakot"],
+    },
+    "bakya": {
+        "slot": "legs",
+        "name": "Bakya — Wooden Striders",
+        "def": 22, "hp": 55, "atk": 4, "crit": 3.0, "speed": 0.28,
+        "rarity": "ancient",
+        "effects": ["Grounded Step: Immune to knockback on landing", "Hardwood Sole: +15% Fall damage reduction"],
+        "lore": "Carved from native Philippine hardwood with colorful straps, worn across town and country for generations.",
+        "desc": "Traditional carved wooden footwear providing unwavering footing, stability, and grounded poise.",
+        "tags": ["katipunero", "pinoy_heritage", "combat_mobility", "special"],
+        "stat_ranges": ITEM_STAT_RANGES["bakya"],
+    },
+    "tabak": {
+        "slot": "weapon",
+        "name": "Tabak — Heritage Cutlass",
+        "atk": 50, "def": 3, "hp": 20, "crit": 10.0, "speed": 0.12,
+        "rarity": "ancient",
+        "effects": ["Measured Cut (+20% Armor Penetration on heavy swing)", "Ancestral Guard (+10% Parry Defense)"],
+        "lore": "A distinct wide-bellied curved blade forged by veteran smiths of Luzon, passed down through generations.",
+        "desc": "A balanced single-edged cutting blade capable of precise parries and formidable sweeping cleaves.",
+        "tags": ["katipunero", "pinoy_heritage", "combat_offensive", "special"],
+        "stat_ranges": ITEM_STAT_RANGES["tabak"],
+    },
     "kampilan": {
         "slot": "weapon",
         "name": "Kampilan — Warrior's Oath",
         "atk": 36, "def": 2, "hp": 20, "crit": 8.0, "speed": 0.08,
-        "rarity": "legendary",
+        "rarity": "ancient",
         "effects": ["Finishing Cleave (+30% True Damage against foes below 35% HP)", "Staggering Blow"],
         "lore": "Revered long blade of coastal warriors, shaped with a bifurcated tip that carved through history.",
         "desc": "A traditional heavy two-handed sword with immense forward cleaving reach and armor execution.",
-        "tags": ["pinoy_heritage", "combat_offensive"],
+        "tags": ["katipunero", "pinoy_heritage", "combat_offensive", "special"],
         "stat_ranges": ITEM_STAT_RANGES["kampilan"],
     },
     "panabas": {
@@ -945,11 +1119,11 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
         "slot": "weapon",
         "name": "Balisong — Twin-Edge Trickster",
         "atk": 22, "def": 0, "hp": 0, "crit": 18.0, "speed": 0.20,
-        "rarity": "rare",
+        "rarity": "ancient",
         "effects": ["Trickster Flick: +100% Critical Strike Chance after sprint dash", "+15% Sprint Speed"],
         "lore": "Hand-forged pocket folding blade born from Batangas workshops, famed across the oceans.",
         "desc": "Deceptively quick folding knife that empowers high-mobility guerrilla tactics and instant ambushes.",
-        "tags": ["pinoy_heritage", "combat_mobility"],
+        "tags": ["katipunero", "pinoy_heritage", "combat_mobility", "special"],
         "stat_ranges": ITEM_STAT_RANGES["balisong"],
     },
     "bangkaw": {
@@ -1101,504 +1275,553 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     "pride_blade": {
         "slot": "weapon", "name": "Sol Invictus — Blade of Pride",
         "atk": 52, "def": 2, "hp": 25, "crit": 18.0, "speed": 0.12,
-        "rarity": "mythic",
+        "rarity": "ancient",
         "effects": ["Sovereign Execution (+40% Damage vs enemies above 80% HP)", "Solar Beam on critical hit"],
         "lore": "A golden claymore so radiant it burns the eyes of all who dare look upon its edge.",
         "desc": "Sun-forged Greatsword demanding absolute precision and delivering punishing critical bursts.",
-        "tags": ["sin_pride", "combat_offensive"],
+        "tags": ["sin_pride", "combat_offensive", "seven_deadly_sins", "sds", "special"],
         "stat_ranges": ITEM_STAT_RANGES["pride_blade"],
     },
     "pride_crown": {
         "slot": "head", "name": "Crown of the Solar Sovereign",
         "def": 22, "hp": 65, "atk": 8, "crit": 10.0, "speed": 0.05,
-        "rarity": "mythic", "effects": ["Solar Glare (+10% Crit Chance)"], "desc": "Radiant solar crown adorned with burning sunburst spikes.",
-        "tags": ["sin_pride", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["pride_crown"],
+        "rarity": "ancient", "effects": ["Solar Glare (+10% Crit Chance)"], "desc": "Radiant solar crown adorned with burning sunburst spikes.",
+        "tags": ["sin_pride", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["pride_crown"],
     },
     "pride_robe": {
         "slot": "chest", "name": "Raiment of the Unbowed",
         "def": 28, "hp": 90, "atk": 15, "crit": 6.0, "speed": 0.0,
-        "rarity": "mythic", "effects": ["Unbowed Pride (+28 DEF, +15 ATK)"], "desc": "Regal mantle of pure woven gold that refuses to bend before any strike.",
-        "tags": ["sin_pride", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["pride_robe"],
+        "rarity": "ancient", "effects": ["Unbowed Pride (+28 DEF, +15 ATK)"], "desc": "Regal mantle of pure woven gold that refuses to bend before any strike.",
+        "tags": ["sin_pride", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["pride_robe"],
     },
     "pride_boots": {
         "slot": "legs", "name": "Greaves of the Sunward Monarch",
         "def": 18, "hp": 55, "atk": 6, "crit": 4.0, "speed": 0.38,
-        "rarity": "mythic", "effects": ["Sunward March (+38% Move Speed)"], "desc": "Burnished gold boots leaving golden sunprints in every step.",
-        "tags": ["sin_pride", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["pride_boots"],
+        "rarity": "ancient", "effects": ["Sunward March (+38% Move Speed)"], "desc": "Burnished gold boots leaving golden sunprints in every step.",
+        "tags": ["sin_pride", "combat_mobility", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["pride_boots"],
     },
     "pride_ring": {
         "slot": "accessory", "name": "Signet of Solar Dominion",
         "def": 4, "hp": 30, "atk": 14, "crit": 8.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Dominion Spark (+14 ATK, +8% Crit)"], "desc": "Heavy seal of pride sealing the absolute authority of the sun.",
-        "tags": ["sin_pride", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["pride_ring"],
+        "rarity": "ancient", "effects": ["Dominion Spark (+14 ATK, +8% Crit)"], "desc": "Heavy seal of pride sealing the absolute authority of the sun.",
+        "tags": ["sin_pride", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["pride_ring"],
     },
 
     # ---------------- Seven Deadly Sins: Greed ----------------
     "greed_scepter": {
         "slot": "weapon", "name": "Gilded Scepter of Avarice",
         "atk": 42, "def": 0, "hp": 20, "crit": 10.0, "speed": 0.05,
-        "rarity": "mythic",
+        "rarity": "ancient",
         "effects": ["Golden Bribe: Defeated enemies grant +35% bonus gold", "Coin Burst on Critical Hit"],
         "lore": "An opulent gold-encrusted staff that turns slain foes into scattered fortunes.",
         "desc": "A heavy golden scepter commanding boundless wealth and critical riches.",
-        "tags": ["sin_greed", "combat_offensive"],
+        "tags": ["sin_greed", "combat_offensive", "seven_deadly_sins", "sds", "special"],
         "stat_ranges": ITEM_STAT_RANGES["greed_scepter"],
     },
     "greed_mask": {
         "slot": "head", "name": "Mask of the Gilded Devourer",
         "def": 17, "hp": 50, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "mythic", "effects": ["Greedy Visage (+20% Gold Drops, +50 HP)"], "desc": "A face-covering mask sculpted from solid bullion with emerald eyes.",
-        "tags": ["sin_greed", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["greed_mask"],
+        "rarity": "ancient", "effects": ["Greedy Visage (+20% Gold Drops, +50 HP)"], "desc": "A face-covering mask sculpted from solid bullion with emerald eyes.",
+        "tags": ["sin_greed", "combat_defensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["greed_mask"],
     },
     "greed_mantle": {
         "slot": "chest", "name": "Mantle of Endless Avarice",
         "def": 24, "hp": 75, "atk": 11, "crit": 0.0, "speed": 0.0,
-        "rarity": "mythic", "effects": ["Gilded Carapace (+24 DEF, +75 HP, +11 ATK)"], "desc": "Heavy velvet robes sewn with stolen doubloons and gemstones.",
-        "tags": ["sin_greed", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["greed_mantle"],
+        "rarity": "ancient", "effects": ["Gilded Carapace (+24 DEF, +75 HP, +11 ATK)"], "desc": "Heavy velvet robes sewn with stolen doubloons and gemstones.",
+        "tags": ["sin_greed", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["greed_mantle"],
     },
     "greed_striders": {
         "slot": "legs", "name": "Striders of the Coin Hoarder",
         "def": 15, "hp": 45, "atk": 0, "crit": 0.0, "speed": 0.32,
-        "rarity": "mythic", "effects": ["Treasure Rush (+32% Move Speed, +15% Sprint Speed)"], "desc": "Silk boots with diamond-encrusted soles that sprint toward shiny valuables.",
-        "tags": ["sin_greed", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["greed_striders"],
+        "rarity": "ancient", "effects": ["Treasure Rush (+32% Move Speed, +15% Sprint Speed)"], "desc": "Silk boots with diamond-encrusted soles that sprint toward shiny valuables.",
+        "tags": ["sin_greed", "combat_mobility", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["greed_striders"],
     },
     "greed_amulet": {
         "slot": "accessory", "name": "Amulet of the Midas Touch",
         "def": 8, "hp": 40, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Midas Touch: Converts 5% of physical damage dealt into copper coins"], "desc": "A golden medallion carved with a ravenous gaping mouth.",
-        "tags": ["sin_greed", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["greed_amulet"],
+        "rarity": "ancient", "effects": ["Midas Touch: Converts 5% of physical damage dealt into copper coins"], "desc": "A golden medallion carved with a ravenous gaping mouth.",
+        "tags": ["sin_greed", "combat_defensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["greed_amulet"],
     },
 
     # ---------------- Seven Deadly Sins: Lust ----------------
     "lust_rapier": {
         "slot": "weapon", "name": "Siren's Needle — Rapier of Lust",
         "atk": 38, "def": 0, "hp": 10, "crit": 15.0, "speed": 0.20,
-        "rarity": "mythic",
+        "rarity": "ancient",
         "effects": ["Charming Flurry (+25% Damage vs charmed/debuffed targets)", "Beguiling Thrust"],
         "lore": "A needle-thin rapier vibrating with hypnotic rose-tinted enchantment.",
         "desc": "A lightning-fast fencing foil inflicting bewitching puncture wounds.",
-        "tags": ["sin_lust", "combat_offensive"],
+        "tags": ["sin_lust", "combat_offensive", "seven_deadly_sins", "sds", "special"],
         "stat_ranges": ITEM_STAT_RANGES["lust_rapier"],
     },
     "lust_veil": {
         "slot": "head", "name": "Veil of the Enchanter",
         "def": 15, "hp": 42, "atk": 0, "crit": 0.0, "mp_regen": 1.4,
-        "rarity": "mythic", "effects": ["Hypnotic Gaze (+1.4 MP/s, +15% Debuff Duration)"], "desc": "Translucent gossamer veil that distracts enemy aim.",
-        "tags": ["sin_lust", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["lust_veil"],
+        "rarity": "ancient", "effects": ["Hypnotic Gaze (+1.4 MP/s, +15% Debuff Duration)"], "desc": "Translucent gossamer veil that distracts enemy aim.",
+        "tags": ["sin_lust", "combat_sustain", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["lust_veil"],
     },
     "lust_corslet": {
         "slot": "chest", "name": "Corslet of Captivating Allure",
         "def": 22, "hp": 68, "atk": 10, "crit": 0.0, "speed": 0.0,
-        "rarity": "mythic", "effects": ["Alluring Guard (+22 DEF, +68 HP, +10 ATK)"], "desc": "Fitted corset of reinforced enchanted silk that turns blows aside with alluring grace.",
-        "tags": ["sin_lust", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["lust_corslet"],
+        "rarity": "ancient", "effects": ["Alluring Guard (+22 DEF, +68 HP, +10 ATK)"], "desc": "Fitted corset of reinforced enchanted silk that turns blows aside with alluring grace.",
+        "tags": ["sin_lust", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["lust_corslet"],
     },
     "lust_wraps": {
         "slot": "legs", "name": "Silken Wraps of the Temptress",
         "def": 13, "hp": 38, "atk": 0, "crit": 0.0, "speed": 0.32,
-        "rarity": "mythic", "effects": ["Sinuous Dance (+32% Move Speed, +10% Dodge)"], "desc": "Ribbon wraps that swirl rhythmically with each step.",
-        "tags": ["sin_lust", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["lust_wraps"],
+        "rarity": "ancient", "effects": ["Sinuous Dance (+32% Move Speed, +10% Dodge)"], "desc": "Ribbon wraps that swirl rhythmically with each step.",
+        "tags": ["sin_lust", "combat_mobility", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["lust_wraps"],
     },
     "lust_perfume": {
         "slot": "accessory", "name": "Phial of Beguiling Essence",
         "def": 0, "hp": 20, "atk": 0, "crit": 7.0, "mp_regen": 1.7,
-        "rarity": "legendary", "effects": ["Beguiling Mist: Enemies striking you have a 20% chance to be confused for 3s"], "desc": "An ornate crystal flacon radiating an intoxicating floral aroma.",
-        "tags": ["sin_lust", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["lust_perfume"],
+        "rarity": "ancient", "effects": ["Beguiling Mist: Enemies striking you have a 20% chance to be confused for 3s"], "desc": "An ornate crystal flacon radiating an intoxicating floral aroma.",
+        "tags": ["sin_lust", "combat_sustain", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["lust_perfume"],
     },
 
     # ---------------- Seven Deadly Sins: Envy ----------------
     "envy_daggers": {
         "slot": "weapon", "name": "Twin Shards of Envy",
         "atk": 40, "def": 0, "hp": 10, "crit": 19.0, "speed": 0.23,
-        "rarity": "mythic",
+        "rarity": "ancient",
         "effects": ["Mirror Stalker: Retaliates with 120% counter-damage upon perfect dodge", "Deep Hemorrhage"],
         "lore": "Dual daggers crafted from mirrored glass that thirst for whatever others possess.",
         "desc": "Crystalline twin blades executing lethal counters and mirror-image strikes.",
-        "tags": ["sin_envy", "combat_offensive"],
+        "tags": ["sin_envy", "combat_offensive", "seven_deadly_sins", "sds", "special"],
         "stat_ranges": ITEM_STAT_RANGES["envy_daggers"],
     },
     "envy_cowl": {
         "slot": "head", "name": "Cowl of the Jealous Stalker",
         "def": 18, "hp": 50, "atk": 0, "crit": 7.0, "speed": 0.0,
-        "rarity": "mythic", "effects": ["Covetous Eye (+7% Crit, +18 DEF)"], "desc": "A shadowy cowl that obscures facial features and hones peripheral tracking.",
-        "tags": ["sin_envy", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["envy_cowl"],
+        "rarity": "ancient", "effects": ["Covetous Eye (+7% Crit, +18 DEF)"], "desc": "A shadowy cowl that obscures facial features and hones peripheral tracking.",
+        "tags": ["sin_envy", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["envy_cowl"],
     },
     "envy_shroud": {
         "slot": "chest", "name": "Shroud of the Green Mirage",
         "def": 26, "hp": 75, "atk": 12, "crit": 0.0, "speed": 0.0,
-        "rarity": "mythic", "effects": ["Mirage Shroud (+26 DEF, +75 HP, +12 ATK)"], "desc": "Shifting emerald fabric that mirrors background surroundings for rapid ambush.",
-        "tags": ["sin_envy", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["envy_shroud"],
+        "rarity": "ancient", "effects": ["Mirage Shroud (+26 DEF, +75 HP, +12 ATK)"], "desc": "Shifting emerald fabric that mirrors background surroundings for rapid ambush.",
+        "tags": ["sin_envy", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["envy_shroud"],
     },
     "envy_treads": {
         "slot": "legs", "name": "Treads of the Unseen Shadow",
         "def": 16, "hp": 45, "atk": 0, "crit": 0.0, "speed": 0.45,
-        "rarity": "mythic", "effects": ["Phase Step (+45% Move Speed, Silent Steps)"], "desc": "Supple leather boots that emit no vibration or sound across terrain.",
-        "tags": ["sin_envy", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["envy_treads"],
+        "rarity": "ancient", "effects": ["Phase Step (+45% Move Speed, Silent Steps)"], "desc": "Supple leather boots that emit no vibration or sound across terrain.",
+        "tags": ["sin_envy", "combat_mobility", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["envy_treads"],
     },
     "envy_eye": {
         "slot": "accessory", "name": "The Emerald Eye of Resentment",
         "def": 0, "hp": 20, "atk": 11, "crit": 11.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Vengeful Spite: +15% Damage against enemies possessing higher HP than you"], "desc": "A preserved jade eye that pulses whenever foes boast greater power.",
-        "tags": ["sin_envy", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["envy_eye"],
+        "rarity": "ancient", "effects": ["Vengeful Spite: +15% Damage against enemies possessing higher HP than you"], "desc": "A preserved jade eye that pulses whenever foes boast greater power.",
+        "tags": ["sin_envy", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["envy_eye"],
     },
 
     # ---------------- Seven Deadly Sins: Gluttony ----------------
     "gluttony_cleaver": {
         "slot": "weapon", "name": "Meat Carver of the Abyssal Maw",
         "atk": 48, "def": 0, "hp": 35, "crit": 5.0, "speed": 0.0,
-        "rarity": "mythic",
+        "rarity": "ancient",
         "effects": ["Abyssal Feast: +8% Lifesteal on all melee strikes", "Gouge Wound"],
         "lore": "A monstrous cleaver heavy enough to split megalodon bone in a single swing.",
         "desc": "A massive serrated cleaver that drinks crimson lifeblood to sustain its wielder.",
-        "tags": ["sin_gluttony", "combat_sustain"],
+        "tags": ["sin_gluttony", "combat_sustain", "seven_deadly_sins", "sds", "special"],
         "stat_ranges": ITEM_STAT_RANGES["gluttony_cleaver"],
     },
     "gluttony_jaw": {
         "slot": "head", "name": "Visage of the Devouring Jaw",
         "def": 20, "hp": 68, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "mythic", "effects": ["Maw Armor (+20 DEF, +68 HP)"], "desc": "A monstrous bone helm modeled after unhinged abyssal predator jaws.",
-        "tags": ["sin_gluttony", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["gluttony_jaw"],
+        "rarity": "ancient", "effects": ["Maw Armor (+20 DEF, +68 HP)"], "desc": "A monstrous bone helm modeled after unhinged abyssal predator jaws.",
+        "tags": ["sin_gluttony", "combat_defensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["gluttony_jaw"],
     },
     "gluttony_carapace": {
         "slot": "chest", "name": "Carapace of the Bloated Swarm",
         "def": 31, "hp": 100, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "mythic", "effects": ["Insatiable Bulwark (+31 DEF, +100 HP, +5 HP/s Regen)"], "desc": "Heavy chitin plate forged from creatures that never stop feeding.",
-        "tags": ["sin_gluttony", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["gluttony_carapace"],
+        "rarity": "ancient", "effects": ["Insatiable Bulwark (+31 DEF, +100 HP, +5 HP/s Regen)"], "desc": "Heavy chitin plate forged from creatures that never stop feeding.",
+        "tags": ["sin_gluttony", "combat_defensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["gluttony_carapace"],
     },
     "gluttony_tassets": {
         "slot": "legs", "name": "Tassets of the Endless Feast",
         "def": 19, "hp": 62, "atk": 0, "crit": 0.0, "speed": 0.20,
-        "rarity": "mythic", "effects": ["Gorging Walk (+19 DEF, +62 HP, +20% Move Speed)"], "desc": "Chitin-plated leg guards with spikes designed to pin thrashing prey.",
-        "tags": ["sin_gluttony", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["gluttony_tassets"],
+        "rarity": "ancient", "effects": ["Gorging Walk (+19 DEF, +62 HP, +20% Move Speed)"], "desc": "Chitin-plated leg guards with spikes designed to pin thrashing prey.",
+        "tags": ["sin_gluttony", "combat_defensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["gluttony_tassets"],
     },
     "gluttony_stomach": {
         "slot": "accessory", "name": "Vessel of the Iron Gizzard",
         "def": 11, "hp": 60, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Digestion Fortitude: Food and potions grant 50% extra healing and double duration"], "desc": "An obsidian reliquary preserving the digestive organ of a leviathan.",
-        "tags": ["sin_gluttony", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["gluttony_stomach"],
+        "rarity": "ancient", "effects": ["Digestion Fortitude: Food and potions grant 50% extra healing and double duration"], "desc": "An obsidian reliquary preserving the digestive organ of a leviathan.",
+        "tags": ["sin_gluttony", "combat_sustain", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["gluttony_stomach"],
     },
 
     # ---------------- Seven Deadly Sins: Sloth ----------------
     "sloth_pillow": {
         "slot": "weapon", "name": "The Comatose Cudgel",
         "atk": 40, "def": 11, "hp": 20, "crit": 0.0, "speed": -0.05,
-        "rarity": "mythic",
+        "rarity": "ancient",
         "effects": ["Heavy Snooze: Attacks have 25% chance to inflict Drowsy (50% slow)", "Awakening Crash"],
         "lore": "A dense enchanted pillow stone that lulls both victim and wielder into twilight dreams.",
         "desc": "A deceptively hefty sleeping cudgel delivering crushing, deliberate strikes.",
-        "tags": ["sin_sloth", "combat_defensive"],
+        "tags": ["sin_sloth", "combat_defensive", "seven_deadly_sins", "sds", "special"],
         "stat_ranges": ITEM_STAT_RANGES["sloth_pillow"],
     },
     "sloth_nightcap": {
         "slot": "head", "name": "Nightcap of the Deep Slumberer",
         "def": 22, "hp": 62, "atk": 0, "crit": 0.0, "mp_regen": 1.6,
-        "rarity": "mythic", "effects": ["Restful Slumber (+22 DEF, +62 HP, +1.6 MP/s)"], "desc": "A soft velvet cap embroidered with dreaming stars that calms racing thoughts.",
-        "tags": ["sin_sloth", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["sloth_nightcap"],
+        "rarity": "ancient", "effects": ["Restful Slumber (+22 DEF, +62 HP, +1.6 MP/s)"], "desc": "A soft velvet cap embroidered with dreaming stars that calms racing thoughts.",
+        "tags": ["sin_sloth", "combat_sustain", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["sloth_nightcap"],
     },
     "sloth_pajamas": {
         "slot": "chest", "name": "Vestment of the Dream Realm",
         "def": 33, "hp": 92, "atk": 0, "crit": 0.0, "mp_regen": 2.0,
-        "rarity": "mythic", "effects": ["Dream Sanctuary (+33 DEF, +92 HP, +2.0 MP/s)"], "desc": "Padded loungewear spun from dream silk that cushions even direct dragon impacts.",
-        "tags": ["sin_sloth", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["sloth_pajamas"],
+        "rarity": "ancient", "effects": ["Dream Sanctuary (+33 DEF, +92 HP, +2.0 MP/s)"], "desc": "Padded loungewear spun from dream silk that cushions even direct dragon impacts.",
+        "tags": ["sin_sloth", "combat_defensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["sloth_pajamas"],
     },
     "sloth_slippers": {
         "slot": "legs", "name": "Slippers of Peaceful Languor",
         "def": 19, "hp": 55, "atk": 0, "crit": 0.0, "speed": 0.20,
-        "rarity": "mythic", "effects": ["Carefree Glide (+19 DEF, +55 HP, +20% Move Speed)"], "desc": "Fluffy slippers that cushion every step with cloud-like silence.",
-        "tags": ["sin_sloth", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["sloth_slippers"],
+        "rarity": "ancient", "effects": ["Carefree Glide (+19 DEF, +55 HP, +20% Move Speed)"], "desc": "Fluffy slippers that cushion every step with cloud-like silence.",
+        "tags": ["sin_sloth", "combat_defensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["sloth_slippers"],
     },
     "sloth_pendulum": {
         "slot": "accessory", "name": "Hypnotic Pendulum of Stasis",
         "def": 13, "hp": 30, "atk": 0, "crit": 0.0, "mp_regen": 2.0,
-        "rarity": "legendary", "effects": ["Stasis Aura: When standing still for 3s, gain 40% damage reduction barrier"], "desc": "A swinging silver bob that slows down the passage of violent seconds.",
-        "tags": ["sin_sloth", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["sloth_pendulum"],
+        "rarity": "ancient", "effects": ["Stasis Aura: When standing still for 3s, gain 40% damage reduction barrier"], "desc": "A swinging silver bob that slows down the passage of violent seconds.",
+        "tags": ["sin_sloth", "combat_defensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["sloth_pendulum"],
     },
 
     # ---------------- Seven Deadly Sins: Wrath ----------------
     "wrath_greatsword": {
         "slot": "weapon", "name": "The Worldbreaker",
         "atk": 62, "def": 0, "hp": 20, "crit": 14.0, "speed": 0.15,
-        "rarity": "mythic",
+        "rarity": "ancient",
         "effects": ["Furious Cascade: Consecutive strikes escalate attack speed by +10% per hit (max 5)", "Molten Wave"],
         "lore": "Forged in the fury of a dying planet whose core shattered under unbearable pressure.",
         "desc": "A colossal jagged slab of heated metal that accelerates in speed as blood boils in battle.",
-        "tags": ["sin_wrath", "combat_offensive"],
+        "tags": ["sin_wrath", "combat_offensive", "seven_deadly_sins", "sds", "special"],
         "stat_ranges": ITEM_STAT_RANGES["wrath_greatsword"],
     },
     "wrath_helm": {
         "slot": "head", "name": "Helm of the Red Worldbreaker",
         "def": 22, "hp": 60, "atk": 14, "crit": 6.0, "speed": 0.05,
-        "rarity": "mythic", "effects": ["Bloodrage Gaze (+14 ATK)"], "desc": "Horned visor wreathed in smoldering crimson embers.",
-        "tags": ["sin_wrath", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["wrath_helm"],
+        "rarity": "ancient", "effects": ["Bloodrage Gaze (+14 ATK)"], "desc": "Horned visor wreathed in smoldering crimson embers.",
+        "tags": ["sin_wrath", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["wrath_helm"],
     },
     "wrath_cuirass": {
         "slot": "chest", "name": "Cuirass of Unchecked Rage",
         "def": 32, "hp": 95, "atk": 18, "crit": 6.0, "speed": 0.05,
-        "rarity": "mythic", "effects": ["Boiling Blood (+18 ATK, +32 DEF)"], "desc": "Heavy jagged steel cuirass pulsing with violent volcanic energy.",
-        "tags": ["sin_wrath", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["wrath_cuirass"],
+        "rarity": "ancient", "effects": ["Boiling Blood (+18 ATK, +32 DEF)"], "desc": "Heavy jagged steel cuirass pulsing with violent volcanic energy.",
+        "tags": ["sin_wrath", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["wrath_cuirass"],
     },
     "wrath_greaves": {
         "slot": "legs", "name": "Greaves of the Cataclysm",
         "def": 20, "hp": 55, "atk": 8, "crit": 4.0, "speed": 0.38,
-        "rarity": "mythic", "effects": ["Crushing Charge (+38% Move Speed)"], "desc": "Thick spiked greaves designed to trample battlefields.",
-        "tags": ["sin_wrath", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["wrath_greaves"],
+        "rarity": "ancient", "effects": ["Crushing Charge (+38% Move Speed)"], "desc": "Thick spiked greaves designed to trample battlefields.",
+        "tags": ["sin_wrath", "combat_mobility", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["wrath_greaves"],
     },
     "wrath_brand": {
         "slot": "accessory", "name": "Brand of Unbroken Fury",
         "def": 4, "hp": 25, "atk": 16, "crit": 8.0, "speed": 0.08,
-        "rarity": "legendary", "effects": ["Furious Momentum (+16 ATK, +8% Crit)"], "desc": "Red-hot iron brand fueling continuous assault.",
-        "tags": ["sin_wrath", "combat_offensive"], "stat_ranges": ITEM_STAT_RANGES["wrath_brand"],
+        "rarity": "ancient", "effects": ["Furious Momentum (+16 ATK, +8% Crit)"], "desc": "Red-hot iron brand fueling continuous assault.",
+        "tags": ["sin_wrath", "combat_offensive", "seven_deadly_sins", "sds", "special"], "stat_ranges": ITEM_STAT_RANGES["wrath_brand"],
     },
 
     # ---------------- Seven Heavenly Virtues: Humility ----------------
     "humility_staff": {
         "slot": "weapon", "name": "Staff of the Quiet Crown",
         "atk": 42, "def": 11, "hp": 20, "crit": 4.0, "mp_regen": 1.4,
-        "rarity": "legendary",
+        "rarity": "ancient",
         "effects": ["Serene Strike: Harmonizes attack and defense; strikes heal for 5% damage dealt", "Purifying Pulse"],
         "lore": "Carved from plain ashwood by a monk king who laid down his gold crown.",
         "desc": "A simple wooden staff carrying deep spiritual fortitude and balanced power.",
-        "tags": ["virtue_humility", "combat_sustain"],
+        "tags": ["virtue_humility", "combat_sustain", "seven_heavenly_virtues", "shv", "special"],
         "stat_ranges": ITEM_STAT_RANGES["humility_staff"],
     },
     "humility_circlet": {
         "slot": "head", "name": "Circlet of the Quiet Crown",
         "def": 20, "hp": 58, "atk": 8, "crit": 2.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Quiet Mind (+20 DEF, +58 HP, +8 ATK)"], "desc": "An unpolished silver band resting gently upon the forehead without pride.",
-        "tags": ["virtue_humility", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["humility_circlet"],
+        "rarity": "ancient", "effects": ["Quiet Mind (+20 DEF, +58 HP, +8 ATK)"], "desc": "An unpolished silver band resting gently upon the forehead without pride.",
+        "tags": ["virtue_humility", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["humility_circlet"],
     },
     "humility_vestment": {
         "slot": "chest", "name": "Vestment of Quiet Balance",
         "def": 30, "hp": 85, "atk": 13, "crit": 2.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Harmonic Fortitude (+30 DEF, +85 HP, +13 ATK)"], "desc": "Unadorned gray robes woven with hidden tempered mithril thread.",
-        "tags": ["virtue_humility", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["humility_vestment"],
+        "rarity": "ancient", "effects": ["Harmonic Fortitude (+30 DEF, +85 HP, +13 ATK)"], "desc": "Unadorned gray robes woven with hidden tempered mithril thread.",
+        "tags": ["virtue_humility", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["humility_vestment"],
     },
     "humility_sandals": {
         "slot": "legs", "name": "Sandals of the Lowly Path",
         "def": 18, "hp": 50, "atk": 0, "crit": 0.0, "speed": 0.32,
-        "rarity": "legendary", "effects": ["Grounded Tread (+18 DEF, +50 HP, +32% Move Speed)"], "desc": "Braided cord sandals engineered for traversing rugged mountain paths patiently.",
-        "tags": ["virtue_humility", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["humility_sandals"],
+        "rarity": "ancient", "effects": ["Grounded Tread (+18 DEF, +50 HP, +32% Move Speed)"], "desc": "Braided cord sandals engineered for traversing rugged mountain paths patiently.",
+        "tags": ["virtue_humility", "combat_mobility", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["humility_sandals"],
     },
     "humility_pendant": {
         "slot": "accessory", "name": "Pendant of Peaceful Equanimity",
         "def": 11, "hp": 40, "atk": 8, "crit": 0.0, "speed": 0.0,
-        "rarity": "rare", "effects": ["Equanimity: Immunity to knockback and stagger effects"], "desc": "A small river pebble smoothed by ten thousand years of rushing water.",
-        "tags": ["virtue_humility", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["humility_pendant"],
+        "rarity": "ancient", "effects": ["Equanimity: Immunity to knockback and stagger effects"], "desc": "A small river pebble smoothed by ten thousand years of rushing water.",
+        "tags": ["virtue_humility", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["humility_pendant"],
     },
 
     # ---------------- Seven Heavenly Virtues: Charity ----------------
     "charity_wand": {
         "slot": "weapon", "name": "Censer of the Hearthkeeper",
         "atk": 36, "def": 4, "hp": 35, "crit": 6.0, "speed": 0.0,
-        "rarity": "legendary",
+        "rarity": "ancient",
         "effects": ["Healing Censer: Attacks create soothing incense restoring +4 HP to nearby allies", "Warm Flame"],
         "lore": "A bronze censer carrying coals that have never grown cold since the first winter.",
         "desc": "A blessed focus that comforts the wounded while smiting wicked invaders with gentle fire.",
-        "tags": ["virtue_charity", "combat_sustain"],
+        "tags": ["virtue_charity", "combat_sustain", "seven_heavenly_virtues", "shv", "special"],
         "stat_ranges": ITEM_STAT_RANGES["charity_wand"],
     },
     "charity_cowl": {
         "slot": "head", "name": "Hearthkeeper Warm Cowl",
         "def": 16, "hp": 65, "atk": 3, "crit": 2.0, "mp_regen": 1.2,
-        "rarity": "legendary", "effects": ["Gentle Warmth (+65 HP)"], "desc": "Comforting woolen hood woven to keep freezing wanderers safe.",
-        "tags": ["virtue_charity", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["charity_cowl"],
+        "rarity": "ancient", "effects": ["Gentle Warmth (+65 HP)"], "desc": "Comforting woolen hood woven to keep freezing wanderers safe.",
+        "tags": ["virtue_charity", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["charity_cowl"],
     },
     "charity_tunic": {
         "slot": "chest", "name": "Hearthkeeper Woolen Tunic",
         "def": 26, "hp": 95, "atk": 5, "crit": 2.0, "mp_regen": 1.5,
-        "rarity": "legendary", "effects": ["Hearth Sanctuary (+95 HP, +26 DEF)"], "desc": "Heavy lined tunic radiating calm soothing warmth.",
-        "tags": ["virtue_charity", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["charity_tunic"],
+        "rarity": "ancient", "effects": ["Hearth Sanctuary (+95 HP, +26 DEF)"], "desc": "Heavy lined tunic radiating calm soothing warmth.",
+        "tags": ["virtue_charity", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["charity_tunic"],
     },
     "charity_trousers": {
         "slot": "legs", "name": "Hearthkeeper Travel Trousers",
         "def": 16, "hp": 55, "atk": 2, "crit": 2.0, "speed": 0.28,
-        "rarity": "legendary", "effects": ["Steady Mercy (+28% Move Speed)"], "desc": "Durable warm trousers built for tireless humanitarian relief journeys.",
-        "tags": ["virtue_charity", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["charity_trousers"],
+        "rarity": "ancient", "effects": ["Steady Mercy (+28% Move Speed)"], "desc": "Durable warm trousers built for tireless humanitarian relief journeys.",
+        "tags": ["virtue_charity", "combat_mobility", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["charity_trousers"],
     },
     "charity_chalice": {
         "slot": "accessory", "name": "Everflowing Chalice of Mercy",
         "def": 6, "hp": 55, "atk": 0, "crit": 0.0, "mp_regen": 2.2,
-        "rarity": "legendary", "effects": ["Spring of Life (+2 HP/s, +2.2 MP/s)"], "desc": "Chalice overflowing with pure springwater that never runs dry.",
-        "tags": ["virtue_charity", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["charity_chalice"],
+        "rarity": "ancient", "effects": ["Spring of Life (+2 HP/s, +2.2 MP/s)"], "desc": "Chalice overflowing with pure springwater that never runs dry.",
+        "tags": ["virtue_charity", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["charity_chalice"],
     },
 
     # ---------------- Seven Heavenly Virtues: Chastity ----------------
     "chastity_lance": {
         "slot": "weapon", "name": "Lance of the Spotless Ward",
         "atk": 47, "def": 13, "hp": 25, "crit": 6.0, "speed": 0.05,
-        "rarity": "legendary",
+        "rarity": "ancient",
         "effects": ["Purifying Thrust: Piercing strikes dispel enemy buffs and cleanse 1 debuff from wielder", "Shield Wall"],
         "lore": "A gleaming alabaster jousting lance blessed by order paladins.",
         "desc": "A heavy tournament lance combining defensive bulwark with piercing purity.",
-        "tags": ["virtue_chastity", "combat_defensive"],
+        "tags": ["virtue_chastity", "combat_defensive", "seven_heavenly_virtues", "shv", "special"],
         "stat_ranges": ITEM_STAT_RANGES["chastity_lance"],
     },
     "chastity_sallet": {
         "slot": "head", "name": "Sallet of the Pure Aegis",
         "def": 24, "hp": 62, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Spotless Vision (+24 DEF, +62 HP, 50% Debuff Resistance)"], "desc": "A polished silver sallet with a tight protective bellows visor.",
-        "tags": ["virtue_chastity", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["chastity_sallet"],
+        "rarity": "ancient", "effects": ["Spotless Vision (+24 DEF, +62 HP, 50% Debuff Resistance)"], "desc": "A polished silver sallet with a tight protective bellows visor.",
+        "tags": ["virtue_chastity", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["chastity_sallet"],
     },
     "chastity_breastplate": {
         "slot": "chest", "name": "Breastplate of Unblemished Silver",
         "def": 36, "hp": 100, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Pure Aegis Sanctuary (+36 DEF, +100 HP, Status Immunity)"], "desc": "Flawless white-steel cuirass reflecting corruption and dark spells.",
-        "tags": ["virtue_chastity", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["chastity_breastplate"],
+        "rarity": "ancient", "effects": ["Pure Aegis Sanctuary (+36 DEF, +100 HP, Status Immunity)"], "desc": "Flawless white-steel cuirass reflecting corruption and dark spells.",
+        "tags": ["virtue_chastity", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["chastity_breastplate"],
     },
     "chastity_greaves": {
         "slot": "legs", "name": "Greaves of the Spotless Knight",
         "def": 22, "hp": 58, "atk": 0, "crit": 0.0, "speed": 0.32,
-        "rarity": "legendary", "effects": ["Iron Stride (+22 DEF, +58 HP, +32% Move Speed)"], "desc": "Articulated plate greaves that guard against ground hazards and caltrops.",
-        "tags": ["virtue_chastity", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["chastity_greaves"],
+        "rarity": "ancient", "effects": ["Iron Stride (+22 DEF, +58 HP, +32% Move Speed)"], "desc": "Articulated plate greaves that guard against ground hazards and caltrops.",
+        "tags": ["virtue_chastity", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["chastity_greaves"],
     },
     "chastity_aegis": {
         "slot": "accessory", "name": "Relic of the Untarnished Mirror",
         "def": 18, "hp": 50, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Ward of Purity: Blocks up to 60 incoming damage every 12 seconds"], "desc": "A miniature heater shield badge forged from pure starlight silver.",
-        "tags": ["virtue_chastity", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["chastity_aegis"],
+        "rarity": "ancient", "effects": ["Ward of Purity: Blocks up to 60 incoming damage every 12 seconds"], "desc": "A miniature heater shield badge forged from pure starlight silver.",
+        "tags": ["virtue_chastity", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["chastity_aegis"],
     },
 
     # ---------------- Seven Heavenly Virtues: Gratitude ----------------
     "gratitude_scepter": {
         "slot": "weapon", "name": "Scepter of the Everbright",
         "atk": 44, "def": 0, "hp": 20, "crit": 8.0, "mp_regen": 2.0,
-        "rarity": "legendary",
+        "rarity": "ancient",
         "effects": ["Bounteous Dawn: Skill casts have a 30% chance to cost 0 MP and trigger a radiant light burst", "Solar Flare"],
         "lore": "Crowned with a prism that converts humble thanks into brilliant sunlight.",
         "desc": "A radiant gold scepter providing continuous mana recovery and spell bursts.",
-        "tags": ["virtue_gratitude", "combat_sustain"],
+        "tags": ["virtue_gratitude", "combat_sustain", "seven_heavenly_virtues", "shv", "special"],
         "stat_ranges": ITEM_STAT_RANGES["gratitude_scepter"],
     },
     "gratitude_crown": {
         "slot": "head", "name": "Crown of the Everbright Dawn",
         "def": 20, "hp": 55, "atk": 0, "crit": 4.0, "mp_regen": 1.6,
-        "rarity": "legendary", "effects": ["Radiant Thanks (+20 DEF, +55 HP, +1.6 MP/s)"], "desc": "A golden corona that radiates gentle sunrise warmth.",
-        "tags": ["virtue_gratitude", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["gratitude_crown"],
+        "rarity": "ancient", "effects": ["Radiant Thanks (+20 DEF, +55 HP, +1.6 MP/s)"], "desc": "A golden corona that radiates gentle sunrise warmth.",
+        "tags": ["virtue_gratitude", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["gratitude_crown"],
     },
     "gratitude_chasuble": {
         "slot": "chest", "name": "Chasuble of the Golden Harvest",
         "def": 29, "hp": 80, "atk": 0, "crit": 0.0, "mp_regen": 2.3,
-        "rarity": "legendary", "effects": ["Harvest Blessing (+29 DEF, +80 HP, +2.3 MP/s)"], "desc": "Embroidered ceremonial vestment woven from golden wheat silk.",
-        "tags": ["virtue_gratitude", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["gratitude_chasuble"],
+        "rarity": "ancient", "effects": ["Harvest Blessing (+29 DEF, +80 HP, +2.3 MP/s)"], "desc": "Embroidered ceremonial vestment woven from golden wheat silk.",
+        "tags": ["virtue_gratitude", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["gratitude_chasuble"],
     },
     "gratitude_striders": {
         "slot": "legs", "name": "Striders of Joyful Steps",
         "def": 17, "hp": 50, "atk": 0, "crit": 0.0, "speed": 0.32,
-        "rarity": "legendary", "effects": ["Joyful March (+17 DEF, +50 HP, +32% Move Speed)"], "desc": "Comfortable leather travel boots that lighten fatigue over long journeys.",
-        "tags": ["virtue_gratitude", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["gratitude_striders"],
+        "rarity": "ancient", "effects": ["Joyful March (+17 DEF, +50 HP, +32% Move Speed)"], "desc": "Comfortable leather travel boots that lighten fatigue over long journeys.",
+        "tags": ["virtue_gratitude", "combat_mobility", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["gratitude_striders"],
     },
     "gratitude_locket": {
         "slot": "accessory", "name": "Locket of the Grateful Heart",
         "def": 0, "hp": 30, "atk": 0, "crit": 7.0, "mp_regen": 2.3,
-        "rarity": "legendary", "effects": ["Everbright Remembrance: +25% Resource efficiency across all skills"], "desc": "A heart-shaped gold locket keeping memories of kindness received.",
-        "tags": ["virtue_gratitude", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["gratitude_locket"],
+        "rarity": "ancient", "effects": ["Everbright Remembrance: +25% Resource efficiency across all skills"], "desc": "A heart-shaped gold locket keeping memories of kindness received.",
+        "tags": ["virtue_gratitude", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["gratitude_locket"],
     },
 
     # ---------------- Seven Heavenly Virtues: Temperance ----------------
     "temperance_trident": {
         "slot": "weapon", "name": "Trident of the Stillwater",
         "atk": 42, "def": 4, "hp": 20, "crit": 13.0, "speed": 0.15,
-        "rarity": "legendary",
+        "rarity": "ancient",
         "effects": ["Tidal Cadence: Landing critical hits reduces all active skill cooldowns by 1.5s", "Wave Thrust"],
         "lore": "Forged in crystalline glacial depths to calm boiling maelstroms.",
         "desc": "A balanced triple-prong trident maintaining steady rhythm and fluid tempo.",
-        "tags": ["virtue_temperance", "combat_offensive"],
+        "tags": ["virtue_temperance", "combat_offensive", "seven_heavenly_virtues", "shv", "special"],
         "stat_ranges": ITEM_STAT_RANGES["temperance_trident"],
     },
     "temperance_circlet": {
         "slot": "head", "name": "Circlet of the Calm Depths",
         "def": 18, "hp": 50, "atk": 0, "crit": 0.0, "mp_regen": 1.4,
-        "rarity": "legendary", "effects": ["Tranquil Focus (+18 DEF, +50 HP, +1.4 MP/s)"], "desc": "An aquamarine coronet that keeps the mind clear and focused amid chaos.",
-        "tags": ["virtue_temperance", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["temperance_circlet"],
+        "rarity": "ancient", "effects": ["Tranquil Focus (+18 DEF, +50 HP, +1.4 MP/s)"], "desc": "An aquamarine coronet that keeps the mind clear and focused amid chaos.",
+        "tags": ["virtue_temperance", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["temperance_circlet"],
     },
     "temperance_robe": {
         "slot": "chest", "name": "Robe of the Rippleless Pool",
         "def": 27, "hp": 75, "atk": 0, "crit": 0.0, "speed": 0.20,
-        "rarity": "legendary", "effects": ["Flowing Stillness (+27 DEF, +75 HP, +20% Move Speed)"], "desc": "Deep azure silk robes flowing like calm mountain brook water.",
-        "tags": ["virtue_temperance", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["temperance_robe"],
+        "rarity": "ancient", "effects": ["Flowing Stillness (+27 DEF, +75 HP, +20% Move Speed)"], "desc": "Deep azure silk robes flowing like calm mountain brook water.",
+        "tags": ["virtue_temperance", "combat_mobility", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["temperance_robe"],
     },
     "temperance_leggings": {
         "slot": "legs", "name": "Leggings of the Tidal Cadence",
         "def": 17, "hp": 45, "atk": 0, "crit": 0.0, "speed": 0.32,
-        "rarity": "legendary", "effects": ["Tidal Stride (+17 DEF, +45 HP, +32% Move Speed)"], "desc": "Form-fitting aquatic leggings enabling frictionless movement through water and air.",
-        "tags": ["virtue_temperance", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["temperance_leggings"],
+        "rarity": "ancient", "effects": ["Tidal Stride (+17 DEF, +45 HP, +32% Move Speed)"], "desc": "Form-fitting aquatic leggings enabling frictionless movement through water and air.",
+        "tags": ["virtue_temperance", "combat_mobility", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["temperance_leggings"],
     },
     "temperance_pearl": {
         "slot": "accessory", "name": "Tear of the Still Lake",
         "def": 4, "hp": 25, "atk": 0, "crit": 0.0, "mp_regen": 2.0, "speed": 0.15,
-        "rarity": "legendary", "effects": ["Stillwater Flow: Decreases skill cooldowns by 15% and increases move speed by +15%"], "desc": "A serene blue pearl that ripples softly when danger approaches.",
-        "tags": ["virtue_temperance", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["temperance_pearl"],
+        "rarity": "ancient", "effects": ["Stillwater Flow: Decreases skill cooldowns by 15% and increases move speed by +15%"], "desc": "A serene blue pearl that ripples softly when danger approaches.",
+        "tags": ["virtue_temperance", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["temperance_pearl"],
     },
 
     # ---------------- Seven Heavenly Virtues: Kindness ----------------
     "kindness_bow": {
         "slot": "weapon", "name": "Bow of the Verdant Guardian",
         "atk": 43, "def": 2, "hp": 20, "crit": 11.0, "speed": 0.10,
-        "rarity": "legendary",
+        "rarity": "ancient",
         "effects": ["Verdant Salve: Arrows sprout healing flora restoring 10 HP to allies and wielder upon hit", "Briar Shot"],
         "lore": "Bent from living elder wood that never snapped, strung with woven forest dew vines.",
         "desc": "A living longbow that protects allies while piercing enemies with thorned briars.",
-        "tags": ["virtue_kindness", "combat_sustain"],
+        "tags": ["virtue_kindness", "combat_sustain", "seven_heavenly_virtues", "shv", "special"],
         "stat_ranges": ITEM_STAT_RANGES["kindness_bow"],
     },
     "kindness_wreath": {
         "slot": "head", "name": "Wreath of the Forest Healer",
         "def": 17, "hp": 58, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Gentle Sprout (+17 DEF, +58 HP, +3 HP/s Regen)"], "desc": "A braided laurel wreath blooming with fragrant jasmine and clover.",
-        "tags": ["virtue_kindness", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["kindness_wreath"],
+        "rarity": "ancient", "effects": ["Gentle Sprout (+17 DEF, +58 HP, +3 HP/s Regen)"], "desc": "A braided laurel wreath blooming with fragrant jasmine and clover.",
+        "tags": ["virtue_kindness", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["kindness_wreath"],
     },
     "kindness_cuirass": {
         "slot": "chest", "name": "Cuirass of the Gentle Thorn",
         "def": 29, "hp": 88, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Verdant Heart (+29 DEF, +88 HP, +15 Reflected Thorns)"], "desc": "Armored cuirass reinforced with petrified ironwood bark that returns damage to assailants.",
-        "tags": ["virtue_kindness", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["kindness_cuirass"],
+        "rarity": "ancient", "effects": ["Verdant Heart (+29 DEF, +88 HP, +15 Reflected Thorns)"], "desc": "Armored cuirass reinforced with petrified ironwood bark that returns damage to assailants.",
+        "tags": ["virtue_kindness", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["kindness_cuirass"],
     },
     "kindness_striders": {
         "slot": "legs", "name": "Striders of the Gentle Ranger",
         "def": 17, "hp": 52, "atk": 0, "crit": 0.0, "speed": 0.32,
-        "rarity": "legendary", "effects": ["Forest Mercy (+17 DEF, +52 HP, +32% Move Speed)"], "desc": "Supple deer-hide boots leaving sprouting clover beneath each footprint.",
-        "tags": ["virtue_kindness", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["kindness_striders"],
+        "rarity": "ancient", "effects": ["Forest Mercy (+17 DEF, +52 HP, +32% Move Speed)"], "desc": "Supple deer-hide boots leaving sprouting clover beneath each footprint.",
+        "tags": ["virtue_kindness", "combat_mobility", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["kindness_striders"],
     },
     "kindness_seed": {
         "slot": "accessory", "name": "Evergreen Seed of Renewal",
         "def": 9, "hp": 52, "atk": 0, "crit": 0.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Seed of Life: Defies a fatal blow once every 90 seconds, instantly healing 40% Max HP"], "desc": "A glowing seed of the world tree holding infinite capacity to restore life.",
-        "tags": ["virtue_kindness", "combat_sustain"], "stat_ranges": ITEM_STAT_RANGES["kindness_seed"],
+        "rarity": "ancient", "effects": ["Seed of Life: Defies a fatal blow once every 90 seconds, instantly healing 40% Max HP"], "desc": "A glowing seed of the world tree holding infinite capacity to restore life.",
+        "tags": ["virtue_kindness", "combat_sustain", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["kindness_seed"],
     },
 
     # ---------------- Seven Heavenly Virtues: Diligence ----------------
     "diligence_warhammer": {
         "slot": "weapon", "name": "Unyielding Forge Hammer",
         "atk": 54, "def": 6, "hp": 30, "crit": 8.0, "speed": 0.12,
-        "rarity": "legendary",
+        "rarity": "ancient",
         "effects": ["Smith's Rhythm: Each attack landed increases attack speed by +5% (max +35%)", "Armor Denting"],
         "lore": "The very hammer that struck three hundred thousand ingots without resting for a single day.",
         "desc": "A formidable warhammer rewarding consistent rhythm with relentless escalating tempo.",
-        "tags": ["virtue_diligence", "combat_offensive"],
+        "tags": ["virtue_diligence", "combat_offensive", "seven_heavenly_virtues", "shv", "special"],
         "stat_ranges": ITEM_STAT_RANGES["diligence_warhammer"],
     },
     "diligence_helm": {
         "slot": "head", "name": "Vanguard Greathelm of Labor",
         "def": 24, "hp": 65, "atk": 8, "crit": 3.0, "speed": 0.05,
-        "rarity": "legendary", "effects": ["Steadfast Focus (+24 DEF, +8 ATK)"], "desc": "Solid steel helm built to withstand cave-ins and siege weapons alike.",
-        "tags": ["virtue_diligence", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["diligence_helm"],
+        "rarity": "ancient", "effects": ["Steadfast Focus (+24 DEF, +8 ATK)"], "desc": "Solid steel helm built to withstand cave-ins and siege weapons alike.",
+        "tags": ["virtue_diligence", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["diligence_helm"],
     },
     "diligence_plate": {
         "slot": "chest", "name": "Plate of the Unwearied Smith",
         "def": 34, "hp": 95, "atk": 12, "crit": 3.0, "speed": 0.0,
-        "rarity": "legendary", "effects": ["Tireless Heart (+34 DEF, +95 HP)"], "desc": "Reinforced anvil-forged chestplate built for unwavering duty.",
-        "tags": ["virtue_diligence", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["diligence_plate"],
+        "rarity": "ancient", "effects": ["Tireless Heart (+34 DEF, +95 HP)"], "desc": "Reinforced anvil-forged chestplate built for unwavering duty.",
+        "tags": ["virtue_diligence", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["diligence_plate"],
     },
     "diligence_greaves": {
         "slot": "legs", "name": "Greaves of the Iron March",
         "def": 21, "hp": 55, "atk": 5, "crit": 2.0, "speed": 0.32,
-        "rarity": "legendary", "effects": ["Marching Cadence (+32% Move Speed)"], "desc": "Steel boots engineered for long unyielding marches.",
-        "tags": ["virtue_diligence", "combat_mobility"], "stat_ranges": ITEM_STAT_RANGES["diligence_greaves"],
+        "rarity": "ancient", "effects": ["Marching Cadence (+32% Move Speed)"], "desc": "Steel boots engineered for long unyielding marches.",
+        "tags": ["virtue_diligence", "combat_mobility", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["diligence_greaves"],
     },
     "diligence_anvil_charm": {
         "slot": "accessory", "name": "Charm of the Tireless Smith",
         "def": 12, "hp": 40, "atk": 10, "crit": 4.0, "speed": 0.05,
-        "rarity": "rare", "effects": ["Smith's Endurance (+12 DEF, +10 ATK)"], "desc": "A miniature anvil worn as a talisman of persistent craftsmanship.",
-        "tags": ["virtue_diligence", "combat_defensive"], "stat_ranges": ITEM_STAT_RANGES["diligence_anvil_charm"],
+        "rarity": "ancient", "effects": ["Smith's Endurance (+12 DEF, +10 ATK)"], "desc": "A miniature anvil worn as a talisman of persistent craftsmanship.",
+        "tags": ["virtue_diligence", "combat_defensive", "seven_heavenly_virtues", "shv", "special"], "stat_ranges": ITEM_STAT_RANGES["diligence_anvil_charm"],
+    },
+
+    # ---------------- Seven Heavenly Virtues: Patience (The Long Vigil) ----------------
+    "patience_circlet": {
+        "slot": "head", "name": "Vigilant Circlet",
+        "def": 24, "hp": 68, "atk": 4, "crit": 3.0, "speed": 0.0,
+        "rarity": "ancient", "effects": ["Steady Vigil (+24 DEF, +68 HP)"],
+        "lore": "Forged from aged starlight silver and cold mountain glass, worn through timeless watches.",
+        "desc": "A weathered silver band adorned with calm sapphire, holding unwavering focus.",
+        "tags": ["virtue_patience", "seven_heavenly_virtues", "shv", "special", "combat_defensive"],
+        "stat_ranges": ITEM_STAT_RANGES["patience_circlet"],
+    },
+    "patience_mantle": {
+        "slot": "chest", "name": "Longwatch Mantle",
+        "def": 38, "hp": 105, "atk": 6, "crit": 3.0, "speed": 0.0,
+        "rarity": "ancient", "effects": ["Long Vigil Ward (+38 DEF, +105 HP, +20% Stagger Resistance)"],
+        "lore": "A layered mantle of starlight silk and weathered plate that survived centuries of vigil.",
+        "desc": "Heavy layered mantle woven from starlight silk and weathered silver plates.",
+        "tags": ["virtue_patience", "seven_heavenly_virtues", "shv", "special", "combat_defensive"],
+        "stat_ranges": ITEM_STAT_RANGES["patience_mantle"],
+    },
+    "patience_greaves": {
+        "slot": "legs", "name": "Pilgrim's Greaves",
+        "def": 22, "hp": 62, "atk": 0, "crit": 2.0, "speed": 0.28,
+        "rarity": "ancient", "effects": ["Enduring March (+22 DEF, +62 HP, +28% Move Speed)"],
+        "lore": "Articulated plate greaves that paced across unending leagues of desolate frontier.",
+        "desc": "Sturdy pilgrim greaves engineered for endless watches and tireless vigils.",
+        "tags": ["virtue_patience", "seven_heavenly_virtues", "shv", "special", "combat_mobility"],
+        "stat_ranges": ITEM_STAT_RANGES["patience_greaves"],
+    },
+    "patience_hands": {
+        "slot": "weapon", "name": "Measured Hands — Handwraps of the Vigil",
+        "atk": 48, "def": 8, "hp": 25, "crit": 8.0, "speed": 0.14,
+        "rarity": "ancient",
+        "effects": ["Wait for the Opening: First attack after a pause deals +35% damage", "Disciplined Strike"],
+        "lore": "Blessed handwraps inscribed with ancient hymns of disciplined endurance.",
+        "desc": "Blessed ceremonial handwraps that channel immense patience into devastating, perfectly-timed counterstrikes.",
+        "tags": ["virtue_patience", "seven_heavenly_virtues", "shv", "special", "combat_offensive"],
+        "stat_ranges": ITEM_STAT_RANGES["patience_hands"],
+    },
+    "patience_bell": {
+        "slot": "accessory", "name": "Bell of the Last Hour",
+        "def": 15, "hp": 52, "atk": 0, "crit": 4.0, "mp_regen": 2.0,
+        "rarity": "ancient",
+        "effects": ["Last Hour Tolling: Surviving a heavy hit grants an 80 HP shield (45s cooldown)"],
+        "lore": "An antique silver chime that rings with the solemn stillness of the final watch.",
+        "desc": "An antique silver chime that rings with the stillness of the final watch.",
+        "tags": ["virtue_patience", "seven_heavenly_virtues", "shv", "special", "combat_defensive"],
+        "stat_ranges": ITEM_STAT_RANGES["patience_bell"],
     },
 }
 
@@ -1688,6 +1911,17 @@ def register_new_equipment_into_catalogs() -> None:
                 "tags": item_spec.get("tags", []),
                 "stat_ranges": item_spec.get("stat_ranges"),
             }
+        else:
+            reg_entry = inventory.ITEM_REGISTRY[item_id]
+            if not reg_entry.get("tags"):
+                reg_entry["tags"] = list(item_spec.get("tags", []))
+            if not reg_entry.get("stat_ranges"):
+                reg_entry["stat_ranges"] = item_spec.get("stat_ranges")
+            if not reg_entry.get("desc") or reg_entry.get("desc", "").startswith("A "):
+                reg_entry["desc"] = item_spec.get("desc", reg_entry.get("desc", ""))
+            if not reg_entry.get("lore"):
+                reg_entry["lore"] = item_spec.get("lore", "")
+
 
 
 # -----------------------------------------------------------------------------

@@ -894,7 +894,8 @@ class AssetFactory:
             "bone", "affix_stone", "dungeon_rune", "desert_rune", "cryo_rune", "necro_rune",
             "portal_shard", "celestial_shard", "celestial_fragment", "celestial_keystone",
             "volcanic_stone", "frost_core", "magma_core", "necro_essence", "celestial_essence",
-            "crown_of_potaria", "healing_potion", "greater_healing_potion", "speed_potion"
+            "crown_of_potaria", "healing_potion", "greater_healing_potion", "speed_potion",
+            "katipunero_bolo", "barong_tagalog", "salakot", "balisong", "kampilan", "bakya", "tabak"
         ):
             self._draw_bespoke_iconic_item(surf, item_id, pal, rarity, h)
         # 2. Arrows & Ammunition (Priority 2: prevents arrows with cat=='weapon' or 'material' from becoming swords/rocks)
@@ -1508,6 +1509,102 @@ class AssetFactory:
                 pygame.draw.line(surf, (255, 255, 255), (12, 12), (12, 16), 2)
                 pygame.draw.line(surf, (255, 255, 255), (10, 14), (14, 14), 2)
             surf.set_at((8, 10), (255, 255, 255))
+            return
+
+        if id_lower == "katipunero_bolo":
+            # Authentic Katipunan Bolo (Itak) with belly curve, kamagong hilt, brass pins & red revolution cord
+            pygame.draw.polygon(surf, (35, 18, 12), [(4, 18), (8, 22), (6, 23), (2, 20)])
+            pygame.draw.polygon(surf, (95, 45, 22), [(5, 19), (7, 21), (6, 22), (3, 20)])
+            surf.set_at((5, 19), (245, 205, 55))
+            surf.set_at((7, 21), (245, 205, 55))
+            pygame.draw.line(surf, (220, 35, 45), (3, 22), (1, 23), 2)
+            blade_pts = [(7, 18), (14, 11), (20, 4), (22, 5), (18, 12), (11, 19)]
+            pygame.draw.polygon(surf, (45, 48, 55), blade_pts)
+            belly_pts = [(8, 17), (14, 10), (19, 5), (21, 6), (17, 12), (11, 18)]
+            pygame.draw.polygon(surf, (195, 205, 220), belly_pts)
+            pygame.draw.line(surf, (255, 255, 255), (12, 17), (21, 6), 1)
+            surf.set_at((20, 5), (255, 255, 255))
+            return
+
+        if id_lower == "barong_tagalog":
+            # Traditional Pina/Jusi Barong Tagalog: ivory translucent fabric, formal collar, pechera embroidery
+            pygame.draw.polygon(surf, (85, 75, 60), [(7, 4), (16, 4), (20, 9), (18, 19), (5, 19), (3, 9)])
+            pygame.draw.polygon(surf, (245, 240, 225), [(8, 5), (15, 5), (19, 9), (17, 18), (6, 18), (4, 9)])
+            pygame.draw.line(surf, (225, 218, 198), (7, 10), (7, 17), 1)
+            pygame.draw.line(surf, (225, 218, 198), (16, 10), (16, 17), 1)
+            pygame.draw.rect(surf, (215, 200, 170), (9, 7, 6, 8), 1)
+            pygame.draw.line(surf, (200, 180, 140), (10, 9), (13, 9), 1)
+            pygame.draw.line(surf, (200, 180, 140), (10, 11), (13, 11), 1)
+            pygame.draw.line(surf, (200, 180, 140), (10, 13), (13, 13), 1)
+            surf.set_at((11, 8), (255, 255, 255))
+            surf.set_at((11, 10), (255, 255, 255))
+            surf.set_at((11, 12), (255, 255, 255))
+            pygame.draw.line(surf, (255, 255, 248), (9, 4), (14, 4), 2)
+            pygame.draw.line(surf, (185, 175, 150), (9, 5), (14, 5), 1)
+            return
+
+        if id_lower == "salakot":
+            # Authentic Conical Bamboo/Rattan Salakot Hat with ornate bronze finial peak & chin cord
+            pygame.draw.polygon(surf, (60, 42, 18), [(12, 3), (22, 17), (1, 17)])
+            pygame.draw.polygon(surf, (225, 175, 75), [(12, 4), (21, 16), (2, 16)])
+            pygame.draw.line(surf, (180, 130, 48), (5, 14), (18, 14), 1)
+            pygame.draw.line(surf, (180, 130, 48), (8, 10), (15, 10), 1)
+            pygame.draw.line(surf, (248, 215, 125), (6, 13), (17, 13), 1)
+            pygame.draw.line(surf, (248, 215, 125), (9, 9), (14, 9), 1)
+            pygame.draw.polygon(surf, (245, 205, 55), [(12, 1), (10, 4), (13, 4)])
+            surf.set_at((11, 2), (255, 250, 195))
+            pygame.draw.lines(surf, (85, 55, 25), False, [(4, 17), (8, 21), (11, 21), (15, 21), (19, 17)], 1)
+            return
+
+        if id_lower == "balisong":
+            # Authentic Batangas Balisong (Butterfly Knife) with slotted horn handles & surgical blade
+            pygame.draw.line(surf, (45, 28, 18), (4, 18), (11, 22), 2)
+            pygame.draw.line(surf, (45, 28, 18), (7, 15), (14, 19), 2)
+            surf.set_at((6, 17), (245, 210, 50))
+            surf.set_at((9, 14), (245, 210, 50))
+            surf.set_at((12, 21), (225, 185, 45))
+            pygame.draw.line(surf, (60, 65, 75), (9, 13), (19, 3), 2)
+            pygame.draw.line(surf, (215, 225, 240), (10, 14), (20, 4), 1)
+            surf.set_at((20, 3), (255, 255, 255))
+            surf.set_at((19, 4), (255, 255, 255))
+            surf.set_at((15, 8), (255, 255, 255))
+            return
+
+        if id_lower == "kampilan":
+            # Legendary Kampilan broadsword with carved open-mouth crocodile hilt & flared bifurcated tip
+            pygame.draw.polygon(surf, (75, 28, 15), [(2, 21), (6, 17), (8, 19), (4, 23)])
+            surf.set_at((2, 22), (215, 35, 45))
+            surf.set_at((3, 23), (215, 35, 45))
+            pygame.draw.line(surf, (220, 175, 95), (4, 19), (7, 16), 1)
+            pygame.draw.line(surf, (45, 35, 30), (5, 15), (9, 18), 2)
+            pygame.draw.polygon(surf, (50, 55, 65), [(7, 14), (16, 5), (20, 2), (22, 5), (17, 10), (9, 16)])
+            pygame.draw.polygon(surf, (195, 205, 225), [(8, 14), (16, 6), (19, 3), (21, 5), (16, 10), (10, 15)])
+            pygame.draw.line(surf, (255, 255, 255), (10, 15), (17, 9), 1)
+            pygame.draw.line(surf, (255, 255, 255), (17, 9), (21, 5), 1)
+            surf.set_at((19, 3), (255, 255, 255))
+            return
+
+        if id_lower == "bakya":
+            # Traditional Filipino Carved Wooden Clogs with varnished wood soles & red lacquered strap
+            pygame.draw.polygon(surf, (70, 38, 18), [(3, 14), (11, 14), (11, 19), (7, 19), (6, 17), (3, 17)])
+            pygame.draw.polygon(surf, (195, 125, 55), [(4, 15), (10, 15), (10, 18), (8, 18), (7, 16), (4, 16)])
+            pygame.draw.polygon(surf, (70, 38, 18), [(12, 11), (20, 11), (20, 16), (16, 16), (15, 14), (12, 14)])
+            pygame.draw.polygon(surf, (195, 125, 55), [(13, 12), (19, 12), (19, 15), (17, 15), (16, 13), (13, 13)])
+            pygame.draw.arc(surf, (220, 35, 45), (4, 11, 7, 7), 0.2, 3.0, 2)
+            pygame.draw.arc(surf, (220, 35, 45), (13, 8, 7, 7), 0.2, 3.0, 2)
+            surf.set_at((7, 12), (255, 225, 75))
+            surf.set_at((16, 9), (255, 225, 75))
+            return
+
+        if id_lower == "tabak":
+            # Authentic Tabak battle short sword with forward-curving belly & hooked kamagong grip
+            pygame.draw.line(surf, (45, 22, 14), (3, 20), (7, 16), 2)
+            surf.set_at((3, 21), (30, 15, 10))
+            pygame.draw.line(surf, (245, 205, 50), (6, 18), (9, 15), 1)
+            pygame.draw.polygon(surf, (55, 60, 70), [(7, 15), (12, 10), (18, 4), (20, 5), (16, 12), (10, 17)])
+            pygame.draw.polygon(surf, (205, 215, 230), [(8, 15), (13, 10), (18, 5), (19, 6), (15, 12), (10, 16)])
+            pygame.draw.line(surf, (255, 255, 255), (11, 15), (19, 6), 1)
+            surf.set_at((18, 5), (255, 255, 255))
             return
 
     # ==========================================================================

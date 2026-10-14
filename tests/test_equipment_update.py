@@ -186,12 +186,13 @@ class TestEquipmentUpdate(unittest.TestCase):
             self.assertIn(sin, PROGRESSIVE_SETS)
             s_data = PROGRESSIVE_SETS[sin]
             self.assertIn(2, s_data["thresholds"])
-            self.assertIn(3, s_data["thresholds"])
+            self.assertIn(4, s_data["thresholds"])
+            self.assertIn(5, s_data["thresholds"])
             for piece in s_data["pieces"]:
                 self.assertIn(piece, ARMOR_DATA)
                 self.assertIn(piece, ITEM_REGISTRY)
 
-        # Test Wrath 2-piece and 3-piece
+        # Test Wrath 2-piece and 4-piece
         self.equipment.clear_all_items(self.stats)
         self.equipment.equip(ItemStack("wrath_helm", 1), self.stats)
         self.equipment.equip(ItemStack("wrath_cuirass", 1), self.stats)
@@ -208,7 +209,8 @@ class TestEquipmentUpdate(unittest.TestCase):
             self.assertIn(v, PROGRESSIVE_SETS)
             v_data = PROGRESSIVE_SETS[v]
             self.assertIn(2, v_data["thresholds"])
-            self.assertIn(3, v_data["thresholds"])
+            self.assertIn(4, v_data["thresholds"])
+            self.assertIn(5, v_data["thresholds"])
             for piece in v_data["pieces"]:
                 self.assertIn(piece, ARMOR_DATA)
                 self.assertIn(piece, ITEM_REGISTRY)
@@ -353,7 +355,7 @@ class TestEquipmentUpdate(unittest.TestCase):
         self.assertIn("maximum limit", reason2.lower())
 
         # 2. Mythic item allows 2 slots
-        mythic_item = ItemStack("pride_blade", 1)
+        mythic_item = ItemStack("cinder_saber", 1)
         can_add, _ = can_add_affix_slot(mythic_item)
         self.assertTrue(can_add)
         add_affix_slot_to_item(mythic_item)

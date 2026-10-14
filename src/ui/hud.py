@@ -937,13 +937,15 @@ class HUD:
             txt_sym = self.font.render(sym, True, sym_col)
             target_surf.blit(txt_sym, (mx + 8, my + 3))
 
-        # Time readout
-        t_col = (180, 220, 255) if is_night else (255, 230, 110)
-        t_surf = self.font_sm.render(time_str, True, t_col)
-        target_surf.blit(t_surf, (mx + 28, my + 5))
+        # Time readout & Phase tag badge (Cached: only re-render when minute string or day/night changes)
+        if getattr(self, "_cached_clock_str", None) != time_str or getattr(self, "_cached_clock_night", None) != is_night:
+            self._cached_clock_str = time_str
+            self._cached_clock_night = is_night
+            t_col = (180, 220, 255) if is_night else (255, 230, 110)
+            self._cached_clock_tsurf = self.font_sm.render(time_str, True, t_col)
+            phase_str = "NIGHT" if is_night else "DAY"
+            phase_col = (140, 175, 230) if is_night else (230, 180, 80)
+            self._cached_clock_psurf = self.font_sm.render(phase_str, True, phase_col)
 
-        # Phase tag badge
-        phase_str = "NIGHT" if is_night else "DAY"
-        phase_col = (140, 175, 230) if is_night else (230, 180, 80)
-        p_surf = self.font_sm.render(phase_str, True, phase_col)
-        target_surf.blit(p_surf, (mx + mw - p_surf.get_width() - 8, my + 5))
+        target_surf.blit(self._cached_clock_tsurf, (mx + 28, my + 5))
+        target_surf.blit(self._cached_clock_psurf, (mx + mw - self._cached_clock_psurf.get_width() - 8, my + 5))

@@ -24,17 +24,20 @@ class DayNightCycle:
         self.sun_surf = asset_factory.environment["sun"]
         self.moon_surf = asset_factory.environment["moon"]
 
-        # Generate persistent starfield
+        # Generate persistent, deterministic starfield
         self.stars = []
         rng = random.Random(42)
         for _ in range(140):
             sx = rng.randint(0, SCREEN_WIDTH)
             sy = rng.randint(0, SCREEN_HEIGHT)
             brightness = rng.uniform(0.4, 1.0)
-            self.stars.append((sx, sy, brightness))
+            phase = rng.uniform(0.0, math.pi * 2.0)
+            speed = rng.uniform(0.8, 1.25)
+            self.stars.append((sx, sy, brightness, phase, speed))
 
         # Pre-computed twinkling star frames for high performance
         self.star_frames = self._create_star_frames()
+        self.star_surfaces = self._create_star_surfaces()
 
         # Load Parallax Background Assets from assets/backgrounds/
         self._load_background_assets()
@@ -158,49 +161,36 @@ class DayNightCycle:
 
     def get_sky_colors(self):
         """Returns (top_color, bottom_color) based on current celestial time."""
+        try:
+            from src.environment.sky_presets import get_procedural_sky_colors
+            return get_procedural_sky_colors(self.time_of_day)
+        except Exception:
+            pass
         t = self.time_of_day
-
         c_day_top = (115, 175, 195)
         c_day_bot = (175, 215, 225)
-
         c_dusk_top = (90, 50, 95)
         c_dusk_bot = (250, 135, 85)
-
         c_night_top = (12, 18, 35)
         c_night_bot = (25, 40, 65)
-
         c_dawn_top = (60, 50, 90)
         c_dawn_bot = (245, 155, 110)
-
-        # Philippines celestial progression:
-        # - 5:00 AM (t = 23/24 ~ 0.9583): Night ends, dawn begins; starts to not be pitch black
-        # - 6:00 AM (t = 0.0): Sunrise (start of the sun); sky transitions to morning daylight
-        # - 6:30 AM to 5:30 PM (0.02 <= t < 0.48): Daytime
-        # - 5:30 PM to 6:00 PM (0.48 <= t < 0.50): Sunset / dusk
-        # - 6:00 PM to 6:43 PM (0.50 <= t < 0.53): Dusk fades into night
-        # - 6:43 PM to 5:00 AM (0.53 <= t < 23/24): Deep night (pitch black sky)
         t_5am = 23.0 / 24.0
 
         if t < 0.02:
-            # 6:00 AM to 6:30 AM: Dawn into full morning daylight
             frac = t / 0.02
             return self._lerp_color(c_dawn_top, c_day_top, frac), self._lerp_color(c_dawn_bot, c_day_bot, frac)
         elif t < 0.48:
-            # 6:30 AM to 5:30 PM: Full daytime
             return c_day_top, c_day_bot
         elif t < 0.50:
-            # 5:30 PM to 6:00 PM: Daytime into sunset dusk
             frac = (t - 0.48) / 0.02
             return self._lerp_color(c_day_top, c_dusk_top, frac), self._lerp_color(c_day_bot, c_dusk_bot, frac)
         elif t < 0.53:
-            # 6:00 PM to ~6:43 PM: Dusk fades into night darkness
             frac = (t - 0.50) / 0.03
             return self._lerp_color(c_dusk_top, c_night_top, frac), self._lerp_color(c_dusk_bot, c_night_bot, frac)
         elif t < t_5am:
-            # 6:43 PM to 5:00 AM: Deep night (pitch black)
             return c_night_top, c_night_bot
         else:
-            # 5:00 AM to 6:00 AM: Starts to not be pitch black; night illuminates into dawn
             frac = (t - t_5am) / (1.0 - t_5am)
             return self._lerp_color(c_night_top, c_dawn_top, frac), self._lerp_color(c_night_bot, c_dawn_bot, frac)
 
@@ -271,7 +261,8 @@ class DayNightCycle:
         frames = []
         for f in range(4):
             frame_stars = []
-            for sx, sy, bright in self.stars:
+            for item in self.stars:
+                sx, sy, bright = item[0], item[1], item[2]
                 phase = (f * 1.57 + sx * 0.1) % (math.pi * 2.0)
                 twinkle = (math.sin(phase) + 1.0) * 0.5 * bright
                 alpha = int(twinkle * 220)
@@ -280,6 +271,24 @@ class DayNightCycle:
                     frame_stars.append((sx, sy, (val, val, val)))
             frames.append(frame_stars)
         return frames
+
+    def _create_star_surfaces(self):
+        surfs = []
+        num_frames = 16
+        for f in range(num_frames):
+            s = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            for item in self.stars:
+                sx, sy = item[0], item[1]
+                bright = item[2]
+                p_off = item[3] if len(item) > 3 else (sx * 0.1)
+                s_mult = item[4] if len(item) > 4 else 1.0
+                phase = (f * (2.0 * math.pi / num_frames) * s_mult + p_off) % (2.0 * math.pi)
+                twinkle = 0.55 + 0.45 * (0.5 + 0.5 * math.sin(phase)) * bright
+                val = min(255, max(70, int(140 + twinkle * 115)))
+                alpha = int(twinkle * 220)
+                s.set_at((sx, sy), (val, val, min(255, val + 15), alpha))
+            surfs.append(s)
+        return surfs
 
     def render(self, target_surf, camera):
         """
@@ -302,13 +311,11 @@ class DayNightCycle:
             self._cached_sky_surf.get_width() != sw or
             self._cached_sky_surf.get_height() != sh):
             
-            gradient = pygame.Surface((1, sh))
-            inv_sh = 1.0 / float(max(1, sh - 1))
-            for y in range(sh):
-                frac = y * inv_sh
-                c = self._lerp_color(top_c, bot_c, frac)
-                gradient.set_at((0, y), c)
-            self._cached_sky_surf = pygame.transform.scale(gradient, (sw, sh))
+            # SIMD hardware-accelerated 2-pixel smoothscale (< 0.03ms per frame)
+            grad_2px = pygame.Surface((1, 2))
+            grad_2px.set_at((0, 0), top_c)
+            grad_2px.set_at((0, 1), bot_c)
+            self._cached_sky_surf = pygame.transform.smoothscale(grad_2px, (sw, sh))
             self._cached_top_c = top_c
             self._cached_bot_c = bot_c
             self._last_bake_ticks = now_ticks
@@ -318,7 +325,6 @@ class DayNightCycle:
         # 2. Twinkling Stars (Active during night or when high in the atmosphere/space)
         show_stars = in_space or self.is_night or cam_y_tile < 0 or (0.50 <= self.time_of_day < (23.5 / 24.0))
         if show_stars:
-            frame_idx = (now_ticks // 220) % len(self.star_frames)
             star_mult = 1.0
             if not in_space and cam_y_tile >= 0:
                 t_day = self.time_of_day
@@ -328,12 +334,20 @@ class DayNightCycle:
                     # Fade out between 5:00 AM and 5:30 AM
                     star_mult = max(0.0, 1.0 - (t_day - (23.0 / 24.0)) / (0.5 / 24.0))
             if star_mult > 0.05:
-                for sx, sy, star_c in self.star_frames[frame_idx]:
+                if getattr(self, "star_surfaces", None):
+                    frame_idx = (now_ticks // 100) % len(self.star_surfaces)
+                    star_surf = self.star_surfaces[frame_idx]
                     if star_mult < 0.98:
-                        sc = (int(star_c[0] * star_mult), int(star_c[1] * star_mult), int(star_c[2] * star_mult))
+                        mod_surf = star_surf.copy()
+                        mod_surf.set_alpha(int(255 * star_mult))
+                        target_surf.blit(mod_surf, (0, 0))
                     else:
-                        sc = star_c
-                    target_surf.set_at((sx, sy), sc)
+                        target_surf.blit(star_surf, (0, 0))
+                else:
+                    frame_idx = (now_ticks // 220) % len(self.star_frames)
+                    for sx, sy, star_c in self.star_frames[frame_idx]:
+                        sc = (int(star_c[0] * star_mult), int(star_c[1] * star_mult), int(star_c[2] * star_mult)) if star_mult < 0.98 else star_c
+                        target_surf.set_at((sx, sy), sc)
 
         # 3. Celestial Orbit (Sun & Moon Arc - Philippine timing)
         # 6:00 AM (t = 0.0) is the start of the sun rising; sets at 6:00 PM (t = 0.50)

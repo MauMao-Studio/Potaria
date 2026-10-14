@@ -53,7 +53,7 @@ from src.constants import (
     CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL,
     PLAYER_WIDTH, PLAYER_HEIGHT
 )
-from src.world.save_manager import save_world, load_world, delete_world, list_saved_worlds
+from src.world.save_manager import save_world, load_world, delete_world, list_saved_worlds, wait_for_pending_saves
 from src.assets.asset_factory import AssetFactory
 from src.audio.sound_effects import SoundManager
 from src.audio.bgm_manager import BgmManager
@@ -329,9 +329,9 @@ class PotariaGame:
                         self.sky.time = dur * 0.25
                 feedback = f"Time set to: {self.sky.get_time_string()}"
 
-        elif cmd in ("give", "item"):
+        elif cmd in ("give", "item", "get"):
             if not args:
-                feedback = "Usage: /give <item_id> [count]"
+                feedback = "Usage: /give <item_id> [count] or /get <item_id> [count]"
             else:
                 from src.ui.inventory import ITEM_REGISTRY, ITEM_ALIASES
                 item_id = args[0].lower()
@@ -514,10 +514,10 @@ class PotariaGame:
             if hasattr(self.inventory, "notify"):
                 self.inventory.notify(feedback)
 
-    def save_game_world(self, create_snapshot=False, reason=None):
+    def save_game_world(self, create_snapshot=False, reason=None, async_save=True):
         """Saves current world progress to saves/<active_world_name>/world.json."""
         try:
-            save_world(self.active_world_name, self, create_snapshot=create_snapshot, reason=reason)
+            save_world(self.active_world_name, self, create_snapshot=create_snapshot, reason=reason, async_save=async_save)
             if hasattr(self, "menu") and hasattr(self.menu, "save_settings"):
                 self.menu.save_settings()
             print(f"[Main] Saved world '{self.active_world_name}' successfully.")
@@ -880,6 +880,7 @@ class PotariaGame:
 
     def return_to_main_menu(self):
         """Cleanly leaves active session and returns to Main Menu."""
+        wait_for_pending_saves()
         if self.client:
             try:
                 self.client.disconnect()
@@ -1258,7 +1259,8 @@ class PotariaGame:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 if self.menu.state == STATE_PLAYING:
-                    self.save_game_world()
+                    self.save_game_world(async_save=False)
+                wait_for_pending_saves()
                 if hasattr(self.menu, "save_settings"):
                     self.menu.save_settings()
                 self.running = False

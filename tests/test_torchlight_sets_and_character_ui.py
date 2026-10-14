@@ -147,9 +147,9 @@ class TestTorchlightSetsAndCharacterUI(unittest.TestCase):
         self.assertIn(3, PROGRESSIVE_SETS["ancient"]["thresholds"])
         self.assertIn(4, PROGRESSIVE_SETS["ancient"]["thresholds"])
 
-        # 5-piece set: sin_pride, sin_greed, virtue_purity, etc.
+        # 5-piece set: sin_pride, sin_greed, virtue_humility, etc.
         self.assertIn(2, PROGRESSIVE_SETS["sin_pride"]["thresholds"])
-        self.assertIn(3, PROGRESSIVE_SETS["sin_pride"]["thresholds"])
+        self.assertIn(4, PROGRESSIVE_SETS["sin_pride"]["thresholds"])
         self.assertIn(5, PROGRESSIVE_SETS["sin_pride"]["thresholds"])
 
         # 3-piece set: diwata_bloom, bakunawa_eclipse, etc.
@@ -185,24 +185,24 @@ class TestTorchlightSetsAndCharacterUI(unittest.TestCase):
         self.assertEqual(tiers_4, [2, 3, 4])
 
     def test_5_piece_set_milestones(self):
-        """Verifies 5-piece sets activate at 2, 3, and 5 pieces."""
+        """Verifies 5-piece sets activate at 2, 4, and 5 pieces."""
         pieces = ["pride_crown", "pride_robe", "pride_boots", "pride_blade", "pride_ring"]
 
         # 2 pieces -> [2]
         b2 = get_all_active_threshold_bonuses(pieces[:2])
         self.assertEqual([t[1] for t in b2], [2])
 
-        # 3 pieces -> [2, 3]
+        # 3 pieces -> [2] (since next milestone is 4)
         b3 = get_all_active_threshold_bonuses(pieces[:3])
-        self.assertEqual([t[1] for t in b3], [2, 3])
+        self.assertEqual([t[1] for t in b3], [2])
 
-        # 4 pieces -> [2, 3] (since next milestone is 5)
+        # 4 pieces -> [2, 4]
         b4 = get_all_active_threshold_bonuses(pieces[:4])
-        self.assertEqual([t[1] for t in b4], [2, 3])
+        self.assertEqual([t[1] for t in b4], [2, 4])
 
-        # 5 pieces -> [2, 3, 5]
+        # 5 pieces -> [2, 4, 5]
         b5 = get_all_active_threshold_bonuses(pieces)
-        self.assertEqual([t[1] for t in b5], [2, 3, 5])
+        self.assertEqual([t[1] for t in b5], [2, 4, 5])
 
     def test_legacy_single_tier_compatibility(self):
         """Verifies get_active_threshold_bonuses with cumulative=False returns single highest tier per set."""

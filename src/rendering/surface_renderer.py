@@ -74,19 +74,18 @@ class SurfaceRenderer(BaseRenderer):
                     win.position = (0, 0)
                 else:
                     win.borderless = False
-                    win.resizable = True
+                    win.resizable = False
                     target_w = getattr(self, "display_width", self.width)
                     target_h = getattr(self, "display_height", self.height)
-                    if target_w >= desk_w or target_h >= desk_h:
-                        win_w = min(1600, max(1024, desk_w - 120))
-                        win_h = min(900, max(600, desk_h - 140))
-                    else:
-                        win_w = target_w
-                        win_h = target_h
+                    win_w = target_w
+                    win_h = target_h
                     win.size = (win_w, win_h)
-                    pos_x = max(20, (desk_w - win_w) // 2)
-                    pos_y = max(30, (desk_h - win_h) // 2 - 20)
-                    win.position = (pos_x, pos_y)
+                    if target_w >= desk_w and target_h >= desk_h:
+                        win.position = (0, 0)
+                    else:
+                        pos_x = max(0, (desk_w - win_w) // 2)
+                        pos_y = max(0, (desk_h - win_h) // 2)
+                        win.position = (pos_x, pos_y)
         except Exception:
             pass
 
@@ -242,17 +241,16 @@ class SurfaceRenderer(BaseRenderer):
                     win.position = (0, 0)
                 else:
                     win.borderless = False
-                    win.resizable = True
-                    if width >= desk_w or height >= desk_h:
-                        win_w = min(1600, max(1024, desk_w - 120))
-                        win_h = min(900, max(600, desk_h - 140))
-                    else:
-                        win_w = width
-                        win_h = height
+                    win.resizable = False
+                    win_w = width
+                    win_h = height
                     win.size = (win_w, win_h)
-                    pos_x = max(20, (desk_w - win_w) // 2)
-                    pos_y = max(30, (desk_h - win_h) // 2 - 20)
-                    win.position = (pos_x, pos_y)
+                    if width >= desk_w and height >= desk_h:
+                        win.position = (0, 0)
+                    else:
+                        pos_x = max(0, (desk_w - win_w) // 2)
+                        pos_y = max(0, (desk_h - win_h) // 2)
+                        win.position = (pos_x, pos_y)
                 return True
         except Exception:
             pass

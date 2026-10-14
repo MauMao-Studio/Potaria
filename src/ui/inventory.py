@@ -81,6 +81,33 @@ ITEM_ALIASES = {
     "falling_star": "fallen_star",
     "wooden_chest": "chest",
     "lamp": "brass_lamp",
+    # Seven Deadly Sins aliases
+    "cinderheart_cuirass": "wrath_cuirass",
+    "wrathbound_visage": "wrath_helm",
+    "ashen_grips": "wrath_greatsword",
+    "ravager_greaves": "wrath_greaves",
+    "oath_of_the_last_spark": "wrath_brand",
+    "crown_of_the_unbowed": "pride_crown",
+    "sunlit_regalia": "pride_robe",
+    "highstep_greaves": "pride_boots",
+    "sovereign_gauntlets": "pride_blade",
+    "mirror_of_supremacy": "pride_ring",
+    # Seven Heavenly Virtues aliases
+    "vigilant_circlet": "patience_circlet",
+    "longwatch_mantle": "patience_mantle",
+    "measured_hands": "patience_hands",
+    "pilgrim_greaves": "patience_greaves",
+    "pilgrims_greaves": "patience_greaves",
+    "bell_of_the_last_hour": "patience_bell",
+    # Filipino Equipment aliases
+    "bolo": "katipunero_bolo",
+    "itak": "katipunero_bolo",
+    "barong": "barong_tagalog",
+    "hat_salakot": "salakot",
+    "knife_balisong": "balisong",
+    "sword_kampilan": "kampilan",
+    "shoes_bakya": "bakya",
+    "sword_tabak": "tabak",
 }
 REVERSE_ITEM_ALIASES = {v: k for k, v in ITEM_ALIASES.items()}
 
@@ -3486,9 +3513,100 @@ class Inventory:
                 for ll in wrap_text_lines(lore, self.font_sm, 300):
                     lines.append((ll, (165, 180, 205), self.font_sm))
 
-        content_w = max(self.font_sm.size(text)[0] for text, _, _ in lines)
-        tw = max(160, min(330, content_w + 24))
-        th = sum(16 for _ in lines) + 12
+        # Determine Top-Right Badge & Subtitle Tag
+        raw_id = str(getattr(item, "item_id", item if isinstance(item, str) else "")).lower()
+        item_tags = list(getattr(item, "tags", None) or data.get("tags", []))
+
+        try:
+            from src.rpg.equipment_update import PROGRESSIVE_SETS
+        except Exception:
+            PROGRESSIVE_SETS = {}
+
+        is_sds = ("seven_deadly_sins" in item_tags or any("sin_" in t for t in item_tags) or 
+                  any(raw_id in PROGRESSIVE_SETS.get(k, {}).get("pieces", []) for k in (
+                      "sin_pride", "sin_greed", "sin_lust", "sin_envy", "sin_gluttony", "sin_wrath", "sin_sloth")) or
+                  any(raw_id.startswith(p) for p in ("wrath_", "pride_", "greed_", "envy_", "gluttony_", "lust_", "sloth_")))
+
+        is_shv = ("seven_heavenly_virtues" in item_tags or any("virtue_" in t for t in item_tags) or 
+                  any(raw_id in PROGRESSIVE_SETS.get(k, {}).get("pieces", []) for k in (
+                      "virtue_humility", "virtue_charity", "virtue_chastity", "virtue_gratitude", "virtue_temperance", "virtue_kindness", "virtue_diligence", "virtue_patience")) or
+                  any(raw_id.startswith(p) for p in ("patience_", "humility_", "charity_", "kindness_", "temperance_", "chastity_", "diligence_")))
+
+        is_katipunero = ("katipunero" in item_tags or 
+                         raw_id in ("katipunero_bolo", "barong_tagalog", "salakot", "bakya", "tabak", "kampilan", "balisong") or
+                         raw_id in PROGRESSIVE_SETS.get("katipunero", {}).get("pieces", []))
+
+        is_special = is_sds or is_shv or is_katipunero or "special" in item_tags or rarity in ("ancient", "mythic") or raw_id == "crown_of_potaria"
+
+        top_badge = None
+        top_badge_bg = (210, 135, 35)
+        top_badge_border = (255, 210, 110)
+        top_badge_text = (255, 255, 255)
+
+        subtitle_tag = None
+        subtitle_bg = (30, 30, 45)
+        subtitle_border = (100, 120, 160)
+        subtitle_text_col = (220, 230, 255)
+
+        if is_sds:
+            top_badge = "SDS"
+            top_badge_bg = (195, 35, 45)
+            top_badge_border = (255, 110, 120)
+            subtitle_tag = "Seven Deadly Sins"
+            subtitle_bg = (60, 15, 20)
+            subtitle_border = (210, 60, 70)
+            subtitle_text_col = (255, 170, 175)
+        elif is_shv:
+            top_badge = "SHV"
+            top_badge_bg = (210, 160, 30)
+            top_badge_border = (255, 225, 110)
+            subtitle_tag = "Seven Heavenly Virtues"
+            subtitle_bg = (50, 42, 12)
+            subtitle_border = (220, 180, 50)
+            subtitle_text_col = (255, 230, 140)
+        elif is_katipunero:
+            top_badge = "SPECIAL"
+            top_badge_bg = (185, 75, 25)
+            top_badge_border = (245, 175, 60)
+            subtitle_tag = "Katipunero"
+            subtitle_bg = (55, 24, 12)
+            subtitle_border = (225, 105, 35)
+            subtitle_text_col = (255, 205, 130)
+        elif is_special:
+            top_badge = "SPECIAL"
+            top_badge_bg = (210, 135, 35)
+            top_badge_border = (255, 210, 110)
+            if rarity == "ancient":
+                subtitle_tag = "Ancient Relic"
+                subtitle_bg = (55, 30, 15)
+                subtitle_border = (220, 140, 50)
+                subtitle_text_col = (255, 215, 120)
+
+        # Wrap text lines to prevent excessively wide tooltips
+        from src.ui.theme import wrap_text_lines
+        wrapped_lines = [lines[0]]
+        for text, col, font in lines[1:]:
+            text_str = str(text)
+            if font.size(text_str)[0] > 290 and (" " in text_str or "•" in text_str):
+                for wl in wrap_text_lines(text_str, font, 290):
+                    wrapped_lines.append((wl, col, font))
+            else:
+                wrapped_lines.append((text_str, col, font))
+        lines = wrapped_lines
+
+        name_w = self.font_bold.size(lines[0][0])[0]
+        badge_w = (self.font_sm.size(top_badge)[0] + 16) if top_badge else 0
+        header_w = name_w + badge_w + 24
+        subtitle_w = (self.font_sm.size(subtitle_tag)[0] + 20) if subtitle_tag else 0
+
+        body_w = max([font.size(text)[0] for text, _, font in lines[1:]], default=0)
+        content_w = max(header_w, subtitle_w, body_w)
+        tw = max(180, min(340, content_w + 24))
+
+        th = sum(font.get_height() + 2 for _, _, font in lines) + 14
+        if subtitle_tag:
+            th += self.font_sm.get_height() + 8
+
         tx = min(SCREEN_WIDTH - tw - 10, max(10, mx + 14))
         ty = my + 14
         if ty + th > SCREEN_HEIGHT - 10:
@@ -3502,12 +3620,44 @@ class Inventory:
         target_surf.blit(t_surf, (tx, ty))
         pygame.draw.rect(target_surf, (75, 95, 135), bg_rect, 1, border_radius=4)
 
-        cur_y = ty + 6
-        for text, col, font in lines:
+        cur_y = ty + 7
+        # Draw header (name + optional top right badge)
+        name_text, name_col, name_font = lines[0]
+        rendered_name = name_font.render(name_text, True, name_col)
+        target_surf.blit(rendered_name, (tx + 10, cur_y))
+
+        if top_badge:
+            b_surf = self.font_sm.render(top_badge, True, top_badge_text)
+            bw = b_surf.get_width() + 12
+            bh = b_surf.get_height() + 4
+            bx = tx + tw - bw - 10
+            by = cur_y - 1
+            badge_rect = pygame.Rect(bx, by, bw, bh)
+            pygame.draw.rect(target_surf, top_badge_bg, badge_rect, border_radius=4)
+            pygame.draw.rect(target_surf, top_badge_border, badge_rect, 1, border_radius=4)
+            target_surf.blit(b_surf, (bx + 6, by + 2))
+
+        cur_y += rendered_name.get_height() + 3
+
+        # Draw subtitle tag below item name if present
+        if subtitle_tag:
+            s_surf = self.font_sm.render(subtitle_tag, True, subtitle_text_col)
+            sw = s_surf.get_width() + 12
+            sh = s_surf.get_height() + 4
+            sx = tx + 10
+            sy = cur_y
+            tag_box = pygame.Rect(sx, sy, sw, sh)
+            pygame.draw.rect(target_surf, subtitle_bg, tag_box, border_radius=3)
+            pygame.draw.rect(target_surf, subtitle_border, tag_box, 1, border_radius=3)
+            target_surf.blit(s_surf, (sx + 6, sy + 2))
+            cur_y += sh + 4
+
+        for text, col, font in lines[1:]:
             rendered = font.render(text, True, col)
             target_surf.blit(rendered, (tx + 10, cur_y))
             cur_y += rendered.get_height() + 2
         return lines
+
 
 
 
@@ -3609,4 +3759,15 @@ def get_mining_damage(active_item, tile_id):
 
     # Tool on unmatched tile: fallback to hand damage
     return 1.2
+
+
+# -----------------------------------------------------------------------------
+# Auto-register all expansion equipment into ITEM_REGISTRY and ARMOR_DATA
+# -----------------------------------------------------------------------------
+try:
+    from src.rpg.equipment_update import register_new_equipment_into_catalogs
+    register_new_equipment_into_catalogs()
+except Exception:
+    pass
+
 

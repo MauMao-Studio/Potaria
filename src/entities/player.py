@@ -347,17 +347,31 @@ class Player:
                 self.vy = PLAYER_JUMP_FORCE
                 self.on_ground = False
 
-                # Suppress loud jump whoosh when standing directly under a solid ceiling with zero gap
-                has_headroom = True
-                if world is not None and hasattr(world, "get_solid_rects_in_bounds"):
-                    head_box = pygame.Rect(int(self.x + 4), int(self.y - 6), int(self.width - 8), 6)
-                    for s_rect, is_plat in world.get_solid_rects_in_bounds(head_box):
-                        if not is_plat and head_box.colliderect(s_rect):
-                            has_headroom = False
-                            break
-
-                if has_headroom:
+                if not self.is_head_blocked(world):
                     self.sound_manager.play("jump")
+
+    def is_head_blocked(self, world) -> bool:
+        """
+        Checks if the player's head is directly blocked by a solid non-platform ceiling block.
+        Returns True if head is blocked, False if open space exists above head.
+        """
+        if world is None:
+            return False
+        try:
+            from src.constants import SCALED_TILE
+            head_tx = int((self.x + self.width * 0.5) // SCALED_TILE)
+            head_ty = int(self.y // SCALED_TILE)
+            if hasattr(world, "is_solid") and world.is_solid(head_tx, head_ty - 1):
+                return True
+        except Exception:
+            pass
+
+        if hasattr(world, "get_solid_rects_in_bounds"):
+            head_box = pygame.Rect(int(self.x + 4), int(self.y - 6), int(self.width - 8), 6)
+            for s_rect, is_plat in world.get_solid_rects_in_bounds(head_box):
+                if not is_plat and head_box.colliderect(s_rect):
+                    return True
+        return False
 
     def cast_skill_hotkey(self, key_name, particle_system, camera):
         """Executes active skill mapped to hotkey (Q, F, V, R)."""

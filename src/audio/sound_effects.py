@@ -56,22 +56,18 @@ class SoundManager:
         sr = pygame.mixer.get_init()[0] if pygame.mixer.get_init() else 22050
         rng = random.Random(1337)
 
-        # 1. Player Jump: smooth rising chirp (160 Hz -> 380 Hz) with soft attack & pleasant harmonics
+        # 1. Player Jump: classic square+triangle upward frequency sweep
         jump_samples = []
         dur = 0.15
         total = int(dur * sr)
         phase = 0.0
         for i in range(total):
             t = i / total
-            freq = 160 + 240 * (t ** 0.8)
+            freq = 150 + 260 * (t ** 0.8)
             phase += 2.0 * math.pi * freq / sr
-            # Smooth rounded wave (sine + subtle harmonic) prevents harsh buzzing square-wave start
-            wave = math.sin(phase) * 0.82 + math.sin(phase * 2.0) * 0.18
-            # 5ms attack envelope removes onset click/pop when re-triggering rapidly
-            attack = min(1.0, i / max(1, int(0.005 * sr)))
-            decay = (1.0 - t) ** 1.15
-            amp = attack * decay * 0.35
-            jump_samples.append(wave * amp)
+            amp = (1.0 - t) * 0.4
+            sq = 1.0 if math.sin(phase) > 0 else -1.0
+            jump_samples.append(sq * amp)
         self.sounds["jump"] = self._make_sound(jump_samples, sr)
 
         # 2. Dig Dirt: low crunchy filtered noise
@@ -534,12 +530,7 @@ class SoundManager:
             else:
                 self._jump_consecutive_count = 1
             self._last_jump_play = now
-
-            # Smoothly attenuate rapidly repeating jumps to eliminate annoying auditory fatigue
-            if self._jump_consecutive_count == 2:
-                volume *= 0.55
-            elif self._jump_consecutive_count >= 3:
-                volume *= 0.25
+            # Do NOT decrease volume! Retain full fidelity per user requirement
         snd = self.sounds.get(sound_name)
         if snd:
             ch = snd.play()

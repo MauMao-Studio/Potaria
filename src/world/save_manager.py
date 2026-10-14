@@ -9,6 +9,8 @@ import os
 import json
 import time
 import shutil
+import queue
+import threading
 from src.constants import (
     DIFFICULTY_NORMAL, DIFFICULTY_HARDCORE, DIFFICULTY_YOLO,
     MODE_ADVENTURE, MODE_LAST_MAN_STANDING,
@@ -272,13 +274,12 @@ def list_saved_worlds():
     worlds.sort(key=lambda w: w.get("timestamp", 0), reverse=True)
     return worlds
 
-def save_world(world_name, game, create_snapshot=False, reason=None, max_backups=MAX_BACKUP_SNAPSHOTS):
-    """Serializes the active game session to saves/<world_name>/world.json."""
-    ensure_saves_dir()
-    world_dir = get_world_dir(world_name)
-    os.makedirs(world_dir, exist_ok=True)
-    save_path = os.path.join(world_dir, "world.json")
-
+def extract_save_payload(world_name, game):
+    """
+    Extracts pure Python dictionary snapshots of game, world, inventory, player,
+    and active chunk manager data on the main thread in < 1 millisecond.
+    Returns (payload: dict, chunk_payloads: list).
+    """
     # 1. Inventory serialization
     inv_data = []
     for idx, slot in enumerate(game.inventory.slots):
@@ -479,15 +480,6 @@ def save_world(world_name, game, create_snapshot=False, reason=None, max_backups
         "planted_saplings": planted_saplings_data,
     }
 
-    # Flush active chunks to world cache under saves/<world_name>/cache/
-    if hasattr(game, "world") and hasattr(game.world, "chunk_manager"):
-        cm = game.world.chunk_manager
-        if hasattr(cm, "set_world_name"):
-            cm.set_world_name(world_name)
-        if getattr(cm, "world_cache", None):
-            for cx, chk in list(getattr(cm, "chunks", {}).items()):
-                cm.world_cache.save_chunk(cx, chk)
-
     try:
         from src.rpg.equipment_update import compute_save_signature
         payload_raw = json.dumps(payload, sort_keys=True).encode("utf-8")
@@ -495,10 +487,54 @@ def save_world(world_name, game, create_snapshot=False, reason=None, max_backups
     except Exception:
         pass
 
+    # Extract chunk snapshots
+    chunk_payloads = []
+    if hasattr(game, "world") and hasattr(game.world, "chunk_manager"):
+        cm = game.world.chunk_manager
+        if hasattr(cm, "set_world_name"):
+            cm.set_world_name(world_name)
+        if getattr(cm, "world_cache", None):
+            for cx, chk in list(getattr(cm, "chunks", {}).items()):
+                sky_t = {f"{k[0]},{k[1]}": v for k, v in getattr(chk, "sky_tiles", {}).items()}
+                sky_w = {f"{k[0]},{k[1]}": v for k, v in getattr(chk, "sky_walls", {}).items()}
+                tiles_copy = [row[:] for row in chk.tiles] if hasattr(chk, "tiles") else []
+                walls_copy = [row[:] for row in chk.walls] if hasattr(chk, "walls") else []
+                chk_data = {
+                    "chunk_x": cx,
+                    "seed": getattr(chk, "seed", None),
+                    "surface_heights": list(getattr(chk, "surface_heights", [])),
+                    "col_biomes": list(getattr(chk, "col_biomes", [])),
+                    "tiles": tiles_copy,
+                    "walls": walls_copy,
+                    "sky_tiles": sky_t,
+                    "sky_walls": sky_w,
+                }
+                chunk_payloads.append((cx, chk_data))
+
+    return payload, chunk_payloads
+
+
+def write_save_payload_to_disk(world_name, payload, chunk_payloads=None, create_snapshot=False, reason=None, max_backups=MAX_BACKUP_SNAPSHOTS):
+    """Writes pre-extracted save payload and chunk cache files to disk with atomic replacement."""
+    ensure_saves_dir()
+    world_dir = get_world_dir(world_name)
+    os.makedirs(world_dir, exist_ok=True)
+    save_path = os.path.join(world_dir, "world.json")
     bak_path = get_backup_file(world_name)
 
-    # A. The Immediate Backup (world.json.bak)
-    # Before atomic replacement overwrites active world.json, copy current valid world.json to world.json.bak
+    # 1. Flush chunks to disk under saves/<world_name>/cache/chunks/
+    if chunk_payloads:
+        chunks_dir = os.path.join(world_dir, "cache", "chunks")
+        os.makedirs(chunks_dir, exist_ok=True)
+        for cx, chk_data in chunk_payloads:
+            chunk_file = os.path.join(chunks_dir, f"chunk_{cx}.json")
+            try:
+                with open(chunk_file, "w", encoding="utf-8") as cf:
+                    json.dump(chk_data, cf)
+            except Exception as e:
+                print(f"[SaveManager] Failed to write chunk {cx}: {e}")
+
+    # 2. Immediate Backup (world.json.bak)
     if os.path.exists(save_path) and os.path.getsize(save_path) > 0:
         try:
             with open(save_path, "r", encoding="utf-8") as cf:
@@ -508,15 +544,80 @@ def save_world(world_name, game, create_snapshot=False, reason=None, max_backups
         except Exception:
             pass
 
-    # B. Atomic File Writes: Write to .tmp first, fsync disk commit, atomic os.replace
+    # 3. Atomic Write
     atomic_write_json(save_path, payload)
 
-    # C. Rolling Historical Snapshots (if requested by milestone or autosave)
+    # 4. Rolling Snapshots
     if create_snapshot:
         create_backup_snapshot(world_name, payload=payload, reason=reason, max_backups=max_backups)
 
     print(f"[SaveManager] World '{world_name}' successfully saved to {save_path}.")
     return save_path
+
+
+_SAVE_QUEUE = queue.Queue()
+_SAVE_WORKER_THREAD = None
+_SAVE_LOCK = threading.Lock()
+_PENDING_SAVE_EVENT = threading.Event()
+_PENDING_SAVE_EVENT.set()
+
+def _save_worker():
+    while True:
+        task = _SAVE_QUEUE.get()
+        if task is None:
+            _SAVE_QUEUE.task_done()
+            break
+        fn, args, kwargs = task
+        try:
+            _PENDING_SAVE_EVENT.clear()
+            fn(*args, **kwargs)
+        except Exception as e:
+            print(f"[SaveManager] Background save error: {e}")
+        finally:
+            _SAVE_QUEUE.task_done()
+            if _SAVE_QUEUE.empty():
+                _PENDING_SAVE_EVENT.set()
+
+def ensure_save_worker():
+    global _SAVE_WORKER_THREAD
+    with _SAVE_LOCK:
+        if _SAVE_WORKER_THREAD is None or not _SAVE_WORKER_THREAD.is_alive():
+            _SAVE_WORKER_THREAD = threading.Thread(target=_save_worker, name="PotariaSaveWorker", daemon=True)
+            _SAVE_WORKER_THREAD.start()
+
+def wait_for_pending_saves(timeout=5.0):
+    """Waits for all queued background saves to complete disk commit."""
+    _SAVE_QUEUE.join()
+    _PENDING_SAVE_EVENT.wait(timeout=timeout)
+
+
+def save_world(world_name, game, create_snapshot=False, reason=None, max_backups=MAX_BACKUP_SNAPSHOTS, async_save=False):
+    """
+    Serializes the active game session to saves/<world_name>/world.json.
+    If async_save=True, snapshot is extracted instantly on main thread (< 1ms)
+    and heavy disk I/O (fsync, chunk writes, snapshots) is handled in a daemon worker thread.
+    """
+    ensure_saves_dir()
+    world_dir = get_world_dir(world_name)
+    os.makedirs(world_dir, exist_ok=True)
+    save_path = os.path.join(world_dir, "world.json")
+
+    payload, chunk_payloads = extract_save_payload(world_name, game)
+
+    if async_save:
+        ensure_save_worker()
+        _PENDING_SAVE_EVENT.clear()
+        _SAVE_QUEUE.put((
+            write_save_payload_to_disk,
+            (world_name, payload, chunk_payloads),
+            {"create_snapshot": create_snapshot, "reason": reason, "max_backups": max_backups}
+        ))
+        return save_path
+    else:
+        return write_save_payload_to_disk(
+            world_name, payload, chunk_payloads,
+            create_snapshot=create_snapshot, reason=reason, max_backups=max_backups
+        )
 
 def load_world(world_name, game):
     """

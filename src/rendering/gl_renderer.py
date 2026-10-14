@@ -454,15 +454,28 @@ class GLRenderer(BaseRenderer):
                 win_w, win_h = pygame.display.get_window_size()
             except Exception:
                 win_w, win_h = self._get_desktop_resolution()
+            target_w = getattr(self, "display_width", self.width)
+            target_h = getattr(self, "display_height", self.height)
+            if target_w < win_w or target_h < win_h:
+                scale = min(target_w / float(self.width), target_h / float(self.height))
+                vw = max(1, int(round(self.width * scale)))
+                vh = max(1, int(round(self.height * scale)))
+                vx = max(0, (win_w - vw) // 2)
+                vy = max(0, (win_h - vh) // 2)
+            else:
+                scale = min(win_w / float(self.width), win_h / float(self.height))
+                vw = max(1, int(round(self.width * scale)))
+                vh = max(1, int(round(self.height * scale)))
+                vx = max(0, (win_w - vw) // 2)
+                vy = max(0, (win_h - vh) // 2)
         else:
             win_w = getattr(self, "display_width", self.width)
             win_h = getattr(self, "display_height", self.height)
-
-        scale = min(win_w / float(self.width), win_h / float(self.height))
-        vw = max(1, int(round(self.width * scale)))
-        vh = max(1, int(round(self.height * scale)))
-        vx = max(0, (win_w - vw) // 2)
-        vy = max(0, (win_h - vh) // 2)
+            scale = min(win_w / float(self.width), win_h / float(self.height))
+            vw = max(1, int(round(self.width * scale)))
+            vh = max(1, int(round(self.height * scale)))
+            vx = max(0, (win_w - vw) // 2)
+            vy = max(0, (win_h - vh) // 2)
 
         self.viewport_rect = (vx, vy, vw, vh)
         try:
@@ -926,17 +939,16 @@ class GLRenderer(BaseRenderer):
                         win.position = (0, 0)
                     else:
                         win.borderless = False
-                        win.resizable = True
-                        if width >= desk_w or height >= desk_h:
-                            win_w = min(1600, max(1024, desk_w - 120))
-                            win_h = min(900, max(600, desk_h - 140))
-                        else:
-                            win_w = width
-                            win_h = height
+                        win.resizable = False
+                        win_w = width
+                        win_h = height
                         win.size = (win_w, win_h)
-                        pos_x = max(20, (desk_w - win_w) // 2)
-                        pos_y = max(30, (desk_h - win_h) // 2 - 20)
-                        win.position = (pos_x, pos_y)
+                        if width >= desk_w and height >= desk_h:
+                            win.position = (0, 0)
+                        else:
+                            pos_x = max(0, (desk_w - win_w) // 2)
+                            pos_y = max(0, (desk_h - win_h) // 2)
+                            win.position = (pos_x, pos_y)
                     self._update_viewport()
                     return True
             except Exception:
@@ -971,19 +983,18 @@ class GLRenderer(BaseRenderer):
                     win.position = (0, 0)
                 else:
                     win.borderless = False
-                    win.resizable = True
+                    win.resizable = False
                     target_w = getattr(self, "display_width", self.width)
                     target_h = getattr(self, "display_height", self.height)
-                    if target_w >= desk_w or target_h >= desk_h:
-                        win_w = min(1600, max(1024, desk_w - 120))
-                        win_h = min(900, max(600, desk_h - 140))
-                    else:
-                        win_w = target_w
-                        win_h = target_h
+                    win_w = target_w
+                    win_h = target_h
                     win.size = (win_w, win_h)
-                    pos_x = max(20, (desk_w - win_w) // 2)
-                    pos_y = max(30, (desk_h - win_h) // 2 - 20)
-                    win.position = (pos_x, pos_y)
+                    if target_w >= desk_w and target_h >= desk_h:
+                        win.position = (0, 0)
+                    else:
+                        pos_x = max(0, (desk_w - win_w) // 2)
+                        pos_y = max(0, (desk_h - win_h) // 2)
+                        win.position = (pos_x, pos_y)
         except Exception:
             pass
 
