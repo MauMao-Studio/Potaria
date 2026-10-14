@@ -1697,7 +1697,7 @@ ITEM_REGISTRY = {
     "onion": {
         "name": "Sibuyas Red Onion", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Sweet, vibrant red onion bulbs essential for sautéing.",
+        "desc": "Sweet, vibrant red onion bulbs essential for sauteing.",
         "lore": "'Sizzles aromatically in the pan.'",
         "special": "Cooking Ingredient"
     },

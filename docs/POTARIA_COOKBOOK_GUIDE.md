@@ -111,7 +111,7 @@ Foundational crops, milled grains, seasonings, and binding agents used across re
 | Raw Potato | `raw_potato` | 25 HP | N/A (Harvested) | Cultivated from Tilled Soil or harvested from wild Spud patches. | Crisp subterranean tuber. Right-click to consume for +25 HP or cook in a furnace. |
 | Milagrosa White Rice | `rice` | Ingredient | N/A (Harvested) | Harvested from flooded paddy tiles or purchased from rural traders. | Fragrant polished grain. A meal in Potaria is never complete without rice. |
 | Bawang Garlic | `garlic` | Ingredient | N/A (Harvested) | Foraged in lowland grassy meadows or cultivated in home gardens. | Pungent native garlic cloves. The aromatic foundation of Filipino cuisine. |
-| Sibuyas Red Onion | `onion` | Ingredient | N/A (Harvested) | Cultivated from vegetable seeds or found in agricultural crates. | Sweet, vibrant red onion bulbs essential for sautéing. |
+| Sibuyas Red Onion | `onion` | Ingredient | N/A (Harvested) | Cultivated from vegetable seeds or found in agricultural crates. | Sweet, vibrant red onion bulbs essential for sauteing. |
 | Luya Fresh Ginger | `ginger` | Ingredient | N/A (Harvested) | Harvested from root patches in forest clearings and riverbanks. | Zesty, warming ginger root that infuses tinola and arroz caldo broth. |
 | Sampalok Tamarind | `tamarind` | Ingredient | N/A (Harvested) | Gathered from tropical wild tamarind trees. | Tangy tamarind pods that give Sinigang its signature appetizing sourness. |
 | Talong Native Eggplant | `eggplant` | 12 HP | N/A (Harvested) | Farmed in fertile soil patches or collected from wild flora. | Glossy purple tender eggplant, key vegetable for Sinigang and Tortang Talong. |

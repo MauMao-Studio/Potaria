@@ -4041,6 +4041,8 @@ class AssetFactory:
         for idx in range(3):
             ts = pygame.Surface((16, 16), pygame.SRCALPHA)
             pygame.draw.rect(ts, (140, 90, 45), (7, 6, 2, 10))
+            ts.set_at((7, 5), (200, 120, 40))
+            ts.set_at((8, 5), (200, 120, 40))
             ts.set_at((7, 4), (255, 235, 90))
             ts.set_at((8, 4), (255, 235, 90))
             ts.set_at((7, 3), (255, 140, 30))
@@ -5214,7 +5216,7 @@ class AssetFactory:
             pygame.draw.polygon(b, (42, 22, 22), [(px + pw, py + 8), (px + pw + 2, py - 3), (px + pw - 8, py + 4)])
 
             # Flowing molten lava fissures (deep crimson -> fiery orange -> white-gold)
-            pulse_shift = (stage * 3) % 6
+            pulse_shift = stage * 2
             lava_pts1 = [(px + 8, py + 8), (px + 20 + pulse_shift, py + 20), (px + 34, py + 12)]
             lava_pts2 = [(px + 12, py + 26), (px + 24, py + 32), (px + 36, py + 24)]
 
@@ -5233,12 +5235,6 @@ class AssetFactory:
             pygame.draw.circle(b, (255, 245, 90), (px + 29, py + 14), 2)
             b.set_at((px + 13, py + 14), (255, 255, 255))
             b.set_at((px + 29, py + 14), (255, 255, 255))
-
-            # Floating volcanic embers
-            ember_y = py - 2 - (stage % 3) * 2
-            b.set_at((px + 6, ember_y), (255, 140, 20))
-            b.set_at((px + pw - 6, ember_y - 2), (255, 210, 40))
-
             ignis_frames.append(b)
         self.boss["ignis_colossus"] = ignis_frames
 
@@ -5278,11 +5274,6 @@ class AssetFactory:
             for idx, ix in enumerate([px + 14, px + 21, px + 28]):
                 ice_len = 5 + ((stage + idx) % 3)
                 pygame.draw.line(b, (225, 250, 255), (ix, py + 28), (ix, py + 28 + ice_len), 1)
-
-            # Blizzard frost particle
-            b.set_at((px + 5, py + 2 + stage * 2), (240, 255, 255))
-            b.set_at((px + pw - 5, py + 8 - stage * 2), (240, 255, 255))
-
             cryo_frames.append(b)
         self.boss["cryo_spud"] = cryo_frames
 
@@ -5294,7 +5285,7 @@ class AssetFactory:
             b = pygame.Surface((48, 48), pygame.SRCALPHA)
             pw, ph = 40, 38
             px = 4
-            py = 5 + int(math.sin(stage * math.pi / 2.0) * 2)
+            py = 6 + int(math.sin(stage * math.pi / 2.0) * 2)
 
             # Crypt bone husk
             pygame.draw.ellipse(b, (28, 24, 32), (px - 1, py - 1, pw + 2, ph + 2))
@@ -5302,16 +5293,16 @@ class AssetFactory:
             pygame.draw.ellipse(b, (245, 245, 240), (px + 4, py + 4, pw - 8, ph - 8))
 
             # Crown of ossified bone spikes
-            for sp_x in (px + 7, px + 15, px + 25, px + 33):
-                sp_h = 6 + ((sp_x + stage) % 3)
+            for idx, sp_x in enumerate((px + 7, px + 15, px + 25, px + 33)):
+                sp_h = 2 + ((idx + stage) % 3)
                 pygame.draw.line(b, (248, 248, 242), (sp_x, py + 6), (sp_x, py - sp_h), 2)
-                b.set_at((sp_x, py - sp_h - 1), (255, 255, 255))
+                b.set_at((sp_x, py - sp_h), (255, 255, 255))
 
             # Hollow bone orbits with burning spectral violet soul-fire
             pygame.draw.circle(b, (18, 12, 28), (px + 13, py + 16), 5)
             pygame.draw.circle(b, (18, 12, 28), (px + 27, py + 16), 5)
             # Pulsing soul-fire
-            soul_r = 3 + (stage % 2)
+            soul_r = [3, 4, 2, 4][stage]
             pygame.draw.circle(b, (215, 60, 255), (px + 13, py + 16), soul_r)
             pygame.draw.circle(b, (215, 60, 255), (px + 27, py + 16), soul_r)
             b.set_at((px + 13, py + 16), (255, 255, 255))
@@ -5320,11 +5311,6 @@ class AssetFactory:
             # Skeletal teeth with dark fissures
             for tx in range(px + 11, px + pw - 11, 4):
                 pygame.draw.line(b, (30, 25, 35), (tx, py + 26), (tx, py + 31), 1)
-
-            # Floating bone shards
-            b.set_at((px + 2, py + 15 + stage), (235, 235, 230))
-            b.set_at((px + pw - 2, py + 18 - stage), (235, 235, 230))
-
             necro_frames.append(b)
         self.boss["necro_tuber"] = necro_frames
 
@@ -5840,9 +5826,6 @@ class AssetFactory:
                 pygame.draw.line(s, leg_col, (leg_r_x, 13 + waddle_y), (leg_r_x + 1, foot_r_y), 2)
                 pygame.draw.line(s, leg_col, (leg_r_x, foot_r_y), (leg_r_x + 3, foot_r_y), 1)
                 s.set_at((leg_r_x + 4, foot_r_y), leg_col)
-
-                var_id = {"pato": 0, "pato_pied": 1, "pato_dark": 2, "pato_white": 3}[variant]
-                s.set_at((0, 17 - i), (caruncle_base[0], caruncle_base[1], (caruncle_base[2] + var_id * 10) % 256, 255))
                 frames.append(s)
             return frames
 
@@ -5858,6 +5841,8 @@ class AssetFactory:
                 s.set_at((21, 11 + trot), (25, 20, 25))
                 pygame.draw.polygon(s, (35, 30, 38), [(15, 4 + trot), (17, 7 + trot), (13, 6 + trot)])
                 s.set_at((16, 7 + trot), (230, 200, 180))
+                s.set_at((5, 7), (45, 42, 48))
+                s.set_at((4, 7), (45, 42, 48))
                 s.set_at((3, 7), (45, 42, 48))
                 s.set_at((2, 6 + tail_y), (55, 48, 56))
                 ld1 = 1 if i in (0, 2) else -1
@@ -6103,7 +6088,7 @@ class AssetFactory:
             fin_dy = [0, -1, 0, 1][i]
             pygame.draw.ellipse(surf, (95, 125, 145), (5, 2, 17, 6))
             pygame.draw.ellipse(surf, (185, 200, 210), (7, 4, 13, 3))
-            pygame.draw.polygon(surf, (240, 210, 50), [(6, 5), (1, 1 + tail_dy), (4, 5), (1, 9 + tail_dy)])
+            pygame.draw.polygon(surf, (240, 210, 50), [(6, 5), (2, max(0, 1 + tail_dy)), (4, 5), (2, min(9, 9 + tail_dy))])
             pygame.draw.polygon(surf, (230, 200, 45), [(14, 2), (17, 0 + fin_dy), (18, 2)])
             pygame.draw.circle(surf, (25, 35, 45), (19, 4), 2)
             pygame.draw.circle(surf, (255, 255, 255), (20, 4), 1)
