@@ -355,7 +355,7 @@ class AssetFactory:
             pygame.draw.line(surf, trunk_col, (12, 21), (10, 16), 2)
             pygame.draw.line(surf, trunk_col, (10, 16), (14, 10), 2)
             pygame.draw.line(surf, trunk_col, (14, 10), (12, 6), 2)
-            surf.set_at((9, 14), (30, 15, 40))
+            surf.set_at((10, 14), (30, 15, 40))
             surf.set_at((15, 12), (30, 15, 40))
             pygame.draw.circle(surf, bud_col, (12, 5), 3)
             pygame.draw.circle(surf, (220, 120, 255), (12, 5), 1)
@@ -485,7 +485,6 @@ class AssetFactory:
             pygame.draw.polygon(surf, (245, 205, 55), [(17, 12), (22, 7), (20, 12), (22, 17)])
             surf.set_at((5, 11), (255, 255, 255))
             surf.set_at((5, 12), (30, 15, 25))
-        surf.set_at((1 + (h[0] % 2), 22), (h[1], h[2], h[3], 255))
 
     def _draw_pinoy_cooked_fish(self, surf, item_id, h):
         fish_key = item_id.replace("cooked_", "")
@@ -549,7 +548,6 @@ class AssetFactory:
             pygame.draw.ellipse(surf, (210, 145, 60), (4, 7, 16, 9))
             pygame.draw.line(surf, (235, 95, 115), (5, 10), (17, 10), 1)
             surf.set_at((16, 13), (185, 220, 50))
-        surf.set_at((1 + (h[0] % 2), 22), (h[1], h[2], h[3], 255))
 
     def _is_pinoy_food_or_ingredient(self, id_lower):
         return id_lower in (
@@ -839,9 +837,6 @@ class AssetFactory:
             surf.set_at((14, 9), (70, 190, 50))
             surf.set_at((10, 14), (235, 40, 40))
 
-        # Distinct 32-byte hash injection ensures 0 hash collisions for unique sprites verification
-        surf.set_at((1 + (h[0] % 2), 22), (h[1], h[2], h[3], 255))
-
     def generate_item_icon(self, item_id):
         """Generates a unique, beautifully shaded 24x24 pixel art icon for any item."""
         item_id = str(getattr(item_id, "item_id", item_id))
@@ -991,20 +986,8 @@ class AssetFactory:
         return surf
 
     def _apply_grand_silhouette_accents(self, surf, pal, rarity, h):
-        """Adds expansive aura, gilded ornaments, and floating motes to upper rarities."""
-        motes = [
-            (2 + (h[20] % 4), 2 + (h[21] % 4)),
-            (19 + (h[22] % 3), 3 + (h[23] % 4)),
-            (3 + (h[24] % 4), 18 + (h[25] % 4)),
-            (18 + (h[26] % 4), 18 + (h[27] % 4)),
-        ]
-        mote_count = 2 if rarity == RARITY_MYTHIC else (3 if rarity == RARITY_LEGENDARY else 4)
-        for i in range(mote_count):
-            mx, my = motes[i]
-            if 0 <= mx < 24 and 0 <= my < 24:
-                surf.set_at((mx, my), pal["glow"])
-                if rarity == RARITY_ANCIENT:
-                    surf.set_at((min(23, mx + 1), my), pal["secondary"])
+        """Upper rarity silhouette finishing (floating motes removed to avoid stray pixels)."""
+        pass
 
     def _apply_hallmark_insignia(self, surf, pal, rarity, h):
         """Applies a distinct visible runic signature glyph or facet based on hash."""
@@ -1219,8 +1202,6 @@ class AssetFactory:
                 surf, 12, 12, 9.5, 4.2,
                 (85, 50, 12), (255, 210, 35), (255, 248, 165), rot_offset=0.0
             )
-            for sx, sy in [(3, 4), (20, 4), (4, 20), (20, 19)]:
-                surf.set_at((sx, sy), (255, 245, 190))
             return
 
         if id_lower == "fallen_star":
@@ -1234,8 +1215,6 @@ class AssetFactory:
                 surf, 12, 11, 8.2, 3.8,
                 (55, 38, 75), (255, 220, 55), (210, 250, 255), rot_offset=0.08
             )
-            surf.set_at((6, 4), (160, 240, 255))
-            surf.set_at((18, 5), (255, 240, 150))
             return
 
         if id_lower == "falling_star":
@@ -1244,9 +1223,6 @@ class AssetFactory:
             pygame.draw.polygon(surf, (60, 195, 255, 190), [(8, 12), (22, 2), (21, 7), (12, 16)])
             pygame.draw.polygon(surf, (255, 195, 50, 230), [(9, 13), (21, 3), (19, 7), (11, 15)])
             pygame.draw.line(surf, (255, 255, 255), (10, 14), (20, 4), 2)
-            # Trailing starlight sparks
-            for sx, sy in [(18, 2), (22, 6), (15, 4), (19, 9)]:
-                surf.set_at((sx, sy), (220, 250, 255))
             self._draw_five_point_star(
                 surf, 9, 15, 7.2, 3.3,
                 (65, 35, 20), (255, 215, 45), (255, 255, 220), rot_offset=0.38
@@ -2819,7 +2795,6 @@ class AssetFactory:
             pygame.draw.polygon(surf, (95, 225, 255), [(15, 5), (21, 3), (19, 9), (17, 7)])
             surf.set_at((21, 3), (255, 255, 255))
             surf.set_at((14, 10), (165, 245, 255))
-            surf.set_at((11, 7), (165, 245, 255))
         elif "flame" in id_lower:
             # Blazing fire-wreathed arrowhead with trailing ember tongues
             pygame.draw.polygon(surf, (165, 35, 15), [(12, 8), (16, 3), (22, 2), (21, 8), (16, 12)])
@@ -3057,8 +3032,6 @@ class AssetFactory:
         pygame.draw.arc(surf, (185, 190, 205), (5, 6, 11, 13), 1.0, 5.0, 2)
         pygame.draw.polygon(surf, (195, 165, 55), [(13, 11), (18, 9), (19, 15), (14, 17)])
         surf.set_at((12, 6), (255, 235, 100))
-        surf.set_at((14, 4), (255, 255, 200))
-        surf.set_at((10, 4), (255, 180, 40))
 
     def _draw_compass_sprite(self, surf, item_id, pal, rarity, h):
         pygame.draw.circle(surf, (215, 170, 50), (12, 2), 2, 1)
