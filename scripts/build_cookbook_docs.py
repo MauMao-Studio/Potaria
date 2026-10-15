@@ -1,7 +1,11 @@
 import os
 import sys
+import shutil
 
-sys.path.insert(0, os.getcwd())
+# Ensure project root is in path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 from src.ui.inventory import ITEM_REGISTRY
 from src.ui.crafting import RECIPES
@@ -20,7 +24,7 @@ import reportlab
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable, Image as RLImage
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfgen import canvas
@@ -118,6 +122,21 @@ SECTIONS = [
     ("Pantry, Spices, and Cooking Essentials", pantry_ingredients, "Foundational crops, milled grains, seasonings, and binding agents essential for preparing the realm's finest dishes.")
 ]
 
+def get_item_icon_path(item_id):
+    """
+    Resolves the sprite path for an item, looking in assets/items and assets/craftable_items.
+    """
+    candidates = [
+        os.path.join(BASE_DIR, "assets", "items", f"{item_id}.png"),
+        os.path.join(BASE_DIR, "assets", "craftable_items", f"{item_id}.png"),
+        os.path.join("assets", "items", f"{item_id}.png"),
+        os.path.join("assets", "craftable_items", f"{item_id}.png"),
+    ]
+    for p in candidates:
+        if os.path.isfile(p):
+            return p
+    return None
+
 # -------------------------------------------------------------
 # DOCX BUILDER
 # -------------------------------------------------------------
@@ -130,17 +149,39 @@ def set_cell_margins(cell, top=100, bottom=100, left=140, right=140):
     tcMar = parse_xml(f'<w:tcMar {nsdecls("w")}><w:top w:w="{top}" w:type="dxa"/><w:bottom w:w="{bottom}" w:type="dxa"/><w:left w:w="{left}" w:type="dxa"/><w:right w:w="{right}" w:type="dxa"/></w:tcMar>')
     tcPr.append(tcMar)
 
-def build_docx():
+def build_docx(with_codes=True, output_filename=None):
+    if output_filename is None:
+        output_filename = "Potaria_Cookbook_With_Codes.docx" if with_codes else "Potaria_Cookbook_No_Codes.docx"
+
     doc = Document()
     
-    # Page setup
+    # Page setup: 0.7 in margins -> 7.1 in printable width
     sections = doc.sections
     for s in sections:
         s.top_margin = Inches(0.7)
         s.bottom_margin = Inches(0.7)
         s.left_margin = Inches(0.7)
         s.right_margin = Inches(0.7)
-    
+        s.different_first_page_header_footer = True
+        
+        # Header on later pages
+        header = s.header
+        hp = header.paragraphs[0]
+        hp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        hrun = hp.add_run("THE ROYAL POTARIA COOKBOOK | Culinary Compendium")
+        hrun.font.name = "Georgia"
+        hrun.font.size = Pt(8.5)
+        hrun.font.color.rgb = RGBColor(140, 100, 40)
+        
+        # Footer
+        footer = s.footer
+        fp = footer.paragraphs[0]
+        fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        frun = fp.add_run("The Royal Culinary Guild of Potaria - Official Culinary Records")
+        frun.font.name = "Calibri"
+        frun.font.size = Pt(8.5)
+        frun.font.color.rgb = RGBColor(120, 120, 120)
+
     # Title Cover
     p_title = doc.add_paragraph()
     p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -152,7 +193,8 @@ def build_docx():
     
     p_sub = doc.add_paragraph()
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_sub = p_sub.add_run("An Epicurean Guide to Culinary Arts, Hearth Recipes, and Native Ingredients of Potaria")
+    subtitle_suffix = " (Reference Edition with Item Codes)" if with_codes else " (Adventurer Edition)"
+    r_sub = p_sub.add_run(f"An Epicurean Guide to Culinary Arts, Hearth Recipes, and Native Ingredients of Potaria{subtitle_suffix}")
     r_sub.italic = True
     r_sub.font.name = "Georgia"
     r_sub.font.size = Pt(13)
@@ -160,7 +202,8 @@ def build_docx():
     
     p_meta = doc.add_paragraph()
     p_meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_meta = p_meta.add_run("Published by The Royal Culinary Guild of Potaria | Complete Edition 1.0\n")
+    meta_desc = "Published by The Royal Culinary Guild of Potaria | Complete Edition 1.0 (Developer & Crafting Code Index)" if with_codes else "Published by The Royal Culinary Guild of Potaria | Complete Edition 1.0 (Player Immersion Edition)"
+    r_meta = p_meta.add_run(f"{meta_desc}\n")
     r_meta.font.name = "Calibri"
     r_meta.font.size = Pt(10)
     r_meta.font.color.rgb = RGBColor(100, 100, 100)
@@ -192,8 +235,15 @@ def build_docx():
     p_stations.add_run("• Artisanal Preparation By Hand (station=None): ").bold = True
     p_stations.add_run("Delicate refreshments, iced desserts (Special Halo-Halo), cured marinades (Kinilaw na Tanigue), fresh brined duck eggs, and noodle rolling require no thermal heat, executed directly from the player's personal craft inventory.")
     
-    # Sections and tables
-    col_widths = [Inches(1.5), Inches(1.1), Inches(0.8), Inches(0.9), Inches(1.8), Inches(1.0)]
+    # Column configuration (Total = 7.10 inches)
+    if with_codes:
+        # 7 columns
+        col_widths = [Inches(0.45), Inches(1.35), Inches(1.05), Inches(0.65), Inches(0.75), Inches(1.65), Inches(1.20)]
+        hdr_titles = ["Icon", "Dish / Item Name", "Item ID", "Health", "Station", "Ingredients / Source", "Lore Notes"]
+    else:
+        # 6 columns
+        col_widths = [Inches(0.45), Inches(1.55), Inches(0.75), Inches(0.85), Inches(2.10), Inches(1.40)]
+        hdr_titles = ["Icon", "Dish / Item Name", "Health", "Station", "Ingredients / Source", "Lore Notes"]
     
     for sec_idx, (title, items, desc_text) in enumerate(SECTIONS, start=2):
         doc.add_page_break()
@@ -210,17 +260,21 @@ def build_docx():
         p_desc.add_run(desc_text).italic = True
         
         # Create Table
-        table = doc.add_table(rows=1, cols=6)
+        table = doc.add_table(rows=1, cols=len(hdr_titles))
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         table.autofit = False
         
+        # Repeat header row across pages
+        trPr = table.rows[0]._tr.get_or_add_trPr()
+        trPr.append(parse_xml(f'<w:tblHeader {nsdecls("w")}/>'))
+        
         # Header Row
         hdr_cells = table.rows[0].cells
-        hdr_titles = ["Dish / Item Name", "Item ID", "Health", "Station", "Ingredients / Source", "Lore Notes"]
         for i, htitle in enumerate(hdr_titles):
             hdr_cells[i].width = col_widths[i]
             set_cell_background(hdr_cells[i], "7B1113")
-            set_cell_margins(hdr_cells[i], top=120, bottom=120, left=100, right=100)
+            set_cell_margins(hdr_cells[i], top=110, bottom=110, left=40 if i == 0 else 80, right=40 if i == 0 else 80)
+            hdr_cells[i].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
             hdr_p = hdr_cells[i].paragraphs[0]
             hdr_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             hdr_run = hdr_p.add_run(htitle)
@@ -231,7 +285,12 @@ def build_docx():
         
         # Data Rows
         for r_idx, item_id in enumerate(items):
-            row_cells = table.add_row().cells
+            row = table.add_row()
+            # CantSplit property prevents awkward row breaking across pages
+            r_trPr = row._tr.get_or_add_trPr()
+            r_trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
+            
+            row_cells = row.cells
             bg_color = "FAF6F0" if r_idx % 2 == 1 else "FFFFFF"
             
             data = ITEM_REGISTRY[item_id]
@@ -249,39 +308,70 @@ def build_docx():
                 st_str = "Forage/Hunt"
                 ing_str = ITEM_ACQUISITION.get(item_id, "Natural harvest")
             
-            row_data = [name, item_id, heal_str, st_str, ing_str, desc_val]
-            for c_i, val in enumerate(row_data):
-                row_cells[c_i].width = col_widths[c_i]
-                set_cell_background(row_cells[c_i], bg_color)
-                set_cell_margins(row_cells[c_i], top=90, bottom=90, left=90, right=90)
-                cell_p = row_cells[c_i].paragraphs[0]
+            icon_path = get_item_icon_path(item_id)
+            
+            # Format row data according to version
+            if with_codes:
+                text_columns = [
+                    (1, name, WD_ALIGN_PARAGRAPH.LEFT, True, Pt(8.5), RGBColor(40, 40, 40)),
+                    (2, item_id, WD_ALIGN_PARAGRAPH.CENTER, False, Pt(7.5), RGBColor(100, 100, 100)),
+                    (3, heal_str, WD_ALIGN_PARAGRAPH.CENTER, heal_val > 0, Pt(8.5), RGBColor(34, 139, 34) if heal_val > 0 else RGBColor(50, 50, 50)),
+                    (4, st_str, WD_ALIGN_PARAGRAPH.CENTER, False, Pt(8.5), RGBColor(50, 50, 50)),
+                    (5, ing_str, WD_ALIGN_PARAGRAPH.LEFT, False, Pt(8.5), RGBColor(50, 50, 50)),
+                    (6, desc_val, WD_ALIGN_PARAGRAPH.LEFT, False, Pt(8.0), RGBColor(80, 80, 80)),
+                ]
+            else:
+                text_columns = [
+                    (1, name, WD_ALIGN_PARAGRAPH.LEFT, True, Pt(8.5), RGBColor(40, 40, 40)),
+                    (2, heal_str, WD_ALIGN_PARAGRAPH.CENTER, heal_val > 0, Pt(8.5), RGBColor(34, 139, 34) if heal_val > 0 else RGBColor(50, 50, 50)),
+                    (3, st_str, WD_ALIGN_PARAGRAPH.CENTER, False, Pt(8.5), RGBColor(50, 50, 50)),
+                    (4, ing_str, WD_ALIGN_PARAGRAPH.LEFT, False, Pt(8.5), RGBColor(50, 50, 50)),
+                    (5, desc_val, WD_ALIGN_PARAGRAPH.LEFT, False, Pt(8.0), RGBColor(80, 80, 80)),
+                ]
+            
+            # Set up Icon cell (Col 0)
+            icon_cell = row_cells[0]
+            icon_cell.width = col_widths[0]
+            set_cell_background(icon_cell, bg_color)
+            set_cell_margins(icon_cell, top=60, bottom=60, left=40, right=40)
+            icon_cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+            icon_p = icon_cell.paragraphs[0]
+            icon_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            icon_p.paragraph_format.space_before = Pt(0)
+            icon_p.paragraph_format.space_after = Pt(0)
+            if icon_path and os.path.exists(icon_path):
+                run = icon_p.add_run()
+                run.add_picture(icon_path, width=Inches(0.32))
+            
+            # Set up text columns
+            for c_i, val, alignment, is_bold, fsize, fcolor in text_columns:
+                cell = row_cells[c_i]
+                cell.width = col_widths[c_i]
+                set_cell_background(cell, bg_color)
+                set_cell_margins(cell, top=80, bottom=80, left=70, right=70)
+                cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+                cell_p = cell.paragraphs[0]
+                cell_p.alignment = alignment
                 cell_p.paragraph_format.line_spacing = 1.05
+                cell_p.paragraph_format.space_before = Pt(0)
                 cell_p.paragraph_format.space_after = Pt(2)
                 
-                if c_i in (1, 2, 3):
-                    cell_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                else:
-                    cell_p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                
                 run = cell_p.add_run(val)
-                run.font.name = "Calibri"
-                run.font.size = Pt(8.5)
-                if c_i == 0:
-                    run.bold = True
-                    run.font.color.rgb = RGBColor(40, 40, 40)
-                elif c_i == 1:
-                    run.font.size = Pt(7.5)
-                    run.font.color.rgb = RGBColor(100, 100, 100)
-                elif c_i == 2 and heal_val > 0:
-                    run.bold = True
-                    run.font.color.rgb = RGBColor(34, 139, 34) # Green
-                else:
-                    run.font.color.rgb = RGBColor(50, 50, 50)
+                run.font.name = "Consolas" if (with_codes and c_i == 2) else "Calibri"
+                run.font.size = fsize
+                run.bold = is_bold
+                run.font.color.rgb = fcolor
+                if not with_codes and c_i == 5 or with_codes and c_i == 6:
+                    run.italic = True
+                    
+        # Apply table column width definitions
+        for idx, width in enumerate(col_widths):
+            table.columns[idx].width = width
     
     # Save Word Doc
-    docx_path = "Potaria_Cookbook.docx"
-    doc.save(docx_path)
-    print(f"Generated Word Document: {docx_path}")
+    doc.save(output_filename)
+    print(f"Generated Word Document: {output_filename}")
+    return output_filename
 
 # -------------------------------------------------------------
 # REPORTLAB PDF BUILDER
@@ -341,12 +431,13 @@ def draw_page_background(canvas_obj, doc_obj):
     canvas_obj.rect(27, 27, 612 - 54, 792 - 54, stroke=1, fill=0)
     canvas_obj.restoreState()
 
-def build_pdf():
-    pdf_path = "Potaria_Cookbook.pdf"
+def build_pdf(with_codes=True, output_filename=None):
+    if output_filename is None:
+        output_filename = "Potaria_Cookbook_With_Codes.pdf" if with_codes else "Potaria_Cookbook_No_Codes.pdf"
     
     # 36pt margins, page width 612pt -> printable width 540pt
     doc = SimpleDocTemplate(
-        pdf_path,
+        output_filename,
         pagesize=letter,
         leftMargin=36,
         rightMargin=36,
@@ -434,9 +525,9 @@ def build_pdf():
         'TableDishID',
         parent=styles['Normal'],
         fontName='Courier',
-        fontSize=6.5,
-        leading=8.5,
-        textColor=colors.HexColor('#666666'),
+        fontSize=6.0,
+        leading=7.5,
+        textColor=colors.HexColor('#555555'),
         alignment=1
     )
     
@@ -450,12 +541,22 @@ def build_pdf():
         alignment=1
     )
     
-    td_st_style = ParagraphStyle(
-        'TableStation',
+    td_heal_base_style = ParagraphStyle(
+        'TableHealBase',
         parent=styles['Normal'],
         fontName='Helvetica',
         fontSize=7.5,
         leading=9.5,
+        textColor=colors.HexColor('#555555'),
+        alignment=1
+    )
+    
+    td_st_style = ParagraphStyle(
+        'TableStation',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=7.0,
+        leading=8.5,
         textColor=colors.HexColor('#4A4A4A'),
         alignment=1
     )
@@ -483,8 +584,10 @@ def build_pdf():
     # Title & Front Matter
     story.append(Spacer(1, 15))
     story.append(Paragraph("THE ROYAL POTARIA COOKBOOK", title_style))
-    story.append(Paragraph("A Comprehensive Culinary Compendium & Epicurean Guide to the Wilds of Potaria", subtitle_style))
-    story.append(Paragraph("Authored by the Master Gastronomers of the Realm | Release 1.0.0", meta_style))
+    subtitle_suffix = " (Reference Edition with Item Codes)" if with_codes else " (Adventurer Edition)"
+    story.append(Paragraph(f"A Comprehensive Culinary Compendium & Epicurean Guide to the Wilds of Potaria{subtitle_suffix}", subtitle_style))
+    meta_desc = "Authored by the Master Gastronomers of the Realm | Reference Edition with Item Codes (Release 1.0.0)" if with_codes else "Authored by the Master Gastronomers of the Realm | Standard Adventurer Edition (Release 1.0.0)"
+    story.append(Paragraph(meta_desc, meta_style))
     story.append(HRFlowable(width="90%", thickness=1.5, color=colors.HexColor("#D4AF37"), spaceAfter=15, spaceBefore=0))
     
     story.append(Paragraph("Culinary Framework & Gastronomic Lore", h1_style))
@@ -499,9 +602,30 @@ def build_pdf():
     
     story.append(Spacer(1, 10))
     
-    # 540 pt total width across 6 columns
-    # 105 + 85 + 50 + 65 + 135 + 100 = 540 pt
-    col_widths = [105, 85, 50, 65, 135, 100]
+    # 540 pt total width
+    if with_codes:
+        # 7 columns: 32 + 95 + 86 + 42 + 54 + 131 + 100 = 540 pt
+        col_widths = [32, 95, 86, 42, 54, 131, 100]
+        hdr_cells = [
+            Paragraph("Icon", th_style),
+            Paragraph("Dish / Item Name", th_style),
+            Paragraph("Item ID", th_style),
+            Paragraph("Heal", th_style),
+            Paragraph("Station", th_style),
+            Paragraph("Recipe Ingredients / Source", th_style),
+            Paragraph("Culinary Notes", th_style)
+        ]
+    else:
+        # 6 columns: 34 + 116 + 46 + 56 + 168 + 120 = 540 pt
+        col_widths = [34, 116, 46, 56, 168, 120]
+        hdr_cells = [
+            Paragraph("Icon", th_style),
+            Paragraph("Dish / Item Name", th_style),
+            Paragraph("Heal", th_style),
+            Paragraph("Station", th_style),
+            Paragraph("Recipe Ingredients / Source", th_style),
+            Paragraph("Culinary Notes", th_style)
+        ]
     
     for sec_idx, (title, items, desc_text) in enumerate(SECTIONS, start=1):
         if sec_idx > 1:
@@ -511,16 +635,7 @@ def build_pdf():
         story.append(Paragraph(desc_text, body_style))
         story.append(Spacer(1, 4))
         
-        table_data = []
-        # Header
-        table_data.append([
-            Paragraph("Dish / Item Name", th_style),
-            Paragraph("Item ID", th_style),
-            Paragraph("Heal", th_style),
-            Paragraph("Station", th_style),
-            Paragraph("Recipe Ingredients / Source", th_style),
-            Paragraph("Culinary Notes", th_style)
-        ])
+        table_data = [hdr_cells]
         
         for r_idx, item_id in enumerate(items):
             data = ITEM_REGISTRY[item_id]
@@ -538,14 +653,24 @@ def build_pdf():
                 st_str = "Forage/Hunt"
                 ing_str = ITEM_ACQUISITION.get(item_id, "Natural harvest")
             
+            icon_path = get_item_icon_path(item_id)
+            if icon_path and os.path.exists(icon_path):
+                icon_flowable = RLImage(icon_path, width=22, height=22)
+                icon_flowable.hAlign = 'CENTER'
+            else:
+                icon_flowable = ""
+            
             p_name = Paragraph(name, td_name_style)
-            p_id = Paragraph(item_id, td_id_style)
-            p_heal = Paragraph(heal_str, td_heal_style)
+            p_heal = Paragraph(heal_str, td_heal_style if heal_val > 0 else td_heal_base_style)
             p_st = Paragraph(st_str, td_st_style)
             p_ing = Paragraph(ing_str, td_ing_style)
             p_lore = Paragraph(desc_val, td_lore_style)
             
-            table_data.append([p_name, p_id, p_heal, p_st, p_ing, p_lore])
+            if with_codes:
+                p_id = Paragraph(item_id, td_id_style)
+                table_data.append([icon_flowable, p_name, p_id, p_heal, p_st, p_ing, p_lore])
+            else:
+                table_data.append([icon_flowable, p_name, p_heal, p_st, p_ing, p_lore])
             
         t = Table(table_data, colWidths=col_widths, repeatRows=1)
         t.setStyle(TableStyle([
@@ -555,18 +680,41 @@ def build_pdf():
             ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#DECBB5')),
             ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#7B1113')),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F5EFEB')]),
-            ('TOPPADDING', (0, 0), (-1, -1), 3.5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3.5),
-            ('LEFTPADDING', (0, 0), (-1, -1), 4),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ('LEFTPADDING', (0, 0), (-1, -1), 3.5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 3.5),
+            ('LEFTPADDING', (0, 0), (0, -1), 1.5),
+            ('RIGHTPADDING', (0, 0), (0, -1), 1.5),
+            ('LEFTPADDING', (3, 0), (4, -1), 2),
+            ('RIGHTPADDING', (3, 0), (4, -1), 2),
         ]))
         
         story.append(t)
         story.append(Spacer(1, 10))
         
     doc.build(story, onFirstPage=draw_page_background, onLaterPages=draw_page_background, canvasmaker=NumberedCanvas)
-    print(f"Generated PDF Document: {pdf_path}")
+    print(f"Generated PDF Document: {output_filename}")
+    return output_filename
+
+def build_all():
+    """Generates all 4 cookbook files and synchronizes primary aliases."""
+    print("Building Potaria Cookbook Documents...")
+    
+    # 1. Version 1: With Codes
+    docx_codes = build_docx(with_codes=True, output_filename="Potaria_Cookbook_With_Codes.docx")
+    shutil.copyfile(docx_codes, "Potaria_Cookbook.docx")
+    print("Synchronized Potaria_Cookbook.docx -> Potaria_Cookbook_With_Codes.docx")
+    
+    pdf_codes = build_pdf(with_codes=True, output_filename="Potaria_Cookbook_With_Codes.pdf")
+    shutil.copyfile(pdf_codes, "Potaria_Cookbook.pdf")
+    print("Synchronized Potaria_Cookbook.pdf -> Potaria_Cookbook_With_Codes.pdf")
+    
+    # 2. Version 2: Without Codes
+    docx_no_codes = build_docx(with_codes=False, output_filename="Potaria_Cookbook_No_Codes.docx")
+    pdf_no_codes = build_pdf(with_codes=False, output_filename="Potaria_Cookbook_No_Codes.pdf")
+    
+    print("All 4 Cookbook documents generated successfully.")
 
 if __name__ == "__main__":
-    build_docx()
-    build_pdf()
+    build_all()
