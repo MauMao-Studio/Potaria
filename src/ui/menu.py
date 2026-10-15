@@ -40,7 +40,11 @@ class Button:
         self.text = text
         self.action = action
         self.icon = icon
-        self.tooltip = tooltip
+        # Keep tooltips strictly for icon-only buttons without text
+        if self.text and str(self.text).strip():
+            self.tooltip = ""
+        else:
+            self.tooltip = tooltip
         self.is_hovered = False
 
     def update(self, mouse_pos):
@@ -185,14 +189,14 @@ class MenuManager:
         gap = 46
 
         self.menu_buttons = [
-            Button(cx, start_y, btn_w, btn_h, "SINGLEPLAYER", "play_single", tooltip="Start your solo sandbox adventure"),
-            Button(cx, start_y + gap, btn_w, btn_h, "LAN MULTIPLAYER (1-5P)", "multiplayer", tooltip="Host or join a local multiplayer session (1-5 players)"),
-            Button(cx, start_y + gap * 2, btn_w, btn_h, "MODS / ADD-ONS", "mods", tooltip="Configure game modifiers and custom modes"),
-            Button(cx, start_y + gap * 3, btn_w, btn_h, "ACHIEVEMENTS", "achievements", tooltip="View unlocked achievements and progression milestones"),
-            Button(cx, start_y + gap * 4, btn_w, btn_h, "SETTINGS & AUDIO", "settings", tooltip="Configure graphics, audio, gameplay and input bindings"),
-            Button(cx, start_y + gap * 5, btn_w, btn_h, "PROLOGUE CUTSCENE", "cutscene", tooltip="Replay the story prologue animated cutscene"),
-            Button(cx, start_y + gap * 6, btn_w, btn_h, "CONTROLS & HELP", "controls", tooltip="View keyboard controls, key bindings and game guide"),
-            Button(cx, start_y + gap * 7, btn_w, btn_h, "QUIT", "quit", tooltip="Exit game and return to desktop"),
+            Button(cx, start_y, btn_w, btn_h, "SINGLEPLAYER", "play_single"),
+            Button(cx, start_y + gap, btn_w, btn_h, "LAN MULTIPLAYER (1-5P)", "multiplayer"),
+            Button(cx, start_y + gap * 2, btn_w, btn_h, "MODS / ADD-ONS", "mods"),
+            Button(cx, start_y + gap * 3, btn_w, btn_h, "ACHIEVEMENTS", "achievements"),
+            Button(cx, start_y + gap * 4, btn_w, btn_h, "SETTINGS & AUDIO", "settings"),
+            Button(cx, start_y + gap * 5, btn_w, btn_h, "PROLOGUE CUTSCENE", "cutscene"),
+            Button(cx, start_y + gap * 6, btn_w, btn_h, "CONTROLS & HELP", "controls"),
+            Button(cx, start_y + gap * 7, btn_w, btn_h, "QUIT", "quit"),
         ]
 
         # Settings Configuration
@@ -219,9 +223,9 @@ class MenuManager:
 
 
         # Categorized Settings Layout (Stardew Valley / Modern RPG Inspired)
-        pw, ph = 840, 570
+        pw, ph = 840, 595
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 55
+        py = 48
         tab_w, tab_h, tab_gap = 175, 36, 14
         start_tx = px + 45
 
@@ -285,8 +289,8 @@ class MenuManager:
         self.controls_buttons = [self.btn_touch_ctrl, self.btn_touch_opac, self.btn_input_map]
 
         # 6. Global Settings Back & Reset Defaults Buttons (Back left, Reset right)
-        self.settings_back_btn = Button(SCREEN_WIDTH // 2 - 220, py + ph - 52, 200, 38, "<  BACK TO MENU", "settings_back", icon="back", tooltip="Return to main menu")
-        self.settings_reset_btn = Button(SCREEN_WIDTH // 2 + 20, py + ph - 52, 200, 38, "RESET DEFAULTS", "settings_reset_all", tooltip="Reset all settings to defaults")
+        self.settings_back_btn = Button(SCREEN_WIDTH // 2 - 220, py + ph - 64, 200, 36, "<  BACK TO MENU", "settings_back", icon="back")
+        self.settings_reset_btn = Button(SCREEN_WIDTH // 2 + 20, py + ph - 64, 200, 36, "RESET DEFAULTS", "settings_reset_all")
 
         # Master settings buttons collection (preserves all button searches across test suites)
         self.settings_buttons = (
@@ -341,10 +345,10 @@ class MenuManager:
         self.typing_host_key = False
         self.host_key_box_rect = pygame.Rect(mp_card_x + 18, 178, 320, 36)
 
-        self.back_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 95, 200, 44, "<  BACK TO MENU", "menu", icon="back", tooltip="Return to main menu")
+        self.back_button = Button(SCREEN_WIDTH // 2 - 100, 595, 200, 42, "<  BACK TO MENU", "menu", icon="back")
         self.victory_buttons = [
-            Button(SCREEN_WIDTH // 2 - 220, SCREEN_HEIGHT - 120, 200, 46, "CONTINUE EXPLORING", "play", tooltip="Continue playing in the current world"),
-            Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 120, 200, 46, "MAIN MENU", "menu", icon="back", tooltip="Save and return to main menu"),
+            Button(SCREEN_WIDTH // 2 - 220, SCREEN_HEIGHT - 120, 200, 46, "CONTINUE EXPLORING", "play"),
+            Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 120, 200, 46, "MAIN MENU", "menu", icon="back"),
         ]
 
         # Determine Local LAN IP for hosting
@@ -381,9 +385,9 @@ class MenuManager:
         self.load_mods()
 
         # Dedicated Buttons for MODS & ACHIEVEMENTS screens
-        self.mods_toggle_lms_btn = Button(cx + 175, 255, 120, 36, "ENABLE", "toggle_lms", tooltip="Toggle Last Man Standing battle royale survival mode")
-        self.mods_back_btn = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 85, 200, 44, "<  BACK TO MENU", "menu", icon="back", tooltip="Return to main menu")
-        self.achievements_back_btn = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 85, 200, 44, "<  BACK TO MENU", "menu", icon="back", tooltip="Return to previous screen")
+        self.mods_toggle_lms_btn = Button(855, 149, 120, 32, "ENABLE", "toggle_lms")
+        self.mods_back_btn = Button(SCREEN_WIDTH // 2 - 100, 574, 200, 42, "<  BACK TO MENU", "menu", icon="back")
+        self.achievements_back_btn = Button(SCREEN_WIDTH // 2 - 100, 565, 200, 40, "<  BACK TO MENU", "menu", icon="back")
         self._refresh_mods_button_labels()
 
         # New World Configuration (Clean layout with Type & Difficulty only)
@@ -1431,9 +1435,9 @@ class MenuManager:
     def _render_settings_screen(self, target_surf):
         self._render_background(target_surf)
 
-        pw, ph = 840, 570
+        pw, ph = 840, 595
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 55
+        py = 48
 
         # Drop shadow & outer panel
         pygame.draw.rect(target_surf, (12, 15, 22, 190), (px + 6, py + 8, pw, ph), border_radius=16)
@@ -1566,7 +1570,7 @@ class MenuManager:
         self.settings_reset_btn.render(target_surf, self.font_btn)
         cur_rend = str(self.settings.get("renderer", "hardware")).upper()
         footer_txt = self.font_sm.render(f"Graphics Engine: {cur_rend} | Target: 60 FPS Standalone", True, (130, 145, 175))
-        target_surf.blit(footer_txt, (SCREEN_WIDTH // 2 - footer_txt.get_width() // 2, py + ph - 16))
+        target_surf.blit(footer_txt, (SCREEN_WIDTH // 2 - footer_txt.get_width() // 2, py + ph - 20))
 
         if getattr(self, "reset_confirm_modal_active", False):
             self._render_reset_confirm_modal(target_surf)
@@ -1909,9 +1913,9 @@ class MenuManager:
     def _render_controls_screen(self, target_surf):
         self._render_background(target_surf)
 
-        pw, ph = 860, 540
+        pw, ph = 860, 610
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 60
+        py = 45
         pygame.draw.rect(target_surf, (30, 35, 50, 245), (px, py, pw, ph), border_radius=12)
         pygame.draw.rect(target_surf, COLOR_GOLD, (px, py, pw, ph), 2, border_radius=12)
 
@@ -2203,9 +2207,9 @@ class MenuManager:
     def _render_mods_screen(self, target_surf, mouse_pos):
         self._render_background(target_surf)
 
-        pw, ph = 780, 550
+        pw, ph = 780, 580
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 55
+        py = 50
         panel_rect = pygame.Rect(px, py, pw, ph)
         pygame.draw.rect(target_surf, (24, 28, 44, 245), panel_rect, border_radius=14)
         pygame.draw.rect(target_surf, COLOR_GOLD, panel_rect, 2, border_radius=14)
@@ -2240,12 +2244,13 @@ class MenuManager:
             ds = self.font_sm.render(dl, True, (220, 225, 235))
             target_surf.blit(ds, (card1_rect.x + 20, card1_rect.y + 70 + idx * 20))
 
-        # Status badge
+        # Status badge & toggle button positioned neatly inside card 1 header
         status_txt = "[ ENABLED ]" if is_lms else "[ DISABLED ]"
         status_col = (80, 240, 120) if is_lms else (170, 180, 195)
         st_surf = self.font_btn.render(status_txt, True, status_col)
-        target_surf.blit(st_surf, (card1_rect.x + card1_rect.w - 275, card1_rect.y + 18))
+        target_surf.blit(st_surf, (card1_rect.right - 280, card1_rect.y + 18))
 
+        self.mods_toggle_lms_btn.rect = pygame.Rect(card1_rect.right - 140, card1_rect.y + 14, 120, 32)
         self.mods_toggle_lms_btn.render(target_surf, self.font_btn)
 
         # Card 2: Engine Built-In Features

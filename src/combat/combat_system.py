@@ -1151,9 +1151,16 @@ class CombatManager:
             final_dmg = base_dmg
         else:
             base_dmg = player.stats.total_atk
+            meal_dmg_mult = player.get_meal_buff_val("damage_mult") if hasattr(player, "get_meal_buff_val") else 0.0
+            base_dmg = base_dmg * (1.0 + meal_dmg_mult)
             has_crit_overdrive = player.has_effect("critical overdrive") if hasattr(player, "has_effect") else False
             crit_mult = 2.0 if has_crit_overdrive else 1.8
-            is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
+            meal_crit_dmg = player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0
+            crit_mult += meal_crit_dmg
+            crit_rate = player.stats.total_crit_rate
+            meal_crit_chance = player.get_meal_buff_val("crit_chance") if hasattr(player, "get_meal_buff_val") else 0.0
+            crit_rate += meal_crit_chance * 100.0
+            is_crit = (random.uniform(0, 100) < crit_rate)
             final_dmg = int(base_dmg * (crit_mult if is_crit else random.uniform(0.9, 1.15)))
 
             if not is_hand and hasattr(player, "has_effect"):

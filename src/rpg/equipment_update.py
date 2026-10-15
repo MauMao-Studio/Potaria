@@ -286,7 +286,6 @@ ITEM_STAT_RANGES: Dict[str, Dict[str, Dict[str, Union[int, float]]]] = {
     },
     "panabas": {
         "atk": {"min": 40, "max": 52},
-        "def": {"min": 3, "max": 6},
     },
     "kris": {
         "atk": {"min": 24, "max": 32},
@@ -332,7 +331,7 @@ ITEM_STAT_RANGES: Dict[str, Dict[str, Dict[str, Union[int, float]]]] = {
     "patience_circlet": {"def": {"min": 20, "max": 28}, "hp": {"min": 55, "max": 80}},
     "patience_mantle": {"def": {"min": 32, "max": 44}, "hp": {"min": 85, "max": 125}},
     "patience_greaves": {"def": {"min": 18, "max": 26}, "hp": {"min": 50, "max": 75}, "speed": {"min": 0.20, "max": 0.35}},
-    "patience_hands": {"atk": {"min": 42, "max": 54}, "def": {"min": 6, "max": 12}},
+    "patience_hands": {"atk": {"min": 42, "max": 54}},
     "patience_bell": {"def": {"min": 12, "max": 18}, "hp": {"min": 40, "max": 65}, "mp_regen": {"min": 1.5, "max": 2.5}},
 
     # Filipino Folklore Sets
@@ -397,14 +396,14 @@ ITEM_STAT_RANGES: Dict[str, Dict[str, Dict[str, Union[int, float]]]] = {
     "wrath_greaves": {"def": {"min": 16, "max": 24}, "hp": {"min": 45, "max": 70}, "speed": {"min": 0.30, "max": 0.45}},
     "wrath_brand": {"atk": {"min": 12, "max": 20}, "crit": {"min": 6.0, "max": 10.0}},
 
-    "sloth_pillow": {"atk": {"min": 35, "max": 46}, "def": {"min": 8, "max": 14}},
+    "sloth_pillow": {"atk": {"min": 35, "max": 46}},
     "sloth_nightcap": {"def": {"min": 18, "max": 26}, "hp": {"min": 50, "max": 75}, "mp_regen": {"min": 1.2, "max": 2.0}},
     "sloth_pajamas": {"def": {"min": 28, "max": 38}, "hp": {"min": 75, "max": 110}, "mp_regen": {"min": 1.5, "max": 2.5}},
     "sloth_slippers": {"def": {"min": 16, "max": 22}, "hp": {"min": 45, "max": 65}, "speed": {"min": 0.15, "max": 0.25}},
     "sloth_pendulum": {"def": {"min": 10, "max": 16}, "mp_regen": {"min": 1.5, "max": 2.5}},
 
     # Seven Heavenly Virtues Weapons & Sets
-    "humility_staff": {"atk": {"min": 36, "max": 48}, "def": {"min": 8, "max": 14}, "mp_regen": {"min": 1.0, "max": 1.8}},
+    "humility_staff": {"atk": {"min": 36, "max": 48}, "mp_regen": {"min": 1.0, "max": 1.8}},
     "humility_circlet": {"def": {"min": 16, "max": 24}, "hp": {"min": 45, "max": 70}, "atk": {"min": 6, "max": 10}},
     "humility_vestment": {"def": {"min": 25, "max": 35}, "hp": {"min": 70, "max": 100}, "atk": {"min": 10, "max": 16}},
     "humility_sandals": {"def": {"min": 15, "max": 22}, "hp": {"min": 40, "max": 60}, "speed": {"min": 0.25, "max": 0.40}},
@@ -416,7 +415,7 @@ ITEM_STAT_RANGES: Dict[str, Dict[str, Dict[str, Union[int, float]]]] = {
     "charity_trousers": {"def": {"min": 13, "max": 19}, "hp": {"min": 45, "max": 65}, "speed": {"min": 0.20, "max": 0.35}},
     "charity_chalice": {"hp": {"min": 40, "max": 65}, "mp_regen": {"min": 1.5, "max": 2.5}},
 
-    "chastity_lance": {"atk": {"min": 40, "max": 54}, "def": {"min": 10, "max": 16}},
+    "chastity_lance": {"atk": {"min": 40, "max": 54}},
     "chastity_sallet": {"def": {"min": 20, "max": 28}, "hp": {"min": 50, "max": 75}},
     "chastity_breastplate": {"def": {"min": 30, "max": 42}, "hp": {"min": 80, "max": 120}},
     "chastity_greaves": {"def": {"min": 18, "max": 26}, "hp": {"min": 45, "max": 70}, "speed": {"min": 0.25, "max": 0.38}},
@@ -1030,7 +1029,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     "katipunero_bolo": {
         "slot": "weapon",
         "name": "Katipunero Bolo — Blade of Freedom",
-        "atk": 52, "def": 4, "hp": 25, "crit": 12.0, "speed": 0.15,
+        "atk": 52, "def": 0, "hp": 25, "crit": 12.0, "speed": 0.15,
         "rarity": "ancient",
         "effects": ["Resolute Follow-Through (+25% Damage on consecutive hits)", "Vanguard Resolve (+15% Defense below 50% HP)"],
         "lore": "A battle-tested bolo blade forged with unyielding resolve, embodying the spirit of the Philippine revolution.",
@@ -1074,7 +1073,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     "tabak": {
         "slot": "weapon",
         "name": "Tabak — Heritage Cutlass",
-        "atk": 50, "def": 3, "hp": 20, "crit": 10.0, "speed": 0.12,
+        "atk": 50, "def": 0, "hp": 20, "crit": 10.0, "speed": 0.12,
         "rarity": "ancient",
         "effects": ["Measured Cut (+20% Armor Penetration on heavy swing)", "Ancestral Guard (+10% Parry Defense)"],
         "lore": "A distinct wide-bellied curved blade forged by veteran smiths of Luzon, passed down through generations.",
@@ -1085,7 +1084,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     "kampilan": {
         "slot": "weapon",
         "name": "Kampilan — Warrior's Oath",
-        "atk": 36, "def": 2, "hp": 20, "crit": 8.0, "speed": 0.08,
+        "atk": 36, "def": 0, "hp": 20, "crit": 8.0, "speed": 0.08,
         "rarity": "ancient",
         "effects": ["Finishing Cleave (+30% True Damage against foes below 35% HP)", "Staggering Blow"],
         "lore": "Revered long blade of coastal warriors, shaped with a bifurcated tip that carved through history.",
@@ -1096,7 +1095,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     "panabas": {
         "slot": "weapon",
         "name": "Panabas — Breaker of Wards",
-        "atk": 46, "def": 4, "hp": 25, "crit": 4.0, "speed": 0.0,
+        "atk": 46, "def": 0, "hp": 25, "crit": 4.0, "speed": 0.0,
         "rarity": "epic",
         "effects": ["Armor Shatter (Ignores 45% target DEF)", "Stun Impact on heavy swing"],
         "lore": "Forward-curved executioner blade forged to dismantle barricades, shields, and dragon scales.",
@@ -1129,7 +1128,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     "bangkaw": {
         "slot": "weapon",
         "name": "Bangkaw — Spear of the Highlands",
-        "atk": 32, "def": 1, "hp": 15, "crit": 10.0, "speed": 0.05,
+        "atk": 32, "def": 0, "hp": 15, "crit": 10.0, "speed": 0.05,
         "rarity": "uncommon",
         "effects": ["Highland Thrust: Piercing reach extends 24px further than standard blades"],
         "lore": "Carved hardwood spear tipped with tempered steel, carried by mountain tribal hunters.",
@@ -1274,7 +1273,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     # ---------------- Seven Deadly Sins: Pride ----------------
     "pride_blade": {
         "slot": "weapon", "name": "Sol Invictus — Blade of Pride",
-        "atk": 52, "def": 2, "hp": 25, "crit": 18.0, "speed": 0.12,
+        "atk": 52, "def": 0, "hp": 25, "crit": 18.0, "speed": 0.12,
         "rarity": "ancient",
         "effects": ["Sovereign Execution (+40% Damage vs enemies above 80% HP)", "Solar Beam on critical hit"],
         "lore": "A golden claymore so radiant it burns the eyes of all who dare look upon its edge.",
@@ -1454,7 +1453,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     # ---------------- Seven Deadly Sins: Sloth ----------------
     "sloth_pillow": {
         "slot": "weapon", "name": "The Comatose Cudgel",
-        "atk": 40, "def": 11, "hp": 20, "crit": 0.0, "speed": -0.05,
+        "atk": 40, "def": 0, "hp": 20, "crit": 0.0, "speed": -0.05,
         "rarity": "ancient",
         "effects": ["Heavy Snooze: Attacks have 25% chance to inflict Drowsy (50% slow)", "Awakening Crash"],
         "lore": "A dense enchanted pillow stone that lulls both victim and wielder into twilight dreams.",
@@ -1526,7 +1525,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     # ---------------- Seven Heavenly Virtues: Humility ----------------
     "humility_staff": {
         "slot": "weapon", "name": "Staff of the Quiet Crown",
-        "atk": 42, "def": 11, "hp": 20, "crit": 4.0, "mp_regen": 1.4,
+        "atk": 42, "def": 0, "hp": 20, "crit": 4.0, "mp_regen": 1.4,
         "rarity": "ancient",
         "effects": ["Serene Strike: Harmonizes attack and defense; strikes heal for 5% damage dealt", "Purifying Pulse"],
         "lore": "Carved from plain ashwood by a monk king who laid down his gold crown.",
@@ -1562,7 +1561,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     # ---------------- Seven Heavenly Virtues: Charity ----------------
     "charity_wand": {
         "slot": "weapon", "name": "Censer of the Hearthkeeper",
-        "atk": 36, "def": 4, "hp": 35, "crit": 6.0, "speed": 0.0,
+        "atk": 36, "def": 0, "hp": 35, "crit": 6.0, "speed": 0.0,
         "rarity": "ancient",
         "effects": ["Healing Censer: Attacks create soothing incense restoring +4 HP to nearby allies", "Warm Flame"],
         "lore": "A bronze censer carrying coals that have never grown cold since the first winter.",
@@ -1598,7 +1597,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     # ---------------- Seven Heavenly Virtues: Chastity ----------------
     "chastity_lance": {
         "slot": "weapon", "name": "Lance of the Spotless Ward",
-        "atk": 47, "def": 13, "hp": 25, "crit": 6.0, "speed": 0.05,
+        "atk": 47, "def": 0, "hp": 25, "crit": 6.0, "speed": 0.05,
         "rarity": "ancient",
         "effects": ["Purifying Thrust: Piercing strikes dispel enemy buffs and cleanse 1 debuff from wielder", "Shield Wall"],
         "lore": "A gleaming alabaster jousting lance blessed by order paladins.",
@@ -1670,7 +1669,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     # ---------------- Seven Heavenly Virtues: Temperance ----------------
     "temperance_trident": {
         "slot": "weapon", "name": "Trident of the Stillwater",
-        "atk": 42, "def": 4, "hp": 20, "crit": 13.0, "speed": 0.15,
+        "atk": 42, "def": 0, "hp": 20, "crit": 13.0, "speed": 0.15,
         "rarity": "ancient",
         "effects": ["Tidal Cadence: Landing critical hits reduces all active skill cooldowns by 1.5s", "Wave Thrust"],
         "lore": "Forged in crystalline glacial depths to calm boiling maelstroms.",
@@ -1706,7 +1705,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     # ---------------- Seven Heavenly Virtues: Kindness ----------------
     "kindness_bow": {
         "slot": "weapon", "name": "Bow of the Verdant Guardian",
-        "atk": 43, "def": 2, "hp": 20, "crit": 11.0, "speed": 0.10,
+        "atk": 43, "def": 0, "hp": 20, "crit": 11.0, "speed": 0.10,
         "rarity": "ancient",
         "effects": ["Verdant Salve: Arrows sprout healing flora restoring 10 HP to allies and wielder upon hit", "Briar Shot"],
         "lore": "Bent from living elder wood that never snapped, strung with woven forest dew vines.",
@@ -1742,7 +1741,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     # ---------------- Seven Heavenly Virtues: Diligence ----------------
     "diligence_warhammer": {
         "slot": "weapon", "name": "Unyielding Forge Hammer",
-        "atk": 54, "def": 6, "hp": 30, "crit": 8.0, "speed": 0.12,
+        "atk": 54, "def": 0, "hp": 30, "crit": 8.0, "speed": 0.12,
         "rarity": "ancient",
         "effects": ["Smith's Rhythm: Each attack landed increases attack speed by +5% (max +35%)", "Armor Denting"],
         "lore": "The very hammer that struck three hundred thousand ingots without resting for a single day.",
@@ -1805,7 +1804,7 @@ NEW_EQUIPMENT_DATA: Dict[str, Dict[str, Any]] = {
     },
     "patience_hands": {
         "slot": "weapon", "name": "Measured Hands — Handwraps of the Vigil",
-        "atk": 48, "def": 8, "hp": 25, "crit": 8.0, "speed": 0.14,
+        "atk": 48, "def": 0, "hp": 25, "crit": 8.0, "speed": 0.14,
         "rarity": "ancient",
         "effects": ["Wait for the Opening: First attack after a pause deals +35% damage", "Disciplined Strike"],
         "lore": "Blessed handwraps inscribed with ancient hymns of disciplined endurance.",
@@ -1835,10 +1834,11 @@ def register_new_equipment_into_catalogs() -> None:
 
     # 1. Update ARMOR_DATA
     for item_id, item_spec in NEW_EQUIPMENT_DATA.items():
+        slot_val = item_spec.get("slot", "accessory")
         equipment.ARMOR_DATA[item_id] = {
-            "slot": item_spec.get("slot", "accessory"),
+            "slot": slot_val,
             "name": item_spec.get("name", item_id.replace("_", " ").title()),
-            "def": item_spec.get("def", 0),
+            "def": 0 if slot_val == "weapon" else item_spec.get("def", 0),
             "hp": item_spec.get("hp", 0),
             "atk": item_spec.get("atk", 0),
             "crit": item_spec.get("crit", 0.0),
@@ -1894,7 +1894,7 @@ def register_new_equipment_into_catalogs() -> None:
                 "power": 0,
                 "damage": item_spec.get("atk", 0),
                 "atk": item_spec.get("atk", 0),
-                "def": item_spec.get("def", 0),
+                "def": 0 if (cat_str == "weapon" or slot_c == "weapon") else item_spec.get("def", 0),
                 "crit": item_spec.get("crit", 0.0),
                 "speed": item_spec.get("speed", 0.0),
                 "hp": item_spec.get("hp", 0),

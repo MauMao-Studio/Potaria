@@ -154,6 +154,10 @@ class SkillManager:
         cost = base + (lvl - 1)
         if player and hasattr(player, "has_effect") and player.has_effect("arcane conduit"):
             cost = max(1, int(cost * 0.8))
+        if player and hasattr(player, "get_meal_buff_val"):
+            mcr = player.get_meal_buff_val("mana_cost_reduction")
+            if mcr > 0:
+                cost = max(1, int(cost * (1.0 - mcr)))
         return cost
 
     def get_skill_dmg_mult(self, skill_id):

@@ -11,7 +11,7 @@ from src.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, SLOT_SIZE, SLOT_PADDING,
     HOTBAR_SLOTS, INV_COLS, INV_ROWS, SCALED_TILE, COLOR_GOLD,
     RARITY_COLORS, RARITY_COMMON, RARITY_EPIC, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT,
-    CAT_TOOL
+    CAT_TOOL, CAT_WEAPON
 )
 from src.ui.inventory import ITEM_REGISTRY
 from src.rpg.skills import SKILL_DEFINITIONS
@@ -94,6 +94,9 @@ class HUD:
 
         # 5. Quick Skill Bar with Cooldown Overlays (Bottom Center)
         self._render_skill_bar(target_surf, player)
+
+        # 5.5. Active Food Buffs HUD Widget (Bottom Left)
+        self._render_food_buffs(target_surf, player, mouse_x, mouse_y)
 
         # 6. Crafting Menu
         if inventory.is_open:
@@ -332,6 +335,131 @@ class HUD:
                 pygame.draw.rect(target_surf, (45, 52, 65), l_badge, 1, border_radius=3)
                 lock_txt = self.font_sm.render("-", True, (85, 95, 110))
                 target_surf.blit(lock_txt, (l_badge.centerx - lock_txt.get_width() // 2, l_badge.centery - lock_txt.get_height() // 2))
+
+    def _render_food_buffs(self, target_surf, player, mouse_x, mouse_y):
+        """Displays small Food Buff HUD widget at bottom-left (x=20, y=SCREEN_HEIGHT-44).
+        Shows active meal buff icons, category-colored ornate borders, duration progress bar,
+        and high-contrast tooltip on hover."""
+        if not player or not hasattr(player, "meal_buffs") or not player.meal_buffs:
+            return
+
+        category_order = ["offense", "defense", "mobility", "resource", "utility"]
+        cat_colors = {
+            "offense": (235, 75, 75),
+            "defense": (75, 145, 235),
+            "mobility": (60, 215, 120),
+            "resource": (245, 195, 55),
+            "utility": (185, 95, 240),
+        }
+
+        active_buffs = [player.meal_buffs[c] for c in category_order if c in player.meal_buffs]
+        if not active_buffs:
+            return
+
+        start_x = 20
+        start_y = SCREEN_HEIGHT - 44
+        slot_w = 32
+        slot_h = 32
+        gap = 6
+
+        hovered_buff = None
+        hovered_rect = None
+
+        for idx, buff in enumerate(active_buffs):
+            bx = start_x + idx * (slot_w + gap)
+            by = start_y
+            rect = pygame.Rect(bx, by, slot_w, slot_h)
+
+            cat = str(buff.get("category", "")).lower()
+            cat_col = cat_colors.get(cat, (218, 165, 32))
+
+            # 1. Background plate
+            bg_surf = pygame.Surface((slot_w, slot_h), pygame.SRCALPHA)
+            bg_surf.fill((16, 20, 32, 230))
+            target_surf.blit(bg_surf, (bx, by))
+
+            # 2. Ornate category border
+            pygame.draw.rect(target_surf, cat_col, rect, 2, border_radius=4)
+
+            # 3. Food Icon (24x24)
+            icon_key = buff.get("icon") or buff.get("item_id")
+            icon_drawn = False
+            if hasattr(self, "asset_factory") and hasattr(self.asset_factory, "items") and icon_key in self.asset_factory.items:
+                raw_icon = self.asset_factory.items[icon_key]
+                if raw_icon:
+                    icon_img = pygame.transform.scale(raw_icon, (24, 24))
+                    target_surf.blit(icon_img, (bx + 4, by + 3))
+                    icon_drawn = True
+
+            if not icon_drawn:
+                name_initial = buff.get("name", "?")[:1].upper()
+                fallback_txt = self.font_sm.render(name_initial, True, cat_col)
+                target_surf.blit(fallback_txt, (bx + (slot_w - fallback_txt.get_width()) // 2, by + 6))
+
+            # 4. Duration progress indicator
+            dur = max(0.0, float(buff.get("duration", 0.0)))
+            max_dur = max(1.0, float(buff.get("max_duration", 180.0)))
+            pct = max(0.0, min(1.0, dur / max_dur))
+            bar_w = slot_w - 6
+            bar_h = 3
+            bar_bx = bx + 3
+            bar_by = by + slot_h - 5
+            pygame.draw.rect(target_surf, (22, 26, 38), (bar_bx, bar_by, bar_w, bar_h), border_radius=1)
+            fill_w = int(bar_w * pct)
+            if fill_w > 0:
+                pygame.draw.rect(target_surf, cat_col, (bar_bx, bar_by, fill_w, bar_h), border_radius=1)
+
+            if rect.collidepoint(mouse_x, mouse_y):
+                hovered_buff = buff
+                hovered_rect = rect
+
+        # High-contrast tooltip
+        if hovered_buff and hovered_rect:
+            cat = str(hovered_buff.get("category", "")).lower()
+            cat_col = cat_colors.get(cat, (218, 165, 32))
+            dur = max(0.0, float(hovered_buff.get("duration", 0.0)))
+            mins = int(dur) // 60
+            secs = int(dur) % 60
+
+            lines = []
+            lines.append((hovered_buff.get("name", "Meal Buff"), (255, 230, 90), self.font))
+            lines.append((f"[{cat.upper()}]  {mins}:{secs:02d} remaining", cat_col, self.font_sm))
+
+            effects = hovered_buff.get("effects", [])
+            if effects:
+                for eff in effects:
+                    lines.append((f"• {eff}", (190, 240, 255), self.font_sm))
+            else:
+                stats = hovered_buff.get("stats", {})
+                for sk, sv in stats.items():
+                    s_label = sk.replace("_mult", "").replace("_", " ").title()
+                    sign = "+" if sv > 0 else ""
+                    val_str = f"{sign}{sv*100:.0f}%" if "mult" in sk or "chance" in sk or "pen" in sk or "reduction" in sk else f"{sign}{sv}"
+                    lines.append((f"• {val_str} {s_label}", (190, 240, 255), self.font_sm))
+
+            lines.append((f"Eating another {cat.title()} meal replaces this buff.", (150, 165, 185), self.font_sm))
+
+            padding = 8
+            tip_w = 0
+            tip_h = padding * 2
+            rendered = []
+            for t_str, t_col, t_font in lines:
+                s = t_font.render(t_str, True, t_col)
+                rendered.append(s)
+                tip_w = max(tip_w, s.get_width() + padding * 2)
+                tip_h += s.get_height() + 3
+
+            tip_x = max(10, min(hovered_rect.x, SCREEN_WIDTH - tip_w - 10))
+            tip_y = max(10, hovered_rect.y - tip_h - 6)
+            tip_bg = pygame.Rect(tip_x, tip_y, tip_w, tip_h)
+
+            pygame.draw.rect(target_surf, (14, 18, 28, 250), tip_bg, border_radius=6)
+            pygame.draw.rect(target_surf, cat_col, tip_bg, 1, border_radius=6)
+
+            cur_y = tip_y + padding
+            for s in rendered:
+                target_surf.blit(s, (tip_x + padding, cur_y))
+                cur_y += s.get_height() + 3
 
     def _render_inventory(self, target_surf, inventory, mouse_x, mouse_y, player=None):
         start_x = 20
@@ -590,7 +718,7 @@ class HUD:
         # Mode A: Active Typing (Display console window & input bar)
         if is_typing:
             console_h = 24 + len(display_lines) * 17 + 8
-            console_y = SCREEN_HEIGHT - 75 - console_h
+            console_y = SCREEN_HEIGHT - 84 - console_h
             console_rect = pygame.Rect(cx, console_y, box_width, console_h)
             
             # Semi-transparent dark slate backdrop
@@ -609,7 +737,7 @@ class HUD:
                 line_y += 17
 
             # Typing input box
-            box_y = SCREEN_HEIGHT - 65
+            box_y = SCREEN_HEIGHT - 74
             box_rect = pygame.Rect(cx, box_y, box_width, 24)
             pygame.draw.rect(target_surf, (20, 25, 40, 245), box_rect, border_radius=4)
             pygame.draw.rect(target_surf, COLOR_GOLD, box_rect, 1, border_radius=4)
@@ -619,7 +747,7 @@ class HUD:
 
         # Mode B: Idle (Render recent active messages as compact floating pills)
         else:
-            base_y = SCREEN_HEIGHT - 75 - len(display_lines) * 18
+            base_y = SCREEN_HEIGHT - 84 - len(display_lines) * 18
             for i, (l_text, l_color) in enumerate(display_lines):
                 ts = self.font_sm.render(l_text, True, l_color)
                 pill_rect = pygame.Rect(cx, base_y + i * 18, ts.get_width() + 10, 16)
@@ -678,12 +806,20 @@ class HUD:
                     lines.append((f"Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
             elif data.get("atk", 0) > 0:
                 lines.append((f"Attack: +{data['atk']}", (255, 215, 100), self.font_sm))
-            if data.get("def", 0) > 0:
+            if data.get("def", 0) > 0 and data.get("cat") not in (CAT_WEAPON, "weapon") and data.get("category") not in (CAT_WEAPON, "weapon"):
                 lines.append((f"Defense: +{data['def']}", (140, 230, 140), self.font_sm))
             if data.get("hp", 0) > 0:
                 lines.append((f"Max HP: +{data['hp']}", (255, 120, 120), self.font_sm))
             if data.get("heal", 0) > 0:
                 lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
+            if data.get("mp", 0) > 0:
+                lines.append((f"Restores +{data['mp']} Mana", (100, 180, 255), self.font_sm))
+            if data.get("buff"):
+                buff_info = data["buff"]
+                cat_tag = buff_info.get("category", "Buff").title()
+                lines.append((f"Meal Buff [{cat_tag}]: {buff_info.get('name', '')}", (255, 215, 100), self.font_sm))
+                for eff in data.get("effects", []):
+                    lines.append((f"• {eff}", (255, 230, 140), self.font_sm))
         else:
             # 3. Detailed Numeric Combat & Mining Stats
             if data.get("damage", 0) > 0:
@@ -707,7 +843,7 @@ class HUD:
                     speed_str = "Fast Speed (0.32s)"
                 lines.append((f"Use Speed: {speed_str}", (240, 230, 160), self.font_sm))
 
-            if data.get("def", 0) > 0:
+            if data.get("def", 0) > 0 and data.get("cat") not in (CAT_WEAPON, "weapon") and data.get("category") not in (CAT_WEAPON, "weapon"):
                 lines.append((f"+{data['def']} Defense", (140, 230, 140), self.font_sm))
             if data.get("atk", 0) > 0:
                 lines.append((f"+{data['atk']} Attack", (255, 205, 110), self.font_sm))
@@ -726,6 +862,14 @@ class HUD:
                 lines.append((f"+{data['mp_regen']:.1f} MP/s Mana Regen", (120, 210, 255), self.font_sm))
             if data.get("heal", 0) > 0:
                 lines.append((f"Restores +{data['heal']} Health", (255, 110, 110), self.font_sm))
+            if data.get("buff"):
+                buff_info = data["buff"]
+                cat_tag = buff_info.get("category", "Buff").upper()
+                dur_s = buff_info.get("duration", 0)
+                dur_str = f"{dur_s // 60}m" if dur_s >= 60 else f"{dur_s}s"
+                lines.append((f"Meal Buff [{cat_tag}] ({dur_str}): {buff_info.get('name', '')}", (255, 215, 100), self.font_sm))
+                for eff in data.get("effects", []):
+                    lines.append((f"• {eff}", (255, 230, 140), self.font_sm))
 
             enh_lvl = getattr(item, "enhancement_level", 0)
             if enh_lvl > 0:

@@ -18,6 +18,25 @@ from src.rpg.stats import PlayerStats
 from src.rpg.equipment import Equipment, ARMOR_DATA
 from src.rpg.skills import SkillManager, SKILL_DEFINITIONS
 
+# Provisional Meal Buff Caps (Potaria Game Balance Plan Section 6.4)
+MEAL_BUFF_CAPS = {
+    "damage_mult": 0.12,
+    "ranged_damage_mult": 0.12,
+    "atk_speed_mult": 0.10,
+    "crit_chance": 0.06,
+    "crit_dmg_mult": 0.16,
+    "armor_pen": 0.10,
+    "def": 6,
+    "dmg_reduction": 0.06,
+    "magic_res": 0.15,
+    "speed_mult": 0.15,
+    "jump_mult": 0.15,
+    "knockback_res": 0.15,
+    "hp_regen": 2.0,
+    "mp_regen": 2.0,
+    "mana_cost_reduction": 0.15,
+}
+
 class PlayerFireball:
     def __init__(self, x, y, vx, vy, sprite, damage=24, max_distance=560.0):
         self.x = float(x)
@@ -113,6 +132,10 @@ class Player:
         self.starch_barrier_cd = 0.0
         self.eternal_bloom_cd = 0.0
         self.life_surge_timer = 0.0
+
+        # Timed Meal Buffs System (Max 5 categories: offense, defense, mobility, resource, utility)
+        self.meal_buffs = {}
+        self.meal_regen_timer = 0.0
 
         # Bullet-Hell Grazing Mechanics (Touhou / Enter the Gungeon style)
         self.graze_count = 0
@@ -263,8 +286,9 @@ class Player:
         self.aim_angle = math.atan2(mouse_world_y - self.center_y, mouse_world_x - self.center_x)
         self.facing_right = (mouse_world_x >= self.center_x)
 
-        # Base speed combined with RPG stats & gear
-        speed_cap = self.stats.total_speed * getattr(self, "speed_multiplier", 1.0)
+        # Base speed combined with RPG stats, gear, and food buffs
+        meal_spd = self.get_meal_buff_val("speed_mult")
+        speed_cap = self.stats.total_speed * getattr(self, "speed_multiplier", 1.0) * (1.0 + meal_spd)
         if self.dash_timer > 0:
             speed_cap *= 2.2  # Dash burst!
 
@@ -347,7 +371,8 @@ class Player:
                 self.ignore_platforms_timer = PLAYER_DROP_THROUGH_TIME
 
             if (is_down(k_jump) or is_down(pygame.K_UP)) and self.on_ground:
-                self.vy = PLAYER_JUMP_FORCE
+                meal_jump = self.get_meal_buff_val("jump_mult")
+                self.vy = PLAYER_JUMP_FORCE * (1.0 + meal_jump)
                 self.on_ground = False
 
                 if not self.is_head_blocked(world):
@@ -547,6 +572,9 @@ class Player:
 
     def trigger_attack(self, cooldown):
         """Initiates an attack, sets attack cooldown (fire rate), and synchronizes visual swing duration."""
+        atk_speed = self.get_meal_buff_val("atk_speed_mult")
+        if atk_speed > 0:
+            cooldown = cooldown / (1.0 + atk_speed)
         self.attack_cooldown = max(0.08, cooldown)
         self.max_attack_cooldown = self.attack_cooldown
         self.swing_duration = max(0.10, min(cooldown, 0.45))
@@ -560,74 +588,93 @@ class Player:
             self.swing_progress = 0.0
             self.swing_hit_targets = set()
 
+    def get_meal_buff_val(self, stat_name: str) -> float:
+        """Returns the total active meal buff contribution for stat_name, bounded by provisional caps."""
+        if not hasattr(self, "meal_buffs") or not self.meal_buffs:
+            return 0.0
+        total = 0.0
+        for b in self.meal_buffs.values():
+            stats = b.get("stats", {})
+            if stat_name in stats:
+                total += stats[stat_name]
+        cap = MEAL_BUFF_CAPS.get(stat_name)
+        if cap is not None:
+            if total > 0:
+                total = min(total, cap)
+            elif total < 0:
+                total = max(total, -cap)
+        return total
+
     def consume_item(self, item_id):
-        healed = False
-        if item_id == "raw_potato":
-            self.health += 25
-            healed = True
-        elif item_id == "mashed_potato":
-            self.health += 60
-            healed = True
-        elif item_id == "golden_fry":
-            self.health = self.max_health
-            self.stats.bonus_speed = 1.2
-            healed = True
-        elif item_id == "healing_potion":
+        from src.ui.inventory import ITEM_REGISTRY
+        data = ITEM_REGISTRY.get(item_id, {})
+        consumed = False
+
+        if item_id == "healing_potion":
             self.health += 50
-            healed = True
+            consumed = True
         elif item_id == "greater_healing_potion":
             self.health += 120
-            healed = True
+            consumed = True
         elif item_id == "speed_potion":
             self.stats.bonus_speed = 1.0
-            healed = True
-        elif item_id == "glazed_golden_tuber":
-            self.health += 100
-            self.stats.mp = min(self.stats.max_mp, self.stats.mp + 30)
-            self.stats.bonus_speed = max(getattr(self.stats, "bonus_speed", 0.0), 0.5)
-            healed = True
-        elif item_id == "gilded_russet":
-            self.health = self.max_health
-            self.stats.mp = self.stats.max_mp
-            self.stats.bonus_speed = max(getattr(self.stats, "bonus_speed", 0.0), 0.8)
-            healed = True
-        elif item_id == "hearty_root_stew":
-            self.health += 60
-            healed = True
-        elif item_id == "herbal_salve":
-            self.health += 35
-            healed = True
-        elif item_id == "smoked_spud_jerky":
-            self.health += 30
-            healed = True
-        elif item_id == "potato_bread":
-            self.health += 45
-            healed = True
-        elif item_id == "sweet_tuber_pie":
-            self.health += 70
-            self.stats.mp = min(self.stats.max_mp, self.stats.mp + 10)
-            healed = True
+            consumed = True
         elif item_id == "night_gazer_elixir":
             self.health += 20
-            self.stats.mp = min(self.stats.max_mp, self.stats.mp + 25)
-            healed = True
+            if hasattr(self, "stats"):
+                self.stats.mp = min(self.stats.max_mp, self.stats.mp + 25)
+            consumed = True
         elif item_id == "zephyr_tonic":
             self.health += 25
-            self.stats.mp = min(self.stats.max_mp, self.stats.mp + 15)
-            self.stats.bonus_speed = max(getattr(self.stats, "bonus_speed", 0.0), 1.0)
-            healed = True
+            if hasattr(self, "stats"):
+                self.stats.mp = min(self.stats.max_mp, self.stats.mp + 15)
+                self.stats.bonus_speed = max(getattr(self.stats, "bonus_speed", 0.0), 1.0)
+            consumed = True
+        elif item_id == "gilded_russet":
+            self.health = self.max_health
+            if hasattr(self, "stats"):
+                self.stats.mp = self.stats.max_mp
+                self.stats.bonus_speed = max(getattr(self.stats, "bonus_speed", 0.0), 0.8)
+            consumed = True
         else:
-            from src.ui.inventory import ITEM_REGISTRY
-            data = ITEM_REGISTRY.get(item_id, {})
-            if data.get("heal", 0) > 0:
-                self.health += data["heal"]
-                if data.get("mp", 0) > 0 and hasattr(self, "stats"):
-                    self.stats.mp = min(self.stats.max_mp, self.stats.mp + data["mp"])
-                healed = True
+            heal_val = data.get("heal", 0)
+            if heal_val > 0:
+                self.health += heal_val
+                consumed = True
+            mp_val = data.get("mp", 0)
+            if mp_val > 0 and hasattr(self, "stats"):
+                self.stats.mp = min(self.stats.max_mp, self.stats.mp + mp_val)
+                consumed = True
 
-        if healed:
+        # Meal buff handling (max 5 active buffs, 1 per category: offense, defense, mobility, resource, utility)
+        buff = data.get("buff")
+        if buff:
+            cat = str(buff.get("category", "")).lower()
+            if cat in ("offense", "defense", "mobility", "resource", "utility"):
+                if not hasattr(self, "meal_buffs"):
+                    self.meal_buffs = {}
+                dur = float(buff.get("duration", 180))
+                # Eating a meal in an occupied category replaces that category's current buff; duration does not stack
+                self.meal_buffs[cat] = {
+                    "item_id": item_id,
+                    "name": buff.get("name", data.get("name", item_id)),
+                    "category": cat,
+                    "duration": dur,
+                    "max_duration": dur,
+                    "stats": dict(buff.get("stats", {})),
+                    "effects": list(data.get("effects", [])),
+                    "icon": item_id
+                }
+                consumed = True
+
+        # Cleanse status debuffs if requested
+        if data.get("cleanse") or item_id == "herbal_salve":
+            consumed = True
+
+        if consumed:
             self.health = min(self.max_health, self.health)
-            self.sound_manager.play("craft")
+            if hasattr(self, "sound_manager") and self.sound_manager:
+                self.sound_manager.play("craft")
             return True
         return False
 
@@ -663,7 +710,7 @@ class Player:
                     return False
 
             # Titan's Resolve: Triples defense when below 30% HP
-            effective_def = self.stats.total_def
+            effective_def = self.stats.total_def + int(self.get_meal_buff_val("def"))
             is_titan = self.has_effect("titan's resolve") and (self.health < self.max_health * 0.3)
             if is_titan:
                 effective_def *= 3
@@ -675,6 +722,11 @@ class Player:
             # Damage Mitigation: -25% Total Damage Mitigation
             if self.has_effect("damage mitigation") or self.has_effect("-25%"):
                 actual_damage = max(min_pierce, int(actual_damage * 0.75))
+
+            # Meal Buff Damage Reduction
+            meal_dmg_red = self.get_meal_buff_val("dmg_reduction")
+            if meal_dmg_red > 0:
+                actual_damage = max(min_pierce, int(actual_damage * (1.0 - meal_dmg_red)))
 
             # Radiant Shield: Absorbs 40 damage every 15s
             if self.has_effect("radiant shield") and self.radiant_shield_hp > 0:
@@ -690,6 +742,11 @@ class Player:
         if self.has_effect("deep roots") and self.on_ground:
             knockback_vx = 0.0
             knockback_vy = 0.0
+        else:
+            meal_kb_res = self.get_meal_buff_val("knockback_res")
+            if meal_kb_res > 0:
+                knockback_vx *= (1.0 - meal_kb_res)
+                knockback_vy *= (1.0 - meal_kb_res)
 
         # Eternal Bloom: Full heal upon reaching 1 HP (180s cooldown)
         if self.has_effect("eternal bloom") and (self.health - actual_damage <= 1) and self.eternal_bloom_cd <= 0:
@@ -744,6 +801,29 @@ class Player:
         if active_item_id is not None and active_item_id != getattr(self, "_current_held_id", None):
             self._current_held_id = active_item_id
             self.equipment.recalculate_stats(self.stats, active_item_id)
+
+        # Timed Meal Buffs Update & Regeneration
+        if hasattr(self, "meal_buffs") and self.meal_buffs:
+            expired_cats = []
+            for c_name, buff in self.meal_buffs.items():
+                buff["duration"] -= dt
+                if buff["duration"] <= 0:
+                    expired_cats.append(c_name)
+            for c_name in expired_cats:
+                del self.meal_buffs[c_name]
+
+            hp_reg = self.get_meal_buff_val("hp_regen")
+            mp_reg = self.get_meal_buff_val("mp_regen")
+            if hp_reg > 0 or mp_reg > 0:
+                self.meal_regen_timer = getattr(self, "meal_regen_timer", 0.0) + dt
+                if self.meal_regen_timer >= 1.0:
+                    self.meal_regen_timer -= 1.0
+                    if hp_reg > 0 and self.health < self.max_health:
+                        self.health = min(self.max_health, self.health + int(round(hp_reg)))
+                        if hasattr(self, "stats"):
+                            self.stats.hp = self.health
+                    if mp_reg > 0 and hasattr(self, "stats") and self.stats.mp < self.stats.max_mp:
+                        self.stats.mp = min(self.stats.max_mp, self.stats.mp + int(round(mp_reg)))
 
         # Resting in Bed (+HP over time)
         if getattr(self, "is_resting", False):

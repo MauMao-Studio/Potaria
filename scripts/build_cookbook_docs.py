@@ -137,6 +137,30 @@ def get_item_icon_path(item_id):
             return p
     return None
 
+def format_health_and_buff(data):
+    """Formats the health column to include health restore and meal buff category/effects."""
+    heal_val = data.get("heal", 0)
+    heal_str = f"+{heal_val} HP" if heal_val > 0 else "Base"
+
+    buff = data.get("buff")
+    if buff:
+        b_cat = str(buff.get("category", "")).upper()
+        dur_s = int(buff.get("duration", 180))
+        dur_str = f"{dur_s // 60}m" if dur_s >= 60 else f"{dur_s}s"
+        eff_list = data.get("effects", [])
+        if eff_list:
+            eff_text = ", ".join(eff_list)
+            heal_str += f"\n[{b_cat}] {eff_text}"
+        elif buff.get("stats"):
+            stat_parts = []
+            for sk, sv in buff["stats"].items():
+                s_name = sk.replace("_mult", "").replace("_", " ").title()
+                s_val = f"+{sv*100:.0f}%" if "mult" in sk or "chance" in sk or "pen" in sk or "reduction" in sk else f"+{sv}"
+                stat_parts.append(f"{s_val} {s_name}")
+            eff_text = ", ".join(stat_parts)
+            heal_str += f"\n[{b_cat}] {eff_text} ({dur_str})"
+    return heal_str, heal_val
+
 # -------------------------------------------------------------
 # DOCX BUILDER
 # -------------------------------------------------------------
@@ -241,11 +265,11 @@ def build_docx(with_codes=True, output_filename=None):
     # Column configuration (Total = 7.10 inches)
     if with_codes:
         # 7 columns
-        col_widths = [Inches(0.45), Inches(1.35), Inches(1.05), Inches(0.65), Inches(0.75), Inches(1.65), Inches(1.20)]
+        col_widths = [Inches(0.45), Inches(1.30), Inches(0.95), Inches(0.85), Inches(0.70), Inches(1.65), Inches(1.20)]
         hdr_titles = ["Icon", "Dish / Item Name", "Item ID", "Health", "Station", "Ingredients / Source", "Lore Notes"]
     else:
         # 6 columns
-        col_widths = [Inches(0.45), Inches(1.55), Inches(0.75), Inches(0.85), Inches(2.10), Inches(1.40)]
+        col_widths = [Inches(0.45), Inches(1.45), Inches(0.95), Inches(0.75), Inches(2.10), Inches(1.40)]
         hdr_titles = ["Icon", "Dish / Item Name", "Health", "Station", "Ingredients / Source", "Lore Notes"]
     
     for sec_idx, (title, items, desc_text) in enumerate(SECTIONS, start=2):
@@ -298,8 +322,7 @@ def build_docx(with_codes=True, output_filename=None):
             
             data = ITEM_REGISTRY[item_id]
             name = data.get("name", item_id)
-            heal_val = data.get("heal", 0)
-            heal_str = f"+{heal_val} HP" if heal_val > 0 else "Base"
+            heal_str, heal_val = format_health_and_buff(data)
             desc_val = data.get("desc", "")
             
             rec = recipe_map.get(item_id)
@@ -318,7 +341,7 @@ def build_docx(with_codes=True, output_filename=None):
                 text_columns = [
                     (1, name, WD_ALIGN_PARAGRAPH.LEFT, True, Pt(8.5), RGBColor(40, 40, 40)),
                     (2, item_id, WD_ALIGN_PARAGRAPH.CENTER, False, Pt(7.5), RGBColor(100, 100, 100)),
-                    (3, heal_str, WD_ALIGN_PARAGRAPH.CENTER, heal_val > 0, Pt(8.5), RGBColor(34, 139, 34) if heal_val > 0 else RGBColor(50, 50, 50)),
+                    (3, heal_str, WD_ALIGN_PARAGRAPH.CENTER, heal_val > 0, Pt(7.5), RGBColor(34, 139, 34) if heal_val > 0 else RGBColor(50, 50, 50)),
                     (4, st_str, WD_ALIGN_PARAGRAPH.CENTER, False, Pt(8.5), RGBColor(50, 50, 50)),
                     (5, ing_str, WD_ALIGN_PARAGRAPH.LEFT, False, Pt(8.5), RGBColor(50, 50, 50)),
                     (6, desc_val, WD_ALIGN_PARAGRAPH.LEFT, False, Pt(8.0), RGBColor(80, 80, 80)),
@@ -326,7 +349,7 @@ def build_docx(with_codes=True, output_filename=None):
             else:
                 text_columns = [
                     (1, name, WD_ALIGN_PARAGRAPH.LEFT, True, Pt(8.5), RGBColor(40, 40, 40)),
-                    (2, heal_str, WD_ALIGN_PARAGRAPH.CENTER, heal_val > 0, Pt(8.5), RGBColor(34, 139, 34) if heal_val > 0 else RGBColor(50, 50, 50)),
+                    (2, heal_str, WD_ALIGN_PARAGRAPH.CENTER, heal_val > 0, Pt(7.5), RGBColor(34, 139, 34) if heal_val > 0 else RGBColor(50, 50, 50)),
                     (3, st_str, WD_ALIGN_PARAGRAPH.CENTER, False, Pt(8.5), RGBColor(50, 50, 50)),
                     (4, ing_str, WD_ALIGN_PARAGRAPH.LEFT, False, Pt(8.5), RGBColor(50, 50, 50)),
                     (5, desc_val, WD_ALIGN_PARAGRAPH.LEFT, False, Pt(8.0), RGBColor(80, 80, 80)),
@@ -541,8 +564,8 @@ def build_pdf(with_codes=True, output_filename=None):
         'TableHeal',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=7.5,
-        leading=9.5,
+        fontSize=6.5,
+        leading=8.0,
         textColor=colors.HexColor('#1E7E34'),
         alignment=1
     )
@@ -551,8 +574,8 @@ def build_pdf(with_codes=True, output_filename=None):
         'TableHealBase',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=7.5,
-        leading=9.5,
+        fontSize=6.5,
+        leading=8.0,
         textColor=colors.HexColor('#555555'),
         alignment=1
     )
@@ -610,8 +633,8 @@ def build_pdf(with_codes=True, output_filename=None):
     
     # 540 pt total width
     if with_codes:
-        # 7 columns: 32 + 95 + 86 + 42 + 54 + 131 + 100 = 540 pt
-        col_widths = [32, 95, 86, 42, 54, 131, 100]
+        # 7 columns: 30 + 90 + 78 + 60 + 50 + 127 + 105 = 540 pt
+        col_widths = [30, 90, 78, 60, 50, 127, 105]
         hdr_cells = [
             Paragraph("Icon", th_style),
             Paragraph("Dish / Item Name", th_style),
@@ -622,8 +645,8 @@ def build_pdf(with_codes=True, output_filename=None):
             Paragraph("Culinary Notes", th_style)
         ]
     else:
-        # 6 columns: 34 + 116 + 46 + 56 + 168 + 120 = 540 pt
-        col_widths = [34, 116, 46, 56, 168, 120]
+        # 6 columns: 32 + 110 + 66 + 52 + 155 + 125 = 540 pt
+        col_widths = [32, 110, 66, 52, 155, 125]
         hdr_cells = [
             Paragraph("Icon", th_style),
             Paragraph("Dish / Item Name", th_style),
@@ -646,8 +669,7 @@ def build_pdf(with_codes=True, output_filename=None):
         for r_idx, item_id in enumerate(items):
             data = ITEM_REGISTRY[item_id]
             name = data.get("name", item_id)
-            heal_val = data.get("heal", 0)
-            heal_str = f"+{heal_val} HP" if heal_val > 0 else "Base"
+            heal_str, heal_val = format_health_and_buff(data)
             desc_val = data.get("desc", "")
             
             rec = recipe_map.get(item_id)
@@ -667,7 +689,7 @@ def build_pdf(with_codes=True, output_filename=None):
                 icon_flowable = ""
             
             p_name = Paragraph(name, td_name_style)
-            p_heal = Paragraph(heal_str, td_heal_style if heal_val > 0 else td_heal_base_style)
+            p_heal = Paragraph(heal_str.replace("\n", "<br/>"), td_heal_style if heal_val > 0 else td_heal_base_style)
             p_st = Paragraph(st_str, td_st_style)
             p_ing = Paragraph(ing_str, td_ing_style)
             p_lore = Paragraph(desc_val, td_lore_style)

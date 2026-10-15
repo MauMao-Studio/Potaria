@@ -55,6 +55,13 @@ class AffixEngine:
             if canon not in allowed_cats:
                 return False
 
+        canon = map_to_canonical_category("", item_category).lower()
+        if canon == "weapon" or item_category.lower() == "weapon":
+            stat_mods = aff.get("stat_mods", {})
+            defensive_keys = {"def", "defense", "armor", "dmg_reduction", "dmg_reduc", "damage_reduction", "knockback_res", "magic_resist"}
+            if any(k in stat_mods for k in defensive_keys):
+                return False
+
         min_rarity = aff.get("min_rarity", "Uncommon")
         if not self.rarity_engine.is_at_least(rarity, min_rarity):
             return False
