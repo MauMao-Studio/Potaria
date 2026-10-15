@@ -151,7 +151,10 @@ def set_cell_margins(cell, top=100, bottom=100, left=140, right=140):
 
 def build_docx(with_codes=True, output_filename=None):
     if output_filename is None:
-        output_filename = "Potaria_Cookbook_With_Codes.docx" if with_codes else "Potaria_Cookbook_No_Codes.docx"
+        output_filename = os.path.join(
+            BASE_DIR,
+            "Potaria_Cookbook_With_Codes.docx" if with_codes else "Potaria_Cookbook_No_Codes.docx"
+        )
 
     doc = Document()
     
@@ -433,7 +436,10 @@ def draw_page_background(canvas_obj, doc_obj):
 
 def build_pdf(with_codes=True, output_filename=None):
     if output_filename is None:
-        output_filename = "Potaria_Cookbook_With_Codes.pdf" if with_codes else "Potaria_Cookbook_No_Codes.pdf"
+        output_filename = os.path.join(
+            BASE_DIR,
+            "Potaria_Cookbook_With_Codes.pdf" if with_codes else "Potaria_Cookbook_No_Codes.pdf"
+        )
     
     # 36pt margins, page width 612pt -> printable width 540pt
     doc = SimpleDocTemplate(
@@ -610,7 +616,7 @@ def build_pdf(with_codes=True, output_filename=None):
             Paragraph("Icon", th_style),
             Paragraph("Dish / Item Name", th_style),
             Paragraph("Item ID", th_style),
-            Paragraph("Heal", th_style),
+            Paragraph("Health", th_style),
             Paragraph("Station", th_style),
             Paragraph("Recipe Ingredients / Source", th_style),
             Paragraph("Culinary Notes", th_style)
@@ -621,7 +627,7 @@ def build_pdf(with_codes=True, output_filename=None):
         hdr_cells = [
             Paragraph("Icon", th_style),
             Paragraph("Dish / Item Name", th_style),
-            Paragraph("Heal", th_style),
+            Paragraph("Health", th_style),
             Paragraph("Station", th_style),
             Paragraph("Recipe Ingredients / Source", th_style),
             Paragraph("Culinary Notes", th_style)
@@ -697,22 +703,30 @@ def build_pdf(with_codes=True, output_filename=None):
     print(f"Generated PDF Document: {output_filename}")
     return output_filename
 
-def build_all():
+def build_all(output_dir=None):
     """Generates all 4 cookbook files and synchronizes primary aliases."""
+    if output_dir is None:
+        output_dir = BASE_DIR
+    os.makedirs(output_dir, exist_ok=True)
     print("Building Potaria Cookbook Documents...")
     
     # 1. Version 1: With Codes
-    docx_codes = build_docx(with_codes=True, output_filename="Potaria_Cookbook_With_Codes.docx")
-    shutil.copyfile(docx_codes, "Potaria_Cookbook.docx")
+    docx_codes_path = os.path.join(output_dir, "Potaria_Cookbook_With_Codes.docx")
+    docx_codes = build_docx(with_codes=True, output_filename=docx_codes_path)
+    shutil.copyfile(docx_codes, os.path.join(output_dir, "Potaria_Cookbook.docx"))
     print("Synchronized Potaria_Cookbook.docx -> Potaria_Cookbook_With_Codes.docx")
     
-    pdf_codes = build_pdf(with_codes=True, output_filename="Potaria_Cookbook_With_Codes.pdf")
-    shutil.copyfile(pdf_codes, "Potaria_Cookbook.pdf")
+    pdf_codes_path = os.path.join(output_dir, "Potaria_Cookbook_With_Codes.pdf")
+    pdf_codes = build_pdf(with_codes=True, output_filename=pdf_codes_path)
+    shutil.copyfile(pdf_codes, os.path.join(output_dir, "Potaria_Cookbook.pdf"))
     print("Synchronized Potaria_Cookbook.pdf -> Potaria_Cookbook_With_Codes.pdf")
     
     # 2. Version 2: Without Codes
-    docx_no_codes = build_docx(with_codes=False, output_filename="Potaria_Cookbook_No_Codes.docx")
-    pdf_no_codes = build_pdf(with_codes=False, output_filename="Potaria_Cookbook_No_Codes.pdf")
+    docx_no_codes_path = os.path.join(output_dir, "Potaria_Cookbook_No_Codes.docx")
+    build_docx(with_codes=False, output_filename=docx_no_codes_path)
+    
+    pdf_no_codes_path = os.path.join(output_dir, "Potaria_Cookbook_No_Codes.pdf")
+    build_pdf(with_codes=False, output_filename=pdf_no_codes_path)
     
     print("All 4 Cookbook documents generated successfully.")
 

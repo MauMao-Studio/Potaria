@@ -11,6 +11,7 @@ Validates:
 import os
 import sys
 import unittest
+import tempfile
 from docx import Document
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtPdf import QPdfDocument
@@ -24,8 +25,17 @@ class TestCookbookGeneration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        # Ensure documents are built
-        build_all()
+        # Ensure repository documents exist if not yet built, without dirtying git status on repeated runs
+        expected_files = [
+            "Potaria_Cookbook_With_Codes.docx",
+            "Potaria_Cookbook.docx",
+            "Potaria_Cookbook_With_Codes.pdf",
+            "Potaria_Cookbook.pdf",
+            "Potaria_Cookbook_No_Codes.docx",
+            "Potaria_Cookbook_No_Codes.pdf",
+        ]
+        if any(not os.path.isfile(os.path.join(cls.base_dir, f)) for f in expected_files):
+            build_all(output_dir=cls.base_dir)
 
     def test_01_all_79_items_resolve_valid_icon_path(self):
         """Verifies every item in the cookbook sections resolves to an existing PNG asset."""
@@ -98,6 +108,41 @@ class TestCookbookGeneration(unittest.TestCase):
         pdf_catalog = os.path.join(self.base_dir, "Potaria_Items_Catalog.pdf")
         self.assertTrue(os.path.isfile(docx_catalog), "Potaria_Items_Catalog.docx must exist")
         self.assertTrue(os.path.isfile(pdf_catalog), "Potaria_Items_Catalog.pdf must exist")
+
+    def test_06_docx_embedded_sprites_in_icon_column(self):
+        """Verifies that all 79 items have embedded drawings/pictures in Column 0 of DOCX."""
+        for doc_name in ["Potaria_Cookbook_With_Codes.docx", "Potaria_Cookbook_No_Codes.docx"]:
+            doc = Document(os.path.join(self.base_dir, doc_name))
+            embedded_icons = 0
+            for table in doc.tables:
+                for row_idx, row in enumerate(table.rows):
+                    if row_idx == 0:
+                        continue
+                    icon_cell = row.cells[0]
+                    xml = icon_cell._tc.xml
+                    self.assertTrue(
+                        "w:drawing" in xml or "a:blip" in xml,
+                        f"Missing embedded sprite image in {doc_name} row {row_idx}"
+                    )
+                    embedded_icons += 1
+            self.assertEqual(embedded_icons, 79, f"Expected 79 embedded sprites in {doc_name}, found {embedded_icons}")
+
+    def test_07_generator_execution_in_isolated_directory(self):
+        """Verifies build_all() generates all files cleanly into a temporary directory from scratch."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            build_all(output_dir=tmpdir)
+            expected_files = [
+                "Potaria_Cookbook_With_Codes.docx",
+                "Potaria_Cookbook.docx",
+                "Potaria_Cookbook_With_Codes.pdf",
+                "Potaria_Cookbook.pdf",
+                "Potaria_Cookbook_No_Codes.docx",
+                "Potaria_Cookbook_No_Codes.pdf",
+            ]
+            for fname in expected_files:
+                fpath = os.path.join(tmpdir, fname)
+                self.assertTrue(os.path.isfile(fpath), f"Failed to generate {fname} in isolated directory")
+                self.assertGreater(os.path.getsize(fpath), 20000, f"File {fname} is smaller than expected in isolated run")
 
 
 if __name__ == "__main__":
