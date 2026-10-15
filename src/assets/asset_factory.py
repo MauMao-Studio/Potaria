@@ -411,143 +411,200 @@ class AssetFactory:
     def _draw_pinoy_fish(self, surf, item_id, h):
         fish_key = item_id.replace("raw_", "")
         if fish_key == "bangus":
-            body_col, back_col, belly_col = (195, 205, 220), (95, 120, 145), (235, 240, 250)
-            fin_col = (175, 190, 205)
-            pygame.draw.ellipse(surf, body_col, (4, 8, 14, 8))
-            pygame.draw.arc(surf, back_col, (4, 7, 14, 8), 0.2, 3.0, 2)
-            pygame.draw.line(surf, belly_col, (6, 14), (16, 14), 2)
-            pygame.draw.polygon(surf, fin_col, [(17, 12), (22, 7), (20, 12), (22, 17)])
-            pygame.draw.polygon(surf, fin_col, [(10, 8), (12, 5), (14, 8)])
-            pygame.draw.polygon(surf, fin_col, [(8, 13), (10, 16), (11, 13)])
-            surf.set_at((6, 10), (25, 30, 40))
-            surf.set_at((6, 9), (255, 255, 255))
-            pygame.draw.arc(surf, (120, 140, 160), (7, 9, 3, 6), -1.5, 1.5, 1)
+            # Streamlined silver-white milkfish with steel-blue back and forked tail
+            pygame.draw.ellipse(surf, (80, 110, 140), (3, 8, 15, 8))
+            pygame.draw.ellipse(surf, (195, 215, 235), (4, 9, 14, 7))
+            pygame.draw.ellipse(surf, (245, 248, 255), (5, 11, 12, 5))
+            pygame.draw.polygon(surf, (110, 135, 160), [(9, 8), (12, 5), (14, 8)])
+            pygame.draw.polygon(surf, (150, 175, 200), [(8, 13), (10, 16), (11, 13)])
+            pygame.draw.polygon(surf, (130, 155, 180), [(17, 12), (22, 7), (20, 12), (22, 17)])
+            surf.set_at((6, 11), (25, 30, 40))
+            surf.set_at((6, 10), (255, 255, 255))
+            pygame.draw.arc(surf, (120, 145, 170), (7, 10, 4, 6), -1.5, 1.5, 1)
         elif fish_key == "tilapia":
-            body_col, back_col = (120, 145, 115), (75, 95, 70)
-            pygame.draw.ellipse(surf, body_col, (4, 7, 13, 10))
-            pygame.draw.arc(surf, back_col, (4, 6, 13, 9), 0.2, 3.0, 2)
+            # Deep-bodied freshwater tilapia with olive-gray scales & vertical tiger bars
+            pygame.draw.ellipse(surf, (60, 75, 55), (3, 7, 14, 10))
+            pygame.draw.ellipse(surf, (120, 145, 115), (4, 8, 13, 9))
+            pygame.draw.ellipse(surf, (185, 205, 175), (5, 11, 11, 5))
             for bx in (8, 11, 14):
-                pygame.draw.line(surf, (60, 80, 55), (bx, 9), (bx, 14), 1)
-            pygame.draw.polygon(surf, (90, 115, 85), [(8, 7), (12, 4), (16, 7)])
-            pygame.draw.polygon(surf, (90, 115, 85), [(16, 12), (21, 9), (21, 15)])
-            surf.set_at((6, 10), (20, 25, 20))
+                pygame.draw.line(surf, (55, 75, 50), (bx, 9), (bx, 15), 1)
+            pygame.draw.polygon(surf, (85, 110, 80), [(7, 8), (11, 4), (15, 7)])
+            pygame.draw.polygon(surf, (85, 110, 80), [(16, 12), (21, 9), (20, 12), (21, 15)])
+            surf.set_at((6, 11), (25, 30, 20))
+            surf.set_at((6, 10), (240, 245, 220))
         elif fish_key == "galunggong":
-            pygame.draw.ellipse(surf, (140, 160, 180), (3, 9, 15, 6))
-            pygame.draw.line(surf, (65, 95, 135), (4, 9), (17, 9), 2)
-            pygame.draw.polygon(surf, (230, 200, 60), [(17, 12), (22, 8), (20, 12), (22, 16)])
-            surf.set_at((5, 11), (20, 30, 45))
+            # Slender round scad with metallic blue-green back & yellow tail finlet
+            pygame.draw.ellipse(surf, (50, 75, 110), (2, 9, 16, 6))
+            pygame.draw.ellipse(surf, (140, 165, 190), (3, 10, 15, 5))
+            pygame.draw.ellipse(surf, (235, 242, 250), (4, 11, 13, 4))
+            pygame.draw.polygon(surf, (240, 210, 50), [(17, 12), (22, 8), (20, 12), (22, 16)])
+            surf.set_at((5, 11), (25, 35, 45))
             surf.set_at((5, 10), (255, 255, 255))
+            surf.set_at((7, 11), (40, 50, 65))
         elif fish_key == "maya_maya":
-            pygame.draw.ellipse(surf, (220, 65, 65), (4, 7, 14, 10))
-            pygame.draw.arc(surf, (160, 35, 35), (4, 6, 14, 10), 0.2, 3.0, 2)
-            pygame.draw.polygon(surf, (190, 45, 45), [(9, 7), (13, 4), (16, 7)])
+            # Brilliant crimson red snapper
+            pygame.draw.ellipse(surf, (140, 30, 30), (3, 7, 15, 10))
+            pygame.draw.ellipse(surf, (220, 60, 60), (4, 8, 14, 9))
+            pygame.draw.ellipse(surf, (250, 140, 140), (5, 11, 12, 5))
+            pygame.draw.polygon(surf, (190, 45, 45), [(8, 7), (12, 4), (16, 7)])
             pygame.draw.polygon(surf, (190, 45, 45), [(17, 12), (22, 8), (20, 12), (22, 16)])
-            surf.set_at((6, 10), (255, 215, 70))
+            surf.set_at((6, 10), (255, 215, 60))
             surf.set_at((6, 11), (30, 10, 10))
         elif fish_key == "tanigue":
-            pygame.draw.ellipse(surf, (170, 185, 205), (2, 9, 17, 6))
-            pygame.draw.line(surf, (70, 95, 120), (3, 9), (18, 9), 1)
-            for mx in (7, 10, 13):
-                surf.set_at((mx, 11), (110, 130, 150))
-            pygame.draw.polygon(surf, (110, 130, 155), [(18, 12), (23, 7), (21, 12), (23, 17)])
+            # Torpedo Spanish mackerel with tiger bands
+            pygame.draw.ellipse(surf, (60, 80, 105), (2, 9, 17, 6))
+            pygame.draw.ellipse(surf, (160, 180, 205), (3, 10, 16, 5))
+            pygame.draw.ellipse(surf, (235, 245, 252), (4, 11, 14, 4))
+            for mx in (7, 10, 13, 16):
+                pygame.draw.line(surf, (90, 115, 135), (mx, 10), (mx, 13), 1)
+            pygame.draw.polygon(surf, (110, 135, 160), [(18, 12), (23, 7), (21, 12), (23, 17)])
             surf.set_at((4, 11), (25, 35, 45))
+            surf.set_at((4, 10), (255, 255, 255))
         elif fish_key == "tambakol":
-            pygame.draw.ellipse(surf, (45, 75, 130), (3, 8, 15, 9))
-            pygame.draw.arc(surf, (25, 45, 85), (3, 7, 15, 9), 0.2, 3.0, 2)
+            # Yellowfin/skipjack tuna with navy back & yellow finlets
+            pygame.draw.ellipse(surf, (30, 50, 95), (2, 8, 16, 9))
+            pygame.draw.ellipse(surf, (55, 85, 145), (3, 9, 15, 8))
+            pygame.draw.ellipse(surf, (215, 225, 240), (4, 12, 13, 5))
             for fx in (13, 15, 17):
-                surf.set_at((fx, 8), (245, 200, 50))
-                surf.set_at((fx, 15), (245, 200, 50))
-            pygame.draw.polygon(surf, (235, 190, 45), [(17, 12), (23, 7), (20, 12), (23, 17)])
+                surf.set_at((fx, 8), (250, 205, 45))
+                surf.set_at((fx, 16), (250, 205, 45))
+            pygame.draw.polygon(surf, (240, 195, 40), [(17, 12), (23, 7), (20, 12), (23, 17)])
             surf.set_at((5, 11), (255, 240, 150))
             surf.set_at((5, 12), (20, 20, 40))
         elif fish_key == "lapu_lapu":
-            pygame.draw.ellipse(surf, (175, 85, 60), (3, 7, 15, 11))
-            pygame.draw.arc(surf, (120, 50, 35), (3, 6, 15, 11), 0.2, 3.0, 2)
-            for spot in [(7, 9), (10, 11), (13, 10), (9, 13), (12, 14)]:
-                surf.set_at(spot, (235, 205, 175))
-            pygame.draw.polygon(surf, (140, 65, 45), [(17, 12), (22, 9), (22, 15)])
-            surf.set_at((5, 10), (30, 15, 10))
+            # Speckled reddish-tan coral reef grouper
+            pygame.draw.ellipse(surf, (110, 45, 30), (2, 7, 16, 11))
+            pygame.draw.ellipse(surf, (175, 85, 55), (3, 8, 15, 10))
+            pygame.draw.ellipse(surf, (230, 140, 105), (4, 11, 13, 6))
+            for spot in [(7, 9), (10, 11), (13, 10), (9, 14), (12, 15), (15, 12)]:
+                surf.set_at(spot, (250, 235, 220))
+            pygame.draw.polygon(surf, (140, 65, 45), [(17, 12), (22, 8), (21, 12), (22, 16)])
+            surf.set_at((5, 11), (25, 15, 10))
+            surf.set_at((5, 10), (255, 220, 180))
         elif fish_key == "hito":
-            pygame.draw.ellipse(surf, (55, 60, 70), (4, 9, 14, 7))
-            pygame.draw.line(surf, (110, 115, 125), (6, 14), (16, 14), 1)
-            pygame.draw.line(surf, (35, 40, 45), (4, 11), (1, 9), 1)
-            pygame.draw.line(surf, (35, 40, 45), (4, 13), (1, 15), 1)
-            pygame.draw.polygon(surf, (45, 50, 60), [(17, 12), (21, 10), (21, 14)])
-            surf.set_at((5, 11), (220, 220, 100))
+            # Native freshwater catfish with whiskers
+            pygame.draw.ellipse(surf, (40, 45, 55), (3, 9, 15, 7))
+            pygame.draw.ellipse(surf, (65, 70, 80), (4, 10, 14, 6))
+            pygame.draw.line(surf, (140, 145, 155), (6, 14), (16, 14), 1)
+            pygame.draw.line(surf, (30, 35, 40), (4, 11), (1, 8), 1)
+            pygame.draw.line(surf, (30, 35, 40), (4, 13), (1, 16), 1)
+            pygame.draw.polygon(surf, (55, 60, 70), [(17, 12), (22, 10), (21, 12), (22, 14)])
+            surf.set_at((5, 11), (225, 225, 110))
         elif fish_key == "dilis":
+            # Cluster of 3 miniature silvery-translucent anchovies
             for ox, oy in [(2, 7), (4, 11), (3, 15)]:
-                pygame.draw.ellipse(surf, (210, 230, 245), (ox, oy, 14, 4))
-                pygame.draw.line(surf, (130, 195, 235), (ox + 1, oy + 2), (ox + 12, oy + 2), 1)
+                pygame.draw.ellipse(surf, (160, 190, 220), (ox, oy, 14, 4))
+                pygame.draw.ellipse(surf, (225, 240, 252), (ox + 1, oy + 1, 12, 2))
+                pygame.draw.line(surf, (110, 180, 235), (ox + 2, oy + 2), (ox + 11, oy + 2), 1)
                 surf.set_at((ox + 2, oy + 1), (30, 45, 65))
         elif fish_key == "dalagang_bukid":
-            pygame.draw.ellipse(surf, (230, 80, 105), (3, 8, 15, 8))
-            pygame.draw.line(surf, (250, 215, 60), (4, 8), (17, 8), 2)
-            pygame.draw.polygon(surf, (245, 205, 55), [(17, 12), (22, 7), (20, 12), (22, 17)])
+            # Electric blue-and-yellow reef fusilier with rosy belly
+            pygame.draw.ellipse(surf, (40, 95, 175), (2, 8, 16, 9))
+            pygame.draw.arc(surf, (65, 145, 235), (2, 8, 16, 9), 0.2, 3.0, 2)
+            pygame.draw.line(surf, (250, 215, 55), (5, 9), (17, 9), 2)
+            pygame.draw.polygon(surf, (245, 205, 50), [(17, 12), (22, 7), (20, 12), (22, 17)])
+            pygame.draw.ellipse(surf, (240, 135, 155), (4, 12, 12, 4))
             surf.set_at((5, 11), (255, 255, 255))
             surf.set_at((5, 12), (30, 15, 25))
 
     def _draw_pinoy_cooked_fish(self, surf, item_id, h):
         fish_key = item_id.replace("cooked_", "")
-        leaf_col = (55, 135, 50)
-        clay_col = (185, 110, 65)
         if fish_key == "bangus":
-            pygame.draw.ellipse(surf, leaf_col, (2, 5, 20, 14))
-            pygame.draw.ellipse(surf, (180, 120, 65), (4, 7, 16, 10))
-            for gx in (7, 11, 15):
-                pygame.draw.line(surf, (55, 30, 15), (gx, 8), (gx, 16), 1)
-            surf.set_at((9, 11), (225, 45, 45))
-            surf.set_at((11, 12), (245, 245, 235))
-            surf.set_at((13, 10), (225, 45, 45))
-            surf.set_at((14, 13), (85, 195, 75))
+            # Smoked butterfly-split bangus on banana leaf with tomato-onion relish
+            pygame.draw.ellipse(surf, (45, 135, 45), (2, 6, 20, 13))
+            pygame.draw.ellipse(surf, (135, 75, 35), (4, 8, 16, 9))
+            pygame.draw.ellipse(surf, (240, 215, 160), (6, 9, 12, 7))
+            for gx in (8, 11, 14):
+                pygame.draw.line(surf, (60, 30, 15), (gx, 9), (gx, 15), 1)
+            surf.set_at((9, 11), (230, 45, 45))
+            surf.set_at((12, 12), (255, 255, 250))
+            surf.set_at((13, 10), (230, 45, 45))
+            surf.set_at((15, 12), (75, 195, 65))
         elif fish_key == "tilapia":
-            pygame.draw.rect(surf, (225, 220, 205), (2, 6, 20, 12), border_radius=2)
-            pygame.draw.ellipse(surf, (190, 135, 50), (4, 7, 16, 9))
-            for fx in (8, 12):
-                pygame.draw.line(surf, (130, 80, 25), (fx, 8), (fx + 2, 14), 1)
-            surf.set_at((17, 9), (195, 220, 50))
+            # Crispy fried whole tilapia with score marks and calamansi
+            pygame.draw.ellipse(surf, (50, 135, 50), (2, 14, 20, 6))
+            pygame.draw.ellipse(surf, (110, 65, 25), (3, 7, 18, 10))
+            pygame.draw.ellipse(surf, (195, 135, 45), (4, 8, 16, 8))
+            for fx in (8, 12, 15):
+                pygame.draw.line(surf, (85, 40, 15), (fx, 9), (fx + 2, 14), 1)
+            pygame.draw.polygon(surf, (165, 105, 35), [(18, 12), (22, 9), (21, 12), (22, 15)])
+            pygame.draw.circle(surf, (65, 165, 50), (5, 12), 2)
+            surf.set_at((5, 12), (225, 240, 110))
         elif fish_key == "galunggong":
-            pygame.draw.ellipse(surf, leaf_col, (2, 6, 20, 13))
-            pygame.draw.ellipse(surf, (175, 115, 55), (4, 9, 14, 6))
-            pygame.draw.circle(surf, (240, 240, 245), (18, 14), 3)
-            surf.set_at((18, 14), (210, 40, 40))
+            # Crispy fried round scad on banana leaf with dipping saucer
+            pygame.draw.ellipse(surf, (45, 135, 45), (2, 7, 20, 12))
+            pygame.draw.ellipse(surf, (110, 65, 30), (3, 9, 16, 7))
+            pygame.draw.ellipse(surf, (185, 125, 55), (4, 10, 14, 5))
+            pygame.draw.polygon(surf, (150, 95, 40), [(17, 12), (22, 9), (20, 12), (22, 15)])
+            pygame.draw.ellipse(surf, (240, 240, 245), (16, 13, 5, 4))
+            surf.set_at((18, 15), (220, 45, 45))
         elif fish_key == "maya_maya":
-            pygame.draw.circle(surf, clay_col, (12, 12), 9)
-            pygame.draw.circle(surf, (225, 185, 95), (12, 12), 7)
-            pygame.draw.ellipse(surf, (215, 80, 80), (8, 9, 8, 5))
-            surf.set_at((11, 14), (75, 160, 60))
+            # Steamed red snapper in sweet and sour escabeche sauce
+            pygame.draw.ellipse(surf, (75, 45, 30), (3, 7, 18, 11))
+            pygame.draw.ellipse(surf, (215, 75, 45), (4, 8, 16, 9))
+            pygame.draw.ellipse(surf, (240, 185, 120), (6, 9, 12, 6))
+            pygame.draw.line(surf, (235, 35, 35), (9, 10), (12, 10), 1)
+            pygame.draw.line(surf, (45, 165, 45), (11, 13), (14, 13), 1)
+            surf.set_at((14, 11), (245, 225, 140))
         elif fish_key == "tanigue":
-            pygame.draw.circle(surf, (140, 95, 55), (12, 12), 9)
-            pygame.draw.circle(surf, (240, 245, 250), (12, 12), 7)
-            for cx, cy in [(10, 10), (14, 11), (11, 14)]:
-                surf.set_at((cx, cy), (225, 45, 45))
-            surf.set_at((13, 13), (195, 225, 60))
+            # Pan-seared Spanish mackerel fish steak with grill marks
+            pygame.draw.polygon(surf, (80, 50, 30), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (230, 235, 240), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (80, 50, 30), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (245, 250, 252), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (215, 165, 115), (6, 9, 12, 6))
+            pygame.draw.ellipse(surf, (250, 245, 238), (7, 10, 10, 4))
+            for gx in (9, 12, 14):
+                pygame.draw.line(surf, (65, 35, 20), (gx, 9), (gx + 1, 13), 1)
+            pygame.draw.circle(surf, (250, 215, 45), (15, 11), 2)
+            surf.set_at((15, 11), (255, 245, 140))
         elif fish_key == "tambakol":
-            pygame.draw.rect(surf, (215, 210, 195), (3, 6, 18, 13), border_radius=2)
-            pygame.draw.ellipse(surf, (130, 70, 40), (5, 8, 14, 8))
-            pygame.draw.line(surf, (45, 20, 15), (7, 9), (16, 9), 1)
-            pygame.draw.line(surf, (45, 20, 15), (7, 13), (16, 13), 1)
-            surf.set_at((10, 11), (255, 240, 180))
+            # Sinaing na tambakol slow-cooked tuna steak in clay pot with kamias
+            pygame.draw.polygon(surf, (75, 40, 25), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (150, 80, 50), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (75, 40, 25), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (190, 110, 75), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (55, 30, 20), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (145, 85, 55), (7, 9, 10, 5))
+            pygame.draw.ellipse(surf, (195, 135, 95), (8, 10, 8, 3))
+            surf.set_at((10, 11), (125, 175, 60))
+            surf.set_at((14, 11), (45, 160, 45))
         elif fish_key == "lapu_lapu":
-            pygame.draw.ellipse(surf, (240, 245, 255), (2, 5, 20, 14))
-            pygame.draw.ellipse(surf, (215, 205, 190), (4, 7, 16, 9))
-            pygame.draw.line(surf, (245, 225, 120), (8, 10), (14, 10), 1)
-            pygame.draw.line(surf, (75, 185, 80), (7, 12), (15, 12), 1)
+            # Steamed whole grouper with ginger curls & scallions
+            pygame.draw.ellipse(surf, (180, 190, 200), (2, 6, 20, 12))
+            pygame.draw.ellipse(surf, (245, 248, 255), (3, 7, 18, 10))
+            pygame.draw.ellipse(surf, (225, 215, 200), (5, 8, 14, 7))
+            pygame.draw.ellipse(surf, (252, 250, 245), (6, 9, 12, 5))
+            pygame.draw.line(surf, (120, 75, 40), (8, 11), (14, 11), 1)
+            pygame.draw.line(surf, (245, 220, 110), (7, 10), (10, 10), 1)
+            pygame.draw.line(surf, (55, 175, 60), (11, 12), (15, 12), 1)
         elif fish_key == "hito":
-            pygame.draw.circle(surf, (70, 45, 30), (12, 12), 9)
-            pygame.draw.circle(surf, (95, 55, 30), (12, 12), 7)
-            pygame.draw.ellipse(surf, (110, 70, 40), (7, 9, 10, 6))
-            surf.set_at((12, 13), (245, 235, 205))
-            surf.set_at((9, 11), (20, 15, 10))
+            # Inihaw na hito grilled catfish with charred blistered skin
+            pygame.draw.ellipse(surf, (45, 135, 45), (2, 7, 20, 12))
+            pygame.draw.ellipse(surf, (45, 35, 30), (3, 9, 16, 7))
+            pygame.draw.ellipse(surf, (95, 65, 45), (4, 10, 14, 5))
+            surf.set_at((8, 11), (245, 235, 215))
+            surf.set_at((12, 12), (245, 235, 215))
+            surf.set_at((10, 10), (25, 18, 15))
+            pygame.draw.circle(surf, (245, 245, 250), (18, 14), 3)
+            surf.set_at((18, 14), (225, 45, 45))
         elif fish_key == "dilis":
-            pygame.draw.ellipse(surf, (230, 225, 210), (3, 6, 18, 13))
-            for dx, dy in [(6, 9), (10, 8), (14, 10), (8, 12), (12, 13), (15, 12)]:
-                pygame.draw.line(surf, (185, 125, 45), (dx, dy), (dx + 3, dy + 1), 1)
-                surf.set_at((dx + 1, dy), (220, 45, 40))
+            # Crispy dilis crunchy fried anchovies in sweet-spicy glaze
+            pygame.draw.ellipse(surf, (160, 165, 175), (2, 8, 20, 11))
+            pygame.draw.ellipse(surf, (240, 245, 250), (3, 9, 18, 9))
+            for dx, dy in [(6, 11), (10, 10), (14, 12), (8, 13), (12, 14), (15, 11)]:
+                pygame.draw.line(surf, (165, 100, 35), (dx, dy), (dx + 3, dy + 1), 1)
+                surf.set_at((dx + 1, dy), (235, 45, 45))
+                surf.set_at((dx + 2, dy + 1), (245, 230, 170))
         elif fish_key == "dalagang_bukid":
-            pygame.draw.ellipse(surf, leaf_col, (2, 5, 20, 14))
-            pygame.draw.ellipse(surf, (210, 145, 60), (4, 7, 16, 9))
-            pygame.draw.line(surf, (235, 95, 115), (5, 10), (17, 10), 1)
-            surf.set_at((16, 13), (185, 220, 50))
+            # Crispy pan-fried yellowtail fusilier with blistered golden skin
+            pygame.draw.ellipse(surf, (45, 135, 45), (2, 6, 20, 13))
+            pygame.draw.ellipse(surf, (140, 75, 45), (3, 8, 16, 9))
+            pygame.draw.ellipse(surf, (215, 145, 65), (4, 9, 14, 7))
+            pygame.draw.polygon(surf, (185, 115, 40), [(17, 12), (22, 8), (20, 12), (22, 16)])
+            pygame.draw.line(surf, (95, 45, 20), (8, 10), (14, 10), 1)
+            pygame.draw.circle(surf, (65, 165, 50), (16, 14), 2)
+            surf.set_at((16, 14), (230, 245, 120))
 
     def _is_pinoy_food_or_ingredient(self, id_lower):
         return id_lower in (
@@ -560,282 +617,671 @@ class AssetFactory:
             "chicken_adobo", "pork_adobo", "sinigang", "kare_kare", "bulalo", "tinola",
             "lechon", "pancit_bihon", "arroz_caldo", "halo_halo", "kaldereta", "balut",
             "itlog_na_maalat", "sinangag", "daing_na_bangus", "sinigang_na_bangus",
-            "ginataang_tilapia", "kinilaw_na_tanigue"
+            "ginataang_tilapia", "kinilaw_na_tanigue",
+            "hearty_root_stew", "smoked_spud_jerky", "potato_bread", "sweet_tuber_pie", "herbal_salve"
         )
 
     def _draw_pinoy_food_and_ingredients(self, surf, item_id, h):
-        if item_id == "dirt_clod":
-            pygame.draw.ellipse(surf, (95, 60, 35), (3, 6, 18, 14))
-            pygame.draw.ellipse(surf, (135, 85, 45), (5, 8, 14, 10))
-            pygame.draw.circle(surf, (160, 110, 60), (9, 11), 3)
-            surf.set_at((6, 15), (75, 150, 50))
-            surf.set_at((14, 10), (75, 150, 50))
+        if item_id == "arroz_caldo":
+            # Warm golden-yellow chicken ginger rice congee with halved egg, garlic bits & scallions
+            pygame.draw.polygon(surf, (80, 70, 65), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (235, 230, 218), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.line(surf, (185, 175, 160), (7, 19), (17, 19), 1)
+            pygame.draw.ellipse(surf, (80, 70, 65), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (215, 205, 190), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (245, 215, 105), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (255, 235, 145), (6, 8, 10, 4))
+            pygame.draw.ellipse(surf, (255, 255, 252), (10, 8, 7, 5))
+            pygame.draw.circle(surf, (255, 175, 20), (13, 10), 2)
+            surf.set_at((13, 9), (255, 220, 80))
+            pygame.draw.line(surf, (245, 225, 205), (6, 10), (8, 9), 2)
+            for gx, gy in [(7, 11), (9, 12), (15, 11), (12, 12)]:
+                surf.set_at((gx, gy), (145, 75, 25))
+                surf.set_at((gx + 1, gy), (195, 120, 45))
+            for sx, sy in [(6, 9), (8, 11), (11, 11), (15, 9)]:
+                surf.set_at((sx, sy), (45, 165, 45))
+                surf.set_at((sx, sy - 1), (95, 215, 70))
+        elif item_id == "halo_halo":
+            # Iconic tall glass dessert with layered sweet beans, jellies, ice, ube, flan & spoon
+            pygame.draw.polygon(surf, (60, 90, 120), [(7, 20), (17, 20), (15, 21), (9, 21)])
+            pygame.draw.polygon(surf, (190, 225, 245), [(8, 20), (16, 20), (14, 21), (10, 21)])
+            pygame.draw.rect(surf, (160, 210, 240), (11, 18, 2, 3))
+            pygame.draw.polygon(surf, (50, 75, 105), [(6, 5), (18, 5), (14, 18), (10, 18)])
+            pygame.draw.polygon(surf, (215, 240, 255, 180), [(7, 6), (17, 6), (13, 17), (11, 17)])
+            pygame.draw.polygon(surf, (125, 35, 45), [(10, 15), (14, 15), (13, 17), (11, 17)])
+            surf.set_at((11, 16), (165, 55, 65))
+            surf.set_at((12, 15), (195, 75, 85))
+            pygame.draw.rect(surf, (45, 165, 85), (9, 13, 3, 2))
+            pygame.draw.rect(surf, (225, 75, 120), (12, 13, 3, 2))
+            pygame.draw.polygon(surf, (248, 250, 255), [(8, 9), (16, 9), (15, 13), (9, 13)])
+            pygame.draw.line(surf, (200, 235, 255), (8, 10), (16, 10), 1)
+            pygame.draw.line(surf, (255, 248, 210), (8, 11), (15, 11), 1)
+            pygame.draw.circle(surf, (75, 15, 100), (10, 6), 4)
+            pygame.draw.circle(surf, (125, 35, 155), (10, 6), 3)
+            surf.set_at((9, 5), (180, 80, 215))
+            surf.set_at((10, 5), (210, 120, 240))
+            pygame.draw.polygon(surf, (160, 85, 15), [(12, 5), (17, 5), (16, 8), (11, 8)])
+            pygame.draw.polygon(surf, (255, 205, 50), [(12, 6), (17, 6), (16, 8), (11, 8)])
+            pygame.draw.line(surf, (185, 95, 20), (12, 5), (17, 5), 1)
+            pygame.draw.line(surf, (215, 225, 235), (15, 2), (13, 9), 1)
+            surf.set_at((15, 2), (255, 255, 255))
+            pygame.draw.line(surf, (255, 255, 255, 230), (7, 7), (9, 16), 1)
+        elif item_id == "kaldereta":
+            # Rich terracotta/red-orange tomato and liver sauce stew with goat meat, potatoes & peppers
+            pygame.draw.polygon(surf, (85, 40, 25), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (160, 85, 55), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (85, 40, 25), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (195, 115, 75), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (195, 45, 25), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (140, 28, 18), (6, 9, 12, 4))
+            surf.set_at((7, 9), (245, 95, 45))
+            surf.set_at((11, 8), (250, 115, 55))
+            pygame.draw.rect(surf, (75, 30, 20), (7, 9, 4, 3), border_radius=1)
+            pygame.draw.rect(surf, (105, 45, 32), (8, 10, 3, 2))
+            pygame.draw.rect(surf, (75, 30, 20), (12, 10, 4, 3), border_radius=1)
+            pygame.draw.rect(surf, (115, 50, 35), (13, 11, 3, 2))
+            pygame.draw.rect(surf, (235, 190, 85), (10, 9, 3, 2))
+            surf.set_at((10, 9), (255, 220, 130))
+            pygame.draw.rect(surf, (245, 110, 25), (15, 9, 3, 2))
+            surf.set_at((15, 9), (255, 150, 60))
+            pygame.draw.line(surf, (235, 35, 35), (8, 12), (10, 13), 2)
+            pygame.draw.line(surf, (45, 160, 45), (13, 12), (15, 13), 2)
+            surf.set_at((11, 11), (75, 125, 45))
+        elif item_id == "balut":
+            # Warm boiled duck egg with cracked top revealing broth & dark embryo, with rock salt
+            pygame.draw.ellipse(surf, (45, 45, 50, 120), (5, 18, 14, 5))
+            pygame.draw.ellipse(surf, (140, 130, 115), (5, 5, 14, 16))
+            pygame.draw.ellipse(surf, (235, 230, 215), (6, 6, 12, 14))
+            pygame.draw.arc(surf, (252, 250, 242), (6, 6, 12, 14), 1.0, 3.0, 2)
+            pygame.draw.polygon(surf, (110, 100, 90), [(7, 9), (9, 6), (12, 5), (15, 6), (17, 9), (15, 11), (9, 11)])
+            pygame.draw.ellipse(surf, (215, 175, 75), (8, 7, 8, 4))
+            surf.set_at((10, 8), (255, 225, 120))
+            pygame.draw.circle(surf, (45, 35, 35), (11, 8), 2)
+            surf.set_at((12, 8), (65, 50, 48))
+            pygame.draw.circle(surf, (240, 160, 35), (14, 9), 2)
+            surf.set_at((14, 8), (255, 200, 70))
+            for cx, cy in [(8, 7), (10, 5), (13, 5), (16, 7), (14, 11), (9, 11)]:
+                surf.set_at((cx, cy), (255, 255, 250))
+            for sx, sy in [(2, 17), (3, 19), (4, 18), (19, 17), (20, 19), (21, 18)]:
+                surf.set_at((sx, sy), (255, 255, 255))
+                surf.set_at((sx + 1, sy), (210, 230, 248))
+        elif item_id == "itlog_na_maalat":
+            # Traditional Filipino salted duck egg with magenta dyed shell cut open to display orange yolk
+            pygame.draw.ellipse(surf, (45, 35, 45, 120), (4, 18, 16, 5))
+            pygame.draw.ellipse(surf, (120, 15, 55), (4, 5, 16, 15))
+            pygame.draw.ellipse(surf, (195, 25, 90), (5, 6, 14, 13))
+            pygame.draw.arc(surf, (235, 60, 135), (5, 6, 14, 13), 1.2, 3.4, 2)
+            pygame.draw.ellipse(surf, (200, 205, 215), (7, 7, 12, 11))
+            pygame.draw.ellipse(surf, (250, 250, 252), (8, 8, 10, 9))
+            pygame.draw.circle(surf, (220, 85, 10), (13, 12), 4)
+            pygame.draw.circle(surf, (255, 135, 15), (13, 12), 3)
+            surf.set_at((12, 11), (255, 205, 55))
+            surf.set_at((13, 11), (255, 240, 160))
+            surf.set_at((13, 16), (255, 140, 20))
+            surf.set_at((13, 17), (235, 105, 15))
+        elif item_id == "sinangag":
+            # Distinct mound of garlic fried rice with toasted garlic crunch flakes & specks of scallions
+            pygame.draw.ellipse(surf, (150, 155, 165), (2, 14, 20, 8))
+            pygame.draw.ellipse(surf, (230, 235, 240), (3, 14, 18, 7))
+            pygame.draw.ellipse(surf, (255, 255, 255), (4, 14, 16, 5))
+            pygame.draw.ellipse(surf, (205, 195, 170), (4, 7, 16, 12))
+            pygame.draw.ellipse(surf, (248, 242, 225), (5, 8, 14, 10))
+            pygame.draw.ellipse(surf, (255, 252, 242), (7, 8, 10, 6))
+            for gx, gy in [(7, 10), (10, 8), (13, 9), (16, 9), (8, 13), (11, 12), (14, 14), (17, 12), (9, 15)]:
+                surf.set_at((gx, gy), (145, 75, 20))
+                surf.set_at((gx + 1, gy), (195, 120, 45))
+            for sx, sy in [(8, 9), (11, 10), (14, 11), (12, 14), (16, 13)]:
+                surf.set_at((sx, sy), (45, 165, 45))
+                surf.set_at((sx, sy - 1), (95, 215, 70))
+        elif item_id == "raw_chicken":
+            # Plump raw poultry drumstick with natural skin, pink meat, bone joint
+            pygame.draw.ellipse(surf, (50, 40, 45, 100), (4, 15, 16, 6))
+            pygame.draw.line(surf, (210, 205, 195), (6, 16), (12, 11), 3)
+            pygame.draw.line(surf, (250, 248, 240), (6, 16), (11, 11), 2)
+            pygame.draw.circle(surf, (255, 252, 245), (5, 16), 2)
+            pygame.draw.circle(surf, (255, 252, 245), (7, 18), 2)
+            pygame.draw.circle(surf, (220, 215, 205), (5, 18), 1)
+            pygame.draw.ellipse(surf, (205, 125, 115), (9, 5, 12, 11))
+            pygame.draw.ellipse(surf, (240, 165, 155), (10, 6, 10, 9))
+            pygame.draw.ellipse(surf, (252, 225, 205), (11, 6, 8, 6))
+            surf.set_at((13, 7), (255, 245, 235))
+            surf.set_at((14, 7), (255, 245, 235))
+            pygame.draw.line(surf, (225, 145, 135), (11, 11), (17, 11), 1)
+        elif item_id == "raw_goat_meat":
+            # Deep ruby-red lean chevon meat cut with bone marrow ring and marbled texture
+            pygame.draw.ellipse(surf, (45, 30, 35, 100), (3, 15, 18, 6))
+            pygame.draw.ellipse(surf, (105, 18, 28), (3, 6, 18, 13))
+            pygame.draw.ellipse(surf, (160, 28, 42), (4, 7, 16, 11))
+            pygame.draw.ellipse(surf, (190, 45, 60), (6, 8, 12, 7))
+            pygame.draw.arc(surf, (250, 242, 238), (3, 6, 18, 13), 3.2, 5.8, 2)
+            surf.set_at((7, 10), (245, 235, 230))
+            surf.set_at((8, 11), (245, 235, 230))
+            surf.set_at((16, 11), (245, 235, 230))
+            surf.set_at((15, 12), (245, 235, 230))
+            pygame.draw.circle(surf, (248, 245, 235), (12, 12), 4)
+            pygame.draw.circle(surf, (215, 170, 125), (12, 12), 2)
+            surf.set_at((11, 11), (255, 235, 195))
+        elif item_id == "duck_egg":
+            # Authentic itik duck egg with smooth pale sage-blue/greenish eggshell shading
+            pygame.draw.ellipse(surf, (40, 50, 45, 100), (5, 17, 14, 5))
+            pygame.draw.ellipse(surf, (135, 160, 145), (5, 4, 14, 16))
+            pygame.draw.ellipse(surf, (175, 205, 190), (6, 5, 12, 14))
+            pygame.draw.ellipse(surf, (215, 235, 222), (7, 5, 10, 12))
+            pygame.draw.ellipse(surf, (245, 252, 248), (8, 6, 6, 7))
+            surf.set_at((9, 7), (255, 255, 255))
+            surf.set_at((10, 7), (255, 255, 255))
+        elif item_id == "chicken_adobo":
+            # Savory chicken adobo in ceramic bowl with bay leaf and peppercorns
+            pygame.draw.polygon(surf, (75, 50, 35), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (190, 145, 105), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (75, 50, 35), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (215, 175, 135), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (45, 25, 18), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (75, 40, 25), (6, 9, 12, 4))
+            pygame.draw.ellipse(surf, (175, 105, 50), (7, 8, 10, 6))
+            pygame.draw.ellipse(surf, (215, 145, 75), (8, 8, 8, 4))
+            surf.set_at((10, 9), (250, 195, 130))
+            pygame.draw.polygon(surf, (80, 120, 50), [(6, 11), (10, 10), (12, 12), (7, 13)])
+            pygame.draw.line(surf, (105, 150, 65), (7, 12), (11, 11), 1)
+            surf.set_at((14, 11), (25, 25, 25))
+            surf.set_at((14, 10), (130, 130, 130))
+            surf.set_at((16, 12), (25, 25, 25))
+            pygame.draw.ellipse(surf, (235, 215, 165), (13, 12, 3, 2))
+        elif item_id == "pork_adobo":
+            # Glistening braised pork belly cubes in dark adobo sauce
+            pygame.draw.polygon(surf, (70, 45, 30), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (185, 140, 100), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (70, 45, 30), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (210, 170, 130), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (40, 20, 15), (5, 8, 14, 6))
+            for px, py in [(7, 9), (12, 9), (10, 12)]:
+                pygame.draw.rect(surf, (75, 35, 20), (px, py, 4, 3), border_radius=1)
+                pygame.draw.rect(surf, (170, 95, 50), (px + 1, py, 3, 2))
+                pygame.draw.line(surf, (245, 230, 210), (px + 1, py), (px + 3, py), 1)
+            pygame.draw.polygon(surf, (75, 115, 45), [(6, 11), (9, 10), (10, 12)])
+            surf.set_at((15, 11), (25, 25, 25))
+            surf.set_at((8, 13), (25, 25, 25))
+            surf.set_at((14, 13), (235, 215, 165))
+        elif item_id == "sinigang":
+            # Sour tamarind soup with pork, tomato, water spinach & green chili
+            pygame.draw.polygon(surf, (75, 65, 55), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (195, 180, 160), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (75, 65, 55), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (225, 215, 195), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (210, 180, 125), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (235, 210, 155), (6, 8, 10, 4))
+            pygame.draw.rect(surf, (185, 120, 90), (6, 9, 4, 3), border_radius=1)
+            pygame.draw.line(surf, (245, 240, 230), (6, 9), (9, 9), 1)
+            pygame.draw.lines(surf, (45, 160, 45), False, [(11, 8), (14, 9), (17, 11)], 2)
+            surf.set_at((10, 8), (30, 105, 30))
+            pygame.draw.circle(surf, (230, 45, 35), (8, 12), 2)
+            surf.set_at((8, 12), (255, 185, 80))
+            pygame.draw.ellipse(surf, (55, 145, 50), (12, 11, 4, 3))
+            surf.set_at((15, 12), (65, 165, 55))
+        elif item_id == "kare_kare":
+            # Rich golden-orange peanut annatto stew with oxtail, eggplant & bagoong
+            pygame.draw.polygon(surf, (70, 35, 20), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (145, 75, 42), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (70, 35, 20), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (185, 105, 65), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (240, 145, 30), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (255, 175, 50), (6, 9, 10, 4))
+            pygame.draw.circle(surf, (115, 55, 35), (8, 10), 3)
+            pygame.draw.circle(surf, (245, 235, 220), (8, 10), 1)
+            pygame.draw.ellipse(surf, (95, 25, 115), (13, 9, 4, 3))
+            surf.set_at((14, 10), (230, 225, 205))
+            pygame.draw.line(surf, (50, 155, 45), (10, 12), (13, 13), 2)
+            pygame.draw.ellipse(surf, (175, 40, 75), (15, 11, 4, 3))
+            surf.set_at((16, 12), (220, 160, 70))
+        elif item_id == "bulalo":
+            # Beef bone marrow shank soup with exposed marrow and corn wheel
+            pygame.draw.polygon(surf, (75, 80, 85), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (225, 230, 235), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (75, 80, 85), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (245, 250, 252), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (230, 220, 180), (5, 8, 14, 6))
+            pygame.draw.circle(surf, (110, 95, 80), (10, 11), 5)
+            pygame.draw.circle(surf, (252, 248, 240), (10, 11), 4)
+            pygame.draw.circle(surf, (235, 180, 55), (10, 11), 2)
+            surf.set_at((10, 10), (255, 225, 120))
+            pygame.draw.arc(surf, (120, 60, 35), (6, 7, 10, 8), 1.0, 3.5, 2)
+            pygame.draw.circle(surf, (255, 215, 35), (15, 10), 3)
+            surf.set_at((15, 10), (220, 165, 20))
+            pygame.draw.ellipse(surf, (105, 185, 90), (13, 12, 4, 3))
+            surf.set_at((7, 13), (60, 150, 50))
+        elif item_id == "tinola":
+            # Chicken ginger soup with sayote wedges & dark green chili leaves
+            pygame.draw.polygon(surf, (70, 80, 75), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (215, 230, 220), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (70, 80, 75), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (235, 245, 240), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (242, 238, 200), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (242, 215, 175), (6, 9, 6, 4))
+            surf.set_at((6, 10), (255, 252, 245))
+            pygame.draw.ellipse(surf, (180, 230, 160), (12, 9, 5, 3))
+            pygame.draw.ellipse(surf, (180, 230, 160), (14, 11, 4, 3))
+            for lx, ly in [(9, 12), (11, 13), (8, 11)]:
+                surf.set_at((lx, ly), (40, 135, 45))
+                surf.set_at((lx + 1, ly), (65, 175, 60))
+            pygame.draw.line(surf, (235, 190, 85), (10, 10), (12, 9), 1)
+        elif item_id == "lechon":
+            # Crackling roasted pork cut on tropical banana leaf with liver sauce
+            pygame.draw.polygon(surf, (35, 95, 35), [(2, 17), (22, 17), (20, 21), (4, 21)])
+            pygame.draw.polygon(surf, (45, 140, 45), [(3, 17), (21, 17), (19, 20), (5, 20)])
+            pygame.draw.line(surf, (75, 185, 70), (4, 18), (20, 18), 1)
+            pygame.draw.polygon(surf, (65, 20, 12), [(4, 10), (20, 8), (19, 16), (5, 17)])
+            pygame.draw.polygon(surf, (245, 225, 210), [(5, 11), (19, 9), (18, 16), (6, 16)])
+            pygame.draw.polygon(surf, (215, 175, 155), [(5, 13), (19, 12), (18, 16), (6, 16)])
+            for bx in (7, 11, 15):
+                surf.set_at((bx, 16), (252, 248, 240))
+            pygame.draw.polygon(surf, (185, 60, 20), [(4, 9), (20, 7), (19, 11), (5, 12)])
+            pygame.draw.line(surf, (235, 125, 35), (5, 9), (19, 7), 1)
+            surf.set_at((8, 8), (255, 205, 120))
+            surf.set_at((13, 8), (255, 205, 120))
+            pygame.draw.ellipse(surf, (160, 95, 60), (16, 14, 5, 4))
+            pygame.draw.ellipse(surf, (110, 55, 30), (17, 15, 3, 2))
+        elif item_id == "pancit_bihon":
+            # Stir-fried bihon noodles on woven bamboo bilao with calamansi
+            pygame.draw.ellipse(surf, (110, 75, 40), (2, 7, 20, 14))
+            pygame.draw.ellipse(surf, (185, 145, 90), (3, 8, 18, 12))
+            pygame.draw.ellipse(surf, (210, 175, 105), (4, 8, 16, 10))
+            pygame.draw.ellipse(surf, (238, 210, 140), (5, 8, 14, 8))
+            pygame.draw.line(surf, (145, 205, 125), (7, 10), (10, 11), 1)
+            pygame.draw.line(surf, (145, 205, 125), (13, 12), (16, 11), 1)
+            for cx, cy in [(8, 12), (11, 9), (14, 13), (16, 9)]:
+                surf.set_at((cx, cy), (245, 110, 30))
+                surf.set_at((cx + 1, cy), (255, 140, 50))
+            pygame.draw.rect(surf, (175, 105, 75), (9, 11, 3, 2))
+            pygame.draw.circle(surf, (55, 145, 45), (5, 14), 3)
+            pygame.draw.circle(surf, (215, 235, 100), (5, 14), 2)
+            surf.set_at((5, 14), (255, 255, 180))
+            surf.set_at((12, 11), (50, 165, 45))
+            surf.set_at((15, 12), (50, 165, 45))
+        elif item_id == "daing_na_bangus":
+            # Golden pan-fried butterfly milkfish on banana leaf with garlic
+            pygame.draw.ellipse(surf, (45, 135, 45), (2, 7, 20, 14))
+            pygame.draw.line(surf, (65, 175, 60), (3, 14), (20, 14), 1)
+            pygame.draw.polygon(surf, (75, 40, 20), [(4, 14), (8, 9), (17, 10), (21, 14), (17, 18), (8, 19)])
+            pygame.draw.polygon(surf, (135, 75, 35), [(5, 14), (9, 10), (16, 11), (20, 14), (16, 17), (9, 18)])
+            pygame.draw.polygon(surf, (230, 235, 245), [(7, 14), (10, 11), (15, 12), (18, 14), (15, 16), (10, 17)])
+            pygame.draw.line(surf, (248, 225, 170), (9, 14), (16, 14), 2)
+            pygame.draw.polygon(surf, (140, 110, 85), [(19, 14), (23, 10), (21, 14), (23, 18)])
+            for gx, gy in [(10, 12), (12, 13), (14, 12), (11, 15), (13, 15)]:
+                surf.set_at((gx, gy), (195, 130, 50))
+        elif item_id == "sinigang_na_bangus":
+            # Sour tamarind soup with milkfish steaks & greens
+            pygame.draw.polygon(surf, (75, 55, 40), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (190, 155, 125), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (75, 55, 40), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (220, 190, 165), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (215, 185, 125), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (90, 115, 135), (8, 9, 8, 6))
+            pygame.draw.ellipse(surf, (200, 215, 230), (9, 10, 6, 4))
+            pygame.draw.ellipse(surf, (248, 242, 238), (10, 10, 4, 3))
+            surf.set_at((11, 11), (120, 100, 90))
+            pygame.draw.circle(surf, (225, 45, 40), (6, 12), 2)
+            surf.set_at((6, 12), (255, 185, 80))
+            pygame.draw.ellipse(surf, (55, 155, 50), (14, 10, 3, 3))
+            surf.set_at((13, 13), (40, 140, 40))
+        elif item_id == "ginataang_tilapia":
+            # Tilapia simmered in velvety white coconut milk with mustard greens
+            pygame.draw.polygon(surf, (80, 45, 30), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (155, 85, 55), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (80, 45, 30), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (195, 120, 85), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (252, 250, 242), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (235, 225, 205), (6, 9, 12, 4))
+            pygame.draw.ellipse(surf, (110, 125, 100), (7, 9, 10, 5))
+            pygame.draw.line(surf, (145, 165, 135), (8, 10), (15, 10), 1)
+            surf.set_at((15, 11), (110, 125, 100))
+            pygame.draw.lines(surf, (45, 125, 45), False, [(6, 12), (9, 13), (12, 13)], 2)
+            surf.set_at((12, 9), (235, 35, 35))
+            surf.set_at((13, 9), (255, 75, 75))
+            surf.set_at((10, 11), (240, 225, 140))
+        elif item_id == "kinilaw_na_tanigue":
+            # Vinegar-calamansi cured fish ceviche cubes with red onion & chili
+            pygame.draw.polygon(surf, (60, 85, 115), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (215, 235, 245), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (60, 85, 115), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (235, 245, 255), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (240, 248, 255), (5, 8, 14, 6))
+            for fx, fy in [(7, 9), (12, 9), (9, 11), (14, 11)]:
+                pygame.draw.rect(surf, (248, 248, 252), (fx, fy, 3, 3), border_radius=1)
+                surf.set_at((fx + 1, fy + 1), (235, 210, 210))
+            for ox, oy in [(8, 10), (12, 12), (15, 9)]:
+                surf.set_at((ox, oy), (185, 45, 110))
+                surf.set_at((ox + 1, oy), (225, 90, 150))
+            surf.set_at((11, 10), (245, 225, 135))
+            surf.set_at((11, 11), (245, 225, 135))
+            surf.set_at((10, 13), (235, 35, 35))
+            surf.set_at((14, 13), (45, 175, 45))
+        elif item_id == "hearty_root_stew":
+            # Simmering iron pot with potato chunks & glowing blue mushrooms
+            pygame.draw.polygon(surf, (45, 45, 50), [(4, 11), (20, 11), (17, 20), (7, 20)])
+            pygame.draw.polygon(surf, (70, 75, 85), [(5, 12), (19, 12), (16, 19), (8, 19)])
+            pygame.draw.ellipse(surf, (45, 45, 50), (3, 7, 18, 9))
+            pygame.draw.ellipse(surf, (90, 95, 105), (4, 7, 16, 8))
+            pygame.draw.ellipse(surf, (135, 75, 35), (5, 8, 14, 6))
+            pygame.draw.ellipse(surf, (185, 115, 55), (6, 9, 10, 4))
+            pygame.draw.rect(surf, (240, 195, 90), (7, 9, 3, 3), border_radius=1)
+            surf.set_at((8, 10), (255, 230, 145))
+            pygame.draw.rect(surf, (240, 195, 90), (13, 10, 3, 3), border_radius=1)
+            pygame.draw.circle(surf, (65, 185, 245), (11, 9), 2)
+            surf.set_at((11, 9), (210, 245, 255))
+            surf.set_at((9, 12), (65, 185, 55))
+            surf.set_at((15, 11), (65, 185, 55))
+        elif item_id == "smoked_spud_jerky":
+            # Wooden cutting board with striated smoked jerky strips
+            pygame.draw.ellipse(surf, (95, 65, 35), (2, 9, 20, 11))
+            pygame.draw.ellipse(surf, (175, 125, 75), (3, 10, 18, 9))
+            for jy in (10, 13, 15):
+                pygame.draw.line(surf, (85, 30, 18), (6, jy), (17, jy), 2)
+                pygame.draw.line(surf, (155, 65, 35), (7, jy), (16, jy), 1)
+                surf.set_at((9, jy), (195, 105, 60))
+            pygame.draw.line(surf, (235, 215, 165), (11, 9), (11, 16), 1)
+        elif item_id == "potato_bread":
+            # Golden-brown loaf of crusty potato bread with scored crust
+            pygame.draw.ellipse(surf, (65, 40, 20), (3, 7, 18, 12))
+            pygame.draw.ellipse(surf, (185, 120, 50), (4, 8, 16, 10))
+            pygame.draw.ellipse(surf, (225, 165, 75), (5, 9, 14, 7))
+            pygame.draw.line(surf, (255, 245, 220), (7, 10), (9, 14), 1)
+            pygame.draw.line(surf, (255, 245, 220), (11, 9), (13, 13), 1)
+            pygame.draw.line(surf, (255, 245, 220), (15, 10), (17, 14), 1)
+            for fx, fy in [(6, 9), (10, 8), (14, 8), (17, 11)]:
+                surf.set_at((fx, fy), (250, 248, 240))
+        elif item_id == "sweet_tuber_pie":
+            # Golden fluted pie crust with royal purple ube filling & lattice
+            pygame.draw.polygon(surf, (130, 135, 145), [(3, 12), (21, 12), (18, 19), (6, 19)])
+            pygame.draw.ellipse(surf, (180, 115, 45), (2, 7, 20, 9))
+            pygame.draw.ellipse(surf, (235, 175, 80), (3, 8, 18, 7))
+            pygame.draw.ellipse(surf, (120, 30, 150), (4, 9, 16, 5))
+            pygame.draw.line(surf, (245, 195, 100), (6, 10), (14, 13), 1)
+            pygame.draw.line(surf, (245, 195, 100), (10, 9), (18, 12), 1)
+            pygame.draw.line(surf, (245, 195, 100), (14, 9), (6, 12), 1)
+            pygame.draw.line(surf, (245, 195, 100), (18, 10), (10, 13), 1)
+        elif item_id == "herbal_salve":
+            # Carved apothecary jar with glowing soothing jade herbal balm
+            pygame.draw.ellipse(surf, (60, 50, 45), (4, 16, 16, 6))
+            pygame.draw.rect(surf, (140, 115, 95), (5, 9, 14, 9), border_radius=2)
+            pygame.draw.rect(surf, (180, 150, 125), (6, 10, 12, 7))
+            pygame.draw.ellipse(surf, (110, 85, 70), (4, 6, 16, 7))
+            pygame.draw.ellipse(surf, (160, 130, 105), (5, 7, 14, 5))
+            pygame.draw.ellipse(surf, (45, 175, 95), (6, 8, 12, 4))
+            pygame.draw.ellipse(surf, (115, 235, 155), (8, 8, 8, 2))
+            surf.set_at((10, 8), (225, 255, 235))
+        elif item_id == "raw_pork":
+            # Tender pink pork loin cutlet with white fat cap
+            pygame.draw.ellipse(surf, (50, 35, 40, 100), (4, 15, 16, 6))
+            pygame.draw.ellipse(surf, (185, 95, 105), (4, 6, 16, 12))
+            pygame.draw.ellipse(surf, (240, 145, 155), (5, 7, 14, 10))
+            pygame.draw.ellipse(surf, (255, 180, 190), (7, 8, 10, 6))
+            pygame.draw.arc(surf, (252, 245, 240), (4, 6, 16, 12), 0.5, 2.7, 3)
+            surf.set_at((6, 12), (248, 240, 235))
+        elif item_id == "pork_belly":
+            # Three-layer liempo cut showing lean meat and fat bands
+            pygame.draw.polygon(surf, (80, 40, 45), [(3, 6), (20, 6), (20, 18), (3, 18)])
+            pygame.draw.rect(surf, (250, 242, 235), (4, 7, 15, 2))
+            pygame.draw.rect(surf, (225, 115, 125), (4, 9, 15, 3))
+            pygame.draw.rect(surf, (255, 248, 242), (4, 12, 15, 2))
+            pygame.draw.rect(surf, (205, 95, 105), (4, 14, 15, 3))
+            pygame.draw.line(surf, (175, 75, 85), (6, 10), (18, 10), 1)
+            pygame.draw.line(surf, (160, 65, 75), (6, 15), (18, 15), 1)
+        elif item_id == "raw_beef":
+            # Marbled beef steak with fat rim
+            pygame.draw.ellipse(surf, (55, 20, 25, 100), (3, 15, 18, 6))
+            pygame.draw.ellipse(surf, (105, 18, 22), (3, 6, 18, 13))
+            pygame.draw.ellipse(surf, (165, 30, 38), (4, 7, 16, 11))
+            pygame.draw.ellipse(surf, (205, 48, 55), (6, 8, 12, 8))
+            pygame.draw.arc(surf, (252, 245, 240), (3, 6, 18, 13), 3.4, 5.9, 2)
+            for mx, my in [(7, 9), (8, 10), (12, 9), (13, 10), (10, 13), (15, 12), (16, 13)]:
+                surf.set_at((mx, my), (252, 245, 240))
+        elif item_id == "carabao_milk":
+            # Glass milk bottle filled with creamy carabao milk
+            pygame.draw.ellipse(surf, (40, 50, 60, 100), (6, 18, 12, 4))
+            pygame.draw.rect(surf, (165, 115, 65), (10, 3, 4, 3))
+            pygame.draw.rect(surf, (60, 85, 110), (7, 7, 10, 13), border_radius=3)
+            pygame.draw.rect(surf, (60, 85, 110), (9, 5, 6, 4))
+            pygame.draw.rect(surf, (255, 252, 245), (8, 8, 8, 11), border_radius=2)
+            pygame.draw.rect(surf, (245, 240, 230), (10, 6, 4, 4))
+            pygame.draw.line(surf, (65, 135, 225), (8, 13), (15, 13), 2)
+            pygame.draw.line(surf, (255, 255, 255, 220), (8, 9), (8, 17), 1)
+        elif item_id == "raw_duck_meat":
+            # Dark mahogany duck breast with fat skin
+            pygame.draw.ellipse(surf, (110, 25, 30), (4, 6, 16, 13))
+            pygame.draw.ellipse(surf, (170, 45, 50), (5, 7, 14, 11))
+            pygame.draw.ellipse(surf, (250, 242, 230), (5, 6, 14, 4))
+            surf.set_at((8, 7), (255, 255, 245))
+            pygame.draw.line(surf, (130, 30, 35), (7, 11), (16, 14), 1)
+        elif item_id == "egg":
+            # Brown farm egg with smooth gradient
+            pygame.draw.ellipse(surf, (140, 95, 60), (5, 4, 14, 16))
+            pygame.draw.ellipse(surf, (215, 165, 120), (6, 5, 12, 14))
+            pygame.draw.ellipse(surf, (245, 210, 175), (7, 5, 10, 12))
+            pygame.draw.ellipse(surf, (255, 235, 210), (8, 6, 6, 7))
+        elif item_id == "goat_milk":
+            # Bottle of goat milk
+            pygame.draw.rect(surf, (160, 110, 60), (9, 3, 6, 3))
+            pygame.draw.rect(surf, (60, 85, 110), (7, 6, 10, 15), border_radius=2)
+            pygame.draw.rect(surf, (250, 250, 245), (8, 8, 8, 12))
+            pygame.draw.line(surf, (215, 225, 235), (8, 14), (15, 14), 1)
+            pygame.draw.line(surf, (255, 255, 255), (8, 9), (8, 17), 1)
+        elif item_id == "feather":
+            # Native poultry feather with quill
+            pygame.draw.line(surf, (180, 175, 165), (4, 20), (20, 4), 1)
+            pygame.draw.polygon(surf, (250, 248, 242), [(7, 18), (10, 11), (19, 5), (16, 10), (10, 16)])
+            pygame.draw.polygon(surf, (215, 210, 200), [(10, 17), (16, 10), (14, 15)])
+            surf.set_at((12, 11), (255, 255, 255))
+        elif item_id == "rice":
+            # Woven sack overflowing with white polished rice grains
+            pygame.draw.ellipse(surf, (75, 55, 35), (4, 16, 16, 6))
+            pygame.draw.polygon(surf, (135, 95, 55), [(4, 10), (20, 10), (18, 18), (6, 18)])
+            pygame.draw.polygon(surf, (175, 130, 80), [(5, 11), (19, 11), (17, 17), (7, 17)])
+            pygame.draw.ellipse(surf, (115, 80, 45), (4, 8, 16, 5))
+            pygame.draw.ellipse(surf, (155, 115, 70), (5, 9, 14, 3))
+            pygame.draw.ellipse(surf, (245, 245, 240), (6, 5, 12, 7))
+            pygame.draw.ellipse(surf, (255, 255, 255), (7, 6, 10, 4))
+            for rx, ry in [(8, 8), (11, 7), (14, 8), (10, 9), (7, 12), (17, 11)]:
+                surf.set_at((rx, ry), (225, 225, 215))
+        elif item_id == "garlic":
+            # Whole garlic bulb with papery skin and clove segments
+            pygame.draw.ellipse(surf, (60, 50, 45, 100), (5, 17, 14, 5))
+            pygame.draw.ellipse(surf, (185, 180, 170), (5, 6, 14, 13))
+            pygame.draw.ellipse(surf, (250, 248, 240), (6, 7, 12, 11))
+            pygame.draw.line(surf, (215, 210, 200), (9, 7), (8, 16), 1)
+            pygame.draw.line(surf, (215, 210, 200), (15, 7), (16, 16), 1)
+            surf.set_at((8, 10), (195, 145, 170))
+            surf.set_at((14, 11), (195, 145, 170))
+            pygame.draw.line(surf, (150, 130, 105), (12, 3), (12, 7), 2)
+            for bx in (10, 12, 14):
+                surf.set_at((bx, 19), (165, 135, 95))
+        elif item_id == "onion":
+            # Red shallot onion bulb with purple-magenta skin and green sprout
+            pygame.draw.ellipse(surf, (50, 30, 40, 100), (5, 17, 14, 5))
+            pygame.draw.ellipse(surf, (115, 25, 65), (5, 6, 14, 13))
+            pygame.draw.ellipse(surf, (175, 45, 95), (6, 7, 12, 11))
+            pygame.draw.ellipse(surf, (220, 85, 140), (8, 8, 8, 7))
+            surf.set_at((9, 9), (255, 170, 205))
+            pygame.draw.arc(surf, (135, 30, 75), (6, 7, 12, 11), 1.0, 2.5, 1)
+            pygame.draw.line(surf, (85, 165, 60), (12, 2), (12, 6), 2)
+            surf.set_at((12, 2), (125, 215, 80))
+            surf.set_at((12, 19), (170, 140, 100))
+        elif item_id == "ginger":
+            # Knobby golden-tan rhizome with branching fingers & cut yellow flesh
+            pygame.draw.ellipse(surf, (140, 105, 60), (3, 8, 17, 11))
+            pygame.draw.ellipse(surf, (205, 165, 100), (4, 9, 15, 9))
+            pygame.draw.ellipse(surf, (140, 105, 60), (7, 4, 6, 7))
+            pygame.draw.ellipse(surf, (205, 165, 100), (8, 5, 4, 5))
+            pygame.draw.ellipse(surf, (140, 105, 60), (14, 5, 6, 6))
+            pygame.draw.ellipse(surf, (205, 165, 100), (15, 6, 4, 4))
+            pygame.draw.ellipse(surf, (250, 225, 120), (5, 11, 5, 5))
+            surf.set_at((7, 13), (255, 245, 180))
+            pygame.draw.line(surf, (155, 120, 70), (11, 10), (11, 15), 1)
+        elif item_id == "tamarind":
+            # Curved velvety brown tamarind pod (sampaloc) with segmented lobes
+            pygame.draw.circle(surf, (110, 65, 35), (6, 15), 5)
+            pygame.draw.circle(surf, (150, 95, 55), (6, 15), 4)
+            pygame.draw.circle(surf, (110, 65, 35), (11, 11), 5)
+            pygame.draw.circle(surf, (150, 95, 55), (11, 11), 4)
+            pygame.draw.circle(surf, (110, 65, 35), (16, 7), 4)
+            pygame.draw.circle(surf, (150, 95, 55), (16, 7), 3)
+            surf.set_at((6, 14), (185, 125, 75))
+            surf.set_at((11, 10), (185, 125, 75))
+            surf.set_at((16, 6), (185, 125, 75))
+            pygame.draw.line(surf, (95, 65, 40), (17, 6), (20, 3), 2)
+            pygame.draw.polygon(surf, (75, 165, 55), [(19, 3), (22, 2), (21, 5)])
+        elif item_id == "eggplant":
+            # Glossy deep-violet Asian long eggplant with green calyx
+            pygame.draw.ellipse(surf, (50, 15, 65), (5, 6, 14, 15))
+            pygame.draw.ellipse(surf, (95, 25, 125), (6, 7, 12, 13))
+            pygame.draw.ellipse(surf, (145, 45, 175), (8, 9, 8, 8))
+            pygame.draw.arc(surf, (220, 120, 245), (6, 7, 12, 13), 1.0, 2.7, 2)
+            surf.set_at((9, 10), (255, 230, 255))
+            pygame.draw.polygon(surf, (55, 140, 45), [(10, 3), (14, 3), (16, 8), (12, 6), (8, 8)])
+            pygame.draw.line(surf, (40, 110, 35), (12, 1), (12, 4), 2)
+        elif item_id == "string_beans":
+            # Bundle of fresh green yardlong beans (sitaw) with tie cord
+            pygame.draw.lines(surf, (45, 115, 35), False, [(4, 5), (9, 11), (15, 17), (20, 20)], 3)
+            pygame.draw.lines(surf, (75, 175, 60), False, [(4, 5), (9, 11), (15, 17), (20, 20)], 2)
+            pygame.draw.lines(surf, (55, 140, 45), False, [(6, 3), (12, 9), (18, 15)], 2)
+            surf.set_at((10, 11), (125, 225, 95))
+            surf.set_at((15, 16), (125, 225, 95))
+            pygame.draw.line(surf, (225, 195, 130), (10, 13), (13, 9), 2)
+        elif item_id == "black_pepper":
+            # Cluster of textured whole black peppercorns
+            peppercorns = [(7, 14, 4), (14, 13, 4), (11, 8, 4), (15, 8, 3)]
+            for px, py, pr in peppercorns:
+                pygame.draw.circle(surf, (25, 25, 28), (px, py), pr)
+                pygame.draw.circle(surf, (45, 45, 50), (px, py), pr - 1)
+                surf.set_at((px - 1, py - 1), (110, 110, 115))
+                surf.set_at((px, py - 1), (160, 160, 165))
+            for sx, sy in [(5, 17), (18, 16), (10, 16), (13, 16)]:
+                surf.set_at((sx, sy), (65, 65, 70))
+        elif item_id == "calamansi":
+            # One whole green calamansi lime and one juicy cut half
+            pygame.draw.circle(surf, (35, 105, 30), (8, 13), 6)
+            pygame.draw.circle(surf, (65, 165, 50), (8, 13), 5)
+            surf.set_at((7, 11), (125, 225, 85))
+            pygame.draw.line(surf, (30, 80, 25), (8, 6), (8, 8), 2)
+            pygame.draw.polygon(surf, (55, 140, 45), [(8, 6), (12, 4), (10, 7)])
+            pygame.draw.circle(surf, (45, 135, 35), (16, 13), 5)
+            pygame.draw.circle(surf, (215, 235, 95), (16, 13), 4)
+            surf.set_at((16, 13), (255, 255, 220))
+            for dx, dy in [(14, 13), (18, 13), (16, 11), (16, 15)]:
+                surf.set_at((dx, dy), (175, 205, 75))
+        elif item_id == "soy_sauce":
+            # Dark glass bottle with red dispenser cap and yellow label
+            pygame.draw.rect(surf, (25, 28, 35), (7, 6, 10, 15), border_radius=2)
+            pygame.draw.rect(surf, (15, 15, 18), (8, 8, 8, 12))
+            pygame.draw.rect(surf, (215, 35, 35), (9, 3, 6, 4))
+            surf.set_at((10, 4), (255, 120, 120))
+            pygame.draw.rect(surf, (245, 210, 50), (8, 11, 8, 5))
+            pygame.draw.line(surf, (150, 40, 25), (9, 13), (14, 13), 1)
+            pygame.draw.line(surf, (110, 125, 145), (7, 8), (7, 19), 1)
+        elif item_id == "vinegar":
+            # Glass bottle with cork stopper, filled with golden fermented vinegar
+            pygame.draw.rect(surf, (175, 120, 65), (10, 2, 4, 3))
+            pygame.draw.rect(surf, (70, 95, 120), (7, 6, 10, 15), border_radius=2)
+            pygame.draw.rect(surf, (215, 235, 245), (8, 7, 8, 13))
+            pygame.draw.rect(surf, (245, 225, 135), (8, 9, 8, 11))
+            surf.set_at((10, 11), (255, 245, 190))
+            pygame.draw.line(surf, (230, 35, 35), (11, 13), (13, 17), 2)
+            surf.set_at((11, 12), (50, 140, 45))
+        elif item_id == "salt":
+            # Heaped mound of coarse sparkling rock salt on a dark slate tray
+            pygame.draw.polygon(surf, (45, 48, 55), [(2, 17), (22, 17), (19, 21), (5, 21)])
+            pygame.draw.polygon(surf, (70, 75, 85), [(3, 17), (21, 17), (18, 20), (6, 20)])
+            pygame.draw.polygon(surf, (195, 215, 235), [(4, 18), (12, 6), (20, 18)])
+            pygame.draw.polygon(surf, (245, 250, 255), [(5, 18), (12, 7), (19, 18)])
+            pygame.draw.polygon(surf, (255, 255, 255), [(8, 15), (12, 8), (16, 15)])
+            for sx, sy in [(9, 12), (12, 9), (15, 13), (11, 15)]:
+                surf.set_at((sx, sy), (255, 255, 255))
+                surf.set_at((sx + 1, sy), (205, 235, 255))
+        elif item_id == "shaved_ice":
+            # Glass dessert cup with mounded sparkling shaved ice
+            pygame.draw.polygon(surf, (65, 95, 125), [(8, 19), (16, 19), (14, 21), (10, 21)])
+            pygame.draw.rect(surf, (150, 205, 235), (11, 17, 2, 3))
+            pygame.draw.ellipse(surf, (70, 100, 135), (4, 12, 16, 7))
+            pygame.draw.ellipse(surf, (205, 235, 255), (5, 13, 14, 5))
+            pygame.draw.circle(surf, (185, 225, 248), (12, 9), 7)
+            pygame.draw.circle(surf, (245, 252, 255), (12, 9), 6)
+            surf.set_at((10, 7), (255, 255, 255))
+            surf.set_at((14, 8), (210, 245, 255))
+        elif item_id == "condensed_milk":
+            # Metal tin can with sweet creamy yellow milk pouring out
+            pygame.draw.rect(surf, (140, 145, 155), (6, 6, 12, 14), border_radius=2)
+            pygame.draw.ellipse(surf, (200, 205, 215), (6, 5, 12, 4))
+            pygame.draw.rect(surf, (45, 105, 215), (6, 9, 12, 7))
+            pygame.draw.line(surf, (255, 255, 255), (7, 12), (16, 12), 1)
+            pygame.draw.circle(surf, (255, 245, 195), (15, 6), 3)
+            pygame.draw.line(surf, (255, 245, 195), (15, 6), (15, 18), 2)
+            pygame.draw.circle(surf, (255, 240, 175), (15, 18), 3)
+        elif item_id == "ube_halaya":
+            # Rectangular golden tin llanera filled with dense purple ube & toasted latik
+            pygame.draw.polygon(surf, (120, 85, 25), [(3, 12), (21, 12), (19, 19), (5, 19)])
+            pygame.draw.polygon(surf, (225, 180, 55), [(4, 12), (20, 12), (18, 18), (6, 18)])
+            pygame.draw.ellipse(surf, (140, 95, 30), (3, 7, 18, 7))
+            pygame.draw.ellipse(surf, (115, 25, 145), (4, 8, 16, 5))
+            pygame.draw.ellipse(surf, (155, 45, 185), (6, 9, 12, 3))
+            for lx, ly in [(6, 9), (9, 10), (12, 9), (15, 10), (17, 9)]:
+                surf.set_at((lx, ly), (225, 160, 50))
+                surf.set_at((lx + 1, ly), (255, 215, 95))
+        elif item_id == "pancit_noodles":
+            # Skein/nest of dry golden bihon vermicelli tied with red paper band
+            pygame.draw.rect(surf, (185, 165, 115), (5, 6, 14, 12), border_radius=3)
+            pygame.draw.rect(surf, (245, 235, 195), (6, 7, 12, 10))
+            for ny in (8, 10, 12, 14):
+                pygame.draw.line(surf, (220, 200, 150), (6, ny), (17, ny), 1)
+            pygame.draw.rect(surf, (215, 35, 35), (9, 5, 6, 14))
+            pygame.draw.line(surf, (255, 215, 50), (10, 12), (14, 12), 1)
+        elif item_id == "peanut_butter":
+            # Clear glass jar with red twist lid filled with roasted peanut butter
+            pygame.draw.rect(surf, (215, 35, 35), (7, 4, 10, 4), border_radius=1)
+            surf.set_at((8, 5), (255, 110, 110))
+            pygame.draw.rect(surf, (70, 90, 115), (6, 8, 12, 13), border_radius=2)
+            pygame.draw.rect(surf, (215, 145, 60), (7, 9, 10, 11))
+            pygame.draw.line(surf, (245, 185, 95), (8, 10), (15, 10), 1)
+            pygame.draw.rect(surf, (252, 248, 238), (7, 12, 10, 5))
+            pygame.draw.circle(surf, (170, 105, 35), (12, 14), 1)
+        elif item_id == "coconut_milk":
+            # Cracked brown coconut shell half with snow-white meat & splash
+            pygame.draw.circle(surf, (95, 55, 30), (12, 13), 8)
+            pygame.draw.circle(surf, (145, 90, 50), (12, 13), 7)
+            pygame.draw.circle(surf, (255, 255, 255), (12, 13), 5)
+            pygame.draw.circle(surf, (245, 245, 235), (12, 13), 3)
+            surf.set_at((8, 5), (255, 255, 255))
+            surf.set_at((16, 6), (255, 255, 255))
+        elif item_id == "seaweed":
+            # Clump of ruffled dark emerald ocean kelp & lato sea-grapes
+            pygame.draw.lines(surf, (25, 90, 40), False, [(6, 20), (8, 14), (5, 8), (7, 3)], 2)
+            pygame.draw.lines(surf, (45, 150, 65), False, [(12, 21), (15, 13), (11, 7), (14, 2)], 2)
+            pygame.draw.lines(surf, (35, 120, 50), False, [(17, 20), (19, 15), (16, 10), (18, 4)], 2)
+            for gx, gy in [(8, 11), (9, 12), (14, 9), (15, 10), (17, 13)]:
+                pygame.draw.circle(surf, (85, 215, 95), (gx, gy), 1)
+                surf.set_at((gx, gy), (180, 255, 160))
+        elif item_id == "dirt_clod":
+            pygame.draw.ellipse(surf, (65, 40, 25), (3, 6, 18, 14))
+            pygame.draw.ellipse(surf, (115, 75, 45), (5, 8, 14, 10))
+            pygame.draw.circle(surf, (150, 105, 60), (9, 11), 3)
+            surf.set_at((6, 15), (65, 150, 45))
+            surf.set_at((14, 10), (65, 150, 45))
         elif item_id == "old_boot":
-            pygame.draw.polygon(surf, (65, 45, 35), [(5, 4), (11, 4), (11, 13), (19, 13), (20, 18), (4, 18)])
-            pygame.draw.line(surf, (35, 25, 20), (3, 19), (20, 19), 2)
+            pygame.draw.polygon(surf, (45, 30, 25), [(5, 4), (11, 4), (11, 13), (19, 13), (20, 18), (4, 18)])
+            pygame.draw.line(surf, (25, 18, 15), (3, 19), (20, 19), 2)
             surf.set_at((8, 8), (140, 115, 80))
             surf.set_at((8, 11), (140, 115, 80))
-            surf.set_at((15, 16), (25, 18, 15))
+            surf.set_at((15, 16), (15, 10, 8))
         elif item_id == "rusty_can":
-            pygame.draw.rect(surf, (150, 155, 160), (6, 5, 12, 14), border_radius=2)
-            pygame.draw.ellipse(surf, (190, 195, 200), (6, 4, 12, 5))
+            pygame.draw.rect(surf, (120, 125, 130), (6, 5, 12, 14), border_radius=2)
+            pygame.draw.ellipse(surf, (170, 175, 180), (6, 4, 12, 5))
             pygame.draw.rect(surf, (180, 85, 35), (8, 9, 7, 5))
             surf.set_at((14, 15), (160, 70, 30))
-            pygame.draw.line(surf, (90, 95, 100), (10, 8), (12, 16), 1)
-        elif item_id == "seaweed":
-            pygame.draw.lines(surf, (35, 115, 55), False, [(6, 20), (8, 14), (5, 8), (7, 3)], 2)
-            pygame.draw.lines(surf, (55, 155, 75), False, [(12, 21), (15, 13), (11, 7), (14, 2)], 2)
-            pygame.draw.lines(surf, (40, 130, 60), False, [(17, 20), (19, 15), (16, 10), (18, 4)], 2)
-            surf.set_at((8, 12), (110, 200, 80))
-            surf.set_at((14, 10), (110, 200, 80))
+            pygame.draw.line(surf, (80, 85, 90), (10, 8), (12, 16), 1)
         elif item_id == "driftwood":
-            pygame.draw.polygon(surf, (150, 130, 110), [(3, 14), (8, 7), (19, 6), (21, 10), (15, 16), (6, 17)])
-            pygame.draw.line(surf, (90, 75, 60), (6, 14), (17, 10), 1)
-            pygame.draw.circle(surf, (75, 60, 48), (11, 12), 2)
-        elif item_id == "raw_chicken":
-            pygame.draw.circle(surf, (245, 195, 185), (14, 10), 7)
-            pygame.draw.ellipse(surf, (235, 175, 165), (7, 10, 11, 8))
-            pygame.draw.circle(surf, (250, 245, 235), (5, 15), 3)
-            surf.set_at((13, 8), (255, 230, 225))
-        elif item_id == "raw_duck_meat":
-            pygame.draw.ellipse(surf, (175, 55, 55), (4, 7, 16, 11))
-            pygame.draw.ellipse(surf, (245, 235, 220), (5, 6, 14, 4))
-            pygame.draw.line(surf, (130, 35, 35), (8, 11), (16, 14), 1)
-        elif item_id == "duck_egg":
-            pygame.draw.ellipse(surf, (215, 230, 220), (5, 4, 14, 16))
-            pygame.draw.ellipse(surf, (245, 252, 248), (8, 6, 6, 9))
-            pygame.draw.arc(surf, (175, 195, 180), (5, 4, 14, 16), 3.5, 5.8, 2)
-        elif item_id == "egg":
-            pygame.draw.ellipse(surf, (225, 180, 140), (5, 4, 14, 16))
-            pygame.draw.ellipse(surf, (250, 225, 200), (8, 6, 6, 9))
-            pygame.draw.arc(surf, (175, 130, 95), (5, 4, 14, 16), 3.5, 5.8, 2)
-        elif item_id == "raw_pork":
-            pygame.draw.ellipse(surf, (235, 130, 145), (4, 6, 16, 12))
-            pygame.draw.arc(surf, (250, 240, 235), (3, 5, 18, 14), 0.5, 2.5, 3)
-            pygame.draw.circle(surf, (255, 250, 240), (10, 11), 2)
-        elif item_id == "pork_belly":
-            pygame.draw.rect(surf, (220, 95, 110), (4, 6, 16, 12), border_radius=2)
-            pygame.draw.line(surf, (250, 240, 230), (4, 8), (19, 8), 2)
-            pygame.draw.line(surf, (190, 65, 80), (4, 12), (19, 12), 2)
-            pygame.draw.line(surf, (230, 165, 125), (4, 6), (19, 6), 1)
-        elif item_id == "raw_beef":
-            pygame.draw.ellipse(surf, (165, 35, 40), (3, 6, 18, 12))
-            surf.set_at((8, 10), (250, 240, 240))
-            surf.set_at((12, 9), (250, 240, 240))
-            surf.set_at((15, 13), (250, 240, 240))
-            pygame.draw.arc(surf, (110, 20, 25), (3, 6, 18, 12), 3.2, 5.8, 2)
-        elif item_id == "carabao_milk":
-            pygame.draw.rect(surf, (170, 115, 75), (6, 9, 12, 12), border_radius=3)
-            pygame.draw.rect(surf, (150, 95, 60), (8, 4, 8, 6))
-            pygame.draw.ellipse(surf, (255, 252, 245), (8, 3, 8, 4))
-            pygame.draw.line(surf, (95, 165, 235), (6, 14), (17, 14), 2)
-        elif item_id == "raw_goat_meat":
-            pygame.draw.ellipse(surf, (150, 45, 55), (4, 7, 16, 11))
-            pygame.draw.line(surf, (115, 30, 40), (7, 11), (15, 13), 2)
-            pygame.draw.circle(surf, (245, 240, 235), (14, 9), 2)
-        elif item_id == "goat_milk":
-            pygame.draw.rect(surf, (200, 225, 235), (7, 6, 10, 15), border_radius=2)
-            pygame.draw.rect(surf, (250, 250, 245), (8, 9, 8, 11))
-            pygame.draw.rect(surf, (175, 120, 70), (9, 3, 6, 4))
-        elif item_id == "feather":
-            pygame.draw.line(surf, (210, 205, 195), (4, 20), (19, 4), 1)
-            pygame.draw.polygon(surf, (245, 245, 250), [(7, 18), (10, 11), (18, 5), (16, 10), (10, 16)])
-            pygame.draw.polygon(surf, (215, 215, 225), [(10, 17), (16, 10), (14, 15)])
-        elif item_id == "garlic":
-            pygame.draw.ellipse(surf, (245, 245, 235), (5, 7, 14, 13))
-            pygame.draw.line(surf, (195, 190, 180), (10, 7), (10, 19), 1)
-            pygame.draw.line(surf, (155, 140, 120), (12, 3), (12, 8), 2)
-            surf.set_at((12, 20), (170, 140, 100))
-        elif item_id == "onion":
-            pygame.draw.circle(surf, (165, 55, 95), (12, 13), 7)
-            pygame.draw.circle(surf, (210, 95, 135), (11, 11), 4)
-            pygame.draw.line(surf, (95, 165, 75), (12, 3), (12, 7), 2)
-            surf.set_at((12, 20), (190, 170, 120))
-        elif item_id == "ginger":
-            pygame.draw.ellipse(surf, (210, 175, 115), (4, 9, 16, 9))
-            pygame.draw.ellipse(surf, (200, 160, 100), (7, 4, 7, 8))
-            pygame.draw.line(surf, (155, 120, 70), (11, 9), (11, 17), 1)
-            surf.set_at((6, 13), (245, 225, 140))
-        elif item_id == "calamansi":
-            pygame.draw.circle(surf, (65, 155, 50), (11, 13), 7)
-            pygame.draw.circle(surf, (115, 205, 80), (9, 10), 3)
-            pygame.draw.line(surf, (40, 95, 30), (12, 4), (12, 7), 2)
-            pygame.draw.ellipse(surf, (80, 175, 60), (12, 3, 6, 4))
-        elif item_id == "tamarind":
-            pygame.draw.circle(surf, (155, 100, 60), (7, 15), 5)
-            pygame.draw.circle(surf, (145, 90, 50), (12, 11), 5)
-            pygame.draw.circle(surf, (135, 80, 45), (17, 7), 4)
-            pygame.draw.line(surf, (85, 120, 50), (17, 6), (20, 4), 2)
-        elif item_id == "soy_sauce":
-            pygame.draw.rect(surf, (35, 40, 48), (7, 7, 10, 14), border_radius=2)
-            pygame.draw.rect(surf, (20, 15, 15), (8, 9, 8, 11))
-            pygame.draw.rect(surf, (220, 45, 45), (9, 4, 6, 4))
-            pygame.draw.rect(surf, (245, 210, 60), (8, 12, 8, 4))
-        elif item_id == "vinegar":
-            pygame.draw.rect(surf, (210, 230, 240), (7, 7, 10, 14), border_radius=2)
-            pygame.draw.rect(surf, (245, 235, 170), (8, 9, 8, 11))
-            pygame.draw.rect(surf, (180, 120, 60), (9, 4, 6, 4))
-            pygame.draw.line(surf, (230, 35, 35), (11, 13), (13, 17), 2)
-        elif item_id == "black_pepper":
-            pygame.draw.circle(surf, (45, 45, 45), (8, 14), 4)
-            pygame.draw.circle(surf, (35, 35, 35), (15, 13), 4)
-            pygame.draw.circle(surf, (55, 55, 55), (12, 8), 3)
-            surf.set_at((8, 13), (120, 120, 120))
-            surf.set_at((15, 12), (120, 120, 120))
-        elif item_id == "salt":
-            pygame.draw.polygon(surf, (245, 248, 255), [(4, 18), (12, 7), (20, 18)])
-            pygame.draw.rect(surf, (255, 255, 255), (10, 9, 4, 4))
-            pygame.draw.polygon(surf, (200, 210, 225), [(12, 8), (20, 18), (14, 18)])
-        elif item_id == "rice":
-            pygame.draw.rect(surf, (190, 150, 100), (6, 9, 12, 12), border_radius=2)
-            pygame.draw.line(surf, (130, 95, 55), (6, 9), (17, 9), 2)
-            pygame.draw.ellipse(surf, (252, 252, 248), (7, 5, 10, 6))
-            surf.set_at((10, 7), (230, 230, 220))
-        elif item_id == "coconut_milk":
-            pygame.draw.circle(surf, (115, 70, 40), (12, 13), 8)
-            pygame.draw.circle(surf, (245, 245, 240), (12, 13), 6)
-            pygame.draw.circle(surf, (255, 255, 255), (12, 13), 4)
-        elif item_id == "peanut_butter":
-            pygame.draw.rect(surf, (215, 230, 240), (7, 7, 10, 14), border_radius=2)
-            pygame.draw.rect(surf, (215, 145, 60), (8, 9, 8, 11))
-            pygame.draw.rect(surf, (240, 60, 50), (8, 4, 8, 4))
-        elif item_id == "eggplant":
-            pygame.draw.ellipse(surf, (85, 25, 110), (5, 7, 14, 14))
-            pygame.draw.arc(surf, (170, 75, 195), (6, 8, 12, 12), 1.0, 2.8, 2)
-            pygame.draw.polygon(surf, (65, 145, 55), [(10, 3), (14, 3), (16, 8), (8, 8)])
-            pygame.draw.line(surf, (50, 115, 40), (12, 1), (12, 4), 2)
-        elif item_id == "string_beans":
-            pygame.draw.lines(surf, (75, 165, 60), False, [(4, 5), (9, 11), (16, 17), (20, 20)], 2)
-            pygame.draw.lines(surf, (60, 140, 50), False, [(6, 3), (13, 9), (18, 15)], 2)
-            surf.set_at((10, 12), (115, 205, 95))
-            surf.set_at((15, 16), (115, 205, 95))
-        elif item_id == "pancit_noodles":
-            pygame.draw.rect(surf, (245, 240, 220), (5, 7, 14, 11), border_radius=2)
-            pygame.draw.line(surf, (225, 215, 190), (6, 9), (18, 9), 1)
-            pygame.draw.line(surf, (225, 215, 190), (6, 13), (18, 13), 1)
-            pygame.draw.rect(surf, (215, 45, 45), (10, 6, 4, 13))
-        elif item_id == "shaved_ice":
-            pygame.draw.ellipse(surf, (180, 220, 240), (4, 12, 16, 9))
-            pygame.draw.circle(surf, (245, 250, 255), (12, 9), 7)
-            surf.set_at((10, 7), (255, 255, 255))
-            surf.set_at((14, 10), (200, 240, 255))
-        elif item_id == "condensed_milk":
-            pygame.draw.rect(surf, (195, 200, 205), (6, 7, 12, 13), border_radius=2)
-            pygame.draw.rect(surf, (55, 115, 215), (6, 10, 12, 6))
-            pygame.draw.circle(surf, (250, 210, 95), (15, 18), 3)
-        elif item_id == "ube_halaya":
-            pygame.draw.rect(surf, (215, 230, 240), (6, 8, 12, 12), border_radius=2)
-            pygame.draw.rect(surf, (120, 35, 145), (7, 10, 10, 9))
-            pygame.draw.ellipse(surf, (210, 145, 50), (7, 8, 10, 4))
-            pygame.draw.rect(surf, (245, 200, 60), (7, 5, 10, 4))
-        elif item_id == "chicken_adobo":
-            pygame.draw.circle(surf, (175, 105, 65), (12, 13), 9)
-            pygame.draw.circle(surf, (45, 25, 18), (12, 13), 7)
-            pygame.draw.ellipse(surf, (195, 130, 70), (8, 10, 8, 5))
-            surf.set_at((14, 14), (70, 130, 50))
-        elif item_id == "pork_adobo":
-            pygame.draw.circle(surf, (185, 115, 75), (12, 13), 9)
-            pygame.draw.circle(surf, (40, 20, 15), (12, 13), 7)
-            pygame.draw.rect(surf, (165, 95, 55), (8, 9, 4, 4))
-            pygame.draw.rect(surf, (175, 105, 60), (12, 12, 5, 4))
-            surf.set_at((9, 10), (240, 230, 215))
-        elif item_id == "sinigang":
-            pygame.draw.circle(surf, (165, 85, 50), (12, 13), 9)
-            pygame.draw.circle(surf, (195, 170, 110), (12, 13), 7)
-            surf.set_at((9, 10), (225, 45, 40))
-            surf.set_at((14, 11), (55, 160, 60))
-            pygame.draw.rect(surf, (190, 120, 90), (11, 13, 4, 3))
-        elif item_id == "kare_kare":
-            pygame.draw.circle(surf, (200, 185, 165), (12, 13), 9)
-            pygame.draw.circle(surf, (235, 145, 40), (12, 13), 7)
-            pygame.draw.rect(surf, (140, 70, 45), (8, 10, 5, 4))
-            surf.set_at((14, 11), (95, 30, 115))
-            surf.set_at((13, 14), (215, 75, 100))
-        elif item_id == "bulalo":
-            pygame.draw.circle(surf, (185, 195, 205), (12, 13), 9)
-            pygame.draw.circle(surf, (225, 215, 165), (12, 13), 7)
-            pygame.draw.circle(surf, (245, 240, 230), (12, 12), 4)
-            pygame.draw.circle(surf, (215, 175, 100), (12, 12), 2)
-            pygame.draw.rect(surf, (245, 210, 45), (7, 13, 3, 3))
-        elif item_id == "tinola":
-            pygame.draw.circle(surf, (220, 225, 220), (12, 13), 9)
-            pygame.draw.circle(surf, (235, 230, 180), (12, 13), 7)
-            pygame.draw.ellipse(surf, (230, 185, 140), (8, 11, 6, 4))
-            pygame.draw.ellipse(surf, (145, 210, 115), (13, 10, 4, 3))
-            surf.set_at((12, 14), (210, 170, 90))
-        elif item_id == "lechon":
-            pygame.draw.rect(surf, (215, 130, 115), (4, 10, 16, 8), border_radius=2)
-            pygame.draw.line(surf, (250, 245, 235), (4, 10), (19, 10), 2)
-            pygame.draw.line(surf, (195, 80, 25), (4, 8), (19, 8), 2)
-            surf.set_at((7, 8), (245, 140, 50))
-            surf.set_at((14, 8), (245, 140, 50))
-        elif item_id == "pancit_bihon":
-            pygame.draw.circle(surf, (180, 140, 90), (12, 13), 9)
-            pygame.draw.circle(surf, (225, 195, 130), (12, 13), 7)
-            surf.set_at((9, 11), (175, 95, 60))
-            surf.set_at((14, 13), (175, 95, 60))
-            surf.set_at((12, 10), (240, 100, 35))
-            pygame.draw.circle(surf, (75, 165, 50), (13, 15), 2)
-        elif item_id == "arroz_caldo":
-            pygame.draw.circle(surf, (225, 220, 210), (12, 13), 9)
-            pygame.draw.circle(surf, (245, 240, 225), (12, 13), 7)
-            pygame.draw.ellipse(surf, (255, 255, 255), (8, 9, 6, 5))
-            pygame.draw.circle(surf, (250, 195, 45), (11, 11), 2)
-            surf.set_at((13, 13), (195, 135, 45))
-            surf.set_at((15, 11), (195, 135, 45))
-        elif item_id == "halo_halo":
-            pygame.draw.rect(surf, (190, 220, 240), (7, 6, 10, 14), border_radius=2)
-            pygame.draw.rect(surf, (140, 45, 55), (8, 16, 8, 3))
-            pygame.draw.rect(surf, (245, 250, 255), (8, 11, 8, 5))
-            pygame.draw.line(surf, (255, 245, 195), (8, 11), (15, 11), 1)
-            pygame.draw.rect(surf, (245, 205, 60), (8, 8, 4, 3))
-            pygame.draw.circle(surf, (135, 45, 160), (13, 8), 3)
-        elif item_id == "kaldereta":
-            pygame.draw.circle(surf, (200, 190, 175), (12, 13), 9)
-            pygame.draw.circle(surf, (215, 65, 40), (12, 13), 7)
-            pygame.draw.rect(surf, (150, 70, 50), (9, 10, 5, 4))
-            surf.set_at((14, 11), (240, 40, 35))
-            surf.set_at((11, 14), (70, 150, 55))
-        elif item_id == "balut":
-            pygame.draw.ellipse(surf, (225, 220, 205), (5, 5, 14, 15))
-            pygame.draw.circle(surf, (60, 40, 30), (12, 8), 4)
-            pygame.draw.circle(surf, (220, 160, 60), (12, 8), 3)
-            surf.set_at((10, 6), (255, 255, 255))
-        elif item_id == "itlog_na_maalat":
-            pygame.draw.ellipse(surf, (215, 40, 120), (5, 5, 14, 15))
-            pygame.draw.circle(surf, (248, 248, 245), (12, 12), 5)
-            pygame.draw.circle(surf, (250, 140, 30), (12, 12), 3)
-        elif item_id == "sinangag":
-            pygame.draw.ellipse(surf, (235, 220, 185), (4, 7, 16, 12))
-            pygame.draw.ellipse(surf, (248, 242, 220), (6, 8, 12, 7))
-            surf.set_at((8, 10), (205, 145, 45))
-            surf.set_at((12, 12), (205, 145, 45))
-            surf.set_at((15, 9), (205, 145, 45))
-        elif item_id == "daing_na_bangus":
-            pygame.draw.ellipse(surf, (200, 150, 80), (3, 6, 18, 13))
-            pygame.draw.ellipse(surf, (60, 35, 25), (6, 9, 12, 7))
-            pygame.draw.polygon(surf, (170, 110, 50), [(2, 12), (5, 8), (5, 16)])
-            surf.set_at((9, 11), (235, 205, 120))
-            surf.set_at((13, 12), (235, 205, 120))
-        elif item_id == "sinigang_na_bangus":
-            pygame.draw.circle(surf, (155, 95, 60), (12, 13), 9)
-            pygame.draw.circle(surf, (210, 185, 120), (12, 13), 7)
-            pygame.draw.ellipse(surf, (190, 205, 220), (7, 10, 8, 4))
-            surf.set_at((8, 12), (50, 160, 60))
-            surf.set_at((14, 11), (220, 45, 40))
-        elif item_id == "ginataang_tilapia":
-            pygame.draw.circle(surf, (160, 120, 80), (12, 13), 9)
-            pygame.draw.circle(surf, (245, 245, 235), (12, 13), 7)
-            pygame.draw.ellipse(surf, (110, 135, 120), (7, 11, 7, 4))
-            surf.set_at((12, 10), (220, 190, 80))
-            surf.set_at((14, 13), (60, 170, 70))
-        elif item_id == "kinilaw_na_tanigue":
-            pygame.draw.circle(surf, (190, 225, 235), (12, 13), 9)
-            pygame.draw.circle(surf, (240, 248, 255), (12, 13), 7)
-            pygame.draw.rect(surf, (230, 230, 235), (8, 9, 3, 3))
-            pygame.draw.rect(surf, (220, 220, 230), (12, 12, 3, 3))
-            surf.set_at((14, 9), (70, 190, 50))
-            surf.set_at((10, 14), (235, 40, 40))
+            pygame.draw.polygon(surf, (75, 60, 45), [(3, 14), (8, 7), (19, 6), (21, 10), (15, 16), (6, 17)])
+            pygame.draw.polygon(surf, (140, 115, 90), [(4, 13), (8, 8), (18, 7), (20, 10), (14, 15), (7, 16)])
+            pygame.draw.line(surf, (185, 165, 135), (8, 9), (17, 8), 1)
+            pygame.draw.circle(surf, (60, 45, 35), (11, 12), 2)
+            surf.set_at((12, 12), (105, 80, 60))
 
     def generate_item_icon(self, item_id):
         """Generates a unique, beautifully shaded 24x24 pixel art icon for any item."""
