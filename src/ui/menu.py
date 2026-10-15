@@ -250,7 +250,7 @@ class MenuManager:
         self.btn_light = Button(gx, gy_start + 6 * gy_step, gw, gh, "LIGHTING: HIGH", "cycle_lighting_quality")
         self.btn_part = Button(gx, gy_start + 7 * gy_step, gw, gh, "PARTICLES: HIGH", "cycle_particle_density")
         self.btn_disp = Button(gx, gy_start + 8 * gy_step, gw, gh, "DISPLAY: WINDOWED", "toggle_display")
-        self.btn_zoom = Button(gx, gy_start + 9 * gy_step, gw, gh, f"CAMERA ZOOM: {int(self.settings.get('zoom', 1.0))}x", "toggle_zoom", tooltip="Adjust world zoom level (1x, 2x, or 3x)")
+        self.btn_zoom = Button(gx, gy_start + 9 * gy_step, gw, gh, f"CAMERA ZOOM: {int(self.settings.get('zoom', 1.0))}x", "toggle_zoom")
         self.graphics_buttons = [
             self.btn_renderer, self.btn_shaders, self.btn_bloom, self.btn_vignette,
             self.btn_res, self.btn_color, self.btn_light, self.btn_part, self.btn_disp,
@@ -302,15 +302,15 @@ class MenuManager:
             [self.settings_back_btn, self.settings_reset_btn]
         )
 
-        # Buttons for Input Mapping view (Back always on the left, Reset always on the right)
-        self.input_back_button = Button(SCREEN_WIDTH // 2 - 210, SCREEN_HEIGHT - 95, 190, 42, "< BACK TO SETTINGS", "input_back", icon="back", tooltip="Return to settings menu")
-        self.input_reset_button = Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 95, 190, 42, "RESET DEFAULTS", "reset_keys", tooltip="Restore default keybindings")
+        # Buttons for Input Mapping view (Back always on the left, Reset always on the right, positioned inside panel)
+        self.input_back_button = Button(SCREEN_WIDTH // 2 - 210, 582, 190, 38, "< BACK TO SETTINGS", "input_back", icon="back")
+        self.input_reset_button = Button(SCREEN_WIDTH // 2 + 20, 582, 190, 38, "RESET DEFAULTS", "reset_keys")
 
         # In-place Reset Defaults Confirmation Modal
         self.reset_confirm_modal_active = False
         self.reset_confirm_modal_rect = pygame.Rect(SCREEN_WIDTH // 2 - 240, SCREEN_HEIGHT // 2 - 80, 480, 160)
-        self.reset_confirm_yes_btn = Button(SCREEN_WIDTH // 2 - 190, SCREEN_HEIGHT // 2 + 15, 180, 40, "CONFIRM", "confirm_reset_defaults", tooltip="Confirm reset to default settings")
-        self.reset_confirm_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, SCREEN_HEIGHT // 2 + 15, 180, 40, "CANCEL", "cancel_reset_defaults", tooltip="Cancel and keep current settings")
+        self.reset_confirm_yes_btn = Button(SCREEN_WIDTH // 2 - 190, SCREEN_HEIGHT // 2 + 15, 180, 40, "CONFIRM", "confirm_reset_defaults")
+        self.reset_confirm_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, SCREEN_HEIGHT // 2 + 15, 180, 40, "CANCEL", "cancel_reset_defaults")
 
         # Multiplayer Menu Buttons & State
         self.discovery = LANDiscovery()
@@ -322,9 +322,9 @@ class MenuManager:
         mp_btn_h = 38
 
         self.mp_buttons = [
-            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 176, mp_btn_w, mp_btn_h, "HOST LAN GAME", "host_game", icon="plus", tooltip="Host world on local LAN port 25565"),
-            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 502, mp_btn_w, mp_btn_h, "CONNECT TO IP", "join_game", icon="join", tooltip="Connect to specified IP address"),
-            Button(SCREEN_WIDTH // 2 - 100, 572, 200, 38, "<  BACK TO MENU", "menu", icon="back", tooltip="Return to main menu"),
+            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 176, mp_btn_w, mp_btn_h, "HOST LAN GAME", "host_game", icon="plus"),
+            Button(mp_card_x + mp_card_w - mp_btn_w - 15, 502, mp_btn_w, mp_btn_h, "CONNECT TO IP", "join_game", icon="join"),
+            Button(SCREEN_WIDTH // 2 - 100, 572, 200, 38, "<  BACK TO MENU", "menu", icon="back"),
         ]
         self.join_ip_input = "127.0.0.1"
         self.typing_ip = False
@@ -336,8 +336,8 @@ class MenuManager:
         self.room_key_input = ""
         self.room_key_error = ""
         self.room_key_box_rect = pygame.Rect(SCREEN_WIDTH // 2 - 140, 320, 280, 38)
-        self.room_key_join_btn = Button(SCREEN_WIDTH // 2 - 130, 375, 120, 38, "JOIN", "confirm_room_key", icon="join", tooltip="Connect to server with entered room key")
-        self.room_key_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 120, 38, "CANCEL", "cancel_room_key", tooltip="Cancel and return to multiplayer lobby")
+        self.room_key_join_btn = Button(SCREEN_WIDTH // 2 - 130, 375, 120, 38, "JOIN", "confirm_room_key", icon="join")
+        self.room_key_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 120, 38, "CANCEL", "cancel_room_key")
 
         # LAN Host configuration state
         self.hosting_lan = False
@@ -368,16 +368,16 @@ class MenuManager:
         self.rename_world_input = ""
         self.rename_error_msg = ""
         self.rename_box_rect = pygame.Rect(SCREEN_WIDTH // 2 - 180, 325, 360, 40)
-        self.rename_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 385, 130, 40, "SAVE NAME", "confirm_rename", tooltip="Save new world name")
-        self.rename_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 385, 130, 40, "CANCEL", "cancel_rename", tooltip="Cancel renaming")
-        self.worlds_create_btn = Button(cx, 160, btn_w, btn_h, "[+] CREATE NEW WORLD", "open_new_world", icon="plus", tooltip="Configure and generate a new world")
-        self.worlds_quick_btn = Button(cx, 215, btn_w, btn_h, "QUICK PLAY (NORMAL INFINITE)", "quick_play", icon="play", tooltip="Quickly jump into a default infinite world")
-        self.worlds_back_btn = Button(cx, SCREEN_HEIGHT - 85, btn_w, btn_h, "< BACK TO MENU", "menu", icon="back", tooltip="Return to main menu")
+        self.rename_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 385, 130, 40, "SAVE NAME", "confirm_rename")
+        self.rename_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 385, 130, 40, "CANCEL", "cancel_rename")
+        self.worlds_create_btn = Button(cx, 160, btn_w, btn_h, "[+] CREATE NEW WORLD", "open_new_world", icon="plus")
+        self.worlds_quick_btn = Button(cx, 215, btn_w, btn_h, "QUICK PLAY (NORMAL INFINITE)", "quick_play", icon="play")
+        self.worlds_back_btn = Button(cx, 592, btn_w, btn_h, "< BACK TO MENU", "menu", icon="back")
 
         # YOLO Confirmation Modal Buttons
         self.show_yolo_warning = False
-        self.yolo_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 375, 130, 40, "ACCEPT RISK", "confirm_yolo", tooltip="Confirm YOLO mode and start game")
-        self.yolo_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 130, 40, "CANCEL", "cancel_yolo", tooltip="Cancel and select another difficulty")
+        self.yolo_confirm_btn = Button(SCREEN_WIDTH // 2 - 140, 375, 130, 40, "ACCEPT RISK", "confirm_yolo")
+        self.yolo_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, 375, 130, 40, "CANCEL", "cancel_yolo")
 
         # Mods / Add-Ons
         self.mods_file = os.path.join("saves", "mods.json")
@@ -397,16 +397,16 @@ class MenuManager:
         self.new_world_mode = MODE_LAST_MAN_STANDING if self.enabled_mods.get("last_man_standing", False) else MODE_ADVENTURE
         self.typing_world_name = False
         self.world_name_rect = pygame.Rect(cx - 30, 205, btn_w + 60, 38)
-        self.nw_btn_type = Button(cx, 265, btn_w, btn_h, "WORLD TYPE: INFINITE", "toggle_type", tooltip="Switch between Infinite open world and Finite bounded world")
-        self.nw_btn_diff = Button(cx, 335, btn_w, btn_h, "DIFFICULTY: EASY", "toggle_diff", tooltip="Select difficulty: Easy, Normal, Hardcore, or YOLO")
+        self.nw_btn_type = Button(cx, 265, btn_w, btn_h, "WORLD TYPE: INFINITE", "toggle_type")
+        self.nw_btn_diff = Button(cx, 335, btn_w, btn_h, "DIFFICULTY: EASY", "toggle_diff")
         # Hidden/off-screen legacy attribute to retain backwards compatibility
-        self.nw_btn_mode = Button(cx, -100, btn_w, btn_h, "MODE: ADVENTURE", "toggle_mode", tooltip="Toggle game mode")
-        self.nw_btn_create = Button(cx, 435, btn_w, btn_h, "CREATE & PLAY WORLD", "create_confirm", icon="plus", tooltip="Generate world and begin adventure")
-        self.nw_btn_back = Button(cx, 495, btn_w, btn_h, "< CANCEL", "cancel_new_world", icon="back", tooltip="Cancel world creation and go back")
+        self.nw_btn_mode = Button(cx, -100, btn_w, btn_h, "MODE: ADVENTURE", "toggle_mode")
+        self.nw_btn_create = Button(cx, 435, btn_w, btn_h, "CREATE & PLAY WORLD", "create_confirm", icon="plus")
+        self.nw_btn_back = Button(cx, 495, btn_w, btn_h, "< CANCEL", "cancel_new_world", icon="back")
 
         # Game Over / Permadeath Screen Buttons (YOLO Mode)
         self.game_over_buttons = [
-            Button(cx, 420, btn_w, btn_h, "Try Harder (Main Menu)", "menu", tooltip="Purge world and return to main menu"),
+            Button(cx, 420, btn_w, btn_h, "Try Harder (Main Menu)", "menu"),
         ]
 
         self.settings_file = SETTINGS_FILE
@@ -1578,9 +1578,9 @@ class MenuManager:
     def _render_input_mapping(self, target_surf, mouse_pos):
         self._render_background(target_surf)
 
-        pw, ph = 780, 560
+        pw, ph = 780, 595
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 55
+        py = 48
         panel_rect = pygame.Rect(px, py, pw, ph)
         pygame.draw.rect(target_surf, (26, 30, 48, 245), panel_rect, border_radius=14)
         pygame.draw.rect(target_surf, COLOR_GOLD, panel_rect, 2, border_radius=14)
@@ -1842,7 +1842,7 @@ class MenuManager:
                 badge_surf = self.font_sm.render(badge_txt, True, badge_col)
                 target_surf.blit(badge_surf, (entry_rect.right - 180, entry_rect.centery - badge_surf.get_height() // 2))
 
-                j_btn = Button(entry_rect.right - 85, entry_rect.y + 5, 75, 32, "JOIN", ("join_server", sinfo), icon="join", tooltip="Connect to this LAN server")
+                j_btn = Button(entry_rect.right - 85, entry_rect.y + 5, 75, 32, "JOIN", ("join_server", sinfo), icon="join")
                 j_btn.render(target_surf, self.font_btn)
                 self.lan_join_buttons.append((j_btn, sinfo))
 
@@ -1988,9 +1988,9 @@ class MenuManager:
     def _render_worlds_screen(self, target_surf):
         self._render_background(target_surf)
 
-        pw, ph = 680, 560
+        pw, ph = 680, 595
         px = SCREEN_WIDTH // 2 - pw // 2
-        py = 50
+        py = 48
         panel_rect = pygame.Rect(px, py, pw, ph)
         pygame.draw.rect(target_surf, (24, 28, 44, 245), panel_rect, border_radius=14)
         pygame.draw.rect(target_surf, COLOR_GOLD, panel_rect, 2, border_radius=14)
@@ -2229,7 +2229,7 @@ class MenuManager:
         pygame.draw.rect(target_surf, bd_col, card1_rect, 2, border_radius=10)
 
         # Title & Meta
-        t_surf = self.font_btn.render("Last Man Standing (PvP Battle Royale Add-On)", True, (255, 235, 120))
+        t_surf = self.font_btn.render("Last Man Standing (PvP Add-On)", True, (255, 235, 120))
         target_surf.blit(t_surf, (card1_rect.x + 20, card1_rect.y + 16))
 
         meta = self.font_sm.render("Author: Kurados  •  Version: 1.2.0  •  Classification: Game Mode Add-On", True, (180, 195, 220))

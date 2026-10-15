@@ -1447,7 +1447,7 @@ ITEM_REGISTRY = {
         "name": "Crisp Apple", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Crisp red orchard fruit with sweet fragrant flesh and refreshing juice.",
-        "lore": "'Freshly harvested from surface orchard canopies.'",
+        "lore": "",
         "special": "Fresh Fruit"
     },
     "bomb": {
@@ -1782,21 +1782,21 @@ ITEM_REGISTRY = {
         "name": "Bawang Garlic", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Pungent native garlic cloves. The aromatic foundation of Filipino cuisine.",
-        "lore": "'Said to ward off Aswang and evil spirits.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "onion": {
         "name": "Sibuyas Red Onion", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Sweet, vibrant red onion bulbs essential for sauteing.",
-        "lore": "'Sizzles aromatically in the pan.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "ginger": {
         "name": "Luya Fresh Ginger", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Zesty, warming ginger root that infuses tinola and arroz caldo broth.",
-        "lore": "'Soothes sore throats and warms the stomach.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "calamansi": {
@@ -1810,91 +1810,91 @@ ITEM_REGISTRY = {
         "name": "Sampalok Tamarind", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Tangy tamarind pods that give Sinigang its signature appetizing sourness.",
-        "lore": "'Puckers the lips with mouth-watering sourness.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "soy_sauce": {
         "name": "Toyo Soy Sauce", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Fermented rich black soy sauce. Savory cornerstone of adobo.",
-        "lore": "'Deep umami aged in wooden vats.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "vinegar": {
         "name": "Sukang Paombong Vinegar", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Traditional cane and palm vinegar with sharp, clean tartness.",
-        "lore": "'Naturally preserves and balances savory meat dishes.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "black_pepper": {
         "name": "Paminta Peppercorns", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Whole black peppercorns from aromatic spice groves.",
-        "lore": "'Packs gentle biting heat and aroma.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "salt": {
         "name": "Asin Sea Salt", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Pure crystallized white sea salt harvested from coastal pans.",
-        "lore": "'Brings out every hidden nuance of flavor.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "rice": {
         "name": "Milagrosa White Rice", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Fragrant polished grain. A meal in Potaria is never complete without rice.",
-        "lore": "'The heartbeat of every dining table.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "coconut_milk": {
         "name": "Gata Coconut Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 20, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Rich, velvety cream pressed from freshly grated mature coconut meat.",
-        "lore": "'Adds luxurious silkiness to coastal curries.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "peanut_butter": {
         "name": "Ground Peanut Butter", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 22, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Savory roasted peanut paste that thickens luscious Kare-Kare sauce.",
-        "lore": "'Warm, nutty aroma beloved by all.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "eggplant": {
         "name": "Talong Native Eggplant", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Glossy purple tender eggplant, key vegetable for Sinigang and Tortang Talong.",
-        "lore": "'Soaks up rich broths like a sponge.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "string_beans": {
         "name": "Sitaw String Beans", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Crisp green yardlong beans harvested fresh from farm trellises.",
-        "lore": "'Snaps with sweet, vegetal freshness.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "pancit_noodles": {
         "name": "Bihon Rice Noodles", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Delicate sun-dried translucent rice noodles. Symbolizes long life and health.",
-        "lore": "'Stir-fried for celebrations and good fortune.'",
+        "lore": "",
         "special": "Cooking Ingredient"
     },
     "shaved_ice": {
         "name": "Yelo Shaved Ice", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Fine snowy ice flakes scooped to create the ultimate tropical cooling treat.",
-        "lore": "'Chills instantly beneath the sweltering sun.'",
+        "lore": "",
         "special": "Dessert Ingredient"
     },
     "condensed_milk": {
         "name": "Sweet Condensed Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
         "desc": "Sweet, golden thick milk syrup poured lavishly over shaved ice desserts.",
-        "lore": "'Pure caramelized dairy bliss.'",
+        "lore": "",
         "special": "Dessert Ingredient"
     },
     "ube_halaya": {
@@ -3657,8 +3657,14 @@ class Inventory:
             # Rolled Base Stats indicator
             base_rolls = getattr(item, "base_rolls", None)
             if base_rolls:
-                roll_parts = [f"+{v} {k.upper()}" for k, v in base_rolls.items()]
-                lines.append((f"Rolled Base Stats: {', '.join(roll_parts)}", (255, 230, 140), self.font_sm))
+                is_weapon = data.get("cat") in (CAT_WEAPON, "weapon") or data.get("category") in (CAT_WEAPON, "weapon") or getattr(item, "slot", "") == "weapon"
+                if is_weapon:
+                    filtered_rolls = {k: v for k, v in base_rolls.items() if k.lower() not in ("def", "defense", "armor", "dmg_reduction")}
+                else:
+                    filtered_rolls = base_rolls
+                if filtered_rolls:
+                    roll_parts = [f"+{v} {k.upper()}" for k, v in filtered_rolls.items()]
+                    lines.append((f"Rolled Base Stats: {', '.join(roll_parts)}", (255, 230, 140), self.font_sm))
 
             # Special Tags
             item_tags = getattr(item, "tags", None) or data.get("tags", [])

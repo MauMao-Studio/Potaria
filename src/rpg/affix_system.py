@@ -80,9 +80,20 @@ def is_affix_allowed_on_category(affix_data: Dict[str, Any], category: str) -> b
 
 
 def scrub_defensive_stats_from_weapon(weapon_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Ensures a weapon dictionary has strictly 0 defense."""
+    """Ensures a weapon dictionary has strictly 0 defense across all stat mappings."""
     if isinstance(weapon_data, dict):
         weapon_data["def"] = 0
         if "defense" in weapon_data:
             weapon_data["defense"] = 0
+        if "base_rolls" in weapon_data and isinstance(weapon_data["base_rolls"], dict):
+            for def_key in list(weapon_data["base_rolls"].keys()):
+                if def_key.lower() in DEFENSIVE_STATS:
+                    del weapon_data["base_rolls"][def_key]
+        if "stats" in weapon_data and isinstance(weapon_data["stats"], dict):
+            weapon_data["stats"]["def"] = 0
+            if "defense" in weapon_data["stats"]:
+                weapon_data["stats"]["defense"] = 0
+            for def_key in list(weapon_data["stats"].keys()):
+                if def_key.lower() in DEFENSIVE_STATS:
+                    weapon_data["stats"][def_key] = 0
     return weapon_data

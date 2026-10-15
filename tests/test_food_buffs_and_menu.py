@@ -32,7 +32,7 @@ from src.ui.inventory import Inventory, ITEM_REGISTRY, CAT_CONSUMABLE, CAT_WEAPO
 from src.ui.hud import HUD
 from src.ui.menu import MenuManager, Button
 from src.rpg.equipment import ARMOR_DATA, SLOT_WEAPON
-from src.rpg.equipment_update import NEW_EQUIPMENT_DATA
+from src.rpg.equipment_update import NEW_EQUIPMENT_DATA, ITEM_STAT_RANGES, roll_item_stat_ranges
 from src.rpg.affix_system import (
     is_defensive_affix,
     is_affix_allowed_on_category,
@@ -375,6 +375,136 @@ class TestFoodBuffsAndMenu(unittest.TestCase):
         # Render with hover at bottom-left (slot 0: x=20, y=SCREEN_HEIGHT-44)
         hud._render_food_buffs(target_surf, player, 25, SCREEN_HEIGHT - 30)
 
+    def test_16_frost_blade_and_weapon_stat_ranges_zero_defense(self):
+        """Verifies frost_blade and all weapons in ITEM_STAT_RANGES have no defense ranges and roll no defense."""
+        frost = ITEM_STAT_RANGES.get("frost_blade")
+        self.assertIsNotNone(frost, "frost_blade missing from ITEM_STAT_RANGES")
+        defensive_keys = {"def", "defense", "armor", "dmg_reduction", "knockback_res"}
+        for k in defensive_keys:
+            self.assertNotIn(k, frost, f"frost_blade in ITEM_STAT_RANGES has defensive key '{k}'")
+
+        # Verify all weapons in ITEM_REGISTRY have no defensive ranges in ITEM_STAT_RANGES
+        for item_id, data in ITEM_REGISTRY.items():
+            if data.get("cat") == CAT_WEAPON or data.get("category") == "weapon":
+                ranges = ITEM_STAT_RANGES.get(item_id, {})
+                for k in defensive_keys:
+                    self.assertNotIn(k, ranges, f"Weapon '{item_id}' in ITEM_STAT_RANGES has defensive key '{k}'")
+
+        # Test rolling stats repeatedly
+        for _ in range(25):
+            rolled = roll_item_stat_ranges("frost_blade")
+            for k in defensive_keys:
+                self.assertNotIn(k, rolled, f"Rolled stats for frost_blade contain defensive key '{k}'")
+
+    def test_17_all_edible_items_lore_and_desc_purity(self):
+        """Verifies all edible items and cooking ingredients have empty lore and no HP restoration numbers in desc."""
+        import re
+        from scripts.build_cookbook_docs import filipino_dishes, cooked_fishes, potato_delicacies, raw_fishes, raw_meats
+        culinary_items = set(filipino_dishes + cooked_fishes + potato_delicacies + raw_fishes + raw_meats + [
+            'raw_potato', 'rice', 'garlic', 'onion', 'ginger', 'tamarind', 'eggplant',
+            'string_beans', 'black_pepper', 'calamansi', 'soy_sauce', 'vinegar',
+            'salt', 'shaved_ice', 'condensed_milk', 'ube_halaya', 'pancit_noodles',
+            'peanut_butter', 'coconut_milk', 'apple'
+        ])
+
+        for item_id in culinary_items:
+            data = ITEM_REGISTRY.get(item_id)
+            self.assertIsNotNone(data, f"Culinary item '{item_id}' missing from ITEM_REGISTRY")
+            lore = data.get("lore", "")
+            self.assertEqual(lore, "", f"Edible item '{item_id}' has non-empty lore: '{lore}'")
+            desc = data.get("desc", "")
+            self.assertFalse(
+                re.search(r'\+\d+\s*hp', desc, re.IGNORECASE),
+                f"Item '{item_id}' has +HP in desc: '{desc}'"
+            )
+            self.assertFalse(
+                re.search(r'restores?\s+\d+', desc, re.IGNORECASE),
+                f"Item '{item_id}' has 'Restores <num>' in desc: '{desc}'"
+            )
+
+    def test_18_achievements_viewport_does_not_overlap_back_button(self):
+        """Verifies achievements cards viewport ends above the back button."""
+        menu = MenuManager(self.asset_factory, self.sound_manager)
+        btn_top = menu.achievements_back_btn.rect.top # 565
+        # Achievements screen panel
+        pw, ph = 760, 560
+        py = 50
+        start_y = py + 92 # 142
+        viewport_h = ph - 165 # 395
+        viewport_bottom = start_y + viewport_h # 537
+        self.assertLess(viewport_bottom, btn_top, f"Achievements viewport bottom ({viewport_bottom}) overlaps back button ({btn_top})")
+        self.assertGreaterEqual(btn_top - viewport_bottom, 20, "Expected at least 20px clearance between cards viewport and back button")
+
+    def test_19_worlds_and_input_mapping_back_buttons_within_panel(self):
+        """Verifies worlds and input mapping back buttons sit entirely within panel borders."""
+        menu = MenuManager(self.asset_factory, self.sound_manager)
+        # Worlds screen
+        w_pw, w_ph = 680, 595
+        w_py = 48
+        w_panel_bottom = w_py + w_ph
+        self.assertLessEqual(menu.worlds_back_btn.rect.bottom, w_panel_bottom, "worlds_back_btn extends outside panel")
+        self.assertGreaterEqual(menu.worlds_back_btn.rect.top, w_py, "worlds_back_btn extends above panel")
+
+        # Input mapping screen
+        i_pw, i_ph = 780, 595
+        i_py = 48
+        i_panel_bottom = i_py + i_ph
+        self.assertLessEqual(menu.input_back_button.rect.bottom, i_panel_bottom, "input_back_button extends outside panel")
+        self.assertLessEqual(menu.input_reset_button.rect.bottom, i_panel_bottom, "input_reset_button extends outside panel")
+
+    def test_20_hud_food_buff_tooltip_and_overlay(self):
+        """Verifies HUD stores hovered food buff and weapon tooltips never render defense."""
+        hud = HUD(self.asset_factory)
+        player = Player(100, 100, self.asset_factory, self.sound_manager)
+        player.meal_buffs.clear()
+        player.consume_item("chicken_adobo")
+
+        target_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        # Hovering first slot at x=25, y=SCREEN_HEIGHT-30
+        hud._render_food_buffs(target_surf, player, 25, SCREEN_HEIGHT - 30, draw_tooltip=False)
+        self.assertIsNotNone(hud._hovered_food_buff, "Hovered food buff not stored")
+        buff, rect = hud._hovered_food_buff
+        self.assertEqual(buff.get("item_id"), "chicken_adobo")
+
+        # Tooltip renders without error
+        hud._render_food_buff_tooltip(target_surf, buff, rect)
+
+        # Test weapon tooltip defense scrubbing in both modes
+        class DummyWeaponItem:
+            item_id = "frost_blade"
+            slot = "weapon"
+            data = {
+                "name": "Frost Blade",
+                "cat": CAT_WEAPON,
+                "damage": 25,
+                "def": 10,
+                "atk": 5,
+            }
+            base_rolls = {"def": 3, "atk": 8}
+            count = 1
+            enhancement_level = 0
+            is_broken = False
+            affix_slots = 0
+            additional_affix_slots = 0
+            affixes = []
+            tags = []
+        fake_weapon = DummyWeaponItem()
+
+        # Detailed mode
+        hud.tooltip_mode = "detailed"
+        lines_detailed = hud._render_tooltip(target_surf, 100, 100, fake_weapon, player=player)
+        for text, col, font in lines_detailed:
+            self.assertNotIn("+10 Defense", text)
+            self.assertNotIn("+3 DEF", text)
+
+        # Compact mode
+        hud.tooltip_mode = "compact"
+        lines_compact = hud._render_tooltip(target_surf, 100, 100, fake_weapon, player=player)
+        for text, col, font in lines_compact:
+            self.assertNotIn("Defense:", text)
+
+
 
 if __name__ == "__main__":
     unittest.main()
+

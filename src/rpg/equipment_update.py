@@ -450,7 +450,7 @@ ITEM_STAT_RANGES: Dict[str, Dict[str, Dict[str, Union[int, float]]]] = {
     "gold_broadsword": {"atk": {"min": 20, "max": 26}, "crit": {"min": 5.0, "max": 8.0}},
     "shadow_cleaver": {"atk": {"min": 25, "max": 32}, "crit": {"min": 6.0, "max": 10.0}},
     "magma_greatsword": {"atk": {"min": 34, "max": 44}, "crit": {"min": 8.0, "max": 13.0}},
-    "frost_blade": {"atk": {"min": 16, "max": 22}, "def": {"min": 1, "max": 3}},
+    "frost_blade": {"atk": {"min": 16, "max": 22}, "crit": {"min": 4.0, "max": 7.0}},
     "ancient_sword": {"atk": {"min": 38, "max": 48}, "crit": {"min": 10.0, "max": 15.0}},
 }
 
@@ -462,13 +462,27 @@ def roll_item_stat_ranges(item_id: str, rng_seed: Optional[int] = None) -> Optio
     """
     Rolls randomized values strictly within the predefined attribute ranges of the item definition.
     Returns a dictionary of rolled stats, or None if the item has no defined ranges.
+    Guarantees weapons strictly never roll defensive stats (def, armor, damage reduction).
     """
     ranges = get_item_stat_ranges(item_id)
     if not ranges:
         return None
     rng = random.Random(rng_seed) if rng_seed is not None else random
     rolled: Dict[str, Union[int, float]] = {}
+
+    is_weapon = False
+    eq_meta = NEW_EQUIPMENT_DATA.get(item_id)
+    if eq_meta and eq_meta.get("slot") == "weapon":
+        is_weapon = True
+    else:
+        from src.ui.inventory import ITEM_REGISTRY, CAT_WEAPON
+        inv_data = ITEM_REGISTRY.get(item_id)
+        if inv_data and (inv_data.get("cat") == CAT_WEAPON or inv_data.get("category") == "weapon"):
+            is_weapon = True
+
     for stat_name, spec in ranges.items():
+        if is_weapon and stat_name.lower() in ("def", "defense", "armor", "dmg_reduction", "dmg_reduc", "damage_reduction", "knockback_res"):
+            continue
         mn = spec.get("min", 0)
         mx = spec.get("max", mn)
         if isinstance(mn, float) or isinstance(mx, float):

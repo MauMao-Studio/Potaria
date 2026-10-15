@@ -266,11 +266,11 @@ def build_docx(with_codes=True, output_filename=None):
     if with_codes:
         # 7 columns
         col_widths = [Inches(0.45), Inches(1.30), Inches(0.95), Inches(0.85), Inches(0.70), Inches(1.65), Inches(1.20)]
-        hdr_titles = ["Icon", "Dish / Item Name", "Item ID", "Health", "Station", "Ingredients / Source", "Lore Notes"]
+        hdr_titles = ["Icon", "Dish / Item Name", "Item ID", "Health", "Station", "Ingredients / Source", "Culinary Notes"]
     else:
         # 6 columns
         col_widths = [Inches(0.45), Inches(1.45), Inches(0.95), Inches(0.75), Inches(2.10), Inches(1.40)]
-        hdr_titles = ["Icon", "Dish / Item Name", "Health", "Station", "Ingredients / Source", "Lore Notes"]
+        hdr_titles = ["Icon", "Dish / Item Name", "Health", "Station", "Ingredients / Source", "Culinary Notes"]
     
     for sec_idx, (title, items, desc_text) in enumerate(SECTIONS, start=2):
         doc.add_page_break()

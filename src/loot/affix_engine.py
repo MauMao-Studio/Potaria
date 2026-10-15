@@ -226,6 +226,17 @@ class AffixEngine:
         for stat_key, stat_val in merged_stats.items():
             result[stat_key] = stat_val
 
+        # Enforce weapons strictly have 0 defense
+        cat_str = str(result.get("category", "")).lower()
+        if cat_str in ("weapon", "cat_weapon") or map_to_canonical_category("", cat_str).lower() == "weapon":
+            result["def"] = 0
+            if "defense" in result:
+                result["defense"] = 0
+            if "stats" in result and isinstance(result["stats"], dict):
+                result["stats"]["def"] = 0
+                if "defense" in result["stats"]:
+                    result["stats"]["defense"] = 0
+
         # Layer 4: Optional Unique Effect gating
         if tier_info.get("allow_unique_effect", False):
             result["unique_effect"] = item_dict.get("unique_effect") or item_dict.get("effects") or []

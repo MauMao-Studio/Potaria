@@ -227,7 +227,7 @@ class AchievementManager:
 
         total_rows = (len(self.achievements) + 1) // 2
         total_content_h = total_rows * row_height
-        viewport_h = ph - 110  # from start_y to py + ph - 18
+        viewport_h = ph - 165  # from start_y to py + ph - 73, safely above back button at y=565
         max_scroll = max(0, total_content_h - viewport_h + 10)
         clamped_scroll = max(0, min(scroll_y, max_scroll))
         self.max_scroll = max_scroll
