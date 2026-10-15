@@ -105,7 +105,8 @@ TILE_WOOD_SHELF = 50       # Bracketed wooden shelf platform
 TILE_CARVED_TUBER_LANTERN = 51 # Hollowed glowing potato lantern (can hang from North ceiling)
 TILE_BRASS_LANTERN = 52        # Weatherproof brass oil lantern (can hang from North ceiling)
 TILE_SPECTRAL_LANTERN = 53     # Azure spectral lantern (can hang from North ceiling)
-TILE_SAPLING = 54              # Young tree sapling that grows daily in sunlight
+TILE_SAPLING = 54              # Young tree sapling that grows daily in sunlight (Legacy / Oak alias)
+TILE_SAPLING_OAK = 54          # Oak sapling (classic green foliage)
 TILE_IRON_CHEST = 55           # Fortified silver iron storage chest (distinct from golden treasure chest)
 TILE_ROPE_RUNGS = 56           # Vertical climbable knotted fiber rope rungs
 TILE_DUNGEON_MAGMA = 57        # Nether Magma Dungeon Brick (indestructible)
@@ -113,6 +114,35 @@ TILE_DUNGEON_ICE = 58          # Permafrost Crypt Dungeon Brick (indestructible)
 TILE_DUNGEON_BONE = 59         # Ancient Catacomb Bone Brick (indestructible)
 TILE_DUNGEON_GATE = 60         # Indestructible Dungeon Gate / Portcullis Arch
 TILE_LAMP = 61                 # Standing/table brass oil lamp (warm steady illumination)
+TILE_SAPLING_PALM = 62         # Tropical coastal palm sapling (arching fan fronds)
+TILE_SAPLING_PINE = 63         # Alpine evergreen conifer pine sapling (conical tiered needles)
+TILE_SAPLING_BLIGHT = 64       # Corrupted abyssal violet blight sapling (eerie spore pulse)
+
+SAPLING_TILES = (
+    TILE_SAPLING_OAK,
+    TILE_SAPLING_PALM,
+    TILE_SAPLING_PINE,
+    TILE_SAPLING_BLIGHT,
+)
+
+SAPLING_TILE_TO_ITEM = {
+    TILE_SAPLING_OAK: "oak_sapling",
+    TILE_SAPLING_PALM: "palm_sapling",
+    TILE_SAPLING_PINE: "pine_sapling",
+    TILE_SAPLING_BLIGHT: "blight_sapling",
+}
+
+SAPLING_ITEM_TO_TILE = {
+    "oak_sapling": TILE_SAPLING_OAK,
+    "sapling": TILE_SAPLING_OAK,
+    "tree_sapling": TILE_SAPLING_OAK,
+    "palm_sapling": TILE_SAPLING_PALM,
+    "palm_tree_sapling": TILE_SAPLING_PALM,
+    "pine_sapling": TILE_SAPLING_PINE,
+    "pine_tree_sapling": TILE_SAPLING_PINE,
+    "blight_sapling": TILE_SAPLING_BLIGHT,
+    "blight_tree_sapling": TILE_SAPLING_BLIGHT,
+}
 
 LANTERN_TILES = (
     TILE_CARVED_TUBER_LANTERN,
@@ -226,6 +256,9 @@ TILE_PROPS = {
     TILE_SPECTRAL_LANTERN: {"name": "Spectral Lantern", "hardness": 10, "drop": "spectral_lantern", "solid": False, "platform": False, "light_emit": 14, "light_radius": 8, "absorb": 0, "opaque": False},
     TILE_LAMP: {"name": "Brass Lamp", "hardness": 10, "drop": "brass_lamp", "solid": False, "platform": False, "light_emit": 14, "light_radius": 9, "absorb": 0, "opaque": False},
     TILE_SAPLING: {"name": "Oak Sapling", "hardness": 5, "drop": "oak_sapling", "solid": False, "platform": False, "light_emit": 0, "absorb": 0, "opaque": False},
+    TILE_SAPLING_PALM: {"name": "Palm Sapling", "hardness": 5, "drop": "palm_sapling", "solid": False, "platform": False, "light_emit": 0, "absorb": 0, "opaque": False},
+    TILE_SAPLING_PINE: {"name": "Pine Sapling", "hardness": 5, "drop": "pine_sapling", "solid": False, "platform": False, "light_emit": 0, "absorb": 0, "opaque": False},
+    TILE_SAPLING_BLIGHT: {"name": "Blight Sapling", "hardness": 5, "drop": "blight_sapling", "solid": False, "platform": False, "light_emit": 2, "light_radius": 3, "absorb": 0, "opaque": False},
     TILE_IRON_CHEST: {"name": "Iron Storage Chest", "hardness": 35, "drop": "iron_chest", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_ROPE_RUNGS: {"name": "Rope Rungs", "hardness": 10, "drop": "rope_rungs", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
 }

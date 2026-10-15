@@ -49,7 +49,9 @@ from src.constants import (
     TILE_BED, TILE_GRANDFATHER_CLOCK, TILE_FIREPLACE, TILE_PROPS,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, LANTERN_TILES,
     TILE_BEDROCK, TILE_WATER,
-    TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
+    TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT,
+    SAPLING_TILES, SAPLING_TILE_TO_ITEM,
+    TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL,
     PLAYER_WIDTH, PLAYER_HEIGHT
 )
@@ -2629,9 +2631,10 @@ class PotariaGame:
         chest_type = active.item_id if active and (active.item_id in ("chest", "iron_chest") or "sapling" in active.item_id) else "chest"
         placed = self.world.place_tile(tx, ty, tile_id_to_place, chest_type=chest_type)
         if placed:
-            self.block_deltas[(tx, ty)] = tile_id_to_place
+            actual_placed_id = self.world.get_tile(tx, ty)
+            self.block_deltas[(tx, ty)] = actual_placed_id
             if self.client and self.client.connected:
-                self.client.send_block_delta(tx, ty, tile_id_to_place)
+                self.client.send_block_delta(tx, ty, actual_placed_id)
             self.sound_manager.play("place")
             active.count -= 1
             if active.count <= 0:
@@ -2883,6 +2886,12 @@ class PotariaGame:
                 if tx is not None and ty is not None:
                     self.world.set_tile(tx, ty, tid)
                     self.block_deltas[(tx, ty)] = tid
+                    if hasattr(self.world, "planted_saplings"):
+                        if tid in SAPLING_TILES:
+                            sap_type = SAPLING_TILE_TO_ITEM.get(tid, "oak_sapling")
+                            self.world.planted_saplings[(tx, ty)] = {"growth_days": 0, "sapling_type": sap_type}
+                        else:
+                            self.world.planted_saplings.pop((tx, ty), None)
 
             # Multiplayer Boss HP Scaling
             if self.combat.boss and len(self.client.remote_players) > 0 and not self.combat.is_client:

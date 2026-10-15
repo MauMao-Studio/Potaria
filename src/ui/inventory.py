@@ -26,7 +26,8 @@ from src.constants import (
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, TILE_LAMP,
-    TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
+    TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT, SAPLING_TILES,
+    TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     WALL_WOOD, WALL_STONE_BRICK, WALL_GLASS,
     RARITY_COMMON, RARITY_UNCOMMON, RARITY_RARE, RARITY_EPIC,
     RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, RARITY_HEX_COLORS, RARITY_COLORS
@@ -882,28 +883,28 @@ ITEM_REGISTRY = {
         "special": "Decorative Foliage Block"
     },
     "oak_sapling": {
-        "name": "Oak Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING,
+        "name": "Oak Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING_OAK,
         "rarity": RARITY_COMMON,
         "desc": "A young tree sapling. Plant in soil under open sunlight to grow a magnificent oak tree.",
         "lore": "'Great forests slumber within small seeds.'",
         "special": "Grows into Tree Daily in Sunlight"
     },
     "palm_sapling": {
-        "name": "Palm Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING,
+        "name": "Palm Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING_PALM,
         "rarity": RARITY_COMMON,
         "desc": "A tropical coastal palm sapling. Plant in sandy ground under sunlight to grow into a palm tree.",
         "lore": "'Brought by oceanic trade winds.'",
         "special": "Grows into Tree Daily in Sunlight"
     },
     "pine_sapling": {
-        "name": "Pine Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING,
+        "name": "Pine Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING_PINE,
         "rarity": RARITY_COMMON,
         "desc": "Hardy evergreen needle sapling. Thrives in alpine permafrost soil under sunlight.",
         "lore": "'Resilient against sub-zero mountain gales.'",
         "special": "Grows into Tree Daily in Sunlight"
     },
     "blight_sapling": {
-        "name": "Blight Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING,
+        "name": "Blight Sapling", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_SAPLING_BLIGHT,
         "rarity": RARITY_UNCOMMON,
         "desc": "An otherworldly sapling with corrupted violet veins. Grows into a twisted nether tree in sunlight.",
         "lore": "'Infused with abyssal nether spores.'",
@@ -3661,6 +3662,34 @@ class Inventory:
 
 
 
+WOOD_TILES = {
+    TILE_WOOD, TILE_WOOD_TRUNK, TILE_WOOD_PLANKS, TILE_WOOD_PLATFORM,
+    TILE_WORK_BENCH, TILE_TABLE, TILE_CHAIR, TILE_BED, TILE_BOOKSHELF,
+    TILE_DRESSER, TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_GRANDFATHER_CLOCK,
+    TILE_WOOD_SHELF, TILE_BATHTUB, TILE_SINK, TILE_ROPE_RUNGS
+}
+
+STONE_TILES = {
+    TILE_STONE, TILE_STONE_BRICK, TILE_COPPER_ORE, TILE_IRON_ORE, TILE_GOLD_ORE,
+    TILE_DUNGEON_BRICK, TILE_DUNGEON_ALTAR, TILE_BLIGHTSTONE, TILE_EBONSTONE,
+    TILE_FIREPLACE, TILE_FURNACE, TILE_CHEST, TILE_IRON_CHEST, TILE_ROOF_TILES, TILE_ICE
+}
+
+DIRT_TILES = {
+    TILE_DIRT, TILE_GRASS, TILE_SAND, TILE_SANDSTONE, TILE_SNOW,
+    TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS, TILE_MUSHROOM_GRASS,
+    TILE_MUSHROOM_STEM, TILE_MUSHROOM_CAP, TILE_CACTUS
+}
+
+FRAGILE_TILES = {
+    TILE_LEAVES, TILE_TORCH, TILE_GLASS, TILE_CANDELABRA, TILE_CHANDELIER,
+    TILE_POTTED_PLANT, TILE_TAPESTRY, TILE_PAINTING,
+    TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT,
+    TILE_ROPE_RUNGS,
+    TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN
+}
+
+
 def get_mining_damage(active_item, tile_id):
     """
     Calculates mining damage per swing based on tool type, tier power, and block category.
@@ -3672,31 +3701,6 @@ def get_mining_damage(active_item, tile_id):
     """
     if not tile_id or tile_id == TILE_AIR:
         return 0.0
-
-    WOOD_TILES = {
-        TILE_WOOD, TILE_WOOD_TRUNK, TILE_WOOD_PLANKS, TILE_WOOD_PLATFORM,
-        TILE_WORK_BENCH, TILE_TABLE, TILE_CHAIR, TILE_BED, TILE_BOOKSHELF,
-        TILE_DRESSER, TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_GRANDFATHER_CLOCK,
-        TILE_WOOD_SHELF, TILE_BATHTUB, TILE_SINK, TILE_ROPE_RUNGS
-    }
-
-    STONE_TILES = {
-        TILE_STONE, TILE_STONE_BRICK, TILE_COPPER_ORE, TILE_IRON_ORE, TILE_GOLD_ORE,
-        TILE_DUNGEON_BRICK, TILE_DUNGEON_ALTAR, TILE_BLIGHTSTONE, TILE_EBONSTONE,
-        TILE_FIREPLACE, TILE_FURNACE, TILE_CHEST, TILE_IRON_CHEST, TILE_ROOF_TILES, TILE_ICE
-    }
-
-    DIRT_TILES = {
-        TILE_DIRT, TILE_GRASS, TILE_SAND, TILE_SANDSTONE, TILE_SNOW,
-        TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS, TILE_MUSHROOM_GRASS,
-        TILE_MUSHROOM_STEM, TILE_MUSHROOM_CAP, TILE_CACTUS
-    }
-
-    FRAGILE_TILES = {
-        TILE_LEAVES, TILE_TORCH, TILE_GLASS, TILE_CANDELABRA, TILE_CHANDELIER,
-        TILE_POTTED_PLANT, TILE_TAPESTRY, TILE_PAINTING, TILE_SAPLING, TILE_ROPE_RUNGS,
-        TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN
-    }
 
     # Fragile decorative blocks break very easily with any tool or hand
     if tile_id in FRAGILE_TILES:

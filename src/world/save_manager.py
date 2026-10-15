@@ -961,11 +961,16 @@ def load_world(world_name, game):
                 }
         if "planted_saplings" in data and hasattr(game.world, "planted_saplings"):
             game.world.planted_saplings.clear()
+            from src.constants import SAPLING_ITEM_TO_TILE, TILE_SAPLING
             for s in data["planted_saplings"]:
-                game.world.planted_saplings[(s["tx"], s["ty"])] = {
+                tx, ty = s["tx"], s["ty"]
+                sap_type = str(s.get("sapling_type", "oak_sapling"))
+                game.world.planted_saplings[(tx, ty)] = {
                     "growth_days": int(s.get("growth_days", 0)),
-                    "sapling_type": str(s.get("sapling_type", "oak_sapling"))
+                    "sapling_type": sap_type
                 }
+                if game.world.get_tile(tx, ty) == TILE_SAPLING and sap_type in SAPLING_ITEM_TO_TILE:
+                    game.world.set_tile(tx, ty, SAPLING_ITEM_TO_TILE[sap_type])
 
     # Restore Playtime
     game.playtime = float(data.get("playtime", 0.0))

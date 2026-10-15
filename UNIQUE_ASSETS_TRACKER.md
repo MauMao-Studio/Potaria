@@ -2,10 +2,10 @@
 
 ## 1. Executive Checkpoint Summary
 
-- **Checkpoint Status**: ALL_COMPLETED (2187 / 2187 assets generated and verified)
-- **Last Processed Asset**: `assets/walls/wall_9.png` (Index #2187 of 2187)
-- **Total Unique PNG Assets on Disk**: 2187
-- **Unique SHA-256 Pixel Signatures**: 2187 / 2187 (0 duplicate collisions)
+- **Checkpoint Status**: ALL_COMPLETED (2199 / 2199 assets generated and verified)
+- **Last Processed Asset**: `assets/walls/wall_9.png` (Index #2199 of 2199)
+- **Total Unique PNG Assets on Disk**: 2199
+- **Unique SHA-256 Pixel Signatures**: 2199 / 2199 (0 duplicate collisions)
 - **Gemini Text / Orchestration Model**: `gemini-3.8-flash` (`client.interactions.create`)
 - **Gemini Image Generation Model**: `gemini-3.1-flash-image` (`client.interactions.create`)
 - **Synthesis Pipeline Mode**: Procedural High-Art Pixel Engine + Gemini API Ready
@@ -29,7 +29,7 @@
 | `assets/projectiles` | 18 | COMPLETED |
 | `assets/skills` | 20 | COMPLETED |
 | `assets/story` | 24 | COMPLETED |
-| `assets/tiles` | 96 | COMPLETED |
+| `assets/tiles` | 108 | COMPLETED |
 | `assets/ui` | 15 | COMPLETED |
 | `assets/walls` | 13 | COMPLETED |
 
@@ -2177,65 +2177,77 @@
 | 2123 | `tile_autumn_leaves` | `assets/tiles/tile_autumn_leaves.png` | tiles | Standard | `6c00d2d883e1` | COMPLETED |
 | 2124 | `tile_blight_leaves` | `assets/tiles/tile_blight_leaves.png` | tiles | Standard | `677b7d898bc0` | COMPLETED |
 | 2125 | `tile_palm_leaves` | `assets/tiles/tile_palm_leaves.png` | tiles | Standard | `c583956bf2ed` | COMPLETED |
-| 2126 | `tile_sapling_frames_0` | `assets/tiles/tile_sapling_frames_0.png` | tiles | Standard | `92541ab0a1c5` | COMPLETED |
-| 2127 | `tile_sapling_frames_1` | `assets/tiles/tile_sapling_frames_1.png` | tiles | Standard | `c520a3794ab7` | COMPLETED |
-| 2128 | `tile_sapling_frames_2` | `assets/tiles/tile_sapling_frames_2.png` | tiles | Standard | `fdf75337a049` | COMPLETED |
-| 2129 | `tile_sapling_frames_3` | `assets/tiles/tile_sapling_frames_3.png` | tiles | Standard | `47d036d07508` | COMPLETED |
-| 2130 | `tile_snow_leaves` | `assets/tiles/tile_snow_leaves.png` | tiles | Standard | `cf87bf40b03d` | COMPLETED |
-| 2131 | `tile_trunk_base` | `assets/tiles/tile_trunk_base.png` | tiles | Standard | `f3191fcc32a5` | COMPLETED |
-| 2132 | `tile_trunk_branch_l` | `assets/tiles/tile_trunk_branch_l.png` | tiles | Standard | `2cfb671a2f19` | COMPLETED |
-| 2133 | `tile_trunk_branch_l_blight` | `assets/tiles/tile_trunk_branch_l_blight.png` | tiles | Standard | `5a33e73803f7` | COMPLETED |
-| 2134 | `tile_trunk_branch_l_palm` | `assets/tiles/tile_trunk_branch_l_palm.png` | tiles | Standard | `aad6ce58aa38` | COMPLETED |
-| 2135 | `tile_trunk_branch_l_snow` | `assets/tiles/tile_trunk_branch_l_snow.png` | tiles | Standard | `4e832e31c266` | COMPLETED |
-| 2136 | `tile_trunk_branch_r` | `assets/tiles/tile_trunk_branch_r.png` | tiles | Standard | `e4211371b9a0` | COMPLETED |
-| 2137 | `tile_trunk_branch_r_blight` | `assets/tiles/tile_trunk_branch_r_blight.png` | tiles | Standard | `0cc25179ea23` | COMPLETED |
-| 2138 | `tile_trunk_branch_r_palm` | `assets/tiles/tile_trunk_branch_r_palm.png` | tiles | Standard | `2630b588d599` | COMPLETED |
-| 2139 | `tile_trunk_branch_r_snow` | `assets/tiles/tile_trunk_branch_r_snow.png` | tiles | Standard | `0aa618a536c9` | COMPLETED |
-| 2140 | `tile_trunk_crown` | `assets/tiles/tile_trunk_crown.png` | tiles | Standard | `5ab09b3383e2` | COMPLETED |
-| 2141 | `tile_trunk_crown_blight` | `assets/tiles/tile_trunk_crown_blight.png` | tiles | Standard | `94c4da3eb607` | COMPLETED |
-| 2142 | `tile_trunk_crown_palm` | `assets/tiles/tile_trunk_crown_palm.png` | tiles | Standard | `d61e27302361` | COMPLETED |
-| 2143 | `tile_trunk_crown_snow` | `assets/tiles/tile_trunk_crown_snow.png` | tiles | Standard | `85973b8f2c15` | COMPLETED |
-| 2144 | `tile_water_frames_0` | `assets/tiles/tile_water_frames_0.png` | tiles | Standard | `e4fe34ffa4d9` | COMPLETED |
-| 2145 | `tile_water_frames_1` | `assets/tiles/tile_water_frames_1.png` | tiles | Standard | `be2627f4167c` | COMPLETED |
-| 2146 | `tile_water_frames_2` | `assets/tiles/tile_water_frames_2.png` | tiles | Standard | `d345742355bb` | COMPLETED |
-| 2147 | `tile_water_frames_3` | `assets/tiles/tile_water_frames_3.png` | tiles | Standard | `1de7a14f6296` | COMPLETED |
-| 2148 | `tile_water_frames_4` | `assets/tiles/tile_water_frames_4.png` | tiles | Standard | `79f82e74bb0f` | COMPLETED |
-| 2149 | `tile_water_frames_5` | `assets/tiles/tile_water_frames_5.png` | tiles | Standard | `a4a7c7d8c754` | COMPLETED |
-| 2150 | `tile_water_frames_6` | `assets/tiles/tile_water_frames_6.png` | tiles | Standard | `99f605d6c100` | COMPLETED |
-| 2151 | `tile_water_frames_7` | `assets/tiles/tile_water_frames_7.png` | tiles | Standard | `7030cce3510f` | COMPLETED |
-| 2152 | `tile_water_submerged_frames_0` | `assets/tiles/tile_water_submerged_frames_0.png` | tiles | Standard | `6f327e120b84` | COMPLETED |
-| 2153 | `tile_water_submerged_frames_1` | `assets/tiles/tile_water_submerged_frames_1.png` | tiles | Standard | `80da4a21f117` | COMPLETED |
-| 2154 | `tile_water_submerged_frames_2` | `assets/tiles/tile_water_submerged_frames_2.png` | tiles | Standard | `ecabf1cddd9f` | COMPLETED |
-| 2155 | `tile_water_submerged_frames_3` | `assets/tiles/tile_water_submerged_frames_3.png` | tiles | Standard | `eb82c4c1b47d` | COMPLETED |
-| 2156 | `tile_water_submerged_frames_4` | `assets/tiles/tile_water_submerged_frames_4.png` | tiles | Standard | `c6b4a7e256f3` | COMPLETED |
-| 2157 | `tile_water_submerged_frames_5` | `assets/tiles/tile_water_submerged_frames_5.png` | tiles | Standard | `3a26c48fac60` | COMPLETED |
-| 2158 | `tile_water_submerged_frames_6` | `assets/tiles/tile_water_submerged_frames_6.png` | tiles | Standard | `9745d9620b24` | COMPLETED |
-| 2159 | `tile_water_submerged_frames_7` | `assets/tiles/tile_water_submerged_frames_7.png` | tiles | Standard | `a727ce238edc` | COMPLETED |
-| 2160 | `achievement_banner` | `assets/ui/achievement_banner.png` | ui | Standard | `853fee3cf9f6` | COMPLETED |
-| 2161 | `achievement_toast` | `assets/ui/achievement_toast.png` | ui | Standard | `061fff059567` | COMPLETED |
-| 2162 | `bubble_empty` | `assets/ui/bubble_empty.png` | ui | Standard | `43281778850a` | COMPLETED |
-| 2163 | `bubble_full` | `assets/ui/bubble_full.png` | ui | Standard | `dd9a3f38aa41` | COMPLETED |
-| 2164 | `bubble_pop` | `assets/ui/bubble_pop.png` | ui | Standard | `5c68dae9cfd7` | COMPLETED |
-| 2165 | `cracks_0` | `assets/ui/cracks_0.png` | ui | Standard | `ac3f084e1097` | COMPLETED |
-| 2166 | `cracks_1` | `assets/ui/cracks_1.png` | ui | Standard | `7b50f5dcd026` | COMPLETED |
-| 2167 | `cracks_2` | `assets/ui/cracks_2.png` | ui | Standard | `621bc075b028` | COMPLETED |
-| 2168 | `cracks_3` | `assets/ui/cracks_3.png` | ui | Standard | `d5b61f80ef49` | COMPLETED |
-| 2169 | `heart_empty` | `assets/ui/heart_empty.png` | ui | Standard | `02c2148e4726` | COMPLETED |
-| 2170 | `heart_full` | `assets/ui/heart_full.png` | ui | Standard | `0b6267815447` | COMPLETED |
-| 2171 | `mana_star` | `assets/ui/mana_star.png` | ui | Standard | `f50ebd71de78` | COMPLETED |
-| 2172 | `reticle` | `assets/ui/reticle.png` | ui | Standard | `0990740867d1` | COMPLETED |
-| 2173 | `slot_frame` | `assets/ui/slot_frame.png` | ui | Standard | `04133a923d69` | COMPLETED |
-| 2174 | `slot_selected` | `assets/ui/slot_selected.png` | ui | Standard | `ae0b3b78cefc` | COMPLETED |
-| 2175 | `wall_1` | `assets/walls/wall_1.png` | walls | Standard | `580ea23f9f4e` | COMPLETED |
-| 2176 | `wall_10` | `assets/walls/wall_10.png` | walls | Standard | `18555b30dac2` | COMPLETED |
-| 2177 | `wall_11` | `assets/walls/wall_11.png` | walls | Standard | `d5ab0742b06a` | COMPLETED |
-| 2178 | `wall_12` | `assets/walls/wall_12.png` | walls | Standard | `3a5feaaa1bf3` | COMPLETED |
-| 2179 | `wall_13` | `assets/walls/wall_13.png` | walls | Standard | `b3a6d39da627` | COMPLETED |
-| 2180 | `wall_2` | `assets/walls/wall_2.png` | walls | Standard | `ebecf8773f09` | COMPLETED |
-| 2181 | `wall_3` | `assets/walls/wall_3.png` | walls | Standard | `8e56d61bd777` | COMPLETED |
-| 2182 | `wall_4` | `assets/walls/wall_4.png` | walls | Standard | `f703f806c7d9` | COMPLETED |
-| 2183 | `wall_5` | `assets/walls/wall_5.png` | walls | Standard | `06a341a61123` | COMPLETED |
-| 2184 | `wall_6` | `assets/walls/wall_6.png` | walls | Standard | `6dbd8a0e18a2` | COMPLETED |
-| 2185 | `wall_7` | `assets/walls/wall_7.png` | walls | Standard | `7d6fa269a925` | COMPLETED |
-| 2186 | `wall_8` | `assets/walls/wall_8.png` | walls | Standard | `a7761e4e9512` | COMPLETED |
-| 2187 | `wall_9` | `assets/walls/wall_9.png` | walls | Standard | `ecb23740972a` | COMPLETED |
+| 2126 | `tile_sapling_blight_frames_0` | `assets/tiles/tile_sapling_blight_frames_0.png` | tiles | Standard | `e2544a47c671` | COMPLETED |
+| 2127 | `tile_sapling_blight_frames_1` | `assets/tiles/tile_sapling_blight_frames_1.png` | tiles | Standard | `5a6bc0a85e91` | COMPLETED |
+| 2128 | `tile_sapling_blight_frames_2` | `assets/tiles/tile_sapling_blight_frames_2.png` | tiles | Standard | `877dacefa320` | COMPLETED |
+| 2129 | `tile_sapling_blight_frames_3` | `assets/tiles/tile_sapling_blight_frames_3.png` | tiles | Standard | `8b8506dee7ca` | COMPLETED |
+| 2130 | `tile_sapling_frames_0` | `assets/tiles/tile_sapling_frames_0.png` | tiles | Standard | `92541ab0a1c5` | COMPLETED |
+| 2131 | `tile_sapling_frames_1` | `assets/tiles/tile_sapling_frames_1.png` | tiles | Standard | `c520a3794ab7` | COMPLETED |
+| 2132 | `tile_sapling_frames_2` | `assets/tiles/tile_sapling_frames_2.png` | tiles | Standard | `fdf75337a049` | COMPLETED |
+| 2133 | `tile_sapling_frames_3` | `assets/tiles/tile_sapling_frames_3.png` | tiles | Standard | `47d036d07508` | COMPLETED |
+| 2134 | `tile_sapling_palm_frames_0` | `assets/tiles/tile_sapling_palm_frames_0.png` | tiles | Standard | `cccbac00f6ae` | COMPLETED |
+| 2135 | `tile_sapling_palm_frames_1` | `assets/tiles/tile_sapling_palm_frames_1.png` | tiles | Standard | `0e3e67bd7163` | COMPLETED |
+| 2136 | `tile_sapling_palm_frames_2` | `assets/tiles/tile_sapling_palm_frames_2.png` | tiles | Standard | `c1d288e8dcfb` | COMPLETED |
+| 2137 | `tile_sapling_palm_frames_3` | `assets/tiles/tile_sapling_palm_frames_3.png` | tiles | Standard | `e5343b9e3153` | COMPLETED |
+| 2138 | `tile_sapling_pine_frames_0` | `assets/tiles/tile_sapling_pine_frames_0.png` | tiles | Standard | `2517119d2ba8` | COMPLETED |
+| 2139 | `tile_sapling_pine_frames_1` | `assets/tiles/tile_sapling_pine_frames_1.png` | tiles | Standard | `883f107a044c` | COMPLETED |
+| 2140 | `tile_sapling_pine_frames_2` | `assets/tiles/tile_sapling_pine_frames_2.png` | tiles | Standard | `963637da927a` | COMPLETED |
+| 2141 | `tile_sapling_pine_frames_3` | `assets/tiles/tile_sapling_pine_frames_3.png` | tiles | Standard | `b01df48e33cc` | COMPLETED |
+| 2142 | `tile_snow_leaves` | `assets/tiles/tile_snow_leaves.png` | tiles | Standard | `cf87bf40b03d` | COMPLETED |
+| 2143 | `tile_trunk_base` | `assets/tiles/tile_trunk_base.png` | tiles | Standard | `f3191fcc32a5` | COMPLETED |
+| 2144 | `tile_trunk_branch_l` | `assets/tiles/tile_trunk_branch_l.png` | tiles | Standard | `2cfb671a2f19` | COMPLETED |
+| 2145 | `tile_trunk_branch_l_blight` | `assets/tiles/tile_trunk_branch_l_blight.png` | tiles | Standard | `5a33e73803f7` | COMPLETED |
+| 2146 | `tile_trunk_branch_l_palm` | `assets/tiles/tile_trunk_branch_l_palm.png` | tiles | Standard | `aad6ce58aa38` | COMPLETED |
+| 2147 | `tile_trunk_branch_l_snow` | `assets/tiles/tile_trunk_branch_l_snow.png` | tiles | Standard | `4e832e31c266` | COMPLETED |
+| 2148 | `tile_trunk_branch_r` | `assets/tiles/tile_trunk_branch_r.png` | tiles | Standard | `e4211371b9a0` | COMPLETED |
+| 2149 | `tile_trunk_branch_r_blight` | `assets/tiles/tile_trunk_branch_r_blight.png` | tiles | Standard | `0cc25179ea23` | COMPLETED |
+| 2150 | `tile_trunk_branch_r_palm` | `assets/tiles/tile_trunk_branch_r_palm.png` | tiles | Standard | `2630b588d599` | COMPLETED |
+| 2151 | `tile_trunk_branch_r_snow` | `assets/tiles/tile_trunk_branch_r_snow.png` | tiles | Standard | `0aa618a536c9` | COMPLETED |
+| 2152 | `tile_trunk_crown` | `assets/tiles/tile_trunk_crown.png` | tiles | Standard | `5ab09b3383e2` | COMPLETED |
+| 2153 | `tile_trunk_crown_blight` | `assets/tiles/tile_trunk_crown_blight.png` | tiles | Standard | `94c4da3eb607` | COMPLETED |
+| 2154 | `tile_trunk_crown_palm` | `assets/tiles/tile_trunk_crown_palm.png` | tiles | Standard | `d61e27302361` | COMPLETED |
+| 2155 | `tile_trunk_crown_snow` | `assets/tiles/tile_trunk_crown_snow.png` | tiles | Standard | `85973b8f2c15` | COMPLETED |
+| 2156 | `tile_water_frames_0` | `assets/tiles/tile_water_frames_0.png` | tiles | Standard | `e4fe34ffa4d9` | COMPLETED |
+| 2157 | `tile_water_frames_1` | `assets/tiles/tile_water_frames_1.png` | tiles | Standard | `be2627f4167c` | COMPLETED |
+| 2158 | `tile_water_frames_2` | `assets/tiles/tile_water_frames_2.png` | tiles | Standard | `d345742355bb` | COMPLETED |
+| 2159 | `tile_water_frames_3` | `assets/tiles/tile_water_frames_3.png` | tiles | Standard | `1de7a14f6296` | COMPLETED |
+| 2160 | `tile_water_frames_4` | `assets/tiles/tile_water_frames_4.png` | tiles | Standard | `79f82e74bb0f` | COMPLETED |
+| 2161 | `tile_water_frames_5` | `assets/tiles/tile_water_frames_5.png` | tiles | Standard | `a4a7c7d8c754` | COMPLETED |
+| 2162 | `tile_water_frames_6` | `assets/tiles/tile_water_frames_6.png` | tiles | Standard | `99f605d6c100` | COMPLETED |
+| 2163 | `tile_water_frames_7` | `assets/tiles/tile_water_frames_7.png` | tiles | Standard | `7030cce3510f` | COMPLETED |
+| 2164 | `tile_water_submerged_frames_0` | `assets/tiles/tile_water_submerged_frames_0.png` | tiles | Standard | `6f327e120b84` | COMPLETED |
+| 2165 | `tile_water_submerged_frames_1` | `assets/tiles/tile_water_submerged_frames_1.png` | tiles | Standard | `80da4a21f117` | COMPLETED |
+| 2166 | `tile_water_submerged_frames_2` | `assets/tiles/tile_water_submerged_frames_2.png` | tiles | Standard | `ecabf1cddd9f` | COMPLETED |
+| 2167 | `tile_water_submerged_frames_3` | `assets/tiles/tile_water_submerged_frames_3.png` | tiles | Standard | `eb82c4c1b47d` | COMPLETED |
+| 2168 | `tile_water_submerged_frames_4` | `assets/tiles/tile_water_submerged_frames_4.png` | tiles | Standard | `c6b4a7e256f3` | COMPLETED |
+| 2169 | `tile_water_submerged_frames_5` | `assets/tiles/tile_water_submerged_frames_5.png` | tiles | Standard | `3a26c48fac60` | COMPLETED |
+| 2170 | `tile_water_submerged_frames_6` | `assets/tiles/tile_water_submerged_frames_6.png` | tiles | Standard | `9745d9620b24` | COMPLETED |
+| 2171 | `tile_water_submerged_frames_7` | `assets/tiles/tile_water_submerged_frames_7.png` | tiles | Standard | `a727ce238edc` | COMPLETED |
+| 2172 | `achievement_banner` | `assets/ui/achievement_banner.png` | ui | Standard | `853fee3cf9f6` | COMPLETED |
+| 2173 | `achievement_toast` | `assets/ui/achievement_toast.png` | ui | Standard | `061fff059567` | COMPLETED |
+| 2174 | `bubble_empty` | `assets/ui/bubble_empty.png` | ui | Standard | `43281778850a` | COMPLETED |
+| 2175 | `bubble_full` | `assets/ui/bubble_full.png` | ui | Standard | `dd9a3f38aa41` | COMPLETED |
+| 2176 | `bubble_pop` | `assets/ui/bubble_pop.png` | ui | Standard | `5c68dae9cfd7` | COMPLETED |
+| 2177 | `cracks_0` | `assets/ui/cracks_0.png` | ui | Standard | `ac3f084e1097` | COMPLETED |
+| 2178 | `cracks_1` | `assets/ui/cracks_1.png` | ui | Standard | `7b50f5dcd026` | COMPLETED |
+| 2179 | `cracks_2` | `assets/ui/cracks_2.png` | ui | Standard | `621bc075b028` | COMPLETED |
+| 2180 | `cracks_3` | `assets/ui/cracks_3.png` | ui | Standard | `d5b61f80ef49` | COMPLETED |
+| 2181 | `heart_empty` | `assets/ui/heart_empty.png` | ui | Standard | `02c2148e4726` | COMPLETED |
+| 2182 | `heart_full` | `assets/ui/heart_full.png` | ui | Standard | `0b6267815447` | COMPLETED |
+| 2183 | `mana_star` | `assets/ui/mana_star.png` | ui | Standard | `f50ebd71de78` | COMPLETED |
+| 2184 | `reticle` | `assets/ui/reticle.png` | ui | Standard | `0990740867d1` | COMPLETED |
+| 2185 | `slot_frame` | `assets/ui/slot_frame.png` | ui | Standard | `04133a923d69` | COMPLETED |
+| 2186 | `slot_selected` | `assets/ui/slot_selected.png` | ui | Standard | `ae0b3b78cefc` | COMPLETED |
+| 2187 | `wall_1` | `assets/walls/wall_1.png` | walls | Standard | `580ea23f9f4e` | COMPLETED |
+| 2188 | `wall_10` | `assets/walls/wall_10.png` | walls | Standard | `18555b30dac2` | COMPLETED |
+| 2189 | `wall_11` | `assets/walls/wall_11.png` | walls | Standard | `d5ab0742b06a` | COMPLETED |
+| 2190 | `wall_12` | `assets/walls/wall_12.png` | walls | Standard | `3a5feaaa1bf3` | COMPLETED |
+| 2191 | `wall_13` | `assets/walls/wall_13.png` | walls | Standard | `b3a6d39da627` | COMPLETED |
+| 2192 | `wall_2` | `assets/walls/wall_2.png` | walls | Standard | `ebecf8773f09` | COMPLETED |
+| 2193 | `wall_3` | `assets/walls/wall_3.png` | walls | Standard | `8e56d61bd777` | COMPLETED |
+| 2194 | `wall_4` | `assets/walls/wall_4.png` | walls | Standard | `f703f806c7d9` | COMPLETED |
+| 2195 | `wall_5` | `assets/walls/wall_5.png` | walls | Standard | `06a341a61123` | COMPLETED |
+| 2196 | `wall_6` | `assets/walls/wall_6.png` | walls | Standard | `6dbd8a0e18a2` | COMPLETED |
+| 2197 | `wall_7` | `assets/walls/wall_7.png` | walls | Standard | `7d6fa269a925` | COMPLETED |
+| 2198 | `wall_8` | `assets/walls/wall_8.png` | walls | Standard | `a7761e4e9512` | COMPLETED |
+| 2199 | `wall_9` | `assets/walls/wall_9.png` | walls | Standard | `ecb23740972a` | COMPLETED |

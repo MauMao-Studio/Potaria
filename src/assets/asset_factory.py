@@ -29,7 +29,8 @@ from src.constants import (
     TILE_CANDELABRA, TILE_CHANDELIER, TILE_POTTED_PLANT, TILE_DRESSER,
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
-    TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
+    TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT, SAPLING_TILES,
+    TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE, TILE_DUNGEON_GATE,
     WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_BLIGHTSTONE, WALL_MUSHROOM, WALL_GLASS,
@@ -5020,7 +5021,7 @@ class AssetFactory:
         self.tiles[TILE_SPECTRAL_LANTERN] = spectral_lantern
 
         # Oak Sapling (16x16 - Living plant with animated wind sway and sunlight glints)
-        self.sapling_frames = []
+        self.sapling_oak_frames = []
         for s_idx in range(4):
             sap = pygame.Surface((16, 16), pygame.SRCALPHA)
             sway_dx = 1 if s_idx == 1 else (-1 if s_idx == 3 else 0)
@@ -5037,9 +5038,123 @@ class AssetFactory:
             glint = (255, 255, 220) if s_idx == 2 else (160, 245, 130)
             sap.set_at((8 + sway_dx, 3), glint)
             sap.set_at((6 + sway_dx, 5), (140, 235, 110))
-            self.sapling_frames.append(sap)
-        self.tiles[TILE_SAPLING] = self.sapling_frames[0]
-        self.tiles["sapling_frames"] = self.sapling_frames
+            self.sapling_oak_frames.append(sap)
+        self.sapling_frames = self.sapling_oak_frames
+
+        # Palm Sapling (16x16 - Curved tropical fibrous trunk with arching fan fronds and breeze sway)
+        self.sapling_palm_frames = []
+        for s_idx in range(4):
+            sap = pygame.Surface((16, 16), pygame.SRCALPHA)
+            sway_dx = 1 if s_idx == 1 else (-1 if s_idx == 3 else 0)
+            # Curved trunk
+            pygame.draw.line(sap, (165, 130, 85), (7, 15), (8, 12), 2)
+            pygame.draw.line(sap, (140, 105, 65), (8, 12), (10, 8), 2)
+            sap.set_at((7, 14), (195, 155, 100))
+            sap.set_at((8, 11), (195, 155, 100))
+            sap.set_at((9, 8), (120, 85, 50))
+            # Tropical spreading fan fronds
+            frond_endpoints = [
+                (4 + sway_dx, 11),
+                (6 + sway_dx, 4),
+                (10 + sway_dx, 3),
+                (14 + sway_dx, 5),
+                (15 + sway_dx, 11),
+            ]
+            for ex, ey in frond_endpoints:
+                pygame.draw.line(sap, (28, 125, 45), (10, 8), (ex, ey), 2)
+                pygame.draw.line(sap, (48, 180, 68), (10, 7), (ex, ey), 1)
+                pygame.draw.circle(sap, (88, 220, 92), (ex, ey), 1)
+            # Crown heart & glints
+            pygame.draw.circle(sap, (52, 190, 72), (10, 7), 2)
+            if s_idx == 2:
+                sap.set_at((10, 7), (255, 250, 175))
+                sap.set_at((8, 5), (255, 255, 210))
+            else:
+                sap.set_at((10, 7), (145, 240, 125))
+            self.sapling_palm_frames.append(sap)
+
+        # Pine Sapling (16x16 - Alpine dark conifer stem with 3-tiered needle boughs and mountain sway)
+        self.sapling_pine_frames = []
+        for s_idx in range(4):
+            sap = pygame.Surface((16, 16), pygame.SRCALPHA)
+            sway_dx = 1 if s_idx == 1 else (-1 if s_idx == 3 else 0)
+            # Sturdy dark conifer wood stem
+            pygame.draw.line(sap, (85, 55, 35), (8, 10), (8, 15), 2)
+            sap.set_at((8, 14), (110, 75, 45))
+            # Tier 3 (lower wide bough)
+            pygame.draw.polygon(sap, (24, 82, 38), [(8, 9), (3, 13), (13, 13)])
+            pygame.draw.polygon(sap, (34, 112, 50), [(8, 9), (4, 12), (12, 12)])
+            # Tier 2 (middle bough)
+            pygame.draw.polygon(sap, (34, 115, 52), [(8 + sway_dx // 2, 6), (5 + sway_dx // 2, 10), (11 + sway_dx // 2, 10)])
+            pygame.draw.polygon(sap, (46, 145, 68), [(8 + sway_dx // 2, 6), (6 + sway_dx // 2, 9), (10 + sway_dx // 2, 9)])
+            # Tier 1 (top conical peak)
+            pygame.draw.polygon(sap, (48, 148, 70), [(8 + sway_dx, 2), (6 + sway_dx, 7), (10 + sway_dx, 7)])
+            pygame.draw.polygon(sap, (68, 185, 88), [(8 + sway_dx, 2), (7 + sway_dx, 6), (9 + sway_dx, 6)])
+            # Frost needles & winter glints
+            if s_idx == 2:
+                sap.set_at((8 + sway_dx, 2), (245, 255, 255))
+                sap.set_at((3, 13), (210, 245, 250))
+                sap.set_at((13, 13), (210, 245, 250))
+                sap.set_at((5, 10), (225, 250, 255))
+                sap.set_at((11, 10), (225, 250, 255))
+            else:
+                sap.set_at((8 + sway_dx, 3), (150, 225, 160))
+            self.sapling_pine_frames.append(sap)
+
+        # Blight Sapling (16x16 - Twisted thorned corrupted stem with abyssal violet bulb & eerie living spore pulse)
+        self.sapling_blight_frames = []
+        for s_idx in range(4):
+            sap = pygame.Surface((16, 16), pygame.SRCALPHA)
+            sway_dx = 1 if s_idx == 1 else (-1 if s_idx == 3 else 0)
+            pulse = 1 if s_idx == 1 else 0
+            # Cursed twisted corrupted stem
+            pygame.draw.line(sap, (45, 22, 58), (8, 15), (7, 12), 2)
+            pygame.draw.line(sap, (45, 22, 58), (7, 12), (9, 8), 2)
+            pygame.draw.line(sap, (58, 28, 75), (9, 8), (8 + sway_dx, 6), 2)
+            # Thorny barbs
+            sap.set_at((5, 13), (78, 38, 98))
+            sap.set_at((11, 9), (78, 38, 98))
+            # Corrupted abyssal violet lobes
+            bulb_center_x = 8 + sway_dx
+            for cx, cy, rad, col in [
+                (bulb_center_x, 6, 4 + pulse, (55, 18, 75)),
+                (bulb_center_x - 3, 7, 3, (120, 42, 168)),
+                (bulb_center_x + 3, 7, 3, (120, 42, 168)),
+                (bulb_center_x, 4 - pulse, 3 + pulse, (185, 70, 235)),
+            ]:
+                pygame.draw.circle(sap, col, (cx, cy), rad)
+            # Inner luminescent nucleus & spore particle emission
+            core_col = (255, 235, 255) if s_idx == 2 else (240, 135, 255)
+            pygame.draw.circle(sap, core_col, (bulb_center_x, 5), 1 + pulse)
+            sap.set_at((bulb_center_x, 5), (255, 255, 255))
+            if s_idx == 0:
+                sap.set_at((bulb_center_x + 3, 4), (195, 80, 245))
+            elif s_idx == 1:
+                sap.set_at((bulb_center_x + 4, 2), (225, 115, 255))
+                sap.set_at((bulb_center_x - 3, 3), (175, 65, 230))
+            elif s_idx == 2:
+                sap.set_at((bulb_center_x + 5, 1), (255, 195, 255))
+                sap.set_at((bulb_center_x - 4, 2), (215, 105, 255))
+            elif s_idx == 3:
+                sap.set_at((bulb_center_x + 5, 0), (170, 60, 220))
+            self.sapling_blight_frames.append(sap)
+
+        self.sapling_type_frames = {
+            TILE_SAPLING_OAK: self.sapling_oak_frames,
+            TILE_SAPLING_PALM: self.sapling_palm_frames,
+            TILE_SAPLING_PINE: self.sapling_pine_frames,
+            TILE_SAPLING_BLIGHT: self.sapling_blight_frames,
+        }
+
+        self.tiles[TILE_SAPLING] = self.sapling_oak_frames[0]
+        self.tiles[TILE_SAPLING_OAK] = self.sapling_oak_frames[0]
+        self.tiles[TILE_SAPLING_PALM] = self.sapling_palm_frames[0]
+        self.tiles[TILE_SAPLING_PINE] = self.sapling_pine_frames[0]
+        self.tiles[TILE_SAPLING_BLIGHT] = self.sapling_blight_frames[0]
+        self.tiles["sapling_frames"] = self.sapling_oak_frames
+        self.tiles["sapling_palm_frames"] = self.sapling_palm_frames
+        self.tiles["sapling_pine_frames"] = self.sapling_pine_frames
+        self.tiles["sapling_blight_frames"] = self.sapling_blight_frames
 
         # Fortified Iron Storage Chest (16x16 - Silver steel plating, iron rivets & padlock)
         iron_chest = pygame.Surface((16, 16), pygame.SRCALPHA)
@@ -8507,7 +8622,13 @@ class AssetFactory:
             os.path.exists(os.path.join(mobs_dir, f"{f_id}.png"))
             for f_id in ["bangus", "tilapia", "galunggong", "maya_maya", "tanigue", "tambakol", "lapu_lapu", "hito", "dilis", "dalagang_bukid"]
         )
-        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects and has_fish_mobs:
+        tiles_dir = os.path.join(target_dir, "tiles")
+        has_all_saplings = os.path.exists(tiles_dir) and all(
+            os.path.exists(os.path.join(tiles_dir, f"tile_sapling_{sname}frames_{i}.png"))
+            for sname in ["", "palm_", "pine_", "blight_"]
+            for i in range(4)
+        )
+        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects and has_fish_mobs and has_all_saplings:
             return
 
         os.makedirs(target_dir, exist_ok=True)
@@ -8515,7 +8636,7 @@ class AssetFactory:
             os.makedirs(os.path.join(target_dir, subdir), exist_ok=True)
 
         for tid, surf in self.tiles.items():
-            if tid == 54:
+            if tid in (54, 62, 63, 64) or (isinstance(tid, int) and tid in SAPLING_TILES):
                 old_file = os.path.join(target_dir, "tiles", f"tile_{tid}.png")
                 if os.path.exists(old_file):
                     try: os.remove(old_file)

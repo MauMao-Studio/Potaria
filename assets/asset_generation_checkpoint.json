@@ -1,8 +1,8 @@
 {
-  "total_assets_tracked": 2187,
-  "unique_sha256_digests": 2187,
+  "total_assets_tracked": 2199,
+  "unique_sha256_digests": 2199,
   "duplicate_file_groups": 0,
-  "last_completed_index": 2187,
+  "last_completed_index": 2199,
   "last_completed_asset": "assets/walls/wall_9.png",
   "text_model": "gemini-3.8-flash",
   "image_model": "gemini-3.1-flash-image",

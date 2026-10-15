@@ -20,7 +20,9 @@ from src.constants import (
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, LANTERN_TILES,
     TILE_SAND, TILE_SNOW, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS, TILE_BLIGHTSTONE, TILE_EBONSTONE,
-    TILE_SAPLING, TILE_IRON_CHEST, TILE_ROPE_RUNGS,
+    TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT,
+    SAPLING_TILES, SAPLING_TILE_TO_ITEM, SAPLING_ITEM_TO_TILE,
+    TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE, TILE_DUNGEON_GATE,
     WALL_AIR, WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_MUSHROOM,
@@ -173,11 +175,26 @@ class World:
         self.planted_saplings = {}        # (tx, ty) -> {"growth_days": int, "sapling_type": str}
         self.wild_sapling_timer = 0.0
         self.last_bonus_drop = None
-        raw_sapling_frames = getattr(asset_factory, "sapling_frames", [asset_factory.tiles.get(TILE_SAPLING)])
-        self.scaled_sapling_frames = [
-            pygame.transform.scale(f, (self.scaled_tile, self.scaled_tile))
-            for f in raw_sapling_frames if f
-        ]
+        self.scaled_sapling_frames_by_tile = {}
+        for s_tid, attr_name in [
+            (TILE_SAPLING_OAK, "sapling_oak_frames"),
+            (TILE_SAPLING_PALM, "sapling_palm_frames"),
+            (TILE_SAPLING_PINE, "sapling_pine_frames"),
+            (TILE_SAPLING_BLIGHT, "sapling_blight_frames"),
+        ]:
+            frames = getattr(asset_factory, attr_name, None)
+            if not frames and hasattr(asset_factory, "sapling_type_frames"):
+                frames = asset_factory.sapling_type_frames.get(s_tid)
+            if not frames and s_tid == TILE_SAPLING_OAK:
+                frames = getattr(asset_factory, "sapling_frames", [asset_factory.tiles.get(TILE_SAPLING)])
+            if not frames:
+                t_surf = asset_factory.tiles.get(s_tid)
+                frames = [t_surf] if t_surf else []
+            self.scaled_sapling_frames_by_tile[s_tid] = [
+                pygame.transform.scale(f, (self.scaled_tile, self.scaled_tile))
+                for f in frames if f
+            ]
+        self.scaled_sapling_frames = self.scaled_sapling_frames_by_tile.get(TILE_SAPLING_OAK, [])
         self.plant_anim_timer = 0.0
         self.plant_frame_idx = 0
         self.growth_animations = []
@@ -210,8 +227,8 @@ class World:
         self.plant_anim_timer += dt
         if self.plant_anim_timer >= 0.25:
             self.plant_anim_timer = 0.0
-            if self.scaled_sapling_frames:
-                self.plant_frame_idx = (self.plant_frame_idx + 1) % len(self.scaled_sapling_frames)
+            max_frames = max([len(f) for f in self.scaled_sapling_frames_by_tile.values() if f] or [len(self.scaled_sapling_frames) or 4])
+            self.plant_frame_idx = (self.plant_frame_idx + 1) % max(1, max_frames)
 
         if self.growth_animations:
             for anim in self.growth_animations:
@@ -238,21 +255,29 @@ class World:
                     surf_y = self.get_surface_height(tx)
                     if self.get_tile(tx, surf_y) == TILE_GRASS and self.get_tile(tx, surf_y - 1) == TILE_AIR:
                         has_tree = any(
-                            self.get_tile(tx + dx, surf_y - 1) in (TILE_WOOD_TRUNK, TILE_WOOD, TILE_SAPLING) or
-                            self.get_tile(tx + dx, surf_y) in (TILE_WOOD_TRUNK, TILE_WOOD, TILE_SAPLING)
+                            self.get_tile(tx + dx, surf_y - 1) in (TILE_WOOD_TRUNK, TILE_WOOD) or
+                            self.get_tile(tx + dx, surf_y - 1) in SAPLING_TILES or
+                            self.get_tile(tx + dx, surf_y - 1) == TILE_SAPLING or
+                            self.get_tile(tx + dx, surf_y) in (TILE_WOOD_TRUNK, TILE_WOOD) or
+                            self.get_tile(tx + dx, surf_y) in SAPLING_TILES or
+                            self.get_tile(tx + dx, surf_y) == TILE_SAPLING
                             for dx in range(-4, 5)
                         )
                         if not has_tree:
                             biome = self.get_biome_at(tx, surf_y) if hasattr(self, "get_biome_at") else "forest"
                             if biome == "snow":
                                 w_sap = "pine_sapling"
+                                w_tid = TILE_SAPLING_PINE
                             elif biome == "desert":
                                 w_sap = "palm_sapling"
+                                w_tid = TILE_SAPLING_PALM
                             elif biome in ("the_blight", "corruption"):
                                 w_sap = "blight_sapling"
+                                w_tid = TILE_SAPLING_BLIGHT
                             else:
                                 w_sap = "oak_sapling"
-                            self.set_tile(tx, surf_y - 1, TILE_SAPLING)
+                                w_tid = TILE_SAPLING_OAK
+                            self.set_tile(tx, surf_y - 1, w_tid)
                             self.planted_saplings[(tx, surf_y - 1)] = {"growth_days": 0, "sapling_type": w_sap}
 
     def get_tile(self, tx, ty):
@@ -457,7 +482,8 @@ class World:
         self.decay_trees_daily(game=getattr(self, "game", None))
         sapling_coords = list(self.planted_saplings.keys())
         for tx, ty in sapling_coords:
-            if self.get_tile(tx, ty) != TILE_SAPLING:
+            cur_t = self.get_tile(tx, ty)
+            if cur_t not in SAPLING_TILES and cur_t != TILE_SAPLING:
                 self.planted_saplings.pop((tx, ty), None)
                 continue
 
@@ -482,7 +508,7 @@ class World:
                 self.set_tile(tx, ty, TILE_AIR)
                 self.player_placed_tiles.discard((tx, ty))
 
-                sap_type = str(sap_data.get("sapling_type", "oak_sapling"))
+                sap_type = str(sap_data.get("sapling_type", SAPLING_TILE_TO_ITEM.get(cur_t, "oak_sapling")))
 
                 if "palm" in sap_type:
                     # Tropical Palm Tree
@@ -522,8 +548,26 @@ class World:
                             if abs(cx - tx) <= rad and self.get_tile(cx, leaf_y) == TILE_AIR:
                                 self.set_tile(cx, leaf_y, TILE_LEAVES)
 
+                elif "blight" in sap_type:
+                    # Corrupted Nether Blight Tree: twisted gnarly trunk with blighted foliage canopy
+                    trunk_h = random.randint(6, 8)
+                    crown_cy = ty - trunk_h
+                    bend = -1 if (tx % 2 == 0) else 1
+                    for y in range(crown_cy, ty + 1):
+                        x_off = bend if y < ty - 2 and (y - crown_cy) % 2 == 0 else 0
+                        self.set_tile(tx + x_off, y, TILE_WOOD_TRUNK)
+                    # Corrupted thorny crown
+                    for dx in (-3, -2, -1, 0, 1, 2, 3):
+                        for dy in (-3, -2, -1, 0, 1, 2):
+                            if dx == 0 and dy >= 0:
+                                continue
+                            dist_sq = (dx / 2.6) ** 2 + (dy / 2.2) ** 2
+                            if dist_sq <= 1.15 and not (abs(dx) == 3 and dy == 2):
+                                if self.get_tile(tx + dx, crown_cy + dy) == TILE_AIR:
+                                    self.set_tile(tx + dx, crown_cy + dy, TILE_LEAVES)
+
                 else:
-                    # Forest Oak / Blight Tree
+                    # Forest Oak Tree
                     trunk_h = random.randint(5, 7)
                     crown_cy = ty - trunk_h
                     for y in range(crown_cy, ty + 1):
@@ -603,9 +647,9 @@ class World:
                 else:
                     sap_drop = "oak_sapling"
                 self.last_bonus_drop = sap_drop if random.random() < 0.25 else None
-            elif t_id == TILE_SAPLING:
+            elif t_id in SAPLING_TILES or t_id == TILE_SAPLING:
                 sap_data = self.planted_saplings.pop((tx, ty), None)
-                drop = sap_data.get("sapling_type", "oak_sapling") if sap_data else "oak_sapling"
+                drop = sap_data.get("sapling_type", SAPLING_TILE_TO_ITEM.get(t_id, "oak_sapling")) if sap_data else SAPLING_TILE_TO_ITEM.get(t_id, "oak_sapling")
             elif t_id in (TILE_CHEST, TILE_IRON_CHEST) and (tx, ty) in self.chests:
                 broken_chest = self.chests.pop((tx, ty), None)
                 self.last_broken_chest = broken_chest
@@ -870,15 +914,23 @@ class World:
             if not (north_solid or base_solid or has_wall):
                 return False
 
+        # Resolve sapling tile if legacy TILE_SAPLING was specified with a specific sapling chest_type
+        actual_tile_id = tile_id
+        if tile_id == TILE_SAPLING and "sapling" in str(chest_type):
+            actual_tile_id = SAPLING_ITEM_TO_TILE.get(chest_type, TILE_SAPLING_OAK)
+        elif actual_tile_id not in SAPLING_TILES and "sapling" in str(chest_type):
+            actual_tile_id = SAPLING_ITEM_TO_TILE.get(chest_type, actual_tile_id)
+
         # Physical placement rules for saplings:
-        if tile_id == TILE_SAPLING:
+        is_sap = (actual_tile_id in SAPLING_TILES or actual_tile_id == TILE_SAPLING)
+        if is_sap:
             if cur == TILE_WATER or self.is_water(tx, ty):
                 return False
             if not self.is_tile_solid(tx, ty + 1):
                 return False
 
         # Adjacency check
-        has_neighbor = (self.get_wall(tx, ty) != WALL_AIR) or (tile_id == TILE_SAPLING and self.is_tile_solid(tx, ty + 1))
+        has_neighbor = (self.get_wall(tx, ty) != WALL_AIR) or (is_sap and self.is_tile_solid(tx, ty + 1))
         for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
             if self.get_tile(tx + dx, ty + dy) not in (TILE_AIR, TILE_WATER):
                 has_neighbor = True
@@ -887,14 +939,14 @@ class World:
         if not has_neighbor:
             return False
 
-        placed = self.set_tile(tx, ty, tile_id)
+        placed = self.set_tile(tx, ty, actual_tile_id)
         if placed:
             self.player_placed_tiles.add((tx, ty))
-            if tile_id in (TILE_CHEST, TILE_IRON_CHEST):
+            if actual_tile_id in (TILE_CHEST, TILE_IRON_CHEST):
                 from src.world.storage_chest import StorageChest
-                self.chests[(tx, ty)] = StorageChest(tx, ty, chest_type="iron_chest" if tile_id == TILE_IRON_CHEST else chest_type, is_player_placed=True)
-            elif tile_id == TILE_SAPLING:
-                sap_type = chest_type if "sapling" in str(chest_type) else "oak_sapling"
+                self.chests[(tx, ty)] = StorageChest(tx, ty, chest_type="iron_chest" if actual_tile_id == TILE_IRON_CHEST else chest_type, is_player_placed=True)
+            elif is_sap:
+                sap_type = str(chest_type) if "sapling" in str(chest_type) else SAPLING_TILE_TO_ITEM.get(actual_tile_id, "oak_sapling")
                 self.planted_saplings[(tx, ty)] = {"growth_days": 0, "sapling_type": sap_type}
         return placed
 
@@ -1381,9 +1433,16 @@ class World:
                     w_tex = self.scaled_tiles.get(t_id)
                 if w_tex:
                     target_surf.blit(w_tex, (spx, spy))
-            elif t_id == TILE_SAPLING:
-                if self.scaled_sapling_frames:
-                    target_surf.blit(self.scaled_sapling_frames[self.plant_frame_idx % len(self.scaled_sapling_frames)], (spx, spy))
+            elif t_id in SAPLING_TILES or t_id == TILE_SAPLING:
+                frames = self.scaled_sapling_frames_by_tile.get(t_id)
+                if not frames:
+                    gx = cx * CHUNK_WIDTH + (lpx // self.scaled_tile)
+                    gy = sy * SECTION_HEIGHT + (lpy // self.scaled_tile)
+                    s_type = self.planted_saplings.get((gx, gy), {}).get("sapling_type", "oak_sapling")
+                    fallback_tid = SAPLING_ITEM_TO_TILE.get(s_type, TILE_SAPLING_OAK)
+                    frames = self.scaled_sapling_frames_by_tile.get(fallback_tid, self.scaled_sapling_frames)
+                if frames:
+                    target_surf.blit(frames[self.plant_frame_idx % len(frames)], (spx, spy))
                 else:
                     s_tex = self.scaled_tiles.get(t_id)
                     if s_tex:
@@ -1399,8 +1458,17 @@ class World:
                 asx = atx * self.scaled_tile - cam_x
                 ring_y = int(aty * self.scaled_tile - prog * ((aty - acrown) * self.scaled_tile)) - cam_y
                 ring_r = int(8 + math.sin(prog * math.pi) * 14)
-                pygame.draw.circle(target_surf, (80, 235, 90), (asx + self.scaled_tile // 2, ring_y), ring_r, 2)
-                pygame.draw.circle(target_surf, (255, 230, 80), (asx + self.scaled_tile // 2, ring_y), max(2, ring_r - 4), 1)
+                stype = anim.get("sap_type", "")
+                if "blight" in stype:
+                    col1, col2 = (195, 80, 245), (255, 180, 255)
+                elif "pine" in stype:
+                    col1, col2 = (45, 175, 95), (205, 245, 255)
+                elif "palm" in stype:
+                    col1, col2 = (65, 215, 105), (255, 235, 120)
+                else:
+                    col1, col2 = (80, 235, 90), (255, 230, 80)
+                pygame.draw.circle(target_surf, col1, (asx + self.scaled_tile // 2, ring_y), ring_r, 2)
+                pygame.draw.circle(target_surf, col2, (asx + self.scaled_tile // 2, ring_y), max(2, ring_r - 4), 1)
 
         # Dynamic overlay: mining damage cracks
         if self.tile_damage:
