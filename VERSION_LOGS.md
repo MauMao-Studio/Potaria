@@ -10,7 +10,8 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v0.2.1a** | October 2026 | *Gameplay, UI, Visual & Persistence Overhaul (Current Active Build)* | Zero player dark illumination by default (equipped gear / held torch light emission only), merchant shop card widening (580px window, 265px card) with name ellipsis truncation, settings reset confirmation modal prompt (settings and keybindings), settings button layout standardization (Back left, Reset right), atomic settings persistence across launches, daytime roof block incident sunlight without shadow bands, 3-level discrete camera zoom (1x, 2x, 3x) with hotkey Z and settings toggle, default Easy difficulty, World Selection ADVENTURE label cleanup, cinematic pitch-black death transition with instant spawn camera snapping, culinary overhaul with authentic Filipino food assets, tree-specific sapling growth animations, tree-specific wood and leaves variants, and 621 tests passing across 39 suites (100% Green). |
+| **v0.2.2a** | October 2026 | *Food Buff System, Decoupled Culinary Descriptions, Weapons Defense Scrub & UI Ergonomics (Current Active Build)* | 5-meal archetype food buff system with timed stat bonuses (Satiated, Attack Power, Damage Resistance, Swiftness, Health Regen), pure Filipino culinary descriptions decoupled from mechanical stat benefits, bottom-left food buff HUD overlay with hover tooltips and topmost z-order layering, main menu and settings hover tooltip cleanup (tooltips restricted strictly to icon-only buttons), Achievements card viewport bottom clearance fix, modal boundaries padding in Worlds and Key Bindings screens, complete weapon defense scrub across item registry, affix tables, stat ranges, and tooltip renderers, and 641 tests passing across 40 suites (100% Green). |
+| **v0.2.1a** | October 2026 | *Gameplay, UI, Visual & Persistence Overhaul* | Zero player dark illumination by default (equipped gear / held torch light emission only), merchant shop card widening (580px window, 265px card) with name ellipsis truncation, settings reset confirmation modal prompt (settings and keybindings), settings button layout standardization (Back left, Reset right), atomic settings persistence across launches, daytime roof block incident sunlight without shadow bands, 3-level discrete camera zoom (1x, 2x, 3x) with hotkey Z and settings toggle, default Easy difficulty, World Selection ADVENTURE label cleanup, cinematic pitch-black death transition with instant spawn camera snapping, culinary overhaul with authentic Filipino food assets, tree-specific sapling growth animations, tree-specific wood and leaves variants, and 621 tests passing across 39 suites (100% Green). |
 | **v0.2.0a** | October 2026 | *Water Buoyancy & Drowning, Tree Harvesting & Leaf Blocks, Pinoy Fishing & Inventory Organize* | Enemy water buoyancy & translucent blue submerged entity overlays, exact 1 heart/sec (10% max HP) drowning damage at 0% air, individual block-by-block tree harvesting without cascade felling, placeable `leaf_block`, leaf sapling drops, barren ground reforestation & daily sun growth animations, natural block world-tile inventory icon parity, inventory `[ORGANIZE]` compaction (filling gaps forward without re-sorting), fishing rod water interaction with 10 authentic Filipino (Pinoy) fishes (Bangus, Tilapia, Galunggong, Lapu-Lapu, Maya-Maya, Tanigue, Tambakol, Hito, Dilis, Dalagang Bukid) in raw and cooked forms with cooking recipes, rope rungs tile parity, dedicated silver steel `TILE_IRON_CHEST` world tile, and 416 tests passing across 38 suites (100% Green). |
 | **v0.1.9a** | October 2026 | *Tile & Item Sprite Parity, Duplicate Asset Consolidation, and Craftables Cross-Check* | Redesigned placed world tiles (`TILE_CHEST`, `TILE_WORK_BENCH`, `TILE_FURNACE`) in `_generate_tiles` to 100% match held/inventory item icons, audited and consolidated duplicate/alias items (`wooden_bed` vs `bed`, `wooden_chest` vs `chest`, `wood_sword` vs `wooden_sword`, etc.) with discrete metadata, resolved `stone_fireplace` craftable station to Work Bench under `[FURNITURE & MECHANISMS]`, cleaned unindexed assets across `assets/items/` and `assets/craftable_items/`, refreshed `UNIQUE_ASSETS_TRACKER.md` (2,007 verified unique assets with 0 collisions), and passed all 400 test cases (100% Green). |
 | **v0.1.8a** | October 2026 | *Phase 1 Data-Driven Loot & Multi-Affix System, Lantern Ceiling Physics & World Rename* | Standardized 1,461-item `DataDrivenItemRegistry` across 9 canonical categories (including all 129 craftables), 4-layer item model (`BASE ITEM + AFFIXES + RARITY + OPTIONAL UNIQUE EFFECT`), 9 canonical affixes + suffixes with deterministic seeded rolling and mutual exclusion, 3-path loot acquisition (`random`, `targeted`, `milestone`), dedicated Carved Tuber Lantern / Brass Lantern / Spectral Lantern world tiles with North ceiling hanging physics, interactive World Rename in World Selection with duplicate-name protection, and 360 tests passing across 28 suites (100% Green). |
@@ -36,7 +37,44 @@
 
 ## Detailed Version Logs
 
-### [v0.2.1a] — Gameplay, UI, Visual & Persistence Overhauls (Current Release)
+### [v0.2.2a] — Food Buff System, Decoupled Culinary Descriptions, Weapons Defense Scrub & UI Ergonomics (Current Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Food Buff System & Timed Stat Benefits**:
+  - Implemented 5 meal archetypes according to the game balance plan:
+    - *Snack / Street Food*: Quick consumption, +10% Speed for 45s (e.g. Banana Cue, Turon, Isaw, Kwek-Kwek, Fish Balls, Taho).
+    - *Light Meal*: +15% Attack Power for 90s (e.g. Lugaw, Arroz Caldo, Champorado, Pancit Canton, Pancit Bihon, Pancit Palabok, Longganisa, Tocino, Tapsilog, Tortang Talong).
+    - *Balanced Meal*: +20% Attack Power, +15% Damage Resistance for 180s (e.g. Chicken Adobo, Pork Adobo, Sinigang, Tinola, Bicol Express, Pinakbet, Laing).
+    - *Feast / Heavy Dish*: +25% Attack Power, +25% Damage Resistance, +2 HP/s Regeneration for 300s (e.g. Lechon Belly, Crispy Pata, Kare-Kare, Bulalo).
+    - *Dessert / Sweet Refreshment*: +15% Speed, +1 HP/s Regeneration for 60s (e.g. Halo-Halo, Leche Flan, Ube Halaya, Bibingka, Puto, Biko, Sapin-Sapin).
+  - Food buff tracking, expiration ticks, and stat bonuses integrated directly into player update cycles.
+- **Pure Culinary Descriptions Decoupled from Mechanics**:
+  - Standardized all 79 food and ingredient entries in `ITEM_REGISTRY`: descriptions strictly cover authentic Filipino culinary heritage, aroma, taste profiles, and cooking ingredients without mechanical numbers or `+HP` strings.
+  - Stripped legacy lore strings from all produce, pantry spices, and cooked dishes to maintain consistent distinction between item equipment lore and culinary dish descriptions.
+- **Bottom-Left Food Buff HUD Widget**:
+  - Compact active buff icons with ornate border and circular/bar duration indicators displayed on the bottom-left of the screen.
+  - Deferred tooltip rendering to step 9.8 in the HUD draw pipeline, ensuring food buff tooltips render at topmost z-order above chat, party frames, and toasts without occlusion.
+  - Rich hover tooltip displaying buff title, detailed stat bonuses, and remaining duration formatted in clean seconds.
+- **Main Menu & Settings Tooltip Cleanup**:
+  - Removed hover tooltip popups from all standard text buttons on the Main Menu, Settings, and LMS screens. Tooltips are now strictly reserved for icon-only action buttons where visual clarification is needed.
+  - Adjusted Achievements cards viewport height (`viewport_h = ph - 165`), providing 28px clearance above the back button and preventing card scrolling overlap.
+  - Expanded modal panel heights to 595 and anchored back and reset buttons cleanly within panel borders in Worlds and Key Bindings screens.
+- **Complete Elimination of Weapon Defense**:
+  - Zeroed out all defense attributes on weapons across `ITEM_REGISTRY`, `weapons.json`, `ARMOR_DATA`, and `NEW_EQUIPMENT_DATA`.
+  - Replaced defensive stat range on `frost_blade` in `ITEM_STAT_RANGES` with critical strike chance, and updated `roll_item_stat_ranges()` to strip defensive stats when rolling weapon items.
+  - Hardened affix engines (`src/loot/affix_engine.py` and `src/rpg/affix_system.py`) to restrict defensive affixes and stats exclusively to armor and shields.
+  - Sanitized both compact and detailed item tooltips in `src/ui/inventory.py` and `src/ui/hud.py` to never display defense stats for weapon items.
+- **Rebuilt Culinary Documentation**:
+  - Updated `scripts/build_cookbook_docs.py` with separate "Culinary Notes" (pure cultural lore) and "Buff Effects" columns.
+  - Rebuilt all 4 cookbook files (`Potaria_Cookbook_With_Codes.pdf/docx` and `Potaria_Cookbook_No_Codes.pdf/docx`).
+- **Automated Verification**:
+  - Created automated test suite `tests/test_food_buffs_and_menu.py` with 20 comprehensive unit tests.
+  - 641 tests passing across 40 test suites (100% Green).
+
+---
+
+### [v0.2.1a] — Gameplay, UI, Visual & Persistence Overhauls
 *Release Date: October 2026*
 
 #### Added & Improved
