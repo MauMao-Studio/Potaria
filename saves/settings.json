@@ -8,17 +8,18 @@
     "touch_controls": "on",
     "touch_opacity": 0.75,
     "renderer": "hardware",
-    "bloom": false,
-    "shaders": true,
+    "bloom": true,
+    "shaders": false,
     "vignette": false,
     "water_effects": false,
     "resolution": "1366x768",
     "color_grade": "cinematic",
     "lighting_quality": "high",
     "particle_density": "high",
-    "boost_mode": true,
+    "boost_mode": false,
     "damage_numbers": false,
-    "tooltips": "compact"
+    "tooltips": "compact",
+    "zoom": 1.0
   },
   "key_bindings": {
     "Move Left": 97,
@@ -31,6 +32,7 @@
     "Skill Q": 113,
     "Skill F": 102,
     "Skill V": 118,
-    "Skill R": 114
+    "Skill R": 114,
+    "Camera Zoom": 122
   }
 }

@@ -15,8 +15,12 @@ class Camera:
     def __init__(self, screen_width=SCREEN_WIDTH, screen_height=SCREEN_HEIGHT):
         self.x = 0.0
         self.y = 0.0
+        self.base_width = screen_width
+        self.base_height = screen_height
+        self.zoom = 1.0
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self.render_to_world_surf = False
         
         self.world_min_y = SKY_MIN_Y * SCALED_TILE
         self.world_max_y = CHUNK_HEIGHT * SCALED_TILE - self.screen_height
@@ -27,6 +31,33 @@ class Camera:
         self.shake_intensity = 0.0
         self.shake_offset_x = 0.0
         self.shake_offset_y = 0.0
+
+    def set_zoom(self, zoom_level):
+        """Restricts zoom to exactly 3 discrete levels: 1.0 (1x), 2.0 (2x), and 3.0 (3x)."""
+        try:
+            val = float(zoom_level)
+            if val <= 1.2:
+                self.zoom = 1.0
+            elif val <= 2.2:
+                self.zoom = 2.0
+            else:
+                self.zoom = 3.0
+        except (ValueError, TypeError):
+            self.zoom = 1.0
+
+        self.screen_width = int(self.base_width / self.zoom)
+        self.screen_height = int(self.base_height / self.zoom)
+        self.world_max_y = CHUNK_HEIGHT * SCALED_TILE - self.screen_height
+
+    def cycle_zoom(self):
+        """Cycles zoom level: 1x -> 2x -> 3x -> 1x."""
+        if self.zoom == 1.0:
+            self.set_zoom(2.0)
+        elif self.zoom == 2.0:
+            self.set_zoom(3.0)
+        else:
+            self.set_zoom(1.0)
+        return self.zoom
 
     @property
     def offset_x(self):
@@ -66,10 +97,16 @@ class Camera:
             self.shake_offset_y = 0.0
 
     def screen_to_world(self, sx, sy):
-        return (sx + self.x - self.shake_offset_x, sy + self.y - self.shake_offset_y)
+        scaled_sx = sx / self.zoom
+        scaled_sy = sy / self.zoom
+        return (scaled_sx + self.x - self.shake_offset_x, scaled_sy + self.y - self.shake_offset_y)
 
     def world_to_screen(self, wx, wy):
-        return (wx - self.x + self.shake_offset_x, wy - self.y + self.shake_offset_y)
+        sub_x = wx - self.x + self.shake_offset_x
+        sub_y = wy - self.y + self.shake_offset_y
+        if getattr(self, "render_to_world_surf", False):
+            return (sub_x, sub_y)
+        return (sub_x * self.zoom, sub_y * self.zoom)
 
     def screen_to_tile(self, sx, sy):
         wx, wy = self.screen_to_world(sx, sy)

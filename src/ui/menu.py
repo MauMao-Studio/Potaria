@@ -196,10 +196,13 @@ class MenuManager:
         ]
 
         # Settings Configuration
+        self.settings_file = SETTINGS_FILE
         if settings is not None:
             self.settings = settings
         else:
+            loaded_cfg, _ = load_settings_disk(self.settings_file)
             self.settings = dict(DEFAULT_SETTINGS)
+            self.settings.update(loaded_cfg)
         self.resolutions = ["1920x1080", "1600x900", "1366x768", "1280x720"]
         self.settings_tab = "graphics"
 
@@ -208,7 +211,9 @@ class MenuManager:
         if key_bindings is not None:
             self.key_bindings = key_bindings
         else:
+            _, loaded_keys = load_settings_disk(self.settings_file)
             self.key_bindings = dict(self.default_key_bindings)
+            self.key_bindings.update(loaded_keys)
         self.rebinding_action = None
         self.key_bind_rects = {}
 
@@ -241,9 +246,11 @@ class MenuManager:
         self.btn_light = Button(gx, gy_start + 6 * gy_step, gw, gh, "LIGHTING: HIGH", "cycle_lighting_quality")
         self.btn_part = Button(gx, gy_start + 7 * gy_step, gw, gh, "PARTICLES: HIGH", "cycle_particle_density")
         self.btn_disp = Button(gx, gy_start + 8 * gy_step, gw, gh, "DISPLAY: WINDOWED", "toggle_display")
+        self.btn_zoom = Button(gx, gy_start + 9 * gy_step, gw, gh, f"CAMERA ZOOM: {int(self.settings.get('zoom', 1.0))}x", "toggle_zoom", tooltip="Adjust world zoom level (1x, 2x, or 3x)")
         self.graphics_buttons = [
             self.btn_renderer, self.btn_shaders, self.btn_bloom, self.btn_vignette,
-            self.btn_res, self.btn_color, self.btn_light, self.btn_part, self.btn_disp
+            self.btn_res, self.btn_color, self.btn_light, self.btn_part, self.btn_disp,
+            self.btn_zoom
         ]
 
         # 3. Audio Tab Buttons (coordinates hit historical unit test click targets)
@@ -277,8 +284,9 @@ class MenuManager:
         self.btn_input_map = Button(gx, ct_y + 2 * ct_step, gw, 38, "INPUT MAPPING / KEYS >", "open_input_mapping")
         self.controls_buttons = [self.btn_touch_ctrl, self.btn_touch_opac, self.btn_input_map]
 
-        # 6. Global Settings Back Button
-        self.settings_back_btn = Button(SCREEN_WIDTH // 2 - 110, py + ph - 52, 220, 38, "<  BACK TO MENU", "settings_back", icon="back", tooltip="Return to main menu")
+        # 6. Global Settings Back & Reset Defaults Buttons (Back left, Reset right)
+        self.settings_back_btn = Button(SCREEN_WIDTH // 2 - 220, py + ph - 52, 200, 38, "<  BACK TO MENU", "settings_back", icon="back", tooltip="Return to main menu")
+        self.settings_reset_btn = Button(SCREEN_WIDTH // 2 + 20, py + ph - 52, 200, 38, "RESET DEFAULTS", "settings_reset_all", tooltip="Reset all settings to defaults")
 
         # Master settings buttons collection (preserves all button searches across test suites)
         self.settings_buttons = (
@@ -287,12 +295,18 @@ class MenuManager:
             self.audio_buttons +
             self.gameplay_buttons +
             self.controls_buttons +
-            [self.settings_back_btn]
+            [self.settings_back_btn, self.settings_reset_btn]
         )
 
-        # Buttons for Input Mapping view
-        self.input_reset_button = Button(SCREEN_WIDTH // 2 - 210, SCREEN_HEIGHT - 95, 190, 42, "RESET DEFAULTS", "reset_keys", tooltip="Restore default keybindings")
-        self.input_back_button = Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 95, 190, 42, "< BACK TO SETTINGS", "input_back", icon="back", tooltip="Return to settings menu")
+        # Buttons for Input Mapping view (Back always on the left, Reset always on the right)
+        self.input_back_button = Button(SCREEN_WIDTH // 2 - 210, SCREEN_HEIGHT - 95, 190, 42, "< BACK TO SETTINGS", "input_back", icon="back", tooltip="Return to settings menu")
+        self.input_reset_button = Button(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT - 95, 190, 42, "RESET DEFAULTS", "reset_keys", tooltip="Restore default keybindings")
+
+        # In-place Reset Defaults Confirmation Modal
+        self.reset_confirm_modal_active = False
+        self.reset_confirm_modal_rect = pygame.Rect(SCREEN_WIDTH // 2 - 240, SCREEN_HEIGHT // 2 - 80, 480, 160)
+        self.reset_confirm_yes_btn = Button(SCREEN_WIDTH // 2 - 190, SCREEN_HEIGHT // 2 + 15, 180, 40, "CONFIRM", "confirm_reset_defaults", tooltip="Confirm reset to default settings")
+        self.reset_confirm_cancel_btn = Button(SCREEN_WIDTH // 2 + 10, SCREEN_HEIGHT // 2 + 15, 180, 40, "CANCEL", "cancel_reset_defaults", tooltip="Cancel and keep current settings")
 
         # Multiplayer Menu Buttons & State
         self.discovery = LANDiscovery()
@@ -375,12 +389,12 @@ class MenuManager:
         # New World Configuration (Clean layout with Type & Difficulty only)
         self.new_world_name = "Spud World"
         self.new_world_type = WORLD_TYPE_INFINITE
-        self.new_world_diff = DIFFICULTY_NORMAL
+        self.new_world_diff = DIFFICULTY_EASY
         self.new_world_mode = MODE_LAST_MAN_STANDING if self.enabled_mods.get("last_man_standing", False) else MODE_ADVENTURE
         self.typing_world_name = False
         self.world_name_rect = pygame.Rect(cx - 30, 205, btn_w + 60, 38)
         self.nw_btn_type = Button(cx, 265, btn_w, btn_h, "WORLD TYPE: INFINITE", "toggle_type", tooltip="Switch between Infinite open world and Finite bounded world")
-        self.nw_btn_diff = Button(cx, 335, btn_w, btn_h, "DIFFICULTY: NORMAL", "toggle_diff", tooltip="Select difficulty: Easy, Normal, Hardcore, or YOLO")
+        self.nw_btn_diff = Button(cx, 335, btn_w, btn_h, "DIFFICULTY: EASY", "toggle_diff", tooltip="Select difficulty: Easy, Normal, Hardcore, or YOLO")
         # Hidden/off-screen legacy attribute to retain backwards compatibility
         self.nw_btn_mode = Button(cx, -100, btn_w, btn_h, "MODE: ADVENTURE", "toggle_mode", tooltip="Toggle game mode")
         self.nw_btn_create = Button(cx, 435, btn_w, btn_h, "CREATE & PLAY WORLD", "create_confirm", icon="plus", tooltip="Generate world and begin adventure")
@@ -471,6 +485,9 @@ class MenuManager:
             elif btn.action == "toggle_touch_opacity":
                 op = int(round(float(self.settings.get("touch_opacity", 0.75)) * 100))
                 btn.text = f"TOUCH OPACITY: {op}%"
+            elif btn.action == "toggle_zoom":
+                cur_z = int(self.settings.get("zoom", 1.0))
+                btn.text = f"CAMERA ZOOM: {cur_z}x"
             elif btn.action == "settings_back":
                 btn.text = "<  BACK TO GAME" if self.previous_state == STATE_PLAYING else "<  BACK TO MENU"
 
@@ -714,6 +731,25 @@ class MenuManager:
             return False
 
     def handle_click(self, mouse_pos, button=1):
+        if getattr(self, "reset_confirm_modal_active", False):
+            if self.reset_confirm_yes_btn.rect.collidepoint(mouse_pos):
+                self.settings = dict(DEFAULT_SETTINGS)
+                self.key_bindings = dict(self.default_key_bindings)
+                self.rebinding_action = None
+                self.reset_confirm_modal_active = False
+                self._apply_audio_volumes()
+                self._refresh_settings_button_labels()
+                self.save_settings()
+                if self.sound_manager:
+                    self.sound_manager.play("craft")
+                return "reset_keys"
+            elif self.reset_confirm_cancel_btn.rect.collidepoint(mouse_pos) or not self.reset_confirm_modal_rect.collidepoint(mouse_pos):
+                self.reset_confirm_modal_active = False
+                if self.sound_manager:
+                    self.sound_manager.play("place")
+                return None
+            return None
+
         if self.state == STATE_MENU:
             for btn in self.menu_buttons:
                 if btn.rect.collidepoint(mouse_pos):
@@ -929,7 +965,7 @@ class MenuManager:
                 active_tab_buttons = self.gameplay_buttons
             elif self.settings_tab == "controls":
                 active_tab_buttons = self.controls_buttons
-            active_tab_buttons = active_tab_buttons + [self.settings_back_btn]
+            active_tab_buttons = active_tab_buttons + [self.settings_back_btn, self.settings_reset_btn]
 
             clicked_btn = None
             # Prioritize precise button center click (direct test suite invocation / touch tap)
@@ -1108,6 +1144,16 @@ class MenuManager:
                     self.state = STATE_INPUT_MAPPING
                     self.rebinding_action = None
                     return None
+                elif btn.action == "toggle_zoom":
+                    cur_z = int(self.settings.get("zoom", 1.0))
+                    next_z = 2.0 if cur_z == 1 else (3.0 if cur_z == 2 else 1.0)
+                    self.settings["zoom"] = next_z
+                    self._refresh_settings_button_labels()
+                    self.save_settings()
+                    return ("zoom_updated", next_z)
+                elif btn.action == "settings_reset_all":
+                    self.reset_confirm_modal_active = True
+                    return None
                 elif btn.action == "settings_back":
                     self.save_settings()
                     if self.previous_state == STATE_PLAYING:
@@ -1122,7 +1168,8 @@ class MenuManager:
                 self.key_bindings = dict(self.default_key_bindings)
                 self.rebinding_action = None
                 self.save_settings()
-                self.sound_manager.play("craft")
+                if self.sound_manager:
+                    self.sound_manager.play("craft")
                 return "reset_keys"
 
             if self.input_back_button.rect.collidepoint(mouse_pos):
@@ -1228,6 +1275,13 @@ class MenuManager:
         return None
 
     def handle_key(self, event):
+        if getattr(self, "reset_confirm_modal_active", False):
+            if event.key == pygame.K_ESCAPE:
+                self.reset_confirm_modal_active = False
+                if self.sound_manager:
+                    self.sound_manager.play("place")
+                return True
+            return True
         if self.state in (STATE_STORY, STATE_CUTSCENE):
             res = self.cutscene.handle_key(event)
             if self.cutscene.is_finished():
@@ -1428,6 +1482,7 @@ class MenuManager:
                 ("Dynamic Lighting", "Cellular shadow propagation accuracy"),
                 ("Particle Density", "Debris, weapon slash sparks & spell effects"),
                 ("Display Mode", "Fullscreen or borderless windowed mode"),
+                ("Camera Zoom", "World rendering scale factor (1x, 2x, or 3x)"),
             ]
             for i, (main_lbl, sub_lbl) in enumerate(labels):
                 row_y = py + 104 + i * 38
@@ -1506,11 +1561,15 @@ class MenuManager:
             for btn in self.controls_buttons:
                 btn.render(target_surf, self.font_btn)
 
-        # Global Back Button & Footer
+        # Global Back & Reset Defaults Buttons (Back left, Reset right)
         self.settings_back_btn.render(target_surf, self.font_btn)
+        self.settings_reset_btn.render(target_surf, self.font_btn)
         cur_rend = str(self.settings.get("renderer", "hardware")).upper()
         footer_txt = self.font_sm.render(f"Graphics Engine: {cur_rend} | Target: 60 FPS Standalone", True, (130, 145, 175))
         target_surf.blit(footer_txt, (SCREEN_WIDTH // 2 - footer_txt.get_width() // 2, py + ph - 16))
+
+        if getattr(self, "reset_confirm_modal_active", False):
+            self._render_reset_confirm_modal(target_surf)
 
     def _render_input_mapping(self, target_surf, mouse_pos):
         self._render_background(target_surf)
@@ -1577,9 +1636,30 @@ class MenuManager:
         draw_column(col1, px + 40)
         draw_column(col2, px + 410)
 
-        # Bottom buttons
-        self.input_reset_button.render(target_surf, self.font_btn)
+        # Bottom buttons (Back always on the left, Reset always on the right)
         self.input_back_button.render(target_surf, self.font_btn)
+        self.input_reset_button.render(target_surf, self.font_btn)
+
+        if getattr(self, "reset_confirm_modal_active", False):
+            self._render_reset_confirm_modal(target_surf)
+
+    def _render_reset_confirm_modal(self, target_surf):
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 185))
+        target_surf.blit(overlay, (0, 0))
+
+        m_rect = self.reset_confirm_modal_rect
+        pygame.draw.rect(target_surf, (24, 28, 42), m_rect, border_radius=12)
+        pygame.draw.rect(target_surf, COLOR_GOLD, m_rect, 2, border_radius=12)
+
+        title = self.font_title.render("RESET ALL SETTINGS TO DEFAULTS", True, COLOR_GOLD)
+        target_surf.blit(title, (m_rect.centerx - title.get_width() // 2, m_rect.y + 18))
+
+        prompt = self.font_body.render("Are you sure you want to reset all settings to defaults?", True, (240, 240, 245))
+        target_surf.blit(prompt, (m_rect.centerx - prompt.get_width() // 2, m_rect.y + 54))
+
+        self.reset_confirm_yes_btn.render(target_surf, self.font_btn)
+        self.reset_confirm_cancel_btn.render(target_surf, self.font_btn)
 
     def _render_background(self, target_surf):
         h = SCREEN_HEIGHT
@@ -1950,7 +2030,10 @@ class MenuManager:
                 name_surf = self.font_btn.render(w_name, True, (255, 235, 120))
                 clip_surf.blit(name_surf, (12, local_y + 3))
 
-                detail_str = f"{w_type}  •  {w_diff}  •  {w_mode}"
+                if w_mode == "ADVENTURE":
+                    detail_str = f"{w_type}  •  {w_diff}"
+                else:
+                    detail_str = f"{w_type}  •  {w_diff}  •  {w_mode}"
                 detail_surf = self.font_sm.render(detail_str, True, (180, 195, 220))
                 clip_surf.blit(detail_surf, (14, local_y + 20))
 

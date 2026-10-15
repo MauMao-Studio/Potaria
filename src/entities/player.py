@@ -97,6 +97,9 @@ class Player:
         self.is_dead = False
         self.respawn_timer = 0.0
         self.dash_timer = 0.0
+        self.death_fade_alpha = 0
+        self.death_teleported = False
+        self.snap_camera_instant = False
 
         # Projectiles & Skills
         self.fireballs = []
@@ -716,6 +719,9 @@ class Player:
         if self.health <= 0:
             self.is_dead = True
             self.respawn_timer = 3.0
+            self.death_fade_alpha = 0
+            self.death_teleported = False
+            self.snap_camera_instant = False
             if getattr(self, "in_boss_fight", False):
                 self.killed_by_boss = True
 
@@ -792,23 +798,43 @@ class Player:
         if self.is_dead:
             self.pre_arena_pos = None
             self.respawn_timer -= dt
+
+            # Cinematic pitch-black transition
+            # Total timer = 3.0s:
+            # 3.0s -> 1.5s: Fade to black (alpha 0 -> 255)
+            # 1.5s: Screen is pitch black -> teleport player and snap camera instantly to spawn
+            # 1.5s -> 0.0s: Fade in from black (alpha 255 -> 0)
+            if self.respawn_timer > 1.5:
+                progress = (3.0 - self.respawn_timer) / 1.5
+                self.death_fade_alpha = int(min(255, max(0, progress * 255)))
+            else:
+                if not self.death_teleported:
+                    self.death_teleported = True
+                    self.health = self.max_health
+                    if hasattr(self, "stats"):
+                        self.stats.hp = self.health
+
+                    if getattr(self, "killed_by_boss", False):
+                        self.killed_by_boss = False
+                        if hasattr(self, "inventory") and self.inventory:
+                            self.inventory.clear_all_items()
+                        if hasattr(self, "equipment") and self.equipment:
+                            self.equipment.clear_all_items(stats=self.stats)
+                        print("[Player] Defeated by Boss: All inventory items lost. Skills and level retained.")
+
+                    sp = getattr(self, "spawn_point", None) or world.spawn_point
+                    self.x, self.y = sp
+                    self.vx, self.vy = 0.0, 0.0
+                    self.snap_camera_instant = True
+
+                fade_in_progress = max(0.0, self.respawn_timer / 1.5)
+                self.death_fade_alpha = int(min(255, max(0, fade_in_progress * 255)))
+
             if self.respawn_timer <= 0:
                 self.is_dead = False
-                self.health = self.max_health
-                if hasattr(self, "stats"):
-                    self.stats.hp = self.health
-
-                if getattr(self, "killed_by_boss", False):
-                    self.killed_by_boss = False
-                    if hasattr(self, "inventory") and self.inventory:
-                        self.inventory.clear_all_items()
-                    if hasattr(self, "equipment") and self.equipment:
-                        self.equipment.clear_all_items(stats=self.stats)
-                    print("[Player] Defeated by Boss: All inventory items lost. Skills and level retained.")
-
-                sp = getattr(self, "spawn_point", None) or world.spawn_point
-                self.x, self.y = sp
-                self.vx, self.vy = 0.0, 0.0
+                self.death_fade_alpha = 0
+                self.death_teleported = False
+                self.snap_camera_instant = False
             return
 
         # RPG Updates

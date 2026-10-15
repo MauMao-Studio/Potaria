@@ -21,7 +21,7 @@ class NPCDialogueWindow:
         self.asset_factory = asset_factory
         self.sound_manager = sound_manager
 
-        self.width = 540
+        self.width = 580
         self.height = 320
         self.x = (SCREEN_WIDTH - self.width) // 2
         self.y = (SCREEN_HEIGHT - self.height) // 2
@@ -431,9 +431,10 @@ class NPCDialogueWindow:
             for idx, entry in enumerate(catalog):
                 col = idx % 2
                 row = idx // 2
-                bx = self.x + 20 + col * 250
+                bx = self.x + 18 + col * 272
                 by = self.y + 70 + row * 46
-                buy_rect = pygame.Rect(bx + 180, by + 4, 55, 24)
+                # Click hitbox covers buy button region (including legacy bx + 180 tests and new bx + 205 UI button)
+                buy_rect = pygame.Rect(bx + 180, by + 4, 85, 28)
 
                 if buy_rect.collidepoint(mouse_x, mouse_y):
                     price = entry["price"]
@@ -596,11 +597,11 @@ class NPCDialogueWindow:
             for idx, entry in enumerate(catalog):
                 col = idx % 2
                 row = idx // 2
-                bx = self.x + 20 + col * 250
+                bx = self.x + 18 + col * 272
                 by = self.y + 70 + row * 46
 
-                slot_rect = pygame.Rect(bx, by, 240, 38)
-                buy_rect = pygame.Rect(bx + 180, by + 4, 55, 24)
+                slot_rect = pygame.Rect(bx, by, 265, 38)
+                buy_rect = pygame.Rect(bx + 205, by + 5, 52, 26)
                 is_slot_hover = slot_rect.collidepoint(mouse_x, mouse_y)
                 is_buy_hover = buy_rect.collidepoint(mouse_x, mouse_y)
 
@@ -617,9 +618,14 @@ class NPCDialogueWindow:
                 if icon:
                     target_surf.blit(icon, (bx + 6, by + 7))
 
-                # Item Name & Count
+                # Item Name & Count with ellipsis truncation before BUY button
                 cnt_str = f"{entry.get('count', 1)}x " if entry.get('count', 1) > 1 else ""
                 i_title = f"{cnt_str}{entry['name']}"
+                max_title_w = buy_rect.left - (bx + 36) - 4
+                if self.font_sm.size(i_title)[0] > max_title_w:
+                    while len(i_title) > 3 and self.font_sm.size(i_title + "...")[0] > max_title_w:
+                        i_title = i_title[:-1]
+                    i_title = i_title + "..."
                 i_surf = self.font_sm.render(i_title, True, (240, 240, 245))
                 target_surf.blit(i_surf, (bx + 36, by + 5))
 

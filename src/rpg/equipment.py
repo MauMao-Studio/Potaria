@@ -377,8 +377,22 @@ class Equipment:
         return None
 
     def has_light_emitter(self):
-        """Checks if equipped headpiece emits light (e.g. Miner Helmet) or any gear has radiance effects."""
-        return self.has_miner_helmet_equipped() or self.has_astral_radiance()
+        """Checks if equipped headpiece emits light (e.g. Miner Helmet) or any gear has radiance/illumination effects."""
+        if self.has_miner_helmet_equipped() or self.has_astral_radiance():
+            return True
+        from src.ui.inventory import ITEM_REGISTRY
+        for slot_name, slot_val in self.slots.items():
+            if not slot_val:
+                continue
+            item_id = slot_val.item_id if hasattr(slot_val, "item_id") else slot_val
+            data = ARMOR_DATA.get(item_id) or ITEM_REGISTRY.get(item_id, {})
+            if data.get("light", False):
+                return True
+            for eff in data.get("effects", []):
+                eff_l = str(eff).lower()
+                if any(k in eff_l for k in ("illumination", "light radiance", "celestial radiance", "astral sparkles", "radiant gleam", "radiance")):
+                    return True
+        return False
 
     def has_astral_radiance(self):
         """Checks if equipped gear emits high-intensity Astral Sparkles / Celestial Radiance."""
@@ -394,7 +408,7 @@ class Equipment:
         return False
 
     def has_miner_helmet_equipped(self):
-        """Checks if Potato Miner Helmet is equipped in head slot."""
+        """Checks if Potato Miner Helmet or light-emitting helmet is equipped in head slot."""
         head_item = self.slots.get(SLOT_HEAD)
         if head_item:
             head_id = head_item.item_id if hasattr(head_item, "item_id") else head_item
@@ -403,6 +417,9 @@ class Equipment:
             data = ARMOR_DATA.get(head_id, {})
             if data.get("light", False):
                 return True
+            for eff in data.get("effects", []):
+                if "illumination" in str(eff).lower():
+                    return True
         return False
 
     def get_all_active_effects(self):

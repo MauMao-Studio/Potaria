@@ -3938,7 +3938,7 @@ class AssetFactory:
                 pygame.draw.line(surf, (72, 70, 78), (8, 8), (8, 12), 1)
                 pygame.draw.line(surf, (72, 70, 78), (15, 8), (15, 12), 1)
                 pygame.draw.line(surf, (72, 70, 78), (12, 12), (12, 16), 1)
-        elif id_lower in ("wood", "oak_wood"):
+        elif id_lower == "wood":
             # Freshly cut cylindrical honey-oak timber log with concentric annual rings & warm chestnut bark
             pygame.draw.rect(surf, (48, 28, 14), (4, 5, 16, 15), border_radius=3)
             pygame.draw.rect(surf, (125, 76, 36), (5, 8, 14, 11), border_radius=2)
@@ -3948,6 +3948,18 @@ class AssetFactory:
             pygame.draw.ellipse(surf, (225, 182, 115), (5, 5, 14, 6))
             pygame.draw.ellipse(surf, (168, 118, 62), (8, 6, 8, 4), 1)
             surf.set_at((12, 8), (115, 72, 35))
+        elif id_lower == "oak_wood":
+            # Authentic ancient heartwood oak timber log with distinct golden grain & acorn core
+            pygame.draw.rect(surf, (42, 24, 12), (4, 5, 16, 15), border_radius=3)
+            pygame.draw.rect(surf, (140, 88, 42), (5, 8, 14, 11), border_radius=2)
+            for lx in (7, 11, 15):
+                pygame.draw.line(surf, (98, 58, 28), (lx, 9), (lx, 18), 1)
+            pygame.draw.ellipse(surf, (42, 24, 12), (4, 4, 16, 8))
+            pygame.draw.ellipse(surf, (235, 195, 128), (5, 5, 14, 6))
+            pygame.draw.ellipse(surf, (178, 128, 72), (8, 6, 8, 4), 1)
+            surf.set_at((12, 8), (125, 80, 40))
+            surf.set_at((6, 14), (195, 150, 75))
+            surf.set_at((7, 14), (160, 110, 50))
         elif id_lower == "pine_wood":
             # Dense dark spruce alpine conifer log with cool bark grooves & tight growth rings
             pygame.draw.rect(surf, (34, 22, 16), (4, 5, 16, 15), border_radius=3)
@@ -3988,7 +4000,7 @@ class AssetFactory:
             surf.set_at((12, 8), (210, 135, 255))
             surf.set_at((6, 13), (225, 160, 255))
             surf.set_at((17, 11), (185, 110, 235))
-        elif id_lower in ("leaves", "oak_leaves", "leaf_block"):
+        elif id_lower in ("leaves", "leaf_block"):
             # Contoured lush rounded foliage canopy cluster with blossom/berry accents (no square box)
             for cx, cy, cr, col in [
                 (9, 13, 6, (28, 82, 22)),
@@ -4002,6 +4014,22 @@ class AssetFactory:
                 pygame.draw.circle(surf, col, (cx, cy), cr)
             surf.set_at((10, 9), (255, 110, 130))
             surf.set_at((14, 12), (255, 230, 90))
+        elif id_lower == "oak_leaves":
+            # Deep rich majestic oak lobed leaf cluster with amber acorn sprig
+            for cx, cy, cr, col in [
+                (9, 13, 6, (24, 76, 20)),
+                (15, 13, 6, (24, 76, 20)),
+                (12, 8, 6, (24, 76, 20)),
+                (9, 13, 5, (38, 122, 32)),
+                (15, 13, 5, (46, 142, 38)),
+                (12, 8, 5, (62, 175, 52)),
+                (11, 10, 4, (78, 198, 65)),
+            ]:
+                pygame.draw.circle(surf, col, (cx, cy), cr)
+            # Golden acorn accent
+            surf.set_at((11, 8), (195, 145, 60))
+            surf.set_at((11, 9), (135, 90, 35))
+            surf.set_at((15, 11), (255, 215, 80))
         elif id_lower in ("pine_leaves", "pine_needles"):
             # Frosted evergreen conifer needle cluster with tiered sharp needles & powdered snow dusting
             for poly, col in [

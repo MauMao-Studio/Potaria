@@ -10,7 +10,8 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v0.2.0a** | October 2026 | *Water Buoyancy & Drowning, Tree Harvesting & Leaf Blocks, Pinoy Fishing & Inventory Organize (Current Active Build)* | Enemy water buoyancy & translucent blue submerged entity overlays, exact 1 heart/sec (10% max HP) drowning damage at 0% air, individual block-by-block tree harvesting without cascade felling, placeable `leaf_block`, leaf sapling drops, barren ground reforestation & daily sun growth animations, natural block world-tile inventory icon parity, inventory `[ORGANIZE]` compaction (filling gaps forward without re-sorting), fishing rod water interaction with 10 authentic Filipino (Pinoy) fishes (Bangus, Tilapia, Galunggong, Lapu-Lapu, Maya-Maya, Tanigue, Tambakol, Hito, Dilis, Dalagang Bukid) in raw and cooked forms with cooking recipes, rope rungs tile parity, dedicated silver steel `TILE_IRON_CHEST` world tile, and 416 tests passing across 38 suites (100% Green). |
+| **v0.2.1a** | October 2026 | *Gameplay, UI, Visual & Persistence Overhaul (Current Active Build)* | Zero player dark illumination by default (equipped gear / held torch light emission only), merchant shop card widening (580px window, 265px card) with name ellipsis truncation, settings reset confirmation modal prompt, settings button layout standardization (Back left, Reset right), atomic settings persistence across launches, daytime roof block incident sunlight without shadow bands, 3-level discrete camera zoom (1x, 2x, 3x) with hotkey Z and settings toggle, default Easy difficulty, World Selection ADVENTURE label cleanup, cinematic pitch-black death transition with instant spawn camera snapping, and 621 tests passing across 39 suites (100% Green). |
+| **v0.2.0a** | October 2026 | *Water Buoyancy & Drowning, Tree Harvesting & Leaf Blocks, Pinoy Fishing & Inventory Organize* | Enemy water buoyancy & translucent blue submerged entity overlays, exact 1 heart/sec (10% max HP) drowning damage at 0% air, individual block-by-block tree harvesting without cascade felling, placeable `leaf_block`, leaf sapling drops, barren ground reforestation & daily sun growth animations, natural block world-tile inventory icon parity, inventory `[ORGANIZE]` compaction (filling gaps forward without re-sorting), fishing rod water interaction with 10 authentic Filipino (Pinoy) fishes (Bangus, Tilapia, Galunggong, Lapu-Lapu, Maya-Maya, Tanigue, Tambakol, Hito, Dilis, Dalagang Bukid) in raw and cooked forms with cooking recipes, rope rungs tile parity, dedicated silver steel `TILE_IRON_CHEST` world tile, and 416 tests passing across 38 suites (100% Green). |
 | **v0.1.9a** | October 2026 | *Tile & Item Sprite Parity, Duplicate Asset Consolidation, and Craftables Cross-Check* | Redesigned placed world tiles (`TILE_CHEST`, `TILE_WORK_BENCH`, `TILE_FURNACE`) in `_generate_tiles` to 100% match held/inventory item icons, audited and consolidated duplicate/alias items (`wooden_bed` vs `bed`, `wooden_chest` vs `chest`, `wood_sword` vs `wooden_sword`, etc.) with discrete metadata, resolved `stone_fireplace` craftable station to Work Bench under `[FURNITURE & MECHANISMS]`, cleaned unindexed assets across `assets/items/` and `assets/craftable_items/`, refreshed `UNIQUE_ASSETS_TRACKER.md` (2,007 verified unique assets with 0 collisions), and passed all 400 test cases (100% Green). |
 | **v0.1.8a** | October 2026 | *Phase 1 Data-Driven Loot & Multi-Affix System, Lantern Ceiling Physics & World Rename* | Standardized 1,461-item `DataDrivenItemRegistry` across 9 canonical categories (including all 129 craftables), 4-layer item model (`BASE ITEM + AFFIXES + RARITY + OPTIONAL UNIQUE EFFECT`), 9 canonical affixes + suffixes with deterministic seeded rolling and mutual exclusion, 3-path loot acquisition (`random`, `targeted`, `milestone`), dedicated Carved Tuber Lantern / Brass Lantern / Spectral Lantern world tiles with North ceiling hanging physics, interactive World Rename in World Selection with duplicate-name protection, and 360 tests passing across 28 suites (100% Green). |
 | **v0.1.7a** | October 2026 | *Stage 2 Hardware Acceleration, GLSL Bloom Shaders & Projectile Batching* | Real GPU ModernGL 5.13 acceleration, GLSL Bloom post-processing fragment shader with dynamic luminance extraction and radiant pulse shimmer for Ancient gear and danmaku projectiles, high-density C-level projectile batch rendering (`draw_projectiles_batch`) integrated with boss danmaku barrages, single-log fallback deduplication eliminating startup warning spam, interactive in-game bloom toggle button (`[BLOOM SHADERS: ON / OFF]`) with `"bloom": true` persistence, state-preserving renderer switching, and 338 tests passing across 26 test suites (100% Green). |
@@ -35,7 +36,36 @@
 
 ## Detailed Version Logs
 
-### [v1.8.0] — Phase 1 Data-Driven Loot & Multi-Affix System, Lantern Ceiling Physics & World Rename (Current Release)
+### [v0.2.1a] — Gameplay, UI, Visual & Persistence Overhauls (Current Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Player Dark Illumination Refinement**:
+  - Player character emits zero illumination by default in dark caverns or night environments.
+  - Eliminated auto-glow bug where Miner Helmet in backpack slot 5 caused continuous glow; illumination now activates strictly when light-emitting gear (Miner Helmet, Crown of Potaria, celestial/radiant accessories) is actively equipped in paperdoll armor slots, or when holding a portable lantern or torch.
+- **Merchant Dialogue Shop UI**:
+  - Expanded NPC Dialogue Window width to 580px and shop item cards to 265px.
+  - Repositioned the green BUY button with clean right-alignment and implemented dynamic text ellipsis truncation for long item names before the buy button, eliminating text overlaps.
+- **Settings UI Ergonomics & Persistence Guarantee**:
+  - Standardized bottom navigation button layout across both Settings and Keybindings screens: Back button is anchored on the left and Reset Defaults is anchored on the right.
+  - Added an in-place confirmation modal prompt before resetting defaults ("RESET ALL SETTINGS TO DEFAULTS", "Are you sure you want to reset all settings to defaults? [Confirm] [Cancel]") to prevent accidental loss of user configurations.
+  - Guaranteed `saves/settings.json` persistence across game restarts by loading user configurations on launch rather than resetting to defaults when MenuManager initializes without arguments.
+- **Daylight Roof Block Shadow Elimination**:
+  - Updated sunlight cellular diffusion in `src/world/lighting.py` so solid surface blocks directly exposed to the open sky receive full incident daylight before light decrements downward, eliminating dark shadow bands directly above rooftops during daytime.
+- **Discrete Multi-Level Camera Zoom**:
+  - Added 3 discrete camera zoom levels: 1.0 (1x default), 2.0 (2x), and 3.0 (3x), togglable via configurable hotkey (Z) and in the Graphics settings tab.
+  - World elements render to a crisp intermediate viewport surface scaled up to the screen, preserving native 1x resolution for UI, HUD, damage numbers, and dialogues without clipping or blur.
+- **Difficulty & Menu Streamlining**:
+  - Set default world creation and game difficulty to Easy across MenuManager and PotariaGame.
+  - Streamlined World Selection card subtitle formatting by removing redundant "· ADVENTURE" mode text.
+- **Cinematic Death & Respawn Transition**:
+  - Replaced high-speed camera panning across chunks upon player death with a smooth 3.0s cinematic pitch-black transition (fade to black, instant teleport and instant camera snap to spawn while fully black, smooth fade in from black).
+- **Automated Verification**:
+  - Created automated test suite in `tests/test_gameplay_and_ui_overhauls.py` validating all 8 gameplay, UI, visual, and persistence overhauls. 621 tests passing across 39 test suites (100% Green).
+
+---
+
+### [v1.8.0] — Phase 1 Data-Driven Loot & Multi-Affix System, Lantern Ceiling Physics & World Rename
 *Release Date: October 2026*
 
 #### Added

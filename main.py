@@ -82,7 +82,7 @@ from src.rpg.equipment import SLOT_WEAPON, SLOT_HEAD
 from src.ui.inventory import Inventory, get_mining_damage
 from src.ui.crafting import CraftingSystem
 from src.ui.hud import HUD
-from src.ui.menu import MenuManager, Button
+from src.ui.menu import MenuManager, Button, STATE_INPUT_MAPPING
 from src.ui.character_panel import CharacterPanel
 from src.ui.npc_dialogue import NPCDialogueWindow
 from src.ui.chest_ui import ChestStorageWindow
@@ -222,7 +222,7 @@ class PotariaGame:
 
         # World Options, Difficulty & Mode Configuration
         self.world_type = WORLD_TYPE_INFINITE
-        self.difficulty = DIFFICULTY_NORMAL
+        self.difficulty = DIFFICULTY_EASY
         self.game_mode = MODE_ADVENTURE
         self.active_world_name = "Default World"
         self.block_deltas = {}
@@ -804,6 +804,7 @@ class PotariaGame:
             self.set_resolution(str(settings["resolution"]))
         if hasattr(self, "camera"):
             self.camera.shake_enabled = settings.get("screen_shake", True)
+            self.camera.set_zoom(settings.get("zoom", 1.0))
         req_rend = settings.get("renderer", RENDERER_HARDWARE)
         if hasattr(self, "renderer_manager") and req_rend != self.renderer_manager.requested_type:
             self.set_renderer_mode(req_rend)
@@ -1065,6 +1066,10 @@ class PotariaGame:
                 self.bgm.set_volumes(master=m_vol, bgm=b_vol)
             if hasattr(self, "menu") and hasattr(self.menu, "save_settings"):
                 self.menu.save_settings()
+        elif isinstance(action, tuple) and action[0] == "zoom_updated":
+            if hasattr(self, "camera"):
+                self.camera.set_zoom(action[1])
+            self.settings["zoom"] = action[1]
         elif isinstance(action, tuple) and action[0] == "set_fullscreen":
 
             self.set_fullscreen_mode(action[1])
@@ -1403,6 +1408,8 @@ class PotariaGame:
                     if self.menu.handle_key(event):
                         continue
                     if event.key == pygame.K_ESCAPE and self.menu.state != STATE_MENU:
+                        if hasattr(self, "menu") and self.menu.state in (STATE_SETTINGS, STATE_INPUT_MAPPING):
+                            self.menu.save_settings()
                         if self.menu.previous_state == STATE_PLAYING:
                             self.menu.state = STATE_PLAYING
                             self.paused = True
@@ -1464,6 +1471,7 @@ class PotariaGame:
                 k_sf = self.menu.key_bindings.get("Skill F", pygame.K_f)
                 k_sv = self.menu.key_bindings.get("Skill V", pygame.K_v)
                 k_sr = self.menu.key_bindings.get("Skill R", pygame.K_r)
+                k_zoom = self.menu.key_bindings.get("Camera Zoom", pygame.K_z)
 
                 if event.key == pygame.K_ESCAPE:
                     if hasattr(self, "chest_ui") and self.chest_ui.is_open:
@@ -1516,6 +1524,13 @@ class PotariaGame:
                         self.player.cast_skill_hotkey("V", self.particle_system, self.camera)
                     elif event.key == k_sr:
                         self.player.cast_skill_hotkey("R", self.particle_system, self.camera)
+
+                elif event.key in (k_zoom, pygame.K_z):
+                    if hasattr(self, "camera"):
+                        new_zoom = self.camera.cycle_zoom()
+                        self.settings["zoom"] = new_zoom
+                        if hasattr(self, "menu") and hasattr(self.menu, "save_settings"):
+                            self.menu.save_settings()
 
                 elif event.key == pygame.K_F1:
                     self.show_debug = not self.show_debug
@@ -2988,7 +3003,11 @@ class PotariaGame:
             self.combat.multiplayer_player_positions = [(self.player.center_x, self.player.center_y)]
 
         # 4. Camera Smooth Following
-        self.camera.set_target(self.player.center_x, self.player.center_y)
+        if getattr(self.player, "snap_camera_instant", False):
+            self.player.snap_camera_instant = False
+            self.camera.set_target(self.player.center_x, self.player.center_y, instant=True)
+        else:
+            self.camera.set_target(self.player.center_x, self.player.center_y)
         self.camera.update(dt)
 
         # 5. World, Town NPCs & Particles
@@ -2998,7 +3017,9 @@ class PotariaGame:
                 self.world.update_town_npcs(dt, self.player, self.inventory, self.asset_factory, self.sound_manager, self.combat)
             if hasattr(self, "npc_dialogue"):
                 self.npc_dialogue.update(dt, player=self.player)
-            cam_rect = pygame.Rect(self.camera.x - 32, self.camera.y - 32, SCREEN_WIDTH + 64, SCREEN_HEIGHT + 64)
+            cam_w = getattr(self.camera, "screen_width", SCREEN_WIDTH)
+            cam_h = getattr(self.camera, "screen_height", SCREEN_HEIGHT)
+            cam_rect = pygame.Rect(self.camera.x - 32, self.camera.y - 32, cam_w + 64, cam_h + 64)
             self.world.emit_fireplace_smoke(self.particle_system, cam_rect)
             self.particle_system.update(dt)
             if hasattr(self, "vfx_manager") and self.vfx_manager:
@@ -3246,10 +3267,12 @@ class PotariaGame:
 
         # 8. Dynamic Viewport 2D Lighting (Boundless horizontally)
         with self.profiler.section("update_lighting"):
+            cam_w = getattr(self.camera, "screen_width", SCREEN_WIDTH)
+            cam_h = getattr(self.camera, "screen_height", SCREEN_HEIGHT)
             base_min_tx = int(self.camera.x // SCALED_TILE) - 1
-            base_max_tx = int((self.camera.x + SCREEN_WIDTH) // SCALED_TILE) + 2
+            base_max_tx = int((self.camera.x + cam_w) // SCALED_TILE) + 2
             base_min_ty = int(self.camera.y // SCALED_TILE) - 1
-            base_max_ty = min(self.world.height - 1, int((self.camera.y + SCREEN_HEIGHT) // SCALED_TILE) + 2)
+            base_max_ty = min(self.world.height - 1, int((self.camera.y + cam_h) // SCALED_TILE) + 2)
             
             min_tx = base_min_tx - (base_min_tx % 4)
             max_tx = min_tx + (base_max_tx - base_min_tx) + 4
@@ -3261,8 +3284,10 @@ class PotariaGame:
             held_item = self.inventory.get_active_item()
             has_miner_helm = (
                 (hasattr(self.player, "equipment") and self.player.equipment.has_miner_helmet_equipped())
-                or (self.player.equipment.slots.get(SLOT_HEAD) == "miner_helmet")
-                or self.inventory.has_miner_helmet()
+                or (hasattr(self.player, "equipment") and self.player.equipment.slots.get(SLOT_HEAD) == "miner_helmet")
+            )
+            has_light_emitter = (
+                hasattr(self.player, "equipment") and hasattr(self.player.equipment, "has_light_emitter") and self.player.equipment.has_light_emitter()
             )
             has_astral_radiance = (
                 (hasattr(self.player, "equipment") and self.player.equipment.has_astral_radiance())
@@ -3281,8 +3306,8 @@ class PotariaGame:
             if has_astral_radiance:
                 # Astral Sparkles / Crown of Potaria: Glorious bright celestial radiance
                 extra_lights.append((ptx, pty, 13, 8, False))
-            elif has_miner_helm:
-                # Potato Miner Helmet: Gentle headlamp illumination around player (moderate, not too bright)
+            elif has_miner_helm or has_light_emitter:
+                # Potato Miner Helmet / radiant gear: Gentle illumination around player
                 extra_lights.append((ptx, pty, 8, 5, False))
             elif held_item and held_item.item_id in ("carved_tuber_lantern", "curved_tuber_lantern", "brass_lantern", "spectral_lantern"):
                 # Portable Lantern: Steady warm light
@@ -3318,6 +3343,18 @@ class PotariaGame:
                 ambient_tint=ambient_tint
             )
 
+    def _get_zoom_world_surf(self):
+        w = max(1, int(self.camera.screen_width))
+        h = max(1, int(self.camera.screen_height))
+        if (
+            not hasattr(self, "_zoom_world_surf")
+            or self._zoom_world_surf is None
+            or self._zoom_world_surf.get_width() != w
+            or self._zoom_world_surf.get_height() != h
+        ):
+            self._zoom_world_surf = pygame.Surface((w, h))
+        return self._zoom_world_surf
+
     def render(self):
         if hasattr(self, "renderer_manager"):
             self.renderer_manager.clear((0, 0, 0))
@@ -3334,29 +3371,38 @@ class PotariaGame:
                 pygame.display.flip()
             return
 
+        # Check camera zoom: if zoom > 1.0, render world layers to intermediate surface
+        use_zoom = getattr(self.camera, "zoom", 1.0) > 1.0
+        if use_zoom:
+            world_target = self._get_zoom_world_surf()
+            self.camera.render_to_world_surf = True
+        else:
+            world_target = self.screen
+            self.camera.render_to_world_surf = False
+
         # Layer 1: Parallax Sky & Celestial Bodies
         with self.profiler.section("render_sky"):
-            self.sky.render(self.screen, self.camera)
+            self.sky.render(world_target, self.camera)
 
         # Layer 2: World Tiles & Background Walls
         with self.profiler.section("render_world"):
-            self.world.render(self.screen, self.camera, draw_water=False)
+            self.world.render(world_target, self.camera, draw_water=False)
 
         # Layer 3: Particles & Debris
         with self.profiler.section("render_particles"):
-            self.particle_system.render(self.screen, self.camera)
+            self.particle_system.render(world_target, self.camera)
 
         # Layer 4: Mobs, Boss & Dropped Items
         with self.profiler.section("render_combat"):
-            self.combat.render(self.screen, self.camera, renderer=getattr(self, "renderer", None), render_damage_numbers=False)
+            self.combat.render(world_target, self.camera, renderer=getattr(self, "renderer", None), render_damage_numbers=False)
 
         # Layer 4.5: Remote LAN Party Members
         if self.client and self.client.connected:
-            self.client.render_remote_players(self.screen, self.camera, self.asset_factory)
+            self.client.render_remote_players(world_target, self.camera, self.asset_factory)
 
         # Layer 4.8: Friendly Town NPCs & Villagers
         if hasattr(self.world, "render_town_npcs") and getattr(self.world, "town_npcs", None):
-            self.world.render_town_npcs(self.screen, self.camera, player=self.player)
+            self.world.render_town_npcs(world_target, self.camera, player=self.player)
 
         # Layer 5: Spud the Potato Hero
         active_item = self.inventory.get_active_item()
@@ -3371,7 +3417,7 @@ class PotariaGame:
                 held_icon = self.asset_factory.items.get(active_item.item_id)
         else:
             held_icon = self.asset_factory.items.get(active_item.item_id) if active_item else None
-        self.player.render(self.screen, self.camera, held_item_icon=held_icon, held_item=active_item)
+        self.player.render(world_target, self.camera, held_item_icon=held_icon, held_item=active_item)
 
         # Layer 5.1: Fishing Line & Bobber
         if getattr(self, "fishing_bobber", None):
@@ -3379,31 +3425,31 @@ class PotariaGame:
             bsx, bsy = self.camera.world_to_screen(bob["x"], bob["y"])
             tip_wx, tip_wy = self.player.get_rod_tip_pos() if hasattr(self.player, "get_rod_tip_pos") else (self.player.center_x + (10 if self.player.facing_right else -10), self.player.center_y - 2)
             psx, psy = self.camera.world_to_screen(tip_wx, tip_wy)
-            pygame.draw.line(self.screen, (220, 220, 220), (psx, psy), (bsx, bsy), 1)
+            pygame.draw.line(world_target, (220, 220, 220), (psx, psy), (bsx, bsy), 1)
             bob_r = 4
-            pygame.draw.circle(self.screen, (240, 240, 240), (bsx, bsy + 2), bob_r)
-            pygame.draw.circle(self.screen, (220, 40, 40), (bsx, bsy - 2), bob_r)
-            pygame.draw.circle(self.screen, (20, 20, 20), (bsx, bsy), bob_r + 1, 1)
+            pygame.draw.circle(world_target, (240, 240, 240), (bsx, bsy + 2), bob_r)
+            pygame.draw.circle(world_target, (220, 40, 40), (bsx, bsy - 2), bob_r)
+            pygame.draw.circle(world_target, (20, 20, 20), (bsx, bsy), bob_r + 1, 1)
             if bob.get("state") == "bite":
-                pygame.draw.circle(self.screen, (100, 200, 255), (bsx, bsy), bob_r + 6, 2)
+                pygame.draw.circle(world_target, (100, 200, 255), (bsx, bsy), bob_r + 6, 2)
                 pulse = (pygame.time.get_ticks() // 250) % 2
                 ex_col = (255, 235, 60) if pulse else (255, 90, 90)
                 if getattr(self, "boss_font", None):
                     ex_surf = self.boss_font.render("!", True, ex_col)
-                    self.screen.blit(ex_surf, (bsx - ex_surf.get_width() // 2, bsy - 34))
+                    world_target.blit(ex_surf, (bsx - ex_surf.get_width() // 2, bsy - 34))
                 if getattr(self, "font_fps", None):
                     rc_surf = self.font_fps.render("[RIGHT CLICK!]", True, (255, 255, 255))
                     bg_w, bg_h = rc_surf.get_width() + 6, rc_surf.get_height() + 2
                     bg_rect = pygame.Rect(bsx - bg_w // 2, bsy - 18, bg_w, bg_h)
-                    pygame.draw.rect(self.screen, (15, 20, 30, 200), bg_rect, border_radius=3)
-                    self.screen.blit(rc_surf, (bsx - rc_surf.get_width() // 2, bsy - 17))
+                    pygame.draw.rect(world_target, (15, 20, 30, 200), bg_rect, border_radius=3)
+                    world_target.blit(rc_surf, (bsx - rc_surf.get_width() // 2, bsy - 17))
 
         # Layer 5.2: Aquatic Foreground Water Pass
-        self.world.render_water(self.screen, self.camera)
+        self.world.render_water(world_target, self.camera)
 
         # Layer 5.5: Grand Animated Visual Effects (Skills, Ancient Slashes, Explosions)
         if hasattr(self, "vfx_manager") and self.vfx_manager:
-            self.vfx_manager.render(self.screen, self.camera)
+            self.vfx_manager.render(world_target, self.camera)
 
         # Layer 6: Dynamic 2D Lighting Atmosphere
         # Pixel-perfect alignment matching world.render() integer rounding eliminates 1px seams
@@ -3414,7 +3460,11 @@ class PotariaGame:
             min_ty = self.lighting._last_min_ty if self.lighting._last_min_ty is not None else (int(cam_y // SCALED_TILE) - 1)
             light_screen_x = min_tx * SCALED_TILE - cam_x
             light_screen_y = min_ty * SCALED_TILE - cam_y
-            self.lighting.render_lighting(self.screen, light_screen_x, light_screen_y)
+            self.lighting.render_lighting(world_target, light_screen_x, light_screen_y)
+
+        if use_zoom:
+            self.camera.render_to_world_surf = False
+            pygame.transform.scale(world_target, (self.camera.base_width, self.camera.base_height), self.screen)
 
         # Layer 7: Floating Damage Numbers (pure text, no background box)
         if getattr(self.combat, "show_damage_numbers", True):
@@ -3470,6 +3520,15 @@ class PotariaGame:
             if hasattr(self, "touch_controller") and self.touch_controller.is_visible():
                 self.touch_controller.render(ui_surf, self.player, self.inventory, self.camera, game=self)
 
+        # Cinematic Death Transition Pitch-Black Overlay
+        if getattr(self.player, "death_fade_alpha", 0) > 0:
+            alpha = min(255, max(0, int(self.player.death_fade_alpha)))
+            if not hasattr(self, "_death_fade_surf") or self._death_fade_surf.get_size() != ui_surf.get_size():
+                self._death_fade_surf = pygame.Surface(ui_surf.get_size())
+                self._death_fade_surf.fill((0, 0, 0))
+            self._death_fade_surf.set_alpha(alpha)
+            ui_surf.blit(self._death_fade_surf, (0, 0))
+
         # Layer 10: Debug Overlay
         if self.show_debug:
             self._render_debug_overlay(target_surf=ui_surf)
@@ -3502,8 +3561,10 @@ class PotariaGame:
         ptx = int(self.player.center_x // SCALED_TILE)
         pty = int(self.player.center_y // SCALED_TILE)
         tile_under = self.world.get_tile(ptx, pty + 2)
-        has_helmet = (self.inventory.has_miner_helmet() or
-                      self.player.equipment.slots.get("head") == "miner_helmet")
+        has_helmet = (
+            (hasattr(self.player, "equipment") and self.player.equipment.has_miner_helmet_equipped())
+            or (hasattr(self.player, "equipment") and self.player.equipment.slots.get("head") == "miner_helmet")
+        )
         lines = [
             f"POTARIA v1.0 | Dev: {DEVELOPER}",
             f"FPS: {fps} | World Seed: {self.world.seed}",

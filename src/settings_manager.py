@@ -37,10 +37,11 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
     "boost_mode": True,
     "damage_numbers": True,
     "tooltips": "detailed",
+    "zoom": 1.0,
 }
 
 # Default Key Bindings (standard scancodes)
-# a=97, d=100, space=32, s=115, e=101, c=99, m=109, q=113, f=102, v=118, r=114
+# a=97, d=100, space=32, s=115, e=101, c=99, m=109, q=113, f=102, v=118, r=114, z=122
 DEFAULT_KEY_BINDINGS: Dict[str, int] = {
     "Move Left": 97,
     "Move Right": 100,
@@ -53,6 +54,7 @@ DEFAULT_KEY_BINDINGS: Dict[str, int] = {
     "Skill F": 102,
     "Skill V": 118,
     "Skill R": 114,
+    "Camera Zoom": 122,
 }
 
 # Global in-memory reference to ensure game and menus share exact same state

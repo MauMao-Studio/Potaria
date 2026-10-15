@@ -85,7 +85,7 @@ class LightingEngine:
             tx = min_tx + lx
             
             # Trace downwards from top of viewport for sunlight
-            sun_val = ambient_sunlight
+            sun_val = int(round(ambient_sunlight))
             for ly in range(grid_h):
                 ty = min_ty + ly
                 if ty < 0:
@@ -105,10 +105,12 @@ class LightingEngine:
                         light[lx][ly] = sun_val
                         queue.append((lx, ly, sun_val))
                 elif prop.get("solid", False):
-                    # Blocks diminish direct sunlight
-                    sun_val = max(0, sun_val - prop.get("absorb", 0) - 2)
+                    # Top surface exposed to sky receives incident daylight before absorption
                     if sun_val > light[lx][ly]:
                         light[lx][ly] = sun_val
+                    # Blocks diminish direct sunlight descending downwards/underneath
+                    sun_val = max(0, sun_val - prop.get("absorb", 0) - 2)
+                    if sun_val > 0:
                         queue.append((lx, ly, sun_val))
                 else:
                     # In cave with background walls

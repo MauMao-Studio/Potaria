@@ -848,7 +848,10 @@ class HUD:
                                 player.center_y - (tile_world_y + SCALED_TILE / 2))
         in_reach = (reach_dist <= SCALED_TILE * 5.5)
 
+        tile_size = int(SCALED_TILE * getattr(camera, "zoom", 1.0))
         reticle_surf = self.reticle_in_reach if in_reach else self.reticle_out_of_reach
+        if getattr(camera, "zoom", 1.0) != 1.0:
+            reticle_surf = pygame.transform.scale(reticle_surf, (tile_size, tile_size))
         target_surf.blit(reticle_surf, (sx, sy))
 
         # Progressive Block Breaking Progress Bar over targeted tile
@@ -860,10 +863,10 @@ class HUD:
             max_h = max(1, prop.get("hardness", 20))
             break_pct = max(0.0, min(1.0, float(cur_dmg) / float(max_h)))
             if break_pct > 0.0:
-                bar_w = SCALED_TILE - 4
-                bar_h = 4
+                bar_w = tile_size - 4
+                bar_h = max(4, int(4 * getattr(camera, "zoom", 1.0)))
                 bx = sx + 2
-                by = sy + SCALED_TILE - 6
+                by = sy + tile_size - bar_h - 2
                 # Dark backing
                 pygame.draw.rect(target_surf, (15, 18, 28, 230), (bx - 1, by - 1, bar_w + 2, bar_h + 2), border_radius=2)
                 # Outer border
