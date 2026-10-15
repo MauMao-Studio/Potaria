@@ -43,4 +43,7 @@ def get_sapling_item(tile_id: int):
 
 def get_sapling_tile(item_id: str):
     """Returns the corresponding world tile ID for a given sapling item identifier, or None if not a sapling item."""
-    return SAPLING_ITEM_TO_TILE.get(str(item_id).lower(), None)
+    if item_id is None:
+        return None
+    clean = str(item_id).lower().strip().replace(" ", "_")
+    return SAPLING_ITEM_TO_TILE.get(clean, None)

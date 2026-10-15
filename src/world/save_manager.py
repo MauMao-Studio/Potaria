@@ -970,7 +970,10 @@ def load_world(world_name, game):
                     "sapling_type": sap_type
                 }
                 if game.world.get_tile(tx, ty) == TILE_SAPLING and sap_type in SAPLING_ITEM_TO_TILE:
-                    game.world.set_tile(tx, ty, SAPLING_ITEM_TO_TILE[sap_type])
+                    upgraded_tid = SAPLING_ITEM_TO_TILE[sap_type]
+                    game.world.set_tile(tx, ty, upgraded_tid)
+                    if hasattr(game, "block_deltas") and (tx, ty) in game.block_deltas:
+                        game.block_deltas[(tx, ty)] = upgraded_tid
 
     # Restore Playtime
     game.playtime = float(data.get("playtime", 0.0))

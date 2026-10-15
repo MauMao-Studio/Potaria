@@ -2559,6 +2559,18 @@ class PotariaGame:
                             )
                         self.world.last_felled_tree = None
                         self.world.last_felled_trunks = []
+                if hasattr(self.world, "last_broken_extra_tiles") and self.world.last_broken_extra_tiles:
+                    for ex_tx, ex_ty, ex_tid in self.world.last_broken_extra_tiles:
+                        self.block_deltas[(ex_tx, ex_ty)] = ex_tid
+                        if self.client and self.client.connected:
+                            self.client.send_block_delta(ex_tx, ex_ty, ex_tid)
+                    self.world.last_broken_extra_tiles.clear()
+                if hasattr(self.world, "decay_drops") and self.world.decay_drops:
+                    while self.world.decay_drops:
+                        d_item, d_cnt, d_x, d_y = self.world.decay_drops.pop(0)
+                        self.combat.dropped_items.append(
+                            DroppedItem(d_item, d_cnt, d_x, d_y, self.asset_factory)
+                        )
                 self.lighting.dirty = True
                 self.hud.minimap.mark_dirty()
 
@@ -2577,6 +2589,10 @@ class PotariaGame:
             TILE_CHEST: (185, 130, 70),
             TILE_IRON_CHEST: (200, 205, 215),
             TILE_SAPLING: (70, 180, 50),
+            TILE_SAPLING_OAK: (70, 180, 50),
+            TILE_SAPLING_PALM: (60, 200, 75),
+            TILE_SAPLING_PINE: (35, 110, 55),
+            TILE_SAPLING_BLIGHT: (160, 60, 210),
             TILE_ROPE_RUNGS: (160, 120, 70),
             TILE_SAND: (225, 200, 140),
             TILE_SANDSTONE: (195, 165, 110),
@@ -2892,6 +2908,8 @@ class PotariaGame:
                             self.world.planted_saplings[(tx, ty)] = {"growth_days": 0, "sapling_type": sap_type}
                         else:
                             self.world.planted_saplings.pop((tx, ty), None)
+                    self.lighting.dirty = True
+                    self.hud.minimap.mark_dirty()
 
             # Multiplayer Boss HP Scaling
             if self.combat.boss and len(self.client.remote_players) > 0 and not self.combat.is_client:
@@ -2977,7 +2995,7 @@ class PotariaGame:
             self.current_day = current_day
         elif current_day > self.current_day:
             self.current_day = current_day
-            self.world.grow_plants_daily()
+            self.world.grow_plants_daily(game=self)
 
         # Sleeping fast-forwards through night until morning
         if getattr(self.player, "is_resting", False):

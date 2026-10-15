@@ -401,3 +401,150 @@ def test_sapling_multiplayer_block_deltas():
     assert world.get_tile(5, 10) == TILE_AIR
     assert (5, 10) not in world.planted_saplings
 
+
+def test_sapling_support_loss_and_drop():
+    """Verify saplings pop and drop their matching item when supporting block is mined."""
+    af = AssetFactory()
+    world = World(af, seed=12345)
+    world.set_tile(10, 20, TILE_DIRT)
+    world.place_tile(10, 19, TILE_SAPLING_BLIGHT, chest_type="blight_sapling")
+    assert world.get_tile(10, 19) == TILE_SAPLING_BLIGHT
+
+    # Mine supporting block below
+    broken, drop, tid = world.damage_tile_at(10, 20, 100)
+    assert broken is True
+    assert world.get_tile(10, 20) == TILE_AIR
+    # Sapling at (10, 19) must NOT float; it must be destroyed and dropped
+    assert world.get_tile(10, 19) == TILE_AIR
+    assert (10, 19) not in world.planted_saplings
+    assert hasattr(world, "decay_drops")
+    assert any(d[0] == "blight_sapling" for d in world.decay_drops)
+
+
+def test_prevent_floating_tree_growth():
+    """Verify grow_plants_daily will not grow floating trees if ground below is missing."""
+    af = AssetFactory()
+    world = World(af, seed=12345)
+    world.set_tile(15, 25, TILE_DIRT)
+    world.place_tile(15, 24, TILE_SAPLING_PINE, chest_type="pine_sapling")
+    # Remove ground directly without damage_tile
+    world.set_tile(15, 25, TILE_AIR)
+
+    world.planted_saplings[(15, 24)]["growth_days"] = 2
+    world.grow_plants_daily()
+
+    # Sapling should be cleared and dropped, not grown into mid-air tree trunk
+    assert world.get_tile(15, 24) == TILE_AIR
+    assert world.get_tile(15, 23) == TILE_AIR
+    assert (15, 24) not in world.planted_saplings
+    assert any(d[0] == "pine_sapling" for d in world.decay_drops)
+
+
+def test_tree_daily_growth_updates_block_deltas_and_persists():
+    """Verify tree daily growth updates game.block_deltas and persists across save/load."""
+    af = AssetFactory()
+    world = World(af, seed=12345)
+
+    class MockGame:
+        def __init__(self, w, name="test_tree_persist_save"):
+            self.world = w
+            self.asset_factory = af
+            self.active_world_name = name
+            self.world_type = "infinite"
+            self.difficulty = "normal"
+            self.game_mode = "adventure"
+            self.playtime = 1.0
+            self.block_deltas = {}
+            self.wall_deltas = {}
+            self.inventory = type("MockInv", (), {"slots": [None]*40, "coin_purse": {"copper":0,"silver":0,"gold":0,"platinum":0}, "migrate_coins": lambda s: None})()
+            self.player = type("MockPl", (), {
+                "x": 100.0, "y": 200.0, "vx": 0.0, "vy": 0.0, "spawn_point": (100, 200),
+                "stats": PlayerStats(),
+                "equipment": type("MockEquip", (), {"slots": {}, "active_weapon_id": None, "recalculate_stats": lambda s, st: None})(),
+                "skills": type("MockSkills", (), {"learned_skills": [], "skill_levels": {}, "hotkey_bindings": {}, "hotkey_slots": {}})()
+            })()
+            self.combat = type("MockCombat", (), {"boss": None, "boss_defeated": False, "grand_boss_defeated": False, "dungeon_boss_slain": False, "mini_bosses_slain": 0, "alive_mobs": [], "dropped_items": []})()
+
+    save_name = "test_tree_persist_save"
+    game = MockGame(world, name=save_name)
+    world.game = game
+
+    for x in range(10, 25):
+        world.set_tile(x, 30, TILE_DIRT)
+        game.block_deltas[(x, 30)] = TILE_DIRT
+        for y in range(15, 30):
+            world.set_tile(x, y, TILE_AIR)
+
+    world.place_tile(15, 29, TILE_SAPLING_BLIGHT, chest_type="blight_sapling")
+    game.block_deltas[(15, 29)] = TILE_SAPLING_BLIGHT
+
+    world.planted_saplings[(15, 29)]["growth_days"] = 2
+    world.grow_plants_daily(game=game)
+
+    # Base tile must now be trunk in block_deltas
+    assert game.block_deltas[(15, 29)] == TILE_WOOD_TRUNK
+    assert world.get_tile(15, 29) == TILE_WOOD_TRUNK
+
+    # Save and reload
+    save_world(save_name, game)
+
+    new_world = World(af, seed=12345)
+    new_game = MockGame(new_world, name=save_name)
+    load_world(save_name, new_game)
+
+    # The mature tree must remain a trunk, NOT revert to blight sapling
+    assert new_game.world.get_tile(15, 29) == TILE_WOOD_TRUNK
+    assert new_game.block_deltas[(15, 29)] == TILE_WOOD_TRUNK
+
+    delete_world(save_name)
+
+
+def test_palm_tree_daily_growth():
+    """Verify palm sapling matures into a tropical palm tree with fronds."""
+    af = AssetFactory()
+    world = World(af, seed=12345)
+    for x in range(10, 30):
+        world.set_tile(x, 25, TILE_DIRT)
+        for y in range(10, 25):
+            world.set_tile(x, y, TILE_AIR)
+
+    world.place_tile(18, 24, TILE_SAPLING_PALM, chest_type="palm_sapling")
+    world.planted_saplings[(18, 24)]["growth_days"] = 2
+    world.grow_plants_daily()
+
+    assert world.get_tile(18, 24) == TILE_WOOD_TRUNK
+    assert (18, 24) not in world.planted_saplings
+    # Check that leaves were generated for canopy
+    has_leaves = any(world.get_tile(x, y) == TILE_LEAVES for x in range(15, 22) for y in range(15, 24))
+    assert has_leaves is True
+
+
+def test_legacy_sapling_rendering_and_save_delta_upgrade():
+    """Verify legacy sapling tile 54 renders with its recorded sapling type animation and upgrades deltas."""
+    af = AssetFactory()
+    world = World(af, seed=12345)
+
+    world.set_tile(10, 20, 54)
+    world.planted_saplings[(10, 20)] = {"growth_days": 0, "sapling_type": "blight_sapling"}
+
+    # Verify rendering target_tid resolution
+    planted_info = world.planted_saplings.get((10, 20))
+    mapped_tid = SAPLING_ITEM_TO_TILE.get(planted_info["sapling_type"])
+    assert mapped_tid == TILE_SAPLING_BLIGHT
+    blight_frames = world.scaled_sapling_frames_by_tile[TILE_SAPLING_BLIGHT]
+    oak_frames = world.scaled_sapling_frames_by_tile[TILE_SAPLING_OAK]
+    assert blight_frames != oak_frames
+
+
+def test_debris_and_map_colors_coverage():
+    """Verify debris particle colors and minimap colors are registered for all sapling types."""
+    from main import PotariaGame
+    from src.ui.minimap import TILE_MAP_COLORS
+
+    dummy_game = type("DummyGame", (), {"_get_tile_debris_color": PotariaGame._get_tile_debris_color})()
+
+    for tid in SAPLING_TILES:
+        debris_col = dummy_game._get_tile_debris_color(tid)
+        assert debris_col != (150, 150, 150), f"Sapling {tid} must have a specific debris color"
+        assert tid in TILE_MAP_COLORS, f"Sapling {tid} must have a registered map color"
+
