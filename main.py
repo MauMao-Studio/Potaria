@@ -636,7 +636,7 @@ class PotariaGame:
         """Master game loop."""
         while self.running:
             self.profiler.start_frame()
-            with self.profiler.section("present"):
+            with self.profiler.section("frame_wait"):
                 dt = self.clock.tick(FPS) / 1000.0
                 dt = min(dt, 0.05)
 
@@ -3364,10 +3364,11 @@ class PotariaGame:
         return self._zoom_world_surf
 
     def render(self):
-        if hasattr(self, "renderer_manager"):
-            self.renderer_manager.clear((0, 0, 0))
-        elif hasattr(self, "screen") and self.screen:
-            self.screen.fill((0, 0, 0))
+        with self.profiler.section("render_clear"):
+            if hasattr(self, "renderer_manager"):
+                self.renderer_manager.clear((0, 0, 0))
+            elif hasattr(self, "screen") and self.screen:
+                self.screen.fill((0, 0, 0))
 
         ui_surf = getattr(self, "ui_screen", None) or self.screen
 
@@ -3404,60 +3405,62 @@ class PotariaGame:
         with self.profiler.section("render_combat"):
             self.combat.render(world_target, self.camera, renderer=getattr(self, "renderer", None), render_damage_numbers=False)
 
-        # Layer 4.5: Remote LAN Party Members
-        if self.client and self.client.connected:
-            self.client.render_remote_players(world_target, self.camera, self.asset_factory)
+        # Layer 4.5 through 5.5: Player, NPCs, Water, VFX
+        with self.profiler.section("render_entities"):
+            # Layer 4.5: Remote LAN Party Members
+            if self.client and self.client.connected:
+                self.client.render_remote_players(world_target, self.camera, self.asset_factory)
 
-        # Layer 4.8: Friendly Town NPCs & Villagers
-        if hasattr(self.world, "render_town_npcs") and getattr(self.world, "town_npcs", None):
-            self.world.render_town_npcs(world_target, self.camera, player=self.player)
+            # Layer 4.8: Friendly Town NPCs & Villagers
+            if hasattr(self.world, "render_town_npcs") and getattr(self.world, "town_npcs", None):
+                self.world.render_town_npcs(world_target, self.camera, player=self.player)
 
-        # Layer 5: Spud the Potato Hero
-        active_item = self.inventory.get_active_item()
-        is_fishing_active = bool(getattr(self, "fishing_bobber", None) or (hasattr(self, "fishing_minigame") and self.fishing_minigame and self.fishing_minigame.is_active))
-        if active_item and is_fishing_active and (active_item.item_id in ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod") or "angler_rod" in active_item.item_id):
-            in_use_key = f"{active_item.item_id}_in_use"
-            if in_use_key in self.asset_factory.items:
-                held_icon = self.asset_factory.items[in_use_key]
-            elif hasattr(self.asset_factory, "get_rod_sprite"):
-                held_icon = self.asset_factory.get_rod_sprite(active_item.item_id, in_use=True)
+            # Layer 5: Spud the Potato Hero
+            active_item = self.inventory.get_active_item()
+            is_fishing_active = bool(getattr(self, "fishing_bobber", None) or (hasattr(self, "fishing_minigame") and self.fishing_minigame and self.fishing_minigame.is_active))
+            if active_item and is_fishing_active and (active_item.item_id in ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod") or "angler_rod" in active_item.item_id):
+                in_use_key = f"{active_item.item_id}_in_use"
+                if in_use_key in self.asset_factory.items:
+                    held_icon = self.asset_factory.items[in_use_key]
+                elif hasattr(self.asset_factory, "get_rod_sprite"):
+                    held_icon = self.asset_factory.get_rod_sprite(active_item.item_id, in_use=True)
+                else:
+                    held_icon = self.asset_factory.items.get(active_item.item_id)
             else:
-                held_icon = self.asset_factory.items.get(active_item.item_id)
-        else:
-            held_icon = self.asset_factory.items.get(active_item.item_id) if active_item else None
-        self.player.render(world_target, self.camera, held_item_icon=held_icon, held_item=active_item)
+                held_icon = self.asset_factory.items.get(active_item.item_id) if active_item else None
+            self.player.render(world_target, self.camera, held_item_icon=held_icon, held_item=active_item)
 
-        # Layer 5.1: Fishing Line & Bobber
-        if getattr(self, "fishing_bobber", None):
-            bob = self.fishing_bobber
-            bsx, bsy = self.camera.world_to_screen(bob["x"], bob["y"])
-            tip_wx, tip_wy = self.player.get_rod_tip_pos() if hasattr(self.player, "get_rod_tip_pos") else (self.player.center_x + (10 if self.player.facing_right else -10), self.player.center_y - 2)
-            psx, psy = self.camera.world_to_screen(tip_wx, tip_wy)
-            pygame.draw.line(world_target, (220, 220, 220), (psx, psy), (bsx, bsy), 1)
-            bob_r = 4
-            pygame.draw.circle(world_target, (240, 240, 240), (bsx, bsy + 2), bob_r)
-            pygame.draw.circle(world_target, (220, 40, 40), (bsx, bsy - 2), bob_r)
-            pygame.draw.circle(world_target, (20, 20, 20), (bsx, bsy), bob_r + 1, 1)
-            if bob.get("state") == "bite":
-                pygame.draw.circle(world_target, (100, 200, 255), (bsx, bsy), bob_r + 6, 2)
-                pulse = (pygame.time.get_ticks() // 250) % 2
-                ex_col = (255, 235, 60) if pulse else (255, 90, 90)
-                if getattr(self, "boss_font", None):
-                    ex_surf = self.boss_font.render("!", True, ex_col)
-                    world_target.blit(ex_surf, (bsx - ex_surf.get_width() // 2, bsy - 34))
-                if getattr(self, "font_fps", None):
-                    rc_surf = self.font_fps.render("[RIGHT CLICK!]", True, (255, 255, 255))
-                    bg_w, bg_h = rc_surf.get_width() + 6, rc_surf.get_height() + 2
-                    bg_rect = pygame.Rect(bsx - bg_w // 2, bsy - 18, bg_w, bg_h)
-                    pygame.draw.rect(world_target, (15, 20, 30, 200), bg_rect, border_radius=3)
-                    world_target.blit(rc_surf, (bsx - rc_surf.get_width() // 2, bsy - 17))
+            # Layer 5.1: Fishing Line & Bobber
+            if getattr(self, "fishing_bobber", None):
+                bob = self.fishing_bobber
+                bsx, bsy = self.camera.world_to_screen(bob["x"], bob["y"])
+                tip_wx, tip_wy = self.player.get_rod_tip_pos() if hasattr(self.player, "get_rod_tip_pos") else (self.player.center_x + (10 if self.player.facing_right else -10), self.player.center_y - 2)
+                psx, psy = self.camera.world_to_screen(tip_wx, tip_wy)
+                pygame.draw.line(world_target, (220, 220, 220), (psx, psy), (bsx, bsy), 1)
+                bob_r = 4
+                pygame.draw.circle(world_target, (240, 240, 240), (bsx, bsy + 2), bob_r)
+                pygame.draw.circle(world_target, (220, 40, 40), (bsx, bsy - 2), bob_r)
+                pygame.draw.circle(world_target, (20, 20, 20), (bsx, bsy), bob_r + 1, 1)
+                if bob.get("state") == "bite":
+                    pygame.draw.circle(world_target, (100, 200, 255), (bsx, bsy), bob_r + 6, 2)
+                    pulse = (pygame.time.get_ticks() // 250) % 2
+                    ex_col = (255, 235, 60) if pulse else (255, 90, 90)
+                    if getattr(self, "boss_font", None):
+                        ex_surf = self.boss_font.render("!", True, ex_col)
+                        world_target.blit(ex_surf, (bsx - ex_surf.get_width() // 2, bsy - 34))
+                    if getattr(self, "font_fps", None):
+                        rc_surf = self.font_fps.render("[RIGHT CLICK!]", True, (255, 255, 255))
+                        bg_w, bg_h = rc_surf.get_width() + 6, rc_surf.get_height() + 2
+                        bg_rect = pygame.Rect(bsx - bg_w // 2, bsy - 18, bg_w, bg_h)
+                        pygame.draw.rect(world_target, (15, 20, 30, 200), bg_rect, border_radius=3)
+                        world_target.blit(rc_surf, (bsx - rc_surf.get_width() // 2, bsy - 17))
 
-        # Layer 5.2: Aquatic Foreground Water Pass
-        self.world.render_water(world_target, self.camera)
+            # Layer 5.2: Aquatic Foreground Water Pass
+            self.world.render_water(world_target, self.camera)
 
-        # Layer 5.5: Grand Animated Visual Effects (Skills, Ancient Slashes, Explosions)
-        if hasattr(self, "vfx_manager") and self.vfx_manager:
-            self.vfx_manager.render(world_target, self.camera)
+            # Layer 5.5: Grand Animated Visual Effects (Skills, Ancient Slashes, Explosions)
+            if hasattr(self, "vfx_manager") and self.vfx_manager:
+                self.vfx_manager.render(world_target, self.camera)
 
         # Layer 6: Dynamic 2D Lighting Atmosphere
         # Pixel-perfect alignment matching world.render() integer rounding eliminates 1px seams
@@ -3474,19 +3477,20 @@ class PotariaGame:
             self.camera.render_to_world_surf = False
             pygame.transform.scale(world_target, (self.camera.base_width, self.camera.base_height), self.screen)
 
-        # Layer 7: Floating Damage Numbers (pure text, no background box)
-        if getattr(self.combat, "show_damage_numbers", True):
-            for dn in self.combat.damage_numbers:
-                dn.render(ui_surf, self.camera, self.combat.font, self.combat.font_crit)
-
-        # Layer 8: Boss Health Bar (Positioned cleanly above the player's quick skill bar)
-        if self.combat.boss:
-            self.combat.boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=SCREEN_HEIGHT - 135)
-        if getattr(self.combat, "secondary_boss", None):
-            self.combat.secondary_boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=SCREEN_HEIGHT - 180)
-
-        # Layer 9: HUD, Hotbar, Inventory, Reticle, Party, Minimap & Chat
+        # Layer 7-12: Floating Damage Numbers, Boss Bar, HUD, Minimap & Overlays
         with self.profiler.section("render_hud"):
+            # Layer 7: Floating Damage Numbers (pure text, no background box)
+            if getattr(self.combat, "show_damage_numbers", True):
+                for dn in self.combat.damage_numbers:
+                    dn.render(ui_surf, self.camera, self.combat.font, self.combat.font_crit)
+
+            # Layer 8: Boss Health Bar (Positioned cleanly above the player's quick skill bar)
+            if self.combat.boss:
+                self.combat.boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=SCREEN_HEIGHT - 135)
+            if getattr(self.combat, "secondary_boss", None):
+                self.combat.secondary_boss.render_boss_bar(ui_surf, self.boss_font, self.title_font, bar_y=SCREEN_HEIGHT - 180)
+
+            # Layer 9: HUD, Hotbar, Inventory, Reticle, Party, Minimap & Chat
             mouse_x, mouse_y = self.get_mouse_pos()
             self.hud.render(
                 ui_surf, self.player, self.inventory, self.crafting,
@@ -3528,40 +3532,41 @@ class PotariaGame:
             if hasattr(self, "touch_controller") and self.touch_controller.is_visible():
                 self.touch_controller.render(ui_surf, self.player, self.inventory, self.camera, game=self)
 
-        # Cinematic Death Transition Pitch-Black Overlay
-        if getattr(self.player, "death_fade_alpha", 0) > 0:
-            alpha = min(255, max(0, int(self.player.death_fade_alpha)))
-            if not hasattr(self, "_death_fade_surf") or self._death_fade_surf.get_size() != ui_surf.get_size():
-                self._death_fade_surf = pygame.Surface(ui_surf.get_size())
-                self._death_fade_surf.fill((0, 0, 0))
-            self._death_fade_surf.set_alpha(alpha)
-            ui_surf.blit(self._death_fade_surf, (0, 0))
+            # Cinematic Death Transition Pitch-Black Overlay
+            if getattr(self.player, "death_fade_alpha", 0) > 0:
+                alpha = min(255, max(0, int(self.player.death_fade_alpha)))
+                if not hasattr(self, "_death_fade_surf") or self._death_fade_surf.get_size() != ui_surf.get_size():
+                    self._death_fade_surf = pygame.Surface(ui_surf.get_size())
+                    self._death_fade_surf.fill((0, 0, 0))
+                self._death_fade_surf.set_alpha(alpha)
+                ui_surf.blit(self._death_fade_surf, (0, 0))
 
-        # Layer 10: Debug Overlay
-        if self.show_debug:
-            self._render_debug_overlay(target_surf=ui_surf)
+            # Layer 10: Debug Overlay
+            if self.show_debug:
+                self._render_debug_overlay(target_surf=ui_surf)
 
-        # Layer 10.2: Persistent Small-Text FPS Indicator (for performance debugging)
-        self._render_fps_counter(target_surf=ui_surf)
+            # Layer 10.2: Persistent Small-Text FPS Indicator (for performance debugging)
+            self._render_fps_counter(target_surf=ui_surf)
 
-        # Layer 10.5: In-Game Achievement Toasts
-        if hasattr(self, "achievement_manager"):
-            self.achievement_manager.render_toast(
-                ui_surf, self.menu.font_title, self.menu.font_sub,
-                self.asset_factory.ui.get("achievement_banner")
-            )
+            # Layer 10.5: In-Game Achievement Toasts
+            if hasattr(self, "achievement_manager"):
+                self.achievement_manager.render_toast(
+                    ui_surf, self.menu.font_title, self.menu.font_sub,
+                    self.asset_factory.ui.get("achievement_banner")
+                )
 
-        # Layer 11: Pause Menu Overlay
-        if self.paused:
-            self._render_pause_menu(target_surf=ui_surf)
-        # Layer 12: Profiler Overlay
-        if getattr(self, "show_profiler", False):
-            self.profiler.render_overlay(ui_surf, self.font)
+            # Layer 11: Pause Menu Overlay
+            if self.paused:
+                self._render_pause_menu(target_surf=ui_surf)
+            # Layer 12: Profiler Overlay
+            if getattr(self, "show_profiler", False):
+                self.profiler.render_overlay(ui_surf, self.font)
 
-        if hasattr(self, "renderer_manager"):
-            self.renderer_manager.present()
-        else:
-            pygame.display.flip()
+        with self.profiler.section("present"):
+            if hasattr(self, "renderer_manager"):
+                self.renderer_manager.present()
+            else:
+                pygame.display.flip()
 
     def _render_debug_overlay(self, target_surf=None):
         target = target_surf or getattr(self, "ui_screen", None) or self.screen

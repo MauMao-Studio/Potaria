@@ -153,6 +153,7 @@ class World:
         self.player_placed_tiles = set()
         self.fireplaces = set()
         self.comfort_tiles = set()
+        self._render_frame_count = 0
 
         # Determine Spud surface spawn point (around gx=0)
         self.chunk_manager.ensure_chunks_in_range(-2, 2)
@@ -1538,6 +1539,11 @@ class World:
         max_cx = max_tx // CHUNK_WIDTH
         min_sy = min_ty // SECTION_HEIGHT
         max_sy = min(NUM_SECTIONS - 1, max_ty // SECTION_HEIGHT)
+
+        self._render_frame_count += 1
+        if self._render_frame_count % 60 == 0:
+            cam_cx = (min_cx + max_cx) // 2
+            self.chunk_manager.evict_distant_surfaces(cam_cx)
 
         anim_tiles_to_draw = []
 

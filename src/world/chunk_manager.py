@@ -7,6 +7,7 @@ Developer: Kurados
 
 import math
 import random
+import time
 import pygame
 from src.constants import (
     SURFACE_LEVEL, UNDERGROUND_LEVEL, CAVERN_LEVEL, DUNGEON_LEVEL,
@@ -816,6 +817,8 @@ class ChunkManager:
         self.noise_ores = PerlinNoise(seed + 202)
         self.noise_biome = PerlinNoise(seed + 303)
         
+        self.max_loaded_chunks = 64
+        self._chunk_access = {}
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
         self._generating = {}
         self._lock = threading.Lock()
@@ -827,7 +830,7 @@ class ChunkManager:
     def _create_chunk(self, chunk_x):
         # 1. Check world-scoped disk cache first for instant streaming
         if self.world_cache and self.world_cache.has_chunk_cache(chunk_x):
-            cdata = self.world_cache.load_chunk_data(chunk_x)
+            cdata = self.world_cache.load_chunk_data(chunk_x, expected_seed=self.seed)
             if cdata and cdata.get("seed") == self.seed:
                 chk = Chunk.__new__(Chunk)
                 chk.chunk_x = chunk_x
@@ -864,6 +867,8 @@ class ChunkManager:
         with self._lock:
             self.chunks[chunk_x] = chk
             self._generating.pop(chunk_x, None)
+            self._chunk_access[chunk_x] = time.monotonic()
+        self._evict_if_needed(keep_around_cx=chunk_x)
         return chk
 
     def has_chunk(self, chunk_x):
@@ -871,20 +876,60 @@ class ChunkManager:
         with self._lock:
             return chunk_x in self.chunks
 
+    def _evict_if_needed(self, keep_around_cx=0):
+        """Evicts oldest unpinned chunks from RAM to keep memory strictly bounded."""
+        with self._lock:
+            if len(self.chunks) <= self.max_loaded_chunks:
+                return
+            pinned = set(range(keep_around_cx - 4, keep_around_cx + 5))
+            candidates = [cx for cx in self.chunks if cx not in pinned]
+            candidates.sort(key=lambda cx: self._chunk_access.get(cx, 0.0))
+
+            while len(self.chunks) > self.max_loaded_chunks and candidates:
+                evict_cx = candidates.pop(0)
+                chk = self.chunks.get(evict_cx)
+                if chk is None:
+                    continue
+                if getattr(chk, "modified", False) and self.world_cache:
+                    self.world_cache.save_chunk(evict_cx, chk, seed=self.seed)
+                # Release surface memory before dropping chunk
+                if hasattr(chk, "sections"):
+                    for sec in chk.sections.values():
+                        sec.surf = None
+                        sec.dirty = True
+                del self.chunks[evict_cx]
+                self._chunk_access.pop(evict_cx, None)
+
+    def evict_distant_surfaces(self, cam_cx):
+        """Frees baked Pygame surfaces for chunks beyond visible camera radius to bound RAM usage."""
+        visible_range = set(range(cam_cx - 3, cam_cx + 4))
+        with self._lock:
+            for cx, chk in self.chunks.items():
+                if cx not in visible_range and hasattr(chk, "sections"):
+                    for sec in chk.sections.values():
+                        if sec.surf is not None:
+                            sec.surf = None
+                            sec.dirty = True
+
     def get_chunk(self, chunk_x):
         """Retrieves or procedurally generates the chunk at chunk_x."""
         with self._lock:
             if chunk_x in self.chunks:
+                self._chunk_access[chunk_x] = time.monotonic()
                 return self.chunks[chunk_x]
             fut = self._generating.get(chunk_x)
 
         if fut is not None:
-            return fut.result()
+            chk = fut.result()
+            self._evict_if_needed(keep_around_cx=chunk_x)
+            return chk
 
         chk = self._create_chunk(chunk_x)
         with self._lock:
             self.chunks[chunk_x] = chk
             self._generating.pop(chunk_x, None)
+            self._chunk_access[chunk_x] = time.monotonic()
+        self._evict_if_needed(keep_around_cx=chunk_x)
         return chk
 
     def get_column_biome(self, gx):

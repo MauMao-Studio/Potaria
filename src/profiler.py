@@ -134,6 +134,7 @@ class PotariaProfiler:
 
         # Order sections logically
         display_order = [
+            "frame_wait",
             "input",
             "update_player",
             "update_combat",
@@ -144,14 +145,17 @@ class PotariaProfiler:
             "render_world",
             "render_particles",
             "render_combat",
+            "render_entities",
             "render_lighting",
             "render_hud",
             "present"
         ]
 
-        total_tracked = sum(self.section_averages.get(s, 0.0) for s in display_order)
+        total_tracked = sum(self.section_averages.get(s, 0.0) for s in self.section_averages if s != "total_frame")
 
         for sec in display_order:
+            if sec not in self.section_averages:
+                continue
             ms = self.section_averages.get(sec, 0.0)
             pct = (ms / self.avg_frame_ms * 100.0) if self.avg_frame_ms > 0 else 0.0
             label = sec.replace("_", " ").title()
@@ -161,6 +165,10 @@ class PotariaProfiler:
             if sec not in display_order and sec != "total_frame":
                 pct = (ms / self.avg_frame_ms * 100.0) if self.avg_frame_ms > 0 else 0.0
                 lines.append(f"  {sec:<18}: {ms:5.2f} ms ({pct:4.1f}%)")
+
+        unaccounted = max(0.0, self.avg_frame_ms - total_tracked)
+        unacc_pct = (unaccounted / self.avg_frame_ms * 100.0) if self.avg_frame_ms > 0 else 0.0
+        lines.append(f"  {'Unaccounted':<18}: {unaccounted:5.2f} ms ({unacc_pct:4.1f}%)")
 
         max_w = 0
         rendered = []

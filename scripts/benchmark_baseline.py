@@ -182,7 +182,10 @@ def run_benchmark(num_frames=600, scenario="heavy"):
 
         # Present / Flip
         t_pres_0 = time.perf_counter()
-        pygame.display.flip()
+        if hasattr(game, "renderer_manager"):
+            game.renderer_manager.present()
+        else:
+            pygame.display.flip()
         t_pres_1 = time.perf_counter()
         section_times["present"].append((t_pres_1 - t_pres_0) * 1000.0)
 

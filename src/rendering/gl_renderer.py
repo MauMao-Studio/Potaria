@@ -394,8 +394,11 @@ class GLRenderer(BaseRenderer):
         self.screen_texture = self.ctx.texture(
             (self.width, self.height),
             4,
-            pygame.image.tobytes(self.virtual_surface, "RGBA"),
         )
+        try:
+            self.screen_texture.swizzle = "BGRA"
+        except Exception:
+            pass
         self.screen_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
         # UI Overlay Pipeline (crisp, zero bloom, zero distortion, alpha-blended)
@@ -413,8 +416,11 @@ class GLRenderer(BaseRenderer):
             self.ui_texture = self.ctx.texture(
                 (self.width, self.height),
                 4,
-                pygame.image.tobytes(self.ui_surface, "RGBA"),
             )
+            try:
+                self.ui_texture.swizzle = "BGRA"
+            except Exception:
+                pass
             self.ui_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
         except Exception:
             self.ui_program = None
@@ -621,7 +627,10 @@ class GLRenderer(BaseRenderer):
             self.time += 0.016
 
             # Step 1: Render in-game world/lighting pass through post-processing shader into FBO (or screen)
-            self.screen_texture.write(pygame.image.tobytes(self.virtual_surface, "RGBA"))
+            try:
+                self.screen_texture.write(self.virtual_surface.get_buffer())
+            except Exception:
+                self.screen_texture.write(pygame.image.tobytes(self.virtual_surface, "RGBA"))
             self.screen_texture.use(location=0)
             self._update_shader_uniforms()
 
@@ -651,7 +660,10 @@ class GLRenderer(BaseRenderer):
             if self.ui_surface and self.ui_texture and self.ui_vao and self.ui_program:
                 self.ctx.enable(moderngl.BLEND)
                 self.ctx.blend_func = moderngl.DEFAULT_BLENDING
-                self.ui_texture.write(pygame.image.tobytes(self.ui_surface, "RGBA"))
+                try:
+                    self.ui_texture.write(self.ui_surface.get_buffer())
+                except Exception:
+                    self.ui_texture.write(pygame.image.tobytes(self.ui_surface, "RGBA"))
                 self.ui_texture.use(location=0)
                 if "u_ui_texture" in self.ui_program:
                     self.ui_program["u_ui_texture"].value = 0

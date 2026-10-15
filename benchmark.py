@@ -64,14 +64,20 @@ def run_benchmark():
     display_order = [
         "input", "update_player", "update_combat", "update_world", 
         "update_lighting", "update_other", "render_sky", "render_world", 
-        "render_particles", "render_combat", "render_lighting", "render_hud", "present"
+        "render_particles", "render_combat", "render_entities", "render_lighting", "render_hud", "present"
     ]
     
+    total_tracked = 0.0
     for sec in display_order:
         ms = game.profiler.section_averages.get(sec, 0.0)
+        total_tracked += ms
         pct = (ms / game.profiler.avg_frame_ms * 100.0) if game.profiler.avg_frame_ms > 0 else 0.0
         label = sec.replace("_", " ").title()
         print(f"  {label:<18}: {ms:5.2f} ms ({pct:4.1f}%)")
+    
+    unaccounted = max(0.0, game.profiler.avg_frame_ms - total_tracked)
+    unacc_pct = (unaccounted / game.profiler.avg_frame_ms * 100.0) if game.profiler.avg_frame_ms > 0 else 0.0
+    print(f"  {'Unaccounted':<18}: {unaccounted:5.2f} ms ({unacc_pct:4.1f}%)")
         
     print("="*50)
     pygame.quit()
