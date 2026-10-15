@@ -15,13 +15,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from src.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, SCALED_TILE,
-    TILE_AIR, TILE_DIRT, TILE_GRASS, TILE_STONE, TILE_TORCH
+    TILE_AIR, TILE_DIRT, TILE_GRASS, TILE_STONE, TILE_TORCH,
+    TILE_WOOD, WALL_WOOD
 )
 from src.assets.asset_factory import AssetFactory
 from src.world.chunk_manager import ChunkManager, CHUNK_WIDTH, SECTION_HEIGHT
 from src.world.lighting import LightingEngine
 from src.world.world import World
-from src.world.world_cache import WorldCache, CACHE_SCHEMA_VERSION
+from src.world.world_cache import WorldCache, CACHE_SCHEMA_VERSION, LIGHTING_CACHE_VERSION
 from src.profiler import PotariaProfiler
 
 
@@ -125,6 +126,53 @@ class TestLightingCorrectnessAndOptimization:
         center_offsets = [lvl for dx, dy, lvl in offsets if dx == 0 and dy == 0]
         assert center_offsets and center_offsets[0] == 14
 
+    def test_overhead_roof_occlusion_above_viewport(self, pygame_module):
+        """Verifies that ceilings/roofs above min_ty block direct downward daylight even when min_ty <= surf_y."""
+        af = pygame_module
+        world = World(af, seed=42)
+        lighting = LightingEngine(SCREEN_WIDTH, SCREEN_HEIGHT)
+
+        # Build wooden roof at y=30 (above natural ground around y=70)
+        for x in range(-5, 6):
+            world.set_tile(x, 30, TILE_WOOD)
+            world.set_wall(x, 30, WALL_WOOD)
+
+        # Enclosed room below roof at y=31..35
+        for y in range(31, 36):
+            for x in range(-5, 6):
+                world.set_tile(x, y, TILE_AIR)
+                world.set_wall(x, y, WALL_WOOD)
+
+        # Viewport positioned inside the room below roof: min_ty=31, max_ty=40
+        lighting.compute_viewport_light(
+            world=world,
+            min_tx=-2, max_tx=2,
+            min_ty=31, max_ty=40,
+            ambient_sunlight=15.0,
+            ambient_tint=(1.0, 1.0, 1.0)
+        )
+
+        lvl = lighting.get_light_level(0, 33)
+        assert lvl == 0, f"Enclosed room under roof should receive 0 direct daylight, got {lvl}"
+
+    def test_large_emitter_intensity_clamping(self, pygame_module):
+        """Verifies that large light intensities (>15) clamp safely without IndexError in LUT or grid."""
+        af = pygame_module
+        world = World(af, seed=42)
+        lighting = LightingEngine(SCREEN_WIDTH, SCREEN_HEIGHT)
+
+        # Emitter with intensity 20 (exceeds 15)
+        lighting.compute_viewport_light(
+            world=world,
+            min_tx=0, max_tx=10,
+            min_ty=40, max_ty=50,
+            ambient_sunlight=15.0,
+            torch_positions=[(5, 45, 20)]
+        )
+
+        lvl = lighting.get_light_level(5, 45)
+        assert 0 <= lvl <= 15, f"Light level must be clamped to [0, 15], got {lvl}"
+
 
 class TestPersistentWorldCache:
     def test_atomic_write_and_manifest(self):
@@ -177,6 +225,52 @@ class TestPersistentWorldCache:
             loaded = cache.load_chunk_data(5, expected_seed=123)
             assert loaded is None, "Corrupted chunk must return None"
             assert not os.path.exists(chunk_file), "Corrupted cache file must be deleted upon corruption detection"
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_lighting_cache_version_invalidation(self):
+        """Verifies that changing lighting_version invalidates stale lighting cache entries while keeping chunks."""
+        temp_dir = tempfile.mkdtemp(prefix="potaria_light_ver_")
+        try:
+            cache = WorldCache("test_light_ver", base_dir=temp_dir)
+            light_payload = {"explored_mask": [1, 0, 1]}
+            cache.save_lighting(0, light_payload)
+            assert cache.has_lighting_cache(0)
+
+            # Load back under current version -> hits
+            loaded = cache.load_lighting_data(0)
+            assert loaded == light_payload
+
+            # Change lighting cache version on cache instance
+            cache.lighting_version += 1
+
+            # Load back under new version -> invalidates stale data, returns None, deletes stale file
+            loaded_new = cache.load_lighting_data(0)
+            assert loaded_new is None, "Stale lighting cache must be invalidated on version mismatch"
+            assert not cache.has_lighting_cache(0), "Stale lighting file must be deleted on invalidation"
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_chunk_cache_dimension_validation(self):
+        """Verifies that chunk cache entries with invalid column counts are safely rejected and healed."""
+        temp_dir = tempfile.mkdtemp(prefix="potaria_dim_test_")
+        try:
+            cache = WorldCache("test_dim_corrupt", base_dir=temp_dir)
+            chunk_file = cache._chunk_file_path(3)
+            os.makedirs(os.path.dirname(chunk_file), exist_ok=True)
+
+            # Write chunk with corrupt empty tiles
+            bad_data = {
+                "chunk_x": 3,
+                "seed": 555,
+                "tiles": [],
+                "walls": []
+            }
+            cache._atomic_write_json(chunk_file, bad_data)
+
+            loaded = cache.load_chunk_data(3, expected_seed=555)
+            assert loaded is None, "Chunk with empty tile dimensions must return None"
+            assert not os.path.exists(chunk_file), "Invalid dimension chunk file must be deleted for self-healing"
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
 

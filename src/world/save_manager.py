@@ -529,8 +529,7 @@ def write_save_payload_to_disk(world_name, payload, chunk_payloads=None, create_
         for cx, chk_data in chunk_payloads:
             chunk_file = os.path.join(chunks_dir, f"chunk_{cx}.json")
             try:
-                with open(chunk_file, "w", encoding="utf-8") as cf:
-                    json.dump(chk_data, cf)
+                atomic_write_json(chunk_file, chk_data)
             except Exception as e:
                 print(f"[SaveManager] Failed to write chunk {cx}: {e}")
 

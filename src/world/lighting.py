@@ -8,6 +8,21 @@ import collections
 import pygame
 from src.constants import MAX_LIGHT, MIN_LIGHT, TILE_PROPS, TILE_TORCH, TILE_FURNACE, WALL_AIR, TILE_AIR
 
+_MAX_TID = 512
+_TILE_SOLID = [False] * _MAX_TID
+_TILE_OPAQUE = [False] * _MAX_TID
+_TILE_ABSORB = [0] * _MAX_TID
+_TILE_EMIT = [0] * _MAX_TID
+_TILE_RAD = [0] * _MAX_TID
+
+for _tid, _prop in TILE_PROPS.items():
+    if isinstance(_tid, int) and 0 <= _tid < _MAX_TID:
+        _TILE_SOLID[_tid] = bool(_prop.get("solid", False))
+        _TILE_OPAQUE[_tid] = bool(_prop.get("opaque", False))
+        _TILE_ABSORB[_tid] = int(_prop.get("absorb", 0))
+        _TILE_EMIT[_tid] = int(_prop.get("light_emit", 0))
+        _TILE_RAD[_tid] = int(_prop.get("light_radius") or _TILE_EMIT[_tid])
+
 class LightingEngine:
     def __init__(self, screen_width, screen_height, tile_size=16, scale=2):
         self.tile_size = tile_size
@@ -64,7 +79,7 @@ class LightingEngine:
             for dy in range(-radius, radius + 1):
                 d_sq = dx_sq + dy * dy
                 if d_sq <= r_sq:
-                    val = int(round(intensity * (1.0 - (d_sq / r_sq))))
+                    val = min(15, max(0, int(round(intensity * (1.0 - (d_sq / r_sq))))))
                     if val > 0:
                         offsets.append((dx, dy, val))
         self._radial_cache[key] = offsets
@@ -130,28 +145,6 @@ class LightingEngine:
             for lx in range(grid_w):
                 tx = min_tx + lx
                 col_sun = sun_val
-                
-                # Check occlusion above viewport if underground
-                if col_sun > 0 and hasattr(world, "get_surface_height"):
-                    surf_y = world.get_surface_height(tx)
-                    if min_ty > surf_y:
-                        start_y = max(0, surf_y)
-                        for check_y in range(start_y, min_ty):
-                            t_id = world.get_tile(tx, check_y)
-                            if t_id != TILE_AIR:
-                                prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
-                                if prop.get("solid", False):
-                                    col_sun = max(0, col_sun - prop.get("absorb", 0) - 2)
-                                    if col_sun <= 0:
-                                        break
-                            else:
-                                w_id = world.get_wall(tx, check_y)
-                                if w_id != WALL_AIR:
-                                    col_sun = max(0, col_sun - 1)
-                                    if col_sun <= 0:
-                                        break
-
-                cur_sun = col_sun
 
                 # Fast hoisted column access if chunk manager is present
                 chunk = None
@@ -164,6 +157,38 @@ class LightingEngine:
                     if chunk:
                         tiles_col = chunk.tiles[local_x] if hasattr(chunk, "tiles") else None
                         walls_col = chunk.walls[local_x] if hasattr(chunk, "walls") else None
+
+                # Check occlusion above viewport (from top of world y=0 down to min_ty)
+                if col_sun > 0 and min_ty > 0:
+                    for check_y in range(0, min_ty):
+                        if tiles_col is not None and 0 <= check_y < len(tiles_col):
+                            t_id = tiles_col[check_y]
+                            w_id = walls_col[check_y] if walls_col is not None and 0 <= check_y < len(walls_col) else WALL_AIR
+                        else:
+                            t_id = world.get_tile(tx, check_y)
+                            w_id = world.get_wall(tx, check_y)
+
+                        if t_id != TILE_AIR:
+                            if 0 <= t_id < _MAX_TID:
+                                is_solid = _TILE_SOLID[t_id]
+                                is_opaque = _TILE_OPAQUE[t_id]
+                                absorb = _TILE_ABSORB[t_id]
+                            else:
+                                prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
+                                is_solid = prop.get("solid", False)
+                                is_opaque = prop.get("opaque", False)
+                                absorb = prop.get("absorb", 0)
+
+                            if is_opaque or is_solid:
+                                col_sun = 0 if is_opaque else max(0, col_sun - absorb - 2)
+                                if col_sun <= 0:
+                                    break
+                        elif w_id != WALL_AIR:
+                            col_sun = max(0, col_sun - 1)
+                            if col_sun <= 0:
+                                break
+
+                cur_sun = col_sun
 
                 for ly in range(grid_h):
                     ty = min_ty + ly
@@ -180,33 +205,44 @@ class LightingEngine:
                         t_id = world.get_tile(tx, ty)
                         w_id = world.get_wall(tx, ty)
 
-                    prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
-                    absorb = prop.get("absorb", 0)
+                    if 0 <= t_id < _MAX_TID:
+                        is_solid = _TILE_SOLID[t_id]
+                        is_opaque = _TILE_OPAQUE[t_id]
+                        absorb = _TILE_ABSORB[t_id]
+                        emit = _TILE_EMIT[t_id]
+                        rad = _TILE_RAD[t_id]
+                    else:
+                        prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
+                        is_solid = prop.get("solid", False)
+                        is_opaque = prop.get("opaque", False)
+                        absorb = prop.get("absorb", 0)
+                        emit = prop.get("light_emit", 0)
+                        rad = prop.get("light_radius") or emit
+
                     absorb_grid[lx][ly] = absorb
-                    is_solid = prop.get("solid", False)
 
                     if w_id == WALL_AIR and not is_solid:
                         if cur_sun > light[lx][ly]:
                             light[lx][ly] = cur_sun
-                            queue.append((lx, ly, cur_sun))
+                            if cur_sun > 1:
+                                queue.append((lx, ly, cur_sun))
                     elif is_solid:
                         # Top surface exposed to sky receives incident daylight before absorption
                         if cur_sun > light[lx][ly]:
                             light[lx][ly] = cur_sun
-                        cur_sun = max(0, cur_sun - absorb - 2)
-                        if cur_sun > 0:
+                        cur_sun = 0 if is_opaque else max(0, cur_sun - absorb - 2)
+                        if cur_sun > 1:
                             queue.append((lx, ly, cur_sun))
                     else:
                         cur_sun = max(0, cur_sun - 1)
                         if cur_sun > light[lx][ly]:
                             light[lx][ly] = cur_sun
-                            queue.append((lx, ly, cur_sun))
+                            if cur_sun > 1:
+                                queue.append((lx, ly, cur_sun))
 
                     # Check block intrinsic light emission
-                    emit = prop.get("light_emit", 0)
                     if emit > 0:
-                        rad = prop.get("light_radius") or emit
-                        emitters.append((lx, ly, emit, rad, True))
+                        emitters.append((lx, ly, min(15, emit), rad, True))
 
             # 2. Inject extra dynamic lights (held torches, projectile glow, etc.)
             if torch_positions:
@@ -223,7 +259,7 @@ class LightingEngine:
                     lx = tx - min_tx
                     ly = ty - min_ty
                     if 0 <= lx < grid_w and 0 <= ly < grid_h:
-                        emitters.append((lx, ly, intensity, rad, cast_shadow))
+                        emitters.append((lx, ly, min(15, intensity), rad, cast_shadow))
 
             # 3. BFS Light Diffusion / Propagation for Sunlight
             while queue:
@@ -249,7 +285,7 @@ class LightingEngine:
                         nx = ex + dx
                         ny = ey + dy
                         if 0 <= nx < grid_w and 0 <= ny < grid_h and val > light[nx][ny]:
-                            light[nx][ny] = val
+                            light[nx][ny] = min(15, val)
                 else:
                     r_sq = radius * radius
                     min_x = max(0, ex - radius)
@@ -276,6 +312,7 @@ class LightingEngine:
                                                 if drop >= val:
                                                     break
                                         val = max(0, val - drop)
+                                    val = min(15, max(0, val))
                                     if val > light[x][y]:
                                         light[x][y] = val
 
@@ -300,7 +337,7 @@ class LightingEngine:
             for lx in range(grid_w):
                 col = self._last_light_grid[lx]
                 for ly in range(grid_h):
-                    pixels[lx, ly] = lut[col[ly]]
+                    pixels[lx, ly] = lut[min(15, max(0, col[ly]))]
 
         self._render_dirty = True
 

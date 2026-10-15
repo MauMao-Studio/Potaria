@@ -86,13 +86,20 @@ class WorldCache:
             try:
                 with open(self.manifest_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                # Check version compatibility; if schema version changed, clear stale cache
-                if data.get("schema_version") != self.schema_version or data.get("world_gen_version") != self.world_gen_version:
+                # Check version compatibility; selectively invalidate stale caches
+                if data.get("schema_version") != self.schema_version:
                     self.clear_cache()
-                    data["schema_version"] = self.schema_version
-                    data["world_gen_version"] = self.world_gen_version
-                    data["last_accessed"] = time.time()
-                    self._atomic_write_json(self.manifest_path, data)
+                else:
+                    if data.get("world_gen_version") != self.world_gen_version:
+                        self.clear_chunks_cache()
+                    if data.get("lighting_version") != self.lighting_version:
+                        self.clear_lighting_cache()
+
+                data["schema_version"] = self.schema_version
+                data["world_gen_version"] = self.world_gen_version
+                data["lighting_version"] = self.lighting_version
+                data["last_accessed"] = time.time()
+                self._atomic_write_json(self.manifest_path, data)
             except Exception:
                 pass
 
@@ -148,7 +155,7 @@ class WorldCache:
             self.io_read_time_ms += dt
             self.bytes_read += len(content.encode("utf-8"))
 
-            # Integrity checks: chunk_x coordinate match, essential keys
+            # Integrity checks: chunk_x coordinate match, essential keys, and 16-column dimension check
             if not isinstance(data, dict):
                 self.chunk_misses += 1
                 return None
@@ -158,8 +165,14 @@ class WorldCache:
             if expected_seed is not None and data.get("seed") is not None and data.get("seed") != expected_seed:
                 self.chunk_misses += 1
                 return None
-            if "tiles" not in data or "walls" not in data:
+            tiles = data.get("tiles")
+            walls = data.get("walls")
+            if not isinstance(tiles, list) or len(tiles) == 0 or not isinstance(walls, list) or len(walls) == 0:
                 self.chunk_misses += 1
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
                 return None
 
             self.chunk_hits += 1
@@ -195,6 +208,7 @@ class WorldCache:
                 "walls": chunk.walls,
                 "sky_tiles": sky_t,
                 "sky_walls": sky_w,
+                "modified": getattr(chunk, "modified", False),
             }
             self._atomic_write_json(path, payload)
             return True
@@ -205,7 +219,7 @@ class WorldCache:
         path = self._lighting_file_path(chunk_x)
         return os.path.isfile(path) and os.path.getsize(path) > 0
 
-    def load_lighting_data(self, chunk_x):
+    def load_lighting_data(self, chunk_x, expected_version=None):
         path = self._lighting_file_path(chunk_x)
         if not os.path.isfile(path) or os.path.getsize(path) == 0:
             self.lighting_misses += 1
@@ -218,6 +232,20 @@ class WorldCache:
             dt = (time.perf_counter() - t0) * 1000.0
             self.io_read_time_ms += dt
             self.bytes_read += len(content.encode("utf-8"))
+
+            exp_ver = expected_version if expected_version is not None else self.lighting_version
+
+            if isinstance(data, dict) and "lighting_version" in data and "data" in data:
+                if data.get("lighting_version") != exp_ver:
+                    self.lighting_misses += 1
+                    try:
+                        os.remove(path)
+                    except OSError:
+                        pass
+                    return None
+                self.lighting_hits += 1
+                return data["data"]
+
             self.lighting_hits += 1
             return data
         except Exception:
@@ -238,8 +266,7 @@ class WorldCache:
                 "chunk_x": chunk_x,
                 "data": lighting_data
             }
-            # For backward compatibility with tests expecting raw dict on load
-            self._atomic_write_json(path, lighting_data)
+            self._atomic_write_json(path, payload)
             return True
         except Exception:
             return False
@@ -260,15 +287,28 @@ class WorldCache:
                     pass
         return total
 
+    def clear_chunks_cache(self):
+        """Clears all cached chunk terrain files for this world."""
+        if os.path.exists(self.chunks_dir):
+            for f in os.listdir(self.chunks_dir):
+                try:
+                    os.remove(os.path.join(self.chunks_dir, f))
+                except Exception:
+                    pass
+
+    def clear_lighting_cache(self):
+        """Clears all cached lighting files for this world."""
+        if os.path.exists(self.lighting_dir):
+            for f in os.listdir(self.lighting_dir):
+                try:
+                    os.remove(os.path.join(self.lighting_dir, f))
+                except Exception:
+                    pass
+
     def clear_cache(self):
         """Clears all cached chunk and lighting files for this world, leaving authoritative saves intact."""
-        for d in (self.chunks_dir, self.lighting_dir):
-            if os.path.exists(d):
-                for f in os.listdir(d):
-                    try:
-                        os.remove(os.path.join(d, f))
-                    except Exception:
-                        pass
+        self.clear_chunks_cache()
+        self.clear_lighting_cache()
 
     def get_telemetry(self):
         """Returns diagnostic telemetry metrics for cache usage."""
