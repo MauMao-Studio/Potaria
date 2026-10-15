@@ -12,10 +12,13 @@ Covers:
 """
 
 import os
+import sys
 import json
 import math
 import unittest
 import pygame
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.constants import (
     SCALED_TILE,
