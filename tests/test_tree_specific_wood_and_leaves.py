@@ -14,9 +14,12 @@ Verifies:
 """
 
 import os
+import sys
 import hashlib
 import pygame
 import pytest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 pygame.init()
