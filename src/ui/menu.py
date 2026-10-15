@@ -733,12 +733,16 @@ class MenuManager:
     def handle_click(self, mouse_pos, button=1):
         if getattr(self, "reset_confirm_modal_active", False):
             if self.reset_confirm_yes_btn.rect.collidepoint(mouse_pos):
-                self.settings = dict(DEFAULT_SETTINGS)
-                self.key_bindings = dict(self.default_key_bindings)
-                self.rebinding_action = None
+                if self.state == STATE_INPUT_MAPPING:
+                    self.key_bindings = dict(self.default_key_bindings)
+                    self.rebinding_action = None
+                else:
+                    self.settings = dict(DEFAULT_SETTINGS)
+                    self.key_bindings = dict(self.default_key_bindings)
+                    self.rebinding_action = None
+                    self._apply_audio_volumes()
+                    self._refresh_settings_button_labels()
                 self.reset_confirm_modal_active = False
-                self._apply_audio_volumes()
-                self._refresh_settings_button_labels()
                 self.save_settings()
                 if self.sound_manager:
                     self.sound_manager.play("craft")
@@ -892,7 +896,7 @@ class MenuManager:
                 elif self.yolo_cancel_btn.rect.collidepoint(mouse_pos):
                     self.sound_manager.play("place")
                     self.show_yolo_warning = False
-                    self.new_world_diff = DIFFICULTY_NORMAL
+                    self.new_world_diff = DIFFICULTY_EASY
                     self.nw_btn_diff.text = f"DIFFICULTY: {self.new_world_diff.upper()}"
                 return None
 
@@ -1165,12 +1169,8 @@ class MenuManager:
 
         elif self.state == STATE_INPUT_MAPPING:
             if self.input_reset_button.rect.collidepoint(mouse_pos):
-                self.key_bindings = dict(self.default_key_bindings)
-                self.rebinding_action = None
-                self.save_settings()
-                if self.sound_manager:
-                    self.sound_manager.play("craft")
-                return "reset_keys"
+                self.reset_confirm_modal_active = True
+                return None
 
             if self.input_back_button.rect.collidepoint(mouse_pos):
                 self.state = STATE_SETTINGS
@@ -1652,10 +1652,14 @@ class MenuManager:
         pygame.draw.rect(target_surf, (24, 28, 42), m_rect, border_radius=12)
         pygame.draw.rect(target_surf, COLOR_GOLD, m_rect, 2, border_radius=12)
 
-        title = self.font_title.render("RESET ALL SETTINGS TO DEFAULTS", True, COLOR_GOLD)
+        is_keys = (self.state == STATE_INPUT_MAPPING)
+        title_txt = "RESET KEYBINDINGS TO DEFAULTS" if is_keys else "RESET ALL SETTINGS TO DEFAULTS"
+        prompt_txt = "Are you sure you want to restore default keybindings?" if is_keys else "Are you sure you want to reset all settings to defaults?"
+
+        title = self.font_title.render(title_txt, True, COLOR_GOLD)
         target_surf.blit(title, (m_rect.centerx - title.get_width() // 2, m_rect.y + 18))
 
-        prompt = self.font_body.render("Are you sure you want to reset all settings to defaults?", True, (240, 240, 245))
+        prompt = self.font_body.render(prompt_txt, True, (240, 240, 245))
         target_surf.blit(prompt, (m_rect.centerx - prompt.get_width() // 2, m_rect.y + 54))
 
         self.reset_confirm_yes_btn.render(target_surf, self.font_btn)

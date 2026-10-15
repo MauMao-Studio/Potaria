@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from src.constants import (
     SCALED_TILE,
     DIFFICULTY_EASY, DIFFICULTY_NORMAL,
-    STATE_MENU, STATE_SETTINGS, STATE_WORLDS,
+    STATE_MENU, STATE_SETTINGS, STATE_WORLDS, STATE_NEW_WORLD,
     TILE_AIR, TILE_DIRT, TILE_STONE, TILE_WOOD
 )
 from src.ui.menu import MenuManager, STATE_INPUT_MAPPING
@@ -176,6 +176,33 @@ class TestGameplayAndUIOverhauls(unittest.TestCase):
         self.assertFalse(menu.reset_confirm_modal_active)
         self.assertEqual(menu.settings["zoom"], DEFAULT_SETTINGS["zoom"], "Confirming reset must restore defaults")
 
+        # In Input Mapping screen: Clicking input_reset_button activates confirmation modal
+        menu.state = STATE_INPUT_MAPPING
+        menu.key_bindings["Move Left"] = 999  # custom key
+        self.assertFalse(menu.reset_confirm_modal_active)
+        menu.handle_click(menu.input_reset_button.rect.center)
+        self.assertTrue(menu.reset_confirm_modal_active, "Clicking reset in Input Mapping must activate confirmation modal")
+
+        # Canceling preserves custom keybinding
+        menu.handle_click(menu.reset_confirm_cancel_btn.rect.center)
+        self.assertFalse(menu.reset_confirm_modal_active)
+        self.assertEqual(menu.key_bindings["Move Left"], 999)
+
+        # Confirming resets keybinding to default
+        menu.handle_click(menu.input_reset_button.rect.center)
+        self.assertTrue(menu.reset_confirm_modal_active)
+        res_keys = menu.handle_click(menu.reset_confirm_yes_btn.rect.center)
+        self.assertEqual(res_keys, "reset_keys")
+        self.assertFalse(menu.reset_confirm_modal_active)
+        self.assertEqual(menu.key_bindings["Move Left"], DEFAULT_KEY_BINDINGS["Move Left"])
+
+        # ESC dismisses confirmation modal
+        menu.handle_click(menu.input_reset_button.rect.center)
+        self.assertTrue(menu.reset_confirm_modal_active)
+        dummy_esc = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
+        self.assertTrue(menu.handle_key(dummy_esc))
+        self.assertFalse(menu.reset_confirm_modal_active)
+
     def test_settings_persistence_across_initialization(self):
         # Save a custom setting
         settings, keybinds = load_settings()
@@ -277,8 +304,17 @@ class TestGameplayAndUIOverhauls(unittest.TestCase):
         self.assertEqual(menu.new_world_diff, DIFFICULTY_EASY, "Menu default difficulty must be Easy")
         self.assertEqual(menu.nw_btn_diff.text, "DIFFICULTY: EASY")
 
+        # Canceling YOLO warning resets to Easy
+        menu.state = STATE_NEW_WORLD
+        menu.show_yolo_warning = True
+        menu.new_world_diff = "yolo"
+        menu.handle_click(menu.yolo_cancel_btn.rect.center)
+        self.assertEqual(menu.new_world_diff, DIFFICULTY_EASY, "Canceling YOLO must revert to Easy")
+
         game = PotariaGame()
         self.assertEqual(game.difficulty, DIFFICULTY_EASY, "PotariaGame default difficulty must be Easy")
+        game.reset_new_session("Test")
+        self.assertEqual(game.difficulty, DIFFICULTY_EASY, "reset_new_session must default to Easy")
 
     # 7. World Selection: Remove "· ADVENTURE" from card subtitle
     def test_world_card_subtitle_omits_adventure(self):
@@ -334,6 +370,15 @@ class TestGameplayAndUIOverhauls(unittest.TestCase):
         self.assertFalse(player.is_dead, "Player must be alive after respawn transition completes")
         self.assertEqual(player.death_fade_alpha, 0)
         self.assertFalse(player.snap_camera_instant)
+
+        # In PotariaGame: Death closes open menus cleanly
+        game = PotariaGame()
+        game.inventory.is_open = True
+        game.character_panel.is_open = True
+        game.player.take_damage(9999, ignore_defense=True)
+        game.update_gameplay(0.016)
+        self.assertFalse(game.inventory.is_open, "Inventory must close upon death")
+        self.assertFalse(game.character_panel.is_open, "Character panel must close upon death")
 
 
 if __name__ == "__main__":

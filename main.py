@@ -927,7 +927,7 @@ class PotariaGame:
             self.touch_controller.reset()
         self.menu.state = STATE_MENU
 
-    def reset_new_session(self, world_name, world_type=WORLD_TYPE_INFINITE, difficulty=DIFFICULTY_NORMAL, game_mode=MODE_ADVENTURE, seed=None):
+    def reset_new_session(self, world_name, world_type=WORLD_TYPE_INFINITE, difficulty=DIFFICULTY_EASY, game_mode=MODE_ADVENTURE, seed=None):
         """Reinitializes all gameplay state freshly when creating or starting a new world."""
         if hasattr(self, "npc_dialogue"):
             self.npc_dialogue.close()
@@ -1214,13 +1214,13 @@ class PotariaGame:
                 self.menu.save_settings()
 
         elif action == "start_singleplayer":
-            self.reset_new_session("Quick Play World", WORLD_TYPE_INFINITE, DIFFICULTY_NORMAL, MODE_ADVENTURE)
+            self.reset_new_session("Quick Play World", WORLD_TYPE_INFINITE, DIFFICULTY_EASY, MODE_ADVENTURE)
             self.menu.state = STATE_PLAYING
         elif isinstance(action, tuple) and action[0] == "create_world":
             cfg = action[1]
             w_name = cfg.get("name", "Spud World")
             w_type = cfg.get("world_type", WORLD_TYPE_INFINITE)
-            w_diff = cfg.get("difficulty", DIFFICULTY_NORMAL)
+            w_diff = cfg.get("difficulty", DIFFICULTY_EASY)
             w_mode = cfg.get("game_mode", MODE_ADVENTURE)
             self.reset_new_session(w_name, w_type, w_diff, w_mode)
             self.save_game_world()
@@ -3134,6 +3134,14 @@ class PotariaGame:
         # Player Death Handling per Difficulty Mode
         if self.player.is_dead and not getattr(self.player, "_death_handled", False):
             self.player._death_handled = True
+            if hasattr(self, "inventory"):
+                self.inventory.is_open = False
+            if hasattr(self, "character_panel"):
+                self.character_panel.is_open = False
+            if hasattr(self, "chest_ui") and self.chest_ui.is_open:
+                self.chest_ui.close()
+            if hasattr(self, "npc_dialogue") and self.npc_dialogue.is_open:
+                self.npc_dialogue.close()
             if self.difficulty == DIFFICULTY_HARDCORE:
                 for idx, slot in enumerate(self.inventory.slots):
                     if slot:

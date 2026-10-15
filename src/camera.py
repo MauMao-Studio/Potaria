@@ -45,9 +45,17 @@ class Camera:
         except (ValueError, TypeError):
             self.zoom = 1.0
 
+        old_w = getattr(self, "screen_width", self.base_width)
+        old_h = getattr(self, "screen_height", self.base_height)
+        old_cx = self.x + old_w / 2.0
+        old_cy = self.y + old_h / 2.0
+
         self.screen_width = int(self.base_width / self.zoom)
         self.screen_height = int(self.base_height / self.zoom)
         self.world_max_y = CHUNK_HEIGHT * SCALED_TILE - self.screen_height
+
+        self.x = old_cx - self.screen_width / 2.0
+        self.y = max(self.world_min_y, min(self.world_max_y, old_cy - self.screen_height / 2.0))
 
     def cycle_zoom(self):
         """Cycles zoom level: 1x -> 2x -> 3x -> 1x."""

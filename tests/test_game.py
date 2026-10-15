@@ -546,8 +546,10 @@ def test_all_potaria_systems():
     menu.handle_key(fake_event)
     assert menu.key_bindings["Move Left"] == pygame.K_j, "Move Left should be rebound to J"
 
-    # Reset defaults
+    # Reset defaults (with confirmation modal)
     menu.handle_click(menu.input_reset_button.rect.center)
+    if getattr(menu, "reset_confirm_modal_active", False):
+        menu.handle_click(menu.reset_confirm_yes_btn.rect.center)
     assert menu.key_bindings["Move Left"] == pygame.K_a, "Reset defaults should restore K_a"
 
     # Test Skill Book consumption and banner notification
