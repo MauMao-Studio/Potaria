@@ -52,6 +52,10 @@ from src.constants import (
     TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT,
     SAPLING_TILES, SAPLING_TILE_TO_ITEM,
     TILE_IRON_CHEST, TILE_ROPE_RUNGS,
+    TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
+    TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
+    TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
+    ALL_WOOD_TILES, ALL_LEAF_TILES, WOOD_VARIANTS_SET,
     CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL,
     PLAYER_WIDTH, PLAYER_HEIGHT
 )
@@ -2510,7 +2514,7 @@ class PotariaGame:
             self.sound_manager.play("dig_dirt")
         elif tile_id in (TILE_STONE, TILE_COPPER_ORE, TILE_IRON_ORE, TILE_GOLD_ORE):
             self.sound_manager.play("dig_stone")
-        elif tile_id in (TILE_WOOD, TILE_WOOD_TRUNK, TILE_LEAVES):
+        elif tile_id in ALL_WOOD_TILES or tile_id in ALL_LEAF_TILES:
             self.sound_manager.play("dig_wood")
 
         if broken:
@@ -2531,7 +2535,7 @@ class PotariaGame:
                         DroppedItem(bonus_drop, 1, tile_world_x + 12, tile_world_y + 4, self.asset_factory)
                     )
                 # Tree Felling overhaul & Timber achievement
-                if tile_id in (TILE_WOOD, TILE_WOOD_TRUNK) or drop_id == "wood":
+                if tile_id in ALL_WOOD_TILES or drop_id in WOOD_VARIANTS_SET:
                     self.achievement_manager.unlock("timber")
                     felled = getattr(self.world, "last_felled_tree", None)
                     if felled:
@@ -2543,20 +2547,24 @@ class PotariaGame:
                             if self.client and self.client.connected:
                                 self.client.send_block_delta(fx, fy, TILE_AIR)
                         # Record all felled leaves in block deltas & multiplayer network sync
+                        TRUNK_TO_LEAF_MAP = {
+                            TILE_PINE_TRUNK: TILE_PINE_LEAVES,
+                            TILE_PINE_WOOD: TILE_PINE_LEAVES,
+                            TILE_PALM_TRUNK: TILE_PALM_LEAVES,
+                            TILE_PALM_WOOD: TILE_PALM_LEAVES,
+                            TILE_BLIGHT_TRUNK: TILE_BLIGHT_LEAVES,
+                            TILE_BLIGHT_WOOD: TILE_BLIGHT_LEAVES,
+                            "pine_wood": TILE_PINE_LEAVES,
+                            "palm_wood": TILE_PALM_LEAVES,
+                            "blight_wood": TILE_BLIGHT_LEAVES,
+                        }
+                        leaf_tid = TRUNK_TO_LEAF_MAP.get(tile_id, TRUNK_TO_LEAF_MAP.get(drop_id, TILE_LEAVES))
+                        leaf_color = self._get_tile_debris_color(leaf_tid)
                         for lx, ly in leaf_coords:
                             self.block_deltas[(lx, ly)] = TILE_AIR
                             if self.client and self.client.connected:
                                 self.client.send_block_delta(lx, ly, TILE_AIR)
-                            self.particle_system.spawn_debris(lx * SCALED_TILE + 16, ly * SCALED_TILE + 16, (60, 180, 50), count=4)
-                        for _ in range(max(0, felled_count - 1)):
-                            self.combat.dropped_items.append(
-                                DroppedItem("wood", 1, tile_world_x + random.randint(4, 12), tile_world_y - random.randint(4, 20), self.asset_factory)
-                            )
-                        # Occasional apple or acorn drop from fallen foliage
-                        if random.random() < 0.35:
-                            self.combat.dropped_items.append(
-                                DroppedItem("apple", 1, tile_world_x + 8, tile_world_y - 12, self.asset_factory)
-                            )
+                            self.particle_system.spawn_debris(lx * SCALED_TILE + 16, ly * SCALED_TILE + 16, leaf_color, count=4)
                         self.world.last_felled_tree = None
                         self.world.last_felled_trunks = []
                 if hasattr(self.world, "last_broken_extra_tiles") and self.world.last_broken_extra_tiles:
@@ -2582,6 +2590,15 @@ class PotariaGame:
             TILE_WOOD: (160, 110, 60),
             TILE_WOOD_TRUNK: (120, 80, 45),
             TILE_LEAVES: (45, 150, 35),
+            TILE_PINE_WOOD: (100, 75, 60),
+            TILE_PINE_TRUNK: (85, 62, 50),
+            TILE_PINE_LEAVES: (35, 95, 75),
+            TILE_PALM_WOOD: (195, 155, 105),
+            TILE_PALM_TRUNK: (165, 128, 85),
+            TILE_PALM_LEAVES: (110, 195, 55),
+            TILE_BLIGHT_WOOD: (65, 35, 80),
+            TILE_BLIGHT_TRUNK: (55, 28, 70),
+            TILE_BLIGHT_LEAVES: (120, 50, 160),
             TILE_COPPER_ORE: (220, 115, 35),
             TILE_IRON_ORE: (190, 195, 205),
             TILE_GOLD_ORE: (255, 215, 0),

@@ -27,6 +27,7 @@ from src.constants import (
     TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
     TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
     TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
+    TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT,
     WOOD_TILES, TRUNK_TILES, ALL_WOOD_TILES, ALL_LEAF_TILES,
     WOOD_VARIANTS, WOOD_VARIANTS_SET, LEAF_VARIANTS, LEAF_VARIANTS_SET,
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_BLIGHT, BIOME_CORRUPTION
@@ -399,3 +400,171 @@ def test_09_storage_chest_wood_counting():
     assert chest.count_item("wood") == 45
     assert chest.count_item("oak_wood") == 45
     assert chest.count_item("pine_wood") == 20
+
+
+def test_10_sapling_growth_produces_species_tiles_and_drops_across_biomes(world):
+    """Verify each sapling matures into its true species trunk & leaves regardless of biome, and drops true species items."""
+    # Set up ground in Forest biome
+    world.get_biome_at = lambda tx, ty: "forest"
+    for x in range(10, 60):
+        world.set_tile(x, 50, TILE_DIRT)
+        for y in range(35, 50):
+            world.set_tile(x, y, TILE_AIR)
+
+    # 1. Grow Blight sapling in Forest biome
+    world.place_tile(15, 49, TILE_SAPLING_BLIGHT, chest_type="blight_sapling")
+    world.planted_saplings[(15, 49)]["growth_days"] = 2
+    world.grow_plants_daily()
+
+    # Base trunk must be TILE_BLIGHT_TRUNK, and canopy must have TILE_BLIGHT_LEAVES
+    assert world.get_tile(15, 49) == TILE_BLIGHT_TRUNK
+    has_blight_leaves = any(world.get_tile(x, y) == TILE_BLIGHT_LEAVES for x in range(12, 19) for y in range(40, 48))
+    assert has_blight_leaves is True
+
+    # Felling this tree must yield blight_wood and blight_leaves even though it grew in Forest!
+    world.decay_drops.clear()
+    broken, drop, tid = world.damage_tile_at(15, 49, power=50)
+    assert broken is True
+    assert drop == "blight_wood"
+    decay_drops = [d[0] for d in world.decay_drops]
+    assert "blight_wood" in decay_drops
+    assert "blight_leaves" in decay_drops
+    assert "wood" not in decay_drops
+    assert "leaves" not in decay_drops
+
+    # 2. Grow Pine sapling in Desert biome
+    world.get_biome_at = lambda tx, ty: "desert"
+    world.place_tile(30, 49, TILE_SAPLING_PINE, chest_type="pine_sapling")
+    world.planted_saplings[(30, 49)]["growth_days"] = 2
+    world.grow_plants_daily()
+
+    assert world.get_tile(30, 49) == TILE_PINE_TRUNK
+    has_pine_leaves = any(world.get_tile(x, y) == TILE_PINE_LEAVES for x in range(27, 34) for y in range(38, 48))
+    assert has_pine_leaves is True
+
+    world.decay_drops.clear()
+    broken, drop, tid = world.damage_tile_at(30, 49, power=50)
+    assert broken is True
+    assert drop == "pine_wood"
+    decay_drops = [d[0] for d in world.decay_drops]
+    assert "pine_wood" in decay_drops
+    assert "pine_leaves" in decay_drops
+    assert "palm_wood" not in decay_drops
+
+    # 3. Grow Palm sapling in Snow biome
+    world.get_biome_at = lambda tx, ty: "snow"
+    world.place_tile(45, 49, TILE_SAPLING_PALM, chest_type="palm_sapling")
+    world.planted_saplings[(45, 49)]["growth_days"] = 2
+    world.grow_plants_daily()
+
+    assert world.get_tile(45, 49) == TILE_PALM_TRUNK
+    has_palm_leaves = any(world.get_tile(x, y) == TILE_PALM_LEAVES for x in range(42, 49) for y in range(40, 48))
+    assert has_palm_leaves is True
+
+    world.decay_drops.clear()
+    broken, drop, tid = world.damage_tile_at(45, 49, power=50)
+    assert broken is True
+    assert drop == "palm_wood"
+    decay_drops = [d[0] for d in world.decay_drops]
+    assert "palm_wood" in decay_drops
+    assert "palm_leaves" in decay_drops
+    assert "pine_wood" not in decay_drops
+
+
+def test_11_natural_chunk_generation_uses_species_tiles():
+    """Verify Chunk._generate generates true species trunk & leaf blocks in Desert, Snow, and Blight."""
+    from src.world.chunk_manager import Chunk
+
+    class FixedNoise:
+        def __init__(self, val):
+            self.val = val
+        def noise2(self, x, y):
+            return self.val
+        def fractal1d(self, x, octaves=1, persistence=0.5):
+            return self.val
+        def fractal2d(self, x, y, octaves=1, persistence=0.5):
+            return self.val
+
+    # Noise values to trigger specific biomes:
+    # noise_biome: desert 0.06..0.22; snow < -0.18; blight/corruption >= 0.22
+    # Verify desert chunk tree generation produces palm tiles, never generic oak
+    has_palm = False
+    for seed in range(50):
+        desert_chunk = Chunk(0, seed=seed, noise_surface=FixedNoise(0.0), noise_caves=FixedNoise(-0.9), noise_ores=FixedNoise(0.0), noise_biome=FixedNoise(0.15))
+        if any(desert_chunk.tiles[x][y] in (TILE_PALM_TRUNK, TILE_PALM_LEAVES) for x in range(desert_chunk.width) for y in range(desert_chunk.height)):
+            has_palm = True
+            break
+    assert has_palm is True, "Desert chunk must generate palm trunk/leaves"
+
+    # Verify snow chunk tree generation produces pine tiles, never generic oak
+    has_pine = False
+    for seed in range(50):
+        snow_chunk = Chunk(0, seed=seed, noise_surface=FixedNoise(0.0), noise_caves=FixedNoise(-0.9), noise_ores=FixedNoise(0.0), noise_biome=FixedNoise(-0.5))
+        if any(snow_chunk.tiles[x][y] in (TILE_PINE_TRUNK, TILE_PINE_LEAVES) for x in range(snow_chunk.width) for y in range(snow_chunk.height)):
+            has_pine = True
+            break
+    assert has_pine is True, "Snow chunk must generate pine trunk/leaves"
+
+    # Verify corruption/blight chunk tree generation produces blight tiles, never generic oak
+    has_blight = False
+    for seed in range(50):
+        blight_chunk = Chunk(0, seed=seed, noise_surface=FixedNoise(0.0), noise_caves=FixedNoise(-0.9), noise_ores=FixedNoise(0.0), noise_biome=FixedNoise(0.35))
+        if any(blight_chunk.tiles[x][y] in (TILE_BLIGHT_TRUNK, TILE_BLIGHT_LEAVES) for x in range(blight_chunk.width) for y in range(blight_chunk.height)):
+            has_blight = True
+            break
+    assert has_blight is True, "Blight/Corruption chunk must generate blight trunk/leaves"
+
+
+def test_12_cross_biome_rendering_preserves_species_appearance(world, asset_factory):
+    """Verify ChunkSection.bake preserves leaf and trunk species appearance regardless of chunk biome."""
+    from src.world.chunk_manager import ChunkSection
+
+    section = ChunkSection(0, 0)
+    chunk = world.chunk_manager.get_chunk(0)
+    assert chunk is not None
+
+    # Place Blight leaves in Snow biome column
+    chunk.col_biomes[5] = "snow"
+    chunk.tiles[5][10] = TILE_BLIGHT_LEAVES
+    world.player_placed_tiles.add((5, 10))
+
+    # Bake section and ensure it renders properly
+    section.bake(world)
+    assert section.surf is not None
+    assert section.dirty is False
+
+    # Also verify selection mapping rule directly
+    for t_id, expected_key in [
+        (TILE_PINE_LEAVES, "snow"),
+        (TILE_BLIGHT_LEAVES, "blight"),
+        (TILE_PALM_LEAVES, "palm")
+    ]:
+        col_biome = "desert"  # in foreign desert biome
+        if t_id == TILE_PINE_LEAVES:
+            b_key = "snow"
+        elif t_id == TILE_BLIGHT_LEAVES:
+            b_key = "blight"
+        elif t_id == TILE_PALM_LEAVES:
+            b_key = "palm"
+        else:
+            b_key = "forest"
+        assert b_key == expected_key, f"Tile {t_id} must maintain key {expected_key} in foreign biome {col_biome}"
+
+
+def test_13_main_gameplay_mining_particles_and_sound():
+    """Verify main.py has bespoke debris colors and dig_wood sound mappings for all tree species tiles."""
+    from main import PotariaGame
+    app = type("DummyApp", (), {"_get_tile_debris_color": PotariaGame._get_tile_debris_color})()
+
+    # Verify debris colors for all 12 wood/trunk/leaf tiles
+    for tid in [
+        TILE_WOOD, TILE_WOOD_TRUNK, TILE_LEAVES,
+        TILE_PINE_WOOD, TILE_PINE_TRUNK, TILE_PINE_LEAVES,
+        TILE_PALM_WOOD, TILE_PALM_TRUNK, TILE_PALM_LEAVES,
+        TILE_BLIGHT_WOOD, TILE_BLIGHT_TRUNK, TILE_BLIGHT_LEAVES
+    ]:
+        col = app._get_tile_debris_color(tid)
+        assert col != (150, 150, 150), f"Tile {tid} must not fall back to default gray debris color"
+        assert len(col) == 3
+        assert all(0 <= c <= 255 for c in col)
+

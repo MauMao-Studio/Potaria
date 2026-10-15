@@ -509,8 +509,13 @@ class World:
             if roll < 0.25:
                 spawn_drop(sap_drop, 1, cx, cy)
             elif roll < 0.45:
-                fruit_drop = "apple" if (biome not in ("snow", "desert") and random.random() < 0.5) else "acorn"
-                spawn_drop(fruit_drop, 1, cx, cy)
+                if cur_lid == TILE_PINE_LEAVES or (cur_lid == TILE_LEAVES and biome == "snow"):
+                    spawn_drop("acorn", 1, cx, cy)
+                elif cur_lid in (TILE_PALM_LEAVES, TILE_BLIGHT_LEAVES) or (cur_lid == TILE_LEAVES and biome in ("desert", "the_blight", "corruption")):
+                    pass
+                else:
+                    fruit_drop = "apple" if random.random() < 0.5 else "acorn"
+                    spawn_drop(fruit_drop, 1, cx, cy)
 
         self.last_felled_trunks = list(felled_trunks)
         return len(felled_trunks), felled_leaves
@@ -572,7 +577,7 @@ class World:
             has_sunlight = True
             for check_y in range(max(0, ty - 10), ty):
                 ct = self.get_tile(tx, check_y)
-                if ct not in (TILE_AIR, TILE_LEAVES):
+                if ct != TILE_AIR and ct not in ALL_LEAF_TILES:
                     has_sunlight = False
                     break
 
@@ -605,22 +610,22 @@ class World:
                     trunk_h = random.randint(6, 8)
                     crown_cy = ty - trunk_h
                     for y in range(crown_cy, ty + 1):
-                        set_tree_tile(tx, y, TILE_WOOD_TRUNK)
+                        set_tree_tile(tx, y, TILE_PALM_TRUNK)
                     if crown_cy - 1 >= 0:
-                        set_tree_tile(tx, crown_cy - 1, TILE_LEAVES)
+                        set_tree_tile(tx, crown_cy - 1, TILE_PALM_LEAVES)
                     for dx in (-3, -2, -1, 1, 2, 3):
                         drop = 1 if abs(dx) == 3 else (0 if abs(dx) == 2 else -1)
                         if self.get_tile(tx + dx, crown_cy + drop) == TILE_AIR:
-                            set_tree_tile(tx + dx, crown_cy + drop, TILE_LEAVES)
+                            set_tree_tile(tx + dx, crown_cy + drop, TILE_PALM_LEAVES)
                         if abs(dx) <= 2 and self.get_tile(tx + dx, crown_cy) == TILE_AIR:
-                            set_tree_tile(tx + dx, crown_cy, TILE_LEAVES)
+                            set_tree_tile(tx + dx, crown_cy, TILE_PALM_LEAVES)
 
                 elif "pine" in sap_type:
                     # Alpine Frosted Pine Conifer
                     trunk_h = random.randint(7, 9)
                     crown_cy = ty - trunk_h
                     for y in range(crown_cy, ty + 1):
-                        set_tree_tile(tx, y, TILE_WOOD_TRUNK)
+                        set_tree_tile(tx, y, TILE_PINE_TRUNK)
                     pine_tiers = [
                         (-2, 1.0),
                         (-1, 1.6),
@@ -636,7 +641,7 @@ class World:
                             if cx == tx and leaf_y >= crown_cy:
                                 continue
                             if abs(cx - tx) <= rad and self.get_tile(cx, leaf_y) == TILE_AIR:
-                                set_tree_tile(cx, leaf_y, TILE_LEAVES)
+                                set_tree_tile(cx, leaf_y, TILE_PINE_LEAVES)
 
                 elif "blight" in sap_type:
                     # Corrupted Nether Blight Tree: twisted gnarly trunk with blighted foliage canopy
@@ -645,7 +650,7 @@ class World:
                     bend = -1 if (tx % 2 == 0) else 1
                     for y in range(crown_cy, ty + 1):
                         x_off = bend if y < ty - 2 and (y - crown_cy) % 2 == 0 else 0
-                        set_tree_tile(tx + x_off, y, TILE_WOOD_TRUNK)
+                        set_tree_tile(tx + x_off, y, TILE_BLIGHT_TRUNK)
                     # Corrupted thorny crown
                     for dx in (-3, -2, -1, 0, 1, 2, 3):
                         for dy in (-3, -2, -1, 0, 1, 2):
@@ -654,7 +659,7 @@ class World:
                             dist_sq = (dx / 2.6) ** 2 + (dy / 2.2) ** 2
                             if dist_sq <= 1.15 and not (abs(dx) == 3 and dy == 2):
                                 if self.get_tile(tx + dx, crown_cy + dy) == TILE_AIR:
-                                    set_tree_tile(tx + dx, crown_cy + dy, TILE_LEAVES)
+                                    set_tree_tile(tx + dx, crown_cy + dy, TILE_BLIGHT_LEAVES)
 
                 else:
                     # Forest Oak Tree
@@ -1003,8 +1008,13 @@ class World:
                     if roll < 0.25:
                         spawn_drop(sap_drop, 1, cx, cy)
                     elif roll < 0.45:
-                        fruit_drop = "apple" if (biome not in ("snow", "desert") and random.random() < 0.5) else "acorn"
-                        spawn_drop(fruit_drop, 1, cx, cy)
+                        if info["type"] == TILE_PINE_LEAVES or (info["type"] == TILE_LEAVES and biome == "snow"):
+                            spawn_drop("acorn", 1, cx, cy)
+                        elif info["type"] in (TILE_PALM_LEAVES, TILE_BLIGHT_LEAVES) or (info["type"] == TILE_LEAVES and biome in ("desert", "the_blight", "corruption")):
+                            pass
+                        else:
+                            fruit_drop = "apple" if random.random() < 0.5 else "acorn"
+                            spawn_drop(fruit_drop, 1, cx, cy)
 
                 if particles:
                     if info["type"] in (TILE_BLIGHT_WOOD, TILE_BLIGHT_TRUNK, TILE_BLIGHT_LEAVES):

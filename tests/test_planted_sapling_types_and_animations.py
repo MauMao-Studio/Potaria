@@ -16,6 +16,7 @@ pygame.init()
 
 from src.constants import (
     TILE_AIR, TILE_DIRT, TILE_GRASS, TILE_WOOD_TRUNK, TILE_LEAVES,
+    TILE_PALM_TRUNK, TILE_PALM_LEAVES, TILE_BLIGHT_TRUNK,
     TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT,
     SAPLING_TILES, SAPLING_TILE_TO_ITEM, SAPLING_ITEM_TO_TILE, TILE_PROPS
 )
@@ -481,9 +482,9 @@ def test_tree_daily_growth_updates_block_deltas_and_persists():
     world.planted_saplings[(15, 29)]["growth_days"] = 2
     world.grow_plants_daily(game=game)
 
-    # Base tile must now be trunk in block_deltas
-    assert game.block_deltas[(15, 29)] == TILE_WOOD_TRUNK
-    assert world.get_tile(15, 29) == TILE_WOOD_TRUNK
+    # Base tile must now be blight trunk in block_deltas
+    assert game.block_deltas[(15, 29)] == TILE_BLIGHT_TRUNK
+    assert world.get_tile(15, 29) == TILE_BLIGHT_TRUNK
 
     # Save and reload
     save_world(save_name, game)
@@ -492,9 +493,9 @@ def test_tree_daily_growth_updates_block_deltas_and_persists():
     new_game = MockGame(new_world, name=save_name)
     load_world(save_name, new_game)
 
-    # The mature tree must remain a trunk, NOT revert to blight sapling
-    assert new_game.world.get_tile(15, 29) == TILE_WOOD_TRUNK
-    assert new_game.block_deltas[(15, 29)] == TILE_WOOD_TRUNK
+    # The mature tree must remain a blight trunk, NOT revert to blight sapling or generic trunk
+    assert new_game.world.get_tile(15, 29) == TILE_BLIGHT_TRUNK
+    assert new_game.block_deltas[(15, 29)] == TILE_BLIGHT_TRUNK
 
     delete_world(save_name)
 
@@ -512,10 +513,10 @@ def test_palm_tree_daily_growth():
     world.planted_saplings[(18, 24)]["growth_days"] = 2
     world.grow_plants_daily()
 
-    assert world.get_tile(18, 24) == TILE_WOOD_TRUNK
+    assert world.get_tile(18, 24) == TILE_PALM_TRUNK
     assert (18, 24) not in world.planted_saplings
     # Check that leaves were generated for canopy
-    has_leaves = any(world.get_tile(x, y) == TILE_LEAVES for x in range(15, 22) for y in range(15, 24))
+    has_leaves = any(world.get_tile(x, y) == TILE_PALM_LEAVES for x in range(15, 22) for y in range(15, 24))
     assert has_leaves is True
 
 
