@@ -28,7 +28,13 @@ from src.constants import (
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_MUSHROOM,
     WALL_DUNGEON_MAGMA, WALL_DUNGEON_ICE, WALL_DUNGEON_BONE,
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT, BIOME_MUSHROOM, BIOME_DUNGEON,
-    TILE_PROPS
+    TILE_PROPS,
+    TILE_OAK_WOOD, TILE_OAK_LEAVES, TILE_OAK_TRUNK,
+    TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
+    TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
+    TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
+    WOOD_TILES, TRUNK_TILES, ALL_WOOD_TILES, ALL_LEAF_TILES,
+    WOOD_VARIANTS, WOOD_VARIANTS_SET, LEAF_VARIANTS, LEAF_VARIANTS_SET
 )
 from src.world.chunk_manager import ChunkManager, CHUNK_WIDTH, CHUNK_HEIGHT, SKY_MIN_Y, SECTION_HEIGHT, NUM_SECTIONS
 
@@ -355,6 +361,44 @@ class World:
                     ))
         return waters
 
+    def _get_wood_drop_for_tile(self, tile_id, tx, ty, is_player_placed=False):
+        """Returns the species-appropriate wood drop item ID based on tile_id or biome."""
+        if tile_id in (TILE_PINE_WOOD, TILE_PINE_TRUNK):
+            return "pine_wood"
+        if tile_id in (TILE_PALM_WOOD, TILE_PALM_TRUNK):
+            return "palm_wood"
+        if tile_id in (TILE_BLIGHT_WOOD, TILE_BLIGHT_TRUNK):
+            return "blight_wood"
+        if is_player_placed or (tx, ty) in getattr(self, "player_placed_tiles", set()):
+            return "wood"
+        biome = self.get_biome_at(tx, ty) if hasattr(self, "get_biome_at") else "forest"
+        if biome == "snow":
+            return "pine_wood"
+        elif biome == "desert":
+            return "palm_wood"
+        elif biome in ("the_blight", "corruption"):
+            return "blight_wood"
+        return "wood"
+
+    def _get_leaf_drop_for_tile(self, tile_id, tx, ty, is_player_placed=False):
+        """Returns the species-appropriate leaf drop item ID based on tile_id or biome."""
+        if tile_id == TILE_PINE_LEAVES:
+            return "pine_leaves"
+        if tile_id == TILE_PALM_LEAVES:
+            return "palm_leaves"
+        if tile_id == TILE_BLIGHT_LEAVES:
+            return "blight_leaves"
+        if is_player_placed or (tx, ty) in getattr(self, "player_placed_tiles", set()):
+            return "leaves"
+        biome = self.get_biome_at(tx, ty) if hasattr(self, "get_biome_at") else "forest"
+        if biome == "snow":
+            return "pine_leaves"
+        elif biome == "desert":
+            return "palm_leaves"
+        elif biome in ("the_blight", "corruption"):
+            return "blight_leaves"
+        return "leaves"
+
     def fell_tree(self, start_tx, start_ty):
         """
         Fells tree starting from (start_tx, start_ty) upwards.
@@ -378,7 +422,7 @@ class World:
                     # Never traverse into player-placed blocks (houses, platforms, walls)
                     if (nx, ny) in self.player_placed_tiles:
                         continue
-                    if self.get_tile(nx, ny) in (TILE_WOOD_TRUNK, TILE_WOOD):
+                    if self.get_tile(nx, ny) in ALL_WOOD_TILES:
                         visited_trunk.add((nx, ny))
                         queue.append((nx, ny))
 
@@ -398,7 +442,7 @@ class World:
                 continue
             for sy in range(min_ty - 8, max_ty + 8):
                 if (sx, sy) not in visited_trunk and (sx, sy) not in self.player_placed_tiles:
-                    if self.get_tile(sx, sy) in (TILE_WOOD_TRUNK, TILE_WOOD):
+                    if self.get_tile(sx, sy) in ALL_WOOD_TILES:
                         surviving_trunks.add((sx, sy))
 
         # 3. Find candidate leaves belonging to the felled trunk's crown
@@ -407,7 +451,7 @@ class World:
         for tx, ty in felled_trunks:
             for lx in range(tx - 4, tx + 5):
                 for ly in range(ty - 5, ty + 5):
-                    if (lx, ly) not in self.player_placed_tiles and self.get_tile(lx, ly) == TILE_LEAVES:
+                    if (lx, ly) not in self.player_placed_tiles and self.get_tile(lx, ly) in ALL_LEAF_TILES:
                         candidate_leaves.add((lx, ly))
 
         # 4. Filter leaves: Any leaf that belongs to or is supported by a surviving tree trunk MUST NOT be felled!
@@ -433,28 +477,32 @@ class World:
                 self.decay_drops.append((item_id, count, cx, cy))
 
         for tx, ty in felled_trunks:
+            cur_tid = self.get_tile(tx, ty)
+            wood_drop = self._get_wood_drop_for_tile(cur_tid, tx, ty, is_player_placed=False)
             self.chunk_manager.set_tile(tx, ty, TILE_AIR)
             self.player_placed_tiles.discard((tx, ty))
             self.tile_damage.pop((tx, ty), None)
             if (tx, ty) != (start_tx, start_ty):
                 cx = tx * self.scaled_tile + self.scaled_tile / 2
                 cy = ty * self.scaled_tile + self.scaled_tile / 2
-                spawn_drop("wood", 1, cx, cy)
+                spawn_drop(wood_drop, 1, cx, cy)
 
         for lx, ly in felled_leaves:
+            cur_lid = self.get_tile(lx, ly)
+            leaf_drop = self._get_leaf_drop_for_tile(cur_lid, lx, ly, is_player_placed=False)
             self.chunk_manager.set_tile(lx, ly, TILE_AIR)
             self.player_placed_tiles.discard((lx, ly))
             self.tile_damage.pop((lx, ly), None)
             cx = lx * self.scaled_tile + self.scaled_tile / 2
             cy = ly * self.scaled_tile + self.scaled_tile / 2
-            spawn_drop("leaves", 1, cx, cy)
+            spawn_drop(leaf_drop, 1, cx, cy)
             roll = random.random()
             biome = self.get_biome_at(lx, ly) if hasattr(self, "get_biome_at") else "forest"
-            if biome == "snow":
+            if cur_lid == TILE_PINE_LEAVES or (cur_lid == TILE_LEAVES and biome == "snow"):
                 sap_drop = "pine_sapling"
-            elif biome == "desert":
+            elif cur_lid == TILE_PALM_LEAVES or (cur_lid == TILE_LEAVES and biome == "desert"):
                 sap_drop = "palm_sapling"
-            elif biome in ("the_blight", "corruption"):
+            elif cur_lid == TILE_BLIGHT_LEAVES or (cur_lid == TILE_LEAVES and biome in ("the_blight", "corruption")):
                 sap_drop = "blight_sapling"
             else:
                 sap_drop = "oak_sapling"
@@ -663,8 +711,8 @@ class World:
         if t_id == TILE_AIR or t_id == TILE_WATER or t_id in self.INDESTRUCTIBLE_TILES:
             return False, None, t_id
 
-        # Foliage protection: Player cannot destroy leaves directly when tree_cascade_felling is True
-        if t_id == TILE_LEAVES and getattr(self, "tree_cascade_felling", True):
+        # Foliage protection: Player cannot destroy natural leaves directly when tree_cascade_felling is True
+        if t_id in ALL_LEAF_TILES and getattr(self, "tree_cascade_felling", True) and (tx, ty) not in self.player_placed_tiles:
             return False, None, t_id
 
         prop = TILE_PROPS.get(t_id, TILE_PROPS[0])
@@ -684,13 +732,14 @@ class World:
             self.last_broken_tile_is_player_placed = is_player_placed
             self.player_placed_tiles.discard((tx, ty))
             drop = prop.get("drop")
-            if t_id == TILE_LEAVES:
+            if t_id in ALL_LEAF_TILES:
+                drop = self._get_leaf_drop_for_tile(t_id, tx, ty, is_player_placed=is_player_placed)
                 biome = self.get_biome_at(tx, ty) if hasattr(self, "get_biome_at") else "forest"
-                if biome == "snow":
+                if t_id == TILE_PINE_LEAVES or (t_id == TILE_LEAVES and biome == "snow"):
                     sap_drop = "pine_sapling"
-                elif biome == "desert":
+                elif t_id == TILE_PALM_LEAVES or (t_id == TILE_LEAVES and biome == "desert"):
                     sap_drop = "palm_sapling"
-                elif biome in ("the_blight", "corruption"):
+                elif t_id == TILE_BLIGHT_LEAVES or (t_id == TILE_LEAVES and biome in ("the_blight", "corruption")):
                     sap_drop = "blight_sapling"
                 else:
                     sap_drop = "oak_sapling"
@@ -712,21 +761,25 @@ class World:
                     drop = "iron_chest"
 
             # Felling only cascades for natural tree trunks or unplaced tree wood when tree_cascade_felling is True
-            if (t_id in (TILE_WOOD_TRUNK, TILE_WOOD)) and not is_player_placed:
+            if (t_id in ALL_WOOD_TILES) and not is_player_placed:
+                wood_drop = self._get_wood_drop_for_tile(t_id, tx, ty, is_player_placed=False)
                 if getattr(self, "tree_cascade_felling", True):
                     felled_count, leaf_coords = self.fell_tree(tx, ty)
                     self.last_felled_tree = (felled_count, leaf_coords)
-                    return True, "wood", t_id
+                    return True, wood_drop, t_id
                 else:
                     self.set_tile(tx, ty, TILE_AIR)
                     self._check_tree_decay(tx, ty)
-                    return True, "wood", t_id
+                    return True, wood_drop, t_id
+
+            if t_id in ALL_WOOD_TILES:
+                drop = self._get_wood_drop_for_tile(t_id, tx, ty, is_player_placed=is_player_placed)
 
             if hasattr(self, "decaying_blocks") and (tx, ty) in self.decaying_blocks:
                 self.decaying_blocks.pop((tx, ty), None)
 
             self.set_tile(tx, ty, TILE_AIR)
-            if t_id == TILE_LEAVES:
+            if t_id in ALL_LEAF_TILES:
                 self._check_tree_decay(tx, ty)
             # Check adjacent tiles for loss of physical support
             if not hasattr(self, "last_broken_extra_tiles"):
@@ -786,7 +839,7 @@ class World:
         for dy in range(1, 30):
             uy = ty - dy
             tid = self.get_tile(tx, uy)
-            if tid in (TILE_WOOD_TRUNK, TILE_WOOD):
+            if tid in ALL_WOOD_TILES:
                 # Verify whether (tx, uy) is grounded:
                 # Trace downwards from uy + 1: every block until solid ground must be an intact, non-decaying trunk.
                 is_grounded = True
@@ -796,7 +849,7 @@ class World:
                     if (tx, curr_y) in self.decaying_blocks or cur_tid in (TILE_AIR, TILE_WATER):
                         is_grounded = False
                         break
-                    if cur_tid in (TILE_WOOD_TRUNK, TILE_WOOD):
+                    if cur_tid in ALL_WOOD_TILES:
                         curr_y += 1
                         continue
                     # Hit ground tile (dirt, grass, stone, etc.)
@@ -821,9 +874,9 @@ class World:
                         }
             elif tid == TILE_AIR:
                 # If there's air, check if there's any more trunk within 2 blocks above
-                if all(self.get_tile(tx, uy - k) not in (TILE_WOOD_TRUNK, TILE_WOOD) for k in range(1, 4)):
+                if all(self.get_tile(tx, uy - k) not in ALL_WOOD_TILES for k in range(1, 4)):
                     break
-            elif tid == TILE_LEAVES:
+            elif tid in ALL_LEAF_TILES:
                 # Canopy leaves directly above trunk column, continue checking
                 continue
             else:
@@ -838,7 +891,7 @@ class World:
                     ly = cy + ldy
                     if (lx, ly) in self.decaying_blocks:
                         continue
-                    if self.get_tile(lx, ly) == TILE_LEAVES:
+                    if self.get_tile(lx, ly) in ALL_LEAF_TILES:
                         # Check if this leaf block is within reach of an intact, non-decaying, grounded trunk block
                         has_grounded_trunk = False
                         for tdx in range(-4, 5):
@@ -846,7 +899,7 @@ class World:
                                 tx_cand = lx + tdx
                                 ty_cand = ly + tdy
                                 cand_tid = self.get_tile(tx_cand, ty_cand)
-                                if cand_tid in (TILE_WOOD_TRUNK, TILE_WOOD) and (tx_cand, ty_cand) not in self.decaying_blocks:
+                                if cand_tid in ALL_WOOD_TILES and (tx_cand, ty_cand) not in self.decaying_blocks:
                                     # Verify cand_tid is grounded
                                     cand_grounded = True
                                     gy = ty_cand + 1
@@ -855,7 +908,7 @@ class World:
                                         if (tx_cand, gy) in self.decaying_blocks or gtid in (TILE_AIR, TILE_WATER):
                                             cand_grounded = False
                                             break
-                                        if gtid in (TILE_WOOD_TRUNK, TILE_WOOD):
+                                        if gtid in ALL_WOOD_TILES:
                                             gy += 1
                                             continue
                                         if self.is_tile_solid(tx_cand, gy):
@@ -876,7 +929,7 @@ class World:
                                 "days_left": days,
                                 "max_days": days,
                                 "phase": 0,
-                                "type": TILE_LEAVES
+                                "type": self.get_tile(lx, ly)
                             }
 
     def update_tree_decay(self, dt, game=None):
@@ -930,17 +983,19 @@ class World:
                 cx = coord[0] * self.scaled_tile + self.scaled_tile / 2
                 cy = coord[1] * self.scaled_tile + self.scaled_tile / 2
 
-                if info["type"] in (TILE_WOOD_TRUNK, TILE_WOOD):
-                    spawn_drop("wood", 1, cx, cy)
-                elif info["type"] == TILE_LEAVES:
-                    spawn_drop("leaves", 1, cx, cy)
+                if info["type"] in ALL_WOOD_TILES:
+                    wood_drop = self._get_wood_drop_for_tile(info["type"], coord[0], coord[1], is_player_placed=False)
+                    spawn_drop(wood_drop, 1, cx, cy)
+                elif info["type"] in ALL_LEAF_TILES:
+                    leaf_drop = self._get_leaf_drop_for_tile(info["type"], coord[0], coord[1], is_player_placed=False)
+                    spawn_drop(leaf_drop, 1, cx, cy)
                     roll = random.random()
                     biome = self.get_biome_at(coord[0], coord[1]) if hasattr(self, "get_biome_at") else "forest"
-                    if biome == "snow":
+                    if info["type"] == TILE_PINE_LEAVES or (info["type"] == TILE_LEAVES and biome == "snow"):
                         sap_drop = "pine_sapling"
-                    elif biome == "desert":
+                    elif info["type"] == TILE_PALM_LEAVES or (info["type"] == TILE_LEAVES and biome == "desert"):
                         sap_drop = "palm_sapling"
-                    elif biome in ("the_blight", "corruption"):
+                    elif info["type"] == TILE_BLIGHT_LEAVES or (info["type"] == TILE_LEAVES and biome in ("the_blight", "corruption")):
                         sap_drop = "blight_sapling"
                     else:
                         sap_drop = "oak_sapling"
@@ -952,7 +1007,16 @@ class World:
                         spawn_drop(fruit_drop, 1, cx, cy)
 
                 if particles:
-                    col = (110, 80, 45) if info["type"] in (TILE_WOOD_TRUNK, TILE_WOOD) else (70, 160, 60)
+                    if info["type"] in (TILE_BLIGHT_WOOD, TILE_BLIGHT_TRUNK, TILE_BLIGHT_LEAVES):
+                        col = (130, 60, 180)
+                    elif info["type"] in (TILE_PALM_WOOD, TILE_PALM_TRUNK, TILE_PALM_LEAVES):
+                        col = (180, 150, 90)
+                    elif info["type"] in (TILE_PINE_WOOD, TILE_PINE_TRUNK, TILE_PINE_LEAVES):
+                        col = (70, 90, 80)
+                    elif info["type"] in ALL_WOOD_TILES:
+                        col = (110, 80, 45)
+                    else:
+                        col = (70, 160, 60)
                     particles.spawn_debris(cx, cy, col, count=4)
 
         for coord in expired:

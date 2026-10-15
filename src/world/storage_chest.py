@@ -25,8 +25,21 @@ class StorageChest:
         """Returns list of all non-empty ItemStack objects."""
         return [s for s in self.slots if s is not None]
 
+    def count_wood(self):
+        """Returns total wood count across all wood variants."""
+        from src.constants import WOOD_VARIANTS_SET
+        total = 0
+        for slot in self.slots:
+            if slot:
+                slot_canon = ITEM_ALIASES.get(slot.item_id, slot.item_id)
+                if slot.item_id in WOOD_VARIANTS_SET or slot_canon in WOOD_VARIANTS_SET:
+                    total += slot.count
+        return total
+
     def count_item(self, item_id):
         canon = ITEM_ALIASES.get(item_id, item_id)
+        if item_id in ("wood", "oak_wood") or canon in ("wood", "oak_wood"):
+            return self.count_wood()
         total = 0
         for slot in self.slots:
             if slot:

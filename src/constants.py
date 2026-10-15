@@ -118,6 +118,73 @@ TILE_SAPLING_PALM = 62         # Tropical coastal palm sapling (arching fan fron
 TILE_SAPLING_PINE = 63         # Alpine evergreen conifer pine sapling (conical tiered needles)
 TILE_SAPLING_BLIGHT = 64       # Corrupted abyssal violet blight sapling (eerie spore pulse)
 
+# Tree-Specific Wood & Leaves Tiles
+TILE_OAK_WOOD = 4
+TILE_OAK_LEAVES = 5
+TILE_OAK_TRUNK = 6
+
+TILE_PINE_WOOD = 65
+TILE_PINE_LEAVES = 66
+TILE_PINE_TRUNK = 67
+
+TILE_PALM_WOOD = 68
+TILE_PALM_LEAVES = 69
+TILE_PALM_TRUNK = 70
+
+TILE_BLIGHT_WOOD = 71
+TILE_BLIGHT_LEAVES = 72
+TILE_BLIGHT_TRUNK = 73
+
+WOOD_TILES = (
+    TILE_WOOD,
+    TILE_PINE_WOOD,
+    TILE_PALM_WOOD,
+    TILE_BLIGHT_WOOD,
+)
+
+TRUNK_TILES = (
+    TILE_WOOD_TRUNK,
+    TILE_PINE_TRUNK,
+    TILE_PALM_TRUNK,
+    TILE_BLIGHT_TRUNK,
+)
+
+ALL_WOOD_TILES = (
+    TILE_WOOD,
+    TILE_WOOD_TRUNK,
+    TILE_PINE_WOOD,
+    TILE_PINE_TRUNK,
+    TILE_PALM_WOOD,
+    TILE_PALM_TRUNK,
+    TILE_BLIGHT_WOOD,
+    TILE_BLIGHT_TRUNK,
+)
+
+ALL_LEAF_TILES = (
+    TILE_LEAVES,
+    TILE_PINE_LEAVES,
+    TILE_PALM_LEAVES,
+    TILE_BLIGHT_LEAVES,
+)
+
+WOOD_VARIANTS = (
+    "wood",
+    "oak_wood",
+    "pine_wood",
+    "palm_wood",
+    "blight_wood",
+)
+WOOD_VARIANTS_SET = frozenset(WOOD_VARIANTS)
+
+LEAF_VARIANTS = (
+    "leaves",
+    "oak_leaves",
+    "pine_leaves",
+    "palm_leaves",
+    "blight_leaves",
+)
+LEAF_VARIANTS_SET = frozenset(LEAF_VARIANTS)
+
 SAPLING_TILES = (
     TILE_SAPLING_OAK,
     TILE_SAPLING_PALM,
@@ -261,6 +328,19 @@ TILE_PROPS = {
     TILE_SAPLING_BLIGHT: {"name": "Blight Sapling", "hardness": 5, "drop": "blight_sapling", "solid": False, "platform": False, "light_emit": 2, "light_radius": 3, "absorb": 0, "opaque": False},
     TILE_IRON_CHEST: {"name": "Iron Storage Chest", "hardness": 35, "drop": "iron_chest", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
     TILE_ROPE_RUNGS: {"name": "Rope Rungs", "hardness": 10, "drop": "rope_rungs", "solid": False, "platform": True, "light_emit": 0, "absorb": 0, "opaque": False},
+
+    # Tree-Specific Wood & Leaves Tiles
+    TILE_PINE_WOOD: {"name": "Pine Wood", "hardness": 20, "drop": "pine_wood", "solid": True, "platform": False, "light_emit": 0, "absorb": 3, "opaque": True},
+    TILE_PINE_LEAVES: {"name": "Pine Leaves", "hardness": 5, "drop": "pine_leaves", "solid": False, "platform": False, "light_emit": 0, "absorb": 1, "opaque": False},
+    TILE_PINE_TRUNK: {"name": "Pine Wood Trunk", "hardness": 20, "drop": "pine_wood", "solid": False, "platform": False, "light_emit": 0, "absorb": 2, "opaque": False},
+
+    TILE_PALM_WOOD: {"name": "Palm Wood", "hardness": 20, "drop": "palm_wood", "solid": True, "platform": False, "light_emit": 0, "absorb": 3, "opaque": True},
+    TILE_PALM_LEAVES: {"name": "Palm Leaves", "hardness": 5, "drop": "palm_leaves", "solid": False, "platform": False, "light_emit": 0, "absorb": 1, "opaque": False},
+    TILE_PALM_TRUNK: {"name": "Palm Wood Trunk", "hardness": 20, "drop": "palm_wood", "solid": False, "platform": False, "light_emit": 0, "absorb": 2, "opaque": False},
+
+    TILE_BLIGHT_WOOD: {"name": "Blight Wood", "hardness": 20, "drop": "blight_wood", "solid": True, "platform": False, "light_emit": 1, "absorb": 3, "opaque": True},
+    TILE_BLIGHT_LEAVES: {"name": "Blight Leaves", "hardness": 5, "drop": "blight_leaves", "solid": False, "platform": False, "light_emit": 1, "absorb": 1, "opaque": False},
+    TILE_BLIGHT_TRUNK: {"name": "Blight Wood Trunk", "hardness": 20, "drop": "blight_wood", "solid": False, "platform": False, "light_emit": 1, "absorb": 2, "opaque": False},
 }
 
 # Item Rarity Tiers (7 Tiers)

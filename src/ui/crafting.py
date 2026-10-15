@@ -11,7 +11,8 @@ from src.constants import (
     SCALED_TILE, TILE_WORK_BENCH, TILE_FURNACE,
     RARITY_COLORS, RARITY_COMMON,
     CRAFT_CAT_ALL, CRAFT_CAT_BUILDING, CRAFT_CAT_EQUIPMENT,
-    CRAFT_CAT_SURVIVAL, CRAFT_CAT_FURNITURE
+    CRAFT_CAT_SURVIVAL, CRAFT_CAT_FURNITURE,
+    WOOD_VARIANTS, WOOD_VARIANTS_SET
 )
 from src.ui.inventory import ITEM_REGISTRY
 
@@ -853,6 +854,11 @@ class CraftingSystem:
 
     def check_nearby_stations(self, world, player):
         """Checks if Spud is within physical range (within 2.5 tiles) of a placed Work Bench or Furnace."""
+        if player is None:
+            self.near_workbench = False
+            self.near_furnace = False
+            return False, False
+
         ptx = int(player.center_x // SCALED_TILE)
         pty = int(player.center_y // SCALED_TILE)
         has_workbench = False
@@ -901,7 +907,11 @@ class CraftingSystem:
 
             can_craft = True
             for item_id, count in r["ingredients"]:
-                if inventory.count_item(item_id) < count:
+                if item_id in WOOD_VARIANTS_SET:
+                    owned = inventory.count_wood() if hasattr(inventory, "count_wood") else inventory.count_item(item_id)
+                else:
+                    owned = inventory.count_item(item_id)
+                if owned < count:
                     can_craft = False
                     break
 
@@ -923,7 +933,11 @@ class CraftingSystem:
 
     def craft(self, recipe, inventory):
         for item_id, count in recipe["ingredients"]:
-            if inventory.count_item(item_id) < count:
+            if item_id in WOOD_VARIANTS_SET:
+                owned = inventory.count_wood() if hasattr(inventory, "count_wood") else inventory.count_item(item_id)
+            else:
+                owned = inventory.count_item(item_id)
+            if owned < count:
                 return False
 
         for item_id, count in recipe["ingredients"]:
@@ -1189,7 +1203,10 @@ class CraftingSystem:
         for iname, icnt in recipe["ingredients"]:
             ing_data = ITEM_REGISTRY.get(iname, {})
             in_title = ing_data.get("name", iname)
-            owned = self.last_inventory.count_item(iname) if self.last_inventory else 0
+            if iname in WOOD_VARIANTS_SET:
+                owned = self.last_inventory.count_wood() if (self.last_inventory and hasattr(self.last_inventory, "count_wood")) else (self.last_inventory.count_item(iname) if self.last_inventory else 0)
+            else:
+                owned = self.last_inventory.count_item(iname) if self.last_inventory else 0
             if owned >= icnt:
                 lines.append((f"  • {in_title}: {owned} / {icnt}", (140, 240, 140)))
             else:

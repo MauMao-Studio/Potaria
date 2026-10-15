@@ -35,6 +35,9 @@ from src.constants import (
     WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
     WALL_SANDSTONE, WALL_ICE, WALL_EBONSTONE, WALL_BLIGHTSTONE, WALL_MUSHROOM, WALL_GLASS,
     WALL_DUNGEON_MAGMA, WALL_DUNGEON_ICE, WALL_DUNGEON_BONE,
+    TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
+    TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
+    TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
     COLOR_POTATO_BODY, COLOR_POTATO_HIGHLIGHT, COLOR_POTATO_SHADOW, COLOR_SPROUT,
     RARITY_COMMON, RARITY_UNCOMMON, RARITY_RARE, RARITY_EPIC,
     RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, RARITY_COLORS
@@ -3935,8 +3938,8 @@ class AssetFactory:
                 pygame.draw.line(surf, (72, 70, 78), (8, 8), (8, 12), 1)
                 pygame.draw.line(surf, (72, 70, 78), (15, 8), (15, 12), 1)
                 pygame.draw.line(surf, (72, 70, 78), (12, 12), (12, 16), 1)
-        elif id_lower == "wood":
-            # Freshly cut cylindrical timber log with concentric golden annual rings & rough bark
+        elif id_lower in ("wood", "oak_wood"):
+            # Freshly cut cylindrical honey-oak timber log with concentric annual rings & warm chestnut bark
             pygame.draw.rect(surf, (48, 28, 14), (4, 5, 16, 15), border_radius=3)
             pygame.draw.rect(surf, (125, 76, 36), (5, 8, 14, 11), border_radius=2)
             for lx in (8, 12, 16):
@@ -3945,7 +3948,47 @@ class AssetFactory:
             pygame.draw.ellipse(surf, (225, 182, 115), (5, 5, 14, 6))
             pygame.draw.ellipse(surf, (168, 118, 62), (8, 6, 8, 4), 1)
             surf.set_at((12, 8), (115, 72, 35))
-        elif id_lower in ("leaves", "leaf_block"):
+        elif id_lower == "pine_wood":
+            # Dense dark spruce alpine conifer log with cool bark grooves & tight growth rings
+            pygame.draw.rect(surf, (34, 22, 16), (4, 5, 16, 15), border_radius=3)
+            pygame.draw.rect(surf, (82, 54, 38), (5, 8, 14, 11), border_radius=2)
+            for lx in (8, 12, 16):
+                pygame.draw.line(surf, (48, 30, 20), (lx, 9), (lx, 18), 1)
+                pygame.draw.line(surf, (115, 82, 60), (lx + 1, 9), (lx + 1, 18), 1)
+            pygame.draw.ellipse(surf, (34, 22, 16), (4, 4, 16, 8))
+            pygame.draw.ellipse(surf, (185, 155, 120), (5, 5, 14, 6))
+            pygame.draw.ellipse(surf, (125, 92, 65), (7, 6, 10, 4), 1)
+            pygame.draw.ellipse(surf, (150, 115, 85), (9, 7, 6, 2), 1)
+            surf.set_at((12, 8), (82, 52, 32))
+            surf.set_at((5, 10), (210, 235, 245))
+            surf.set_at((6, 11), (170, 210, 230))
+        elif id_lower == "palm_wood":
+            # Sun-bleached light fibrous tropical palm log with horizontal segment rings & porous radial grain
+            pygame.draw.rect(surf, (68, 46, 26), (4, 5, 16, 15), border_radius=3)
+            pygame.draw.rect(surf, (175, 132, 85), (5, 8, 14, 11), border_radius=2)
+            for py in (11, 14, 17):
+                pygame.draw.line(surf, (115, 78, 45), (5, py), (18, py), 1)
+                pygame.draw.line(surf, (215, 175, 125), (5, py + 1), (18, py + 1), 1)
+            pygame.draw.ellipse(surf, (68, 46, 26), (4, 4, 16, 8))
+            pygame.draw.ellipse(surf, (245, 215, 165), (5, 5, 14, 6))
+            pygame.draw.ellipse(surf, (195, 155, 105), (8, 6, 8, 4), 1)
+            for dot_x, dot_y in [(8, 7), (11, 8), (14, 7), (10, 6)]:
+                surf.set_at((dot_x, dot_y), (145, 102, 60))
+            surf.set_at((12, 8), (175, 132, 85))
+        elif id_lower == "blight_wood":
+            # Corrupted twisted obsidian-violet timber log with jagged miasma fissures & pulsing violet core
+            pygame.draw.rect(surf, (28, 14, 38), (4, 5, 16, 15), border_radius=3)
+            pygame.draw.rect(surf, (68, 36, 84), (5, 8, 14, 11), border_radius=2)
+            for lx in (8, 13):
+                pygame.draw.line(surf, (38, 18, 52), (lx, 9), (lx - 1, 18), 1)
+                pygame.draw.line(surf, (115, 68, 142), (lx + 1, 9), (lx, 18), 1)
+            pygame.draw.ellipse(surf, (28, 14, 38), (4, 4, 16, 8))
+            pygame.draw.ellipse(surf, (145, 95, 185), (5, 5, 14, 6))
+            pygame.draw.ellipse(surf, (92, 48, 125), (7, 6, 10, 4), 1)
+            surf.set_at((12, 8), (210, 135, 255))
+            surf.set_at((6, 13), (225, 160, 255))
+            surf.set_at((17, 11), (185, 110, 235))
+        elif id_lower in ("leaves", "oak_leaves", "leaf_block"):
             # Contoured lush rounded foliage canopy cluster with blossom/berry accents (no square box)
             for cx, cy, cr, col in [
                 (9, 13, 6, (28, 82, 22)),
@@ -3959,6 +4002,57 @@ class AssetFactory:
                 pygame.draw.circle(surf, col, (cx, cy), cr)
             surf.set_at((10, 9), (255, 110, 130))
             surf.set_at((14, 12), (255, 230, 90))
+        elif id_lower in ("pine_leaves", "pine_needles"):
+            # Frosted evergreen conifer needle cluster with tiered sharp needles & powdered snow dusting
+            for poly, col in [
+                ([(12, 3), (7, 10), (17, 10)], (22, 60, 48)),
+                ([(12, 7), (5, 15), (19, 15)], (22, 60, 48)),
+                ([(12, 12), (4, 20), (20, 20)], (18, 48, 38)),
+                ([(12, 4), (8, 10), (16, 10)], (35, 95, 75)),
+                ([(12, 8), (6, 15), (18, 15)], (45, 112, 88)),
+                ([(12, 13), (6, 19), (18, 19)], (35, 95, 75)),
+            ]:
+                pygame.draw.polygon(surf, col, poly)
+            pygame.draw.polygon(surf, (248, 252, 255), [(12, 3), (9, 7), (15, 7)])
+            pygame.draw.polygon(surf, (215, 235, 248), [(9, 7), (11, 9), (13, 9), (15, 7)])
+            pygame.draw.line(surf, (248, 252, 255), (7, 11), (17, 11), 1)
+            pygame.draw.line(surf, (215, 235, 248), (6, 12), (18, 12), 1)
+            pygame.draw.line(surf, (248, 252, 255), (6, 16), (18, 16), 1)
+            surf.set_at((12, 5), (255, 255, 255))
+        elif id_lower in ("palm_leaves", "palm_fronds"):
+            # Broad arching tropical palm fronds radiating in lush fan with sunlit emerald ribbons
+            stem_pts = [(12, 20), (12, 16), (11, 12), (9, 8), (7, 5)]
+            pygame.draw.lines(surf, (55, 115, 28), False, stem_pts, 2)
+            leaflets = [
+                ([(7, 5), (3, 7), (7, 9)], (95, 195, 48)),
+                ([(8, 7), (14, 5), (12, 9)], (115, 218, 58)),
+                ([(9, 9), (3, 11), (9, 13)], (82, 175, 42)),
+                ([(10, 11), (19, 9), (13, 13)], (120, 225, 65)),
+                ([(11, 13), (4, 15), (11, 17)], (68, 150, 35)),
+                ([(11, 14), (18, 14), (13, 17)], (98, 198, 52)),
+            ]
+            for lpoly, lcol in leaflets:
+                pygame.draw.polygon(surf, (38, 85, 20), lpoly)
+                pygame.draw.polygon(surf, lcol, lpoly)
+            surf.set_at((12, 6), (220, 255, 130))
+            surf.set_at((15, 10), (220, 255, 130))
+        elif id_lower == "blight_leaves":
+            # Jagged corrupted deep violet foliage cluster with dark indigo shadows & glowing lavender spores
+            for cx, cy, cr, col in [
+                (9, 13, 6, (38, 16, 58)),
+                (15, 13, 6, (38, 16, 58)),
+                (12, 9, 6, (38, 16, 58)),
+                (9, 13, 5, (65, 28, 98)),
+                (15, 13, 5, (85, 38, 130)),
+                (12, 9, 5, (115, 52, 170)),
+                (10, 11, 4, (145, 75, 210)),
+            ]:
+                pygame.draw.circle(surf, col, (cx, cy), cr)
+            for fx, fy in [(6, 10), (17, 8), (5, 14), (19, 13), (12, 4)]:
+                surf.set_at((fx, fy), (95, 42, 145))
+            surf.set_at((10, 9), (235, 165, 255))
+            surf.set_at((14, 12), (200, 130, 255))
+            surf.set_at((11, 13), (255, 210, 255))
         elif id_lower == "wood_planks":
             # Joined carpenter wood planks with dovetail seams & iron nail heads
             pygame.draw.rect(surf, (48, 28, 14), (3, 4, 18, 16), border_radius=2)
@@ -4212,6 +4306,76 @@ class AssetFactory:
         trunk.set_at((12, 4), (72, 140, 45))
         self.tiles[TILE_WOOD_TRUNK] = trunk
 
+        # Pine Wood (Solid block & Trunk)
+        pine_wood = pygame.Surface((16, 16), pygame.SRCALPHA)
+        pine_wood.fill((115, 80, 58))
+        for y in (0, 5, 10, 15):
+            pygame.draw.line(pine_wood, (72, 48, 32), (0, y), (15, y), 1)
+            pygame.draw.line(pine_wood, (148, 108, 78), (0, y + 1), (15, y + 1), 1)
+        self.tiles[TILE_PINE_WOOD] = pine_wood
+
+        pine_trunk = pygame.Surface((16, 16), pygame.SRCALPHA)
+        pine_trunk.fill((96, 68, 52))
+        for y in range(16):
+            gx1 = 2 + int(math.sin(y * 0.9) * 0.8)
+            gx2 = 8 + int(math.sin(y * 0.7 + 0.8) * 0.7)
+            gx3 = 13 + int(math.cos(y * 0.8) * 0.8)
+            pine_trunk.set_at((max(0, min(15, gx1)), y), (52, 34, 24))
+            pine_trunk.set_at((max(0, min(15, gx2)), y), (52, 34, 24))
+            pine_trunk.set_at((max(0, min(15, gx3)), y), (52, 34, 24))
+            pine_trunk.set_at((max(0, min(15, gx1 + 1)), y), (135, 98, 76))
+            pine_trunk.set_at((max(0, min(15, gx2 + 1)), y), (135, 98, 76))
+            pine_trunk.set_at((0, y), (42, 26, 18))
+            pine_trunk.set_at((15, y), (42, 26, 18))
+        pine_trunk.set_at((3, 9), (42, 102, 78))
+        pine_trunk.set_at((12, 5), (195, 225, 240))
+        self.tiles[TILE_PINE_TRUNK] = pine_trunk
+
+        # Palm Wood (Solid block & Trunk)
+        palm_wood = pygame.Surface((16, 16), pygame.SRCALPHA)
+        palm_wood.fill((205, 165, 115))
+        for y in (0, 5, 10, 15):
+            pygame.draw.line(palm_wood, (150, 110, 70), (0, y), (15, y), 1)
+            pygame.draw.line(palm_wood, (235, 198, 145), (0, y + 1), (15, y + 1), 1)
+        self.tiles[TILE_PALM_WOOD] = palm_wood
+
+        palm_trunk = pygame.Surface((16, 16), pygame.SRCALPHA)
+        palm_trunk.fill((168, 128, 85))
+        for y in range(16):
+            palm_trunk.set_at((0, y), (115, 78, 48))
+            palm_trunk.set_at((15, y), (115, 78, 48))
+            if y % 4 == 0:
+                pygame.draw.line(palm_trunk, (115, 78, 48), (1, y), (14, y), 1)
+                pygame.draw.line(palm_trunk, (215, 175, 125), (1, y + 1), (14, y + 1), 1)
+        palm_trunk.set_at((4, 7), (135, 95, 60))
+        palm_trunk.set_at((11, 11), (135, 95, 60))
+        self.tiles[TILE_PALM_TRUNK] = palm_trunk
+
+        # Blight Wood (Solid block & Trunk)
+        blight_wood = pygame.Surface((16, 16), pygame.SRCALPHA)
+        blight_wood.fill((72, 42, 88))
+        for y in (0, 5, 10, 15):
+            pygame.draw.line(blight_wood, (40, 20, 52), (0, y), (15, y), 1)
+            pygame.draw.line(blight_wood, (115, 70, 138), (0, y + 1), (15, y + 1), 1)
+        self.tiles[TILE_BLIGHT_WOOD] = blight_wood
+
+        blight_trunk = pygame.Surface((16, 16), pygame.SRCALPHA)
+        blight_trunk.fill((60, 32, 75))
+        for y in range(16):
+            gx1 = 2 + int(math.sin(y * 1.1) * 1.0)
+            gx2 = 8 + int(math.sin(y * 0.9 + 1.5) * 0.9)
+            gx3 = 13 + int(math.cos(y * 0.9) * 0.9)
+            blight_trunk.set_at((max(0, min(15, gx1)), y), (32, 14, 44))
+            blight_trunk.set_at((max(0, min(15, gx2)), y), (32, 14, 44))
+            blight_trunk.set_at((max(0, min(15, gx3)), y), (32, 14, 44))
+            blight_trunk.set_at((max(0, min(15, gx1 + 1)), y), (102, 58, 126))
+            blight_trunk.set_at((max(0, min(15, gx2 + 1)), y), (102, 58, 126))
+            blight_trunk.set_at((0, y), (26, 10, 36))
+            blight_trunk.set_at((15, y), (26, 10, 36))
+        blight_trunk.set_at((6, 7), (185, 115, 235))
+        blight_trunk.set_at((10, 12), (185, 115, 235))
+        self.tiles[TILE_BLIGHT_TRUNK] = blight_trunk
+
         # Root flare base variant (where trunk touches grass)
         trunk_base = trunk.copy()
         for fy in range(10, 16):
@@ -4385,6 +4549,26 @@ class AssetFactory:
                 palm_leaves.set_at((lx, ly), (pr, pg, pb, 255))
         self.palm_leaves = palm_leaves
         self.tiles["palm_leaves"] = palm_leaves
+        # Distinct placeable leaf tile surfaces with bespoke detail
+        pine_leaf_tile = snow_leaves.copy()
+        pine_leaf_tile.set_at((3, 3), (25, 70, 55, 255))
+        pine_leaf_tile.set_at((4, 3), (38, 95, 75, 255))
+        pine_leaf_tile.set_at((12, 12), (25, 70, 55, 255))
+        pine_leaf_tile.set_at((13, 12), (38, 95, 75, 255))
+        self.tiles[TILE_PINE_LEAVES] = pine_leaf_tile
+
+        palm_leaf_tile = palm_leaves.copy()
+        palm_leaf_tile.set_at((2, 14), (135, 230, 80, 255))
+        palm_leaf_tile.set_at((3, 13), (135, 230, 80, 255))
+        palm_leaf_tile.set_at((13, 2), (55, 130, 28, 255))
+        palm_leaf_tile.set_at((14, 3), (55, 130, 28, 255))
+        self.tiles[TILE_PALM_LEAVES] = palm_leaf_tile
+
+        blight_leaf_tile = blight_leaves.copy()
+        blight_leaf_tile.set_at((2, 8), (210, 150, 255, 255))
+        blight_leaf_tile.set_at((13, 7), (145, 70, 205, 255))
+        blight_leaf_tile.set_at((7, 14), (45, 18, 72, 255))
+        self.tiles[TILE_BLIGHT_LEAVES] = blight_leaf_tile
 
         # Autumn / Golden canopy leaves
         autumn_leaves = pygame.Surface((16, 16), pygame.SRCALPHA)
@@ -8628,7 +8812,15 @@ class AssetFactory:
             for sname in ["", "palm_", "pine_", "blight_"]
             for i in range(4)
         )
-        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects and has_fish_mobs and has_all_saplings:
+        has_tree_items = all(
+            os.path.exists(os.path.join(items_dir, f"{item}.png"))
+            for item in ("wood", "pine_wood", "palm_wood", "blight_wood", "leaves", "pine_leaves", "palm_leaves", "blight_leaves")
+        )
+        has_tree_tiles = all(
+            os.path.exists(os.path.join(tiles_dir, f"tile_{tid}.png"))
+            for tid in (65, 66, 67, 68, 69, 70, 71, 72, 73)
+        )
+        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects and has_fish_mobs and has_all_saplings and has_tree_items and has_tree_tiles:
             return
 
         os.makedirs(target_dir, exist_ok=True)

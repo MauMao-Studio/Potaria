@@ -22,6 +22,12 @@ from src.constants import (
     TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE, TILE_DUNGEON_GATE,
     TILE_LAMP,
+    TILE_OAK_WOOD, TILE_OAK_LEAVES, TILE_OAK_TRUNK,
+    TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
+    TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
+    TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
+    WOOD_TILES, TRUNK_TILES, ALL_WOOD_TILES, ALL_LEAF_TILES,
+    WOOD_VARIANTS, WOOD_VARIANTS_SET, LEAF_VARIANTS, LEAF_VARIANTS_SET,
     SAPLING_TILES, SAPLING_TILE_TO_ITEM, SAPLING_ITEM_TO_TILE,
     LANTERN_TILES,
     WALL_AIR, WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK,
@@ -47,3 +53,19 @@ def get_sapling_tile(item_id: str):
         return None
     clean = str(item_id).lower().strip().replace(" ", "_")
     return SAPLING_ITEM_TO_TILE.get(clean, None)
+
+
+def is_wood_tile(tile_id: int) -> bool:
+    """Returns True if the given tile ID is any wood variant (trunk or solid block)."""
+    return tile_id in ALL_WOOD_TILES
+
+
+def is_trunk_tile(tile_id: int) -> bool:
+    """Returns True if the given tile ID is any tree trunk variant."""
+    return tile_id in TRUNK_TILES
+
+
+def is_leaf_tile(tile_id: int) -> bool:
+    """Returns True if the given tile ID is any tree leaves / foliage variant."""
+    return tile_id in ALL_LEAF_TILES
+

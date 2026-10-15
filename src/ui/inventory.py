@@ -28,6 +28,12 @@ from src.constants import (
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, TILE_LAMP,
     TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT, SAPLING_TILES,
     TILE_IRON_CHEST, TILE_ROPE_RUNGS,
+    TILE_OAK_WOOD, TILE_OAK_LEAVES, TILE_OAK_TRUNK,
+    TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
+    TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
+    TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
+    WOOD_TILES as CONST_WOOD_TILES, TRUNK_TILES, ALL_WOOD_TILES, ALL_LEAF_TILES,
+    WOOD_VARIANTS, WOOD_VARIANTS_SET, LEAF_VARIANTS, LEAF_VARIANTS_SET,
     WALL_WOOD, WALL_STONE_BRICK, WALL_GLASS,
     RARITY_COMMON, RARITY_UNCOMMON, RARITY_RARE, RARITY_EPIC,
     RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, RARITY_HEX_COLORS, RARITY_COLORS
@@ -37,6 +43,10 @@ from src.constants import (
 ITEM_ALIASES = {
     "treasure_chest": "chest",
     "leaf_block": "leaves",
+    "oak_wood": "wood",
+    "oak_leaves": "leaves",
+    "pine_needles": "pine_leaves",
+    "palm_fronds": "palm_leaves",
     "sapling": "oak_sapling",
     "tree_sapling": "oak_sapling",
     "palm_tree_sapling": "palm_sapling",
@@ -869,17 +879,73 @@ ITEM_REGISTRY = {
         "special": "Basic Building Block"
     },
     "wood": {
-        "name": "Wood", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_WOOD,
+        "name": "Oak Wood", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_WOOD,
         "rarity": RARITY_COMMON,
-        "desc": "Lumber harvested from surface trees. Right-click to place or craft into workbench.",
+        "desc": "Classic timber harvested from oak trees. Right-click to place or craft into workbench.",
+        "lore": "'A carpenter's fundamental resource.'",
+        "special": "Crafting & Building"
+    },
+    "oak_wood": {
+        "name": "Oak Wood", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_WOOD,
+        "rarity": RARITY_COMMON,
+        "desc": "Classic timber harvested from oak trees. Right-click to place or craft into workbench.",
         "lore": "'A carpenter's fundamental resource.'",
         "special": "Crafting & Building"
     },
     "leaves": {
-        "name": "Leaves", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_LEAVES,
+        "name": "Oak Leaves", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_LEAVES,
         "rarity": RARITY_COMMON,
-        "desc": "Lush foliage blocks harvested from tree canopies. Can be placed for verdant decoration.",
+        "desc": "Lush green foliage harvested from oak tree canopies. Can be placed for verdant decoration.",
         "lore": "'Fresh leaves whispering in the gentle canopy breeze.'",
+        "special": "Decorative Foliage Block"
+    },
+    "oak_leaves": {
+        "name": "Oak Leaves", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_LEAVES,
+        "rarity": RARITY_COMMON,
+        "desc": "Lush green foliage harvested from oak tree canopies. Can be placed for verdant decoration.",
+        "lore": "'Fresh leaves whispering in the gentle canopy breeze.'",
+        "special": "Decorative Foliage Block"
+    },
+    "pine_wood": {
+        "name": "Pine Wood", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_PINE_TRUNK,
+        "rarity": RARITY_COMMON,
+        "desc": "Dense dark spruce timber harvested from alpine pine trees. Right-click to place or use in crafting.",
+        "lore": "'Weathered by sub-zero mountain blizzards.'",
+        "special": "Crafting & Building"
+    },
+    "pine_leaves": {
+        "name": "Pine Leaves", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_PINE_LEAVES,
+        "rarity": RARITY_COMMON,
+        "desc": "Dark evergreen coniferous needle clusters harvested from pine trees. Can be placed as foliage.",
+        "lore": "'Crisp alpine needles infused with frosted resin.'",
+        "special": "Decorative Foliage Block"
+    },
+    "palm_wood": {
+        "name": "Palm Wood", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_PALM_TRUNK,
+        "rarity": RARITY_COMMON,
+        "desc": "Light fibrous timber harvested from coastal palm trees. Right-click to place or use in crafting.",
+        "lore": "'Sun-bleached timber from warm tropical shores.'",
+        "special": "Crafting & Building"
+    },
+    "palm_leaves": {
+        "name": "Palm Leaves", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_PALM_LEAVES,
+        "rarity": RARITY_COMMON,
+        "desc": "Broad curving tropical fronds harvested from palm trees. Can be placed for lush decoration.",
+        "lore": "'Fan fronds rustling to the rhythm of ocean swells.'",
+        "special": "Decorative Foliage Block"
+    },
+    "blight_wood": {
+        "name": "Blight Wood", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_BLIGHT_TRUNK,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Corrupted twisted obsidian-violet timber harvested from Blight trees. Right-click to place or use in crafting.",
+        "lore": "'Hardened by abyssal nether miasma.'",
+        "special": "Crafting & Building"
+    },
+    "blight_leaves": {
+        "name": "Blight Leaves", "cat": CAT_BLOCK, "power": 0, "damage": 0, "max_stack": 999, "tile": TILE_BLIGHT_LEAVES,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Corrupted deep violet foliage harvested from Blight trees with glowing spore flecks. Can be placed for eerie decoration.",
+        "lore": "'Pulsing with faint nether spores.'",
         "special": "Decorative Foliage Block"
     },
     "oak_sapling": {
@@ -3159,6 +3225,16 @@ class Inventory:
         canon = ITEM_ALIASES.get(item_id, item_id)
         return ITEM_REGISTRY.get(canon)
 
+    def count_wood(self):
+        """Returns total wood count across all wood variants (wood, oak_wood, pine_wood, palm_wood, blight_wood)."""
+        total = 0
+        for slot in self.slots:
+            if slot:
+                slot_canon = ITEM_ALIASES.get(slot.item_id, slot.item_id)
+                if slot.item_id in WOOD_VARIANTS_SET or slot_canon in WOOD_VARIANTS_SET:
+                    total += slot.count
+        return total
+
     def count_item(self, item_id):
         if item_id == "copper_coin":
             return self.total_coins_value()
@@ -3168,6 +3244,9 @@ class Inventory:
             return self.total_coins_value() // 10000
 
         canon = ITEM_ALIASES.get(item_id, item_id)
+        if item_id in ("wood", "oak_wood") or canon in ("wood", "oak_wood"):
+            return self.count_wood()
+
         total = 0
         for slot in self.slots:
             if slot:
@@ -3192,6 +3271,42 @@ class Inventory:
             return self.remove_coins(count * 10000)
 
         canon = ITEM_ALIASES.get(item_id, item_id)
+
+        # Wood variants interchangeability in recipes/consumption
+        if item_id in WOOD_VARIANTS_SET or canon in WOOD_VARIANTS_SET:
+            if self.count_wood() < count:
+                return False
+            remaining = count
+            # 1. First pass: consume from exact requested wood variant
+            for idx in range(len(self.slots)):
+                slot = self.slots[idx]
+                if slot:
+                    slot_canon = ITEM_ALIASES.get(slot.item_id, slot.item_id)
+                    if slot.item_id == item_id or slot.item_id == canon or slot_canon == canon:
+                        if slot.count <= remaining:
+                            remaining -= slot.count
+                            self.slots[idx] = None
+                        else:
+                            slot.count -= remaining
+                            remaining = 0
+                        if remaining <= 0:
+                            return True
+            # 2. Second pass: consume from any other available wood variants
+            for idx in range(len(self.slots)):
+                slot = self.slots[idx]
+                if slot:
+                    slot_canon = ITEM_ALIASES.get(slot.item_id, slot.item_id)
+                    if slot.item_id in WOOD_VARIANTS_SET or slot_canon in WOOD_VARIANTS_SET:
+                        if slot.count <= remaining:
+                            remaining -= slot.count
+                            self.slots[idx] = None
+                        else:
+                            slot.count -= remaining
+                            remaining = 0
+                        if remaining <= 0:
+                            return True
+            return remaining <= 0
+
         if self.count_item(item_id) < count:
             return False
 
@@ -3664,6 +3779,9 @@ class Inventory:
 
 WOOD_TILES = {
     TILE_WOOD, TILE_WOOD_TRUNK, TILE_WOOD_PLANKS, TILE_WOOD_PLATFORM,
+    TILE_PINE_WOOD, TILE_PINE_TRUNK,
+    TILE_PALM_WOOD, TILE_PALM_TRUNK,
+    TILE_BLIGHT_WOOD, TILE_BLIGHT_TRUNK,
     TILE_WORK_BENCH, TILE_TABLE, TILE_CHAIR, TILE_BED, TILE_BOOKSHELF,
     TILE_DRESSER, TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_GRANDFATHER_CLOCK,
     TILE_WOOD_SHELF, TILE_BATHTUB, TILE_SINK, TILE_ROPE_RUNGS
@@ -3682,7 +3800,8 @@ DIRT_TILES = {
 }
 
 FRAGILE_TILES = {
-    TILE_LEAVES, TILE_TORCH, TILE_GLASS, TILE_CANDELABRA, TILE_CHANDELIER,
+    TILE_LEAVES, TILE_PINE_LEAVES, TILE_PALM_LEAVES, TILE_BLIGHT_LEAVES,
+    TILE_TORCH, TILE_GLASS, TILE_CANDELABRA, TILE_CHANDELIER,
     TILE_POTTED_PLANT, TILE_TAPESTRY, TILE_PAINTING,
     TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT,
     TILE_ROPE_RUNGS,

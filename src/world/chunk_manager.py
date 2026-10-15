@@ -31,7 +31,11 @@ from src.constants import (
     WALL_DUNGEON_MAGMA, WALL_DUNGEON_ICE, WALL_DUNGEON_BONE,
     BIOME_FOREST, BIOME_DESERT, BIOME_SNOW, BIOME_CORRUPTION, BIOME_BLIGHT,
     BIOME_MUSHROOM, BIOME_DUNGEON, BIOME_CAVERN,
-    TILE_PROPS
+    TILE_PROPS,
+    TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
+    TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
+    TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
+    TRUNK_TILES, ALL_LEAF_TILES
 )
 from src.world.noise import PerlinNoise
 
@@ -129,60 +133,65 @@ class ChunkSection:
                 if t_id != TILE_AIR:
                     if t_id in (TILE_TORCH, TILE_WATER) or t_id in SAPLING_TILES or t_id == TILE_SAPLING:
                         self.animated_tiles.append((local_px, local_py, t_id))
-                    elif t_id == TILE_WOOD_TRUNK:
+                    elif t_id in TRUNK_TILES:
                         below_id = chunk.get_tile_local(lx, ty + 1)
                         above_id = chunk.get_tile_local(lx, ty - 1)
                         left_id = world.get_tile(gx - 1, ty)
                         right_id = world.get_tile(gx + 1, ty)
-                        in_canopy = (above_id == TILE_LEAVES or left_id == TILE_LEAVES or right_id == TILE_LEAVES)
+                        in_canopy = (above_id in ALL_LEAF_TILES or left_id in ALL_LEAF_TILES or right_id in ALL_LEAF_TILES)
 
-                        if below_id in (TILE_GRASS, TILE_DIRT, TILE_SNOW, TILE_SAND, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS):
+                        tile_tex = world.scaled_tiles.get(t_id)
+
+                        if below_id in (TILE_GRASS, TILE_DIRT, TILE_SNOW, TILE_SAND, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS) and t_id == TILE_WOOD_TRUNK:
                             self.surf.blit(world.scaled_trunk_base, (local_px, local_py))
                         elif not in_canopy and (gx + ty) % 5 == 0:
-                            if col_biome == BIOME_SNOW and hasattr(world, "scaled_trunk_branch_l_snow"):
+                            if (col_biome == BIOME_SNOW or t_id == TILE_PINE_TRUNK) and hasattr(world, "scaled_trunk_branch_l_snow"):
                                 self.surf.blit(world.scaled_trunk_branch_l_snow, (local_px, local_py))
-                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and hasattr(world, "scaled_trunk_branch_l_blight"):
+                            elif (col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) or t_id == TILE_BLIGHT_TRUNK) and hasattr(world, "scaled_trunk_branch_l_blight"):
                                 self.surf.blit(world.scaled_trunk_branch_l_blight, (local_px, local_py))
-                            elif col_biome == BIOME_DESERT and hasattr(world, "scaled_trunk_branch_l_palm"):
+                            elif (col_biome == BIOME_DESERT or t_id == TILE_PALM_TRUNK) and hasattr(world, "scaled_trunk_branch_l_palm"):
                                 self.surf.blit(world.scaled_trunk_branch_l_palm, (local_px, local_py))
-                            else:
+                            elif t_id == TILE_WOOD_TRUNK:
                                 self.surf.blit(world.scaled_trunk_branch_l, (local_px, local_py))
+                            elif tile_tex:
+                                self.surf.blit(tile_tex, (local_px, local_py))
                         elif not in_canopy and (gx + ty) % 5 == 2:
-                            if col_biome == BIOME_SNOW and hasattr(world, "scaled_trunk_branch_r_snow"):
+                            if (col_biome == BIOME_SNOW or t_id == TILE_PINE_TRUNK) and hasattr(world, "scaled_trunk_branch_r_snow"):
                                 self.surf.blit(world.scaled_trunk_branch_r_snow, (local_px, local_py))
-                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and hasattr(world, "scaled_trunk_branch_r_blight"):
+                            elif (col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) or t_id == TILE_BLIGHT_TRUNK) and hasattr(world, "scaled_trunk_branch_r_blight"):
                                 self.surf.blit(world.scaled_trunk_branch_r_blight, (local_px, local_py))
-                            elif col_biome == BIOME_DESERT and hasattr(world, "scaled_trunk_branch_r_palm"):
+                            elif (col_biome == BIOME_DESERT or t_id == TILE_PALM_TRUNK) and hasattr(world, "scaled_trunk_branch_r_palm"):
                                 self.surf.blit(world.scaled_trunk_branch_r_palm, (local_px, local_py))
-                            else:
+                            elif t_id == TILE_WOOD_TRUNK:
                                 self.surf.blit(world.scaled_trunk_branch_r, (local_px, local_py))
+                            elif tile_tex:
+                                self.surf.blit(tile_tex, (local_px, local_py))
                         else:
-                            tile_tex = world.scaled_tiles.get(t_id)
                             if tile_tex:
                                 self.surf.blit(tile_tex, (local_px, local_py))
 
                         if in_canopy:
                             crown_tex = getattr(world, "scaled_trunk_crown", None)
-                            if col_biome == BIOME_SNOW and getattr(world, "scaled_trunk_crown_snow", None):
+                            if (col_biome == BIOME_SNOW or t_id == TILE_PINE_TRUNK) and getattr(world, "scaled_trunk_crown_snow", None):
                                 crown_tex = world.scaled_trunk_crown_snow
-                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) and getattr(world, "scaled_trunk_crown_blight", None):
+                            elif (col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT) or t_id == TILE_BLIGHT_TRUNK) and getattr(world, "scaled_trunk_crown_blight", None):
                                 crown_tex = world.scaled_trunk_crown_blight
-                            elif col_biome == BIOME_DESERT and getattr(world, "scaled_trunk_crown_palm", None):
+                            elif (col_biome == BIOME_DESERT or t_id == TILE_PALM_TRUNK) and getattr(world, "scaled_trunk_crown_palm", None):
                                 crown_tex = world.scaled_trunk_crown_palm
                             if crown_tex:
                                 self.surf.blit(crown_tex, (local_px, local_py))
-                    elif t_id == TILE_LEAVES:
+                    elif t_id in ALL_LEAF_TILES:
                         up_air = (world.get_tile(gx, ty - 1) == TILE_AIR)
                         down_air = (world.get_tile(gx, ty + 1) == TILE_AIR)
                         left_air = (world.get_tile(gx - 1, ty) == TILE_AIR)
                         right_air = (world.get_tile(gx + 1, ty) == TILE_AIR)
 
                         b_key = "forest"
-                        if col_biome == BIOME_SNOW:
+                        if t_id == TILE_PINE_LEAVES or col_biome == BIOME_SNOW:
                             b_key = "snow"
-                        elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
+                        elif t_id == TILE_BLIGHT_LEAVES or col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
                             b_key = "blight"
-                        elif col_biome == BIOME_DESERT:
+                        elif t_id == TILE_PALM_LEAVES or col_biome == BIOME_DESERT:
                             b_key = "palm"
 
                         leaf_dict = getattr(world, "scaled_leaf_variants", {}).get(b_key, {})
@@ -190,14 +199,14 @@ class ChunkSection:
                         if v_tex:
                             self.surf.blit(v_tex, (local_px, local_py))
                         else:
-                            if col_biome == BIOME_SNOW:
+                            if b_key == "snow":
                                 self.surf.blit(world.scaled_snow_leaves, (local_px, local_py))
-                            elif col_biome in (BIOME_CORRUPTION, BIOME_BLIGHT):
+                            elif b_key == "blight":
                                 self.surf.blit(world.scaled_blight_leaves, (local_px, local_py))
-                            elif col_biome == BIOME_DESERT and hasattr(world, "scaled_palm_leaves"):
+                            elif b_key == "palm" and hasattr(world, "scaled_palm_leaves"):
                                 self.surf.blit(world.scaled_palm_leaves, (local_px, local_py))
                             else:
-                                tile_tex = world.scaled_tiles.get(t_id)
+                                tile_tex = world.scaled_tiles.get(t_id) or world.scaled_tiles.get(TILE_LEAVES)
                                 if tile_tex:
                                     self.surf.blit(tile_tex, (local_px, local_py))
                     else:
