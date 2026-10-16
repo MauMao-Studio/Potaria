@@ -10,7 +10,8 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v0.2.3a** | October 2026 | *Performance, Lighting Downward Shadow & Persistent World Cache Overhaul (Current Active Build)* | 108+ FPS baseline performance optimization (down from 22.9ms to 8.8ms frame time, >60 FPS guarantee), roof/ceiling daylight occlusion tracing from y=0 to viewport min_ty, sunlight downward shadow casting with top surface exposure illumination, clamped emitter intensities [0..15] preventing IndexError, version-enveloped lighting cache with selective invalidation on algorithm updates, atomic chunk cache writes, swizzle-safe OpenGL texture streaming fallback, and 653 tests passing across 41 suites (100% Green). |
+| **v0.2.4a** | October 2026 | *Side-by-Side Gear Comparison, Health HUD Contrast & Direct Culinary Descriptions (Current Active Build)* | Side-by-side equipment comparison tooltips ("katabi") when hovering gear with Character Info (C) or chest storage open, equipped gear comparison badge `[ CURRENTLY EQUIPPED ]`, direct factual culinary descriptions across all food items, raw fish, meats, seasonings, and cookbook generation scripts without flowery language, high-contrast backing badge plate for numerical Life HUD readout (`Life: X / Y`), decoupling death screen fade overlay from UI surface layer to prevent low-HP text obliteration, and 672 tests passing across 42 suites (100% Green). |
+| **v0.2.3a** | October 2026 | *Performance, Lighting Downward Shadow & Persistent World Cache Overhaul* | 108+ FPS baseline performance optimization (down from 22.9ms to 8.8ms frame time, >60 FPS guarantee), roof/ceiling daylight occlusion tracing from y=0 to viewport min_ty, sunlight downward shadow casting with top surface exposure illumination, clamped emitter intensities [0..15] preventing IndexError, version-enveloped lighting cache with selective invalidation on algorithm updates, atomic chunk cache writes, swizzle-safe OpenGL texture streaming fallback, and 653 tests passing across 41 suites (100% Green). |
 | **v0.2.2a** | October 2026 | *Food Buff System, Decoupled Culinary Descriptions, Weapons Defense Scrub & UI Ergonomics* | 5-meal archetype food buff system with timed stat bonuses (Satiated, Attack Power, Damage Resistance, Swiftness, Health Regen), pure Filipino culinary descriptions decoupled from mechanical stat benefits, bottom-left food buff HUD overlay with hover tooltips and topmost z-order layering, main menu and settings hover tooltip cleanup (tooltips restricted strictly to icon-only buttons), Achievements card viewport bottom clearance fix, modal boundaries padding in Worlds and Key Bindings screens, complete weapon defense scrub across item registry, affix tables, stat ranges, and tooltip renderers, and 641 tests passing across 40 suites (100% Green). |
 | **v0.2.1a** | October 2026 | *Gameplay, UI, Visual & Persistence Overhaul* | Zero player dark illumination by default (equipped gear / held torch light emission only), merchant shop card widening (580px window, 265px card) with name ellipsis truncation, settings reset confirmation modal prompt (settings and keybindings), settings button layout standardization (Back left, Reset right), atomic settings persistence across launches, daytime roof block incident sunlight without shadow bands, 3-level discrete camera zoom (1x, 2x, 3x) with hotkey Z and settings toggle, default Easy difficulty, World Selection ADVENTURE label cleanup, cinematic pitch-black death transition with instant spawn camera snapping, culinary overhaul with authentic Filipino food assets, tree-specific sapling growth animations, tree-specific wood and leaves variants, and 621 tests passing across 39 suites (100% Green). |
 | **v0.2.0a** | October 2026 | *Water Buoyancy & Drowning, Tree Harvesting & Leaf Blocks, Pinoy Fishing & Inventory Organize* | Enemy water buoyancy & translucent blue submerged entity overlays, exact 1 heart/sec (10% max HP) drowning damage at 0% air, individual block-by-block tree harvesting without cascade felling, placeable `leaf_block`, leaf sapling drops, barren ground reforestation & daily sun growth animations, natural block world-tile inventory icon parity, inventory `[ORGANIZE]` compaction (filling gaps forward without re-sorting), fishing rod water interaction with 10 authentic Filipino (Pinoy) fishes (Bangus, Tilapia, Galunggong, Lapu-Lapu, Maya-Maya, Tanigue, Tambakol, Hito, Dilis, Dalagang Bukid) in raw and cooked forms with cooking recipes, rope rungs tile parity, dedicated silver steel `TILE_IRON_CHEST` world tile, and 416 tests passing across 38 suites (100% Green). |
@@ -38,7 +39,33 @@
 
 ## Detailed Version Logs
 
-### [v0.2.3a] — Performance, Lighting Downward Shadow & Persistent World Cache Overhaul (Current Release)
+### [v0.2.4a] — Side-by-Side Gear Comparison, Health HUD Contrast & Direct Culinary Descriptions (Current Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Side-by-Side Equipment Comparison Tooltips ("katabi")**:
+  - Implemented dual tooltip cards displayed side-by-side when hovering over weapons, armor pieces, shields, or accessories while the Character Panel (`C`) or storage chest window is open.
+  - Hovering over an equippable item shows its details card while concurrently displaying the currently equipped piece in that slot right beside it ("katabi") with an ornate gold header badge: `[ CURRENTLY EQUIPPED ]`.
+  - Supports duplicate item comparisons with different enhancement levels, affixes, or rolled stats, while cleanly suppressing duplicate cards when hovering over the exact equipped piece itself.
+  - Viewport-aware horizontal alignment prevents comparison cards from overflowing the screen edges or overlapping open panels.
+- **Health HUD Contrast Badge & Death Overlay Fix**:
+  - Resolved low-HP / dying visual bug where player health text was obscured by a dark-red rectangle over hearts.
+  - Added a dedicated high-contrast backing badge plate behind the numerical Life readout (`Life: X / Y`) in `src/ui/hud.py` with dynamic health-dependent alpha and tone:
+    - Dying/0 HP: Dark crimson plate `(28, 16, 20, 240)` with bright red text.
+    - Low HP (<= 25%): Warning maroon plate `(24, 18, 22, 235)` with pulsing contrast.
+    - Normal: Slate glass plate `(18, 22, 34, 230)` with crisp white text.
+  - Decoupled the cinematic death fade transition surface from the UI layer in `main.py`, rendering death fade overlays directly onto the post-processed frame buffer so health counters, hearts, and HUD numbers remain crisp and visible right up to the final death moment.
+- **Direct & Factual Food Culinary Descriptions**:
+  - Completely streamlined all 79 dishes, raw seafood, poultry, meats, produce, seasonings, and culinary ingredients in `ITEM_REGISTRY` (`src/ui/inventory.py`), removing flowery, poetic, and dramatic wording.
+  - Standardized acquisition notes, ingredient profiles, and section headers in `scripts/build_cookbook_docs.py` to direct, factual culinary statements.
+  - Rebuilt all 4 cookbook files (`Potaria_Cookbook_With_Codes.pdf/docx` and `Potaria_Cookbook_No_Codes.pdf/docx`).
+- **Automated Verification**:
+  - Added comprehensive test suite `tests/test_equipment_comparison_and_death_ui.py` with 19 unit and integration tests.
+  - 672 tests passing across 42 test suites (100% Green).
+
+---
+
+### [v0.2.3a] — Performance, Lighting Downward Shadow & Persistent World Cache Overhaul
 *Release Date: October 2026*
 
 #### Added & Improved
