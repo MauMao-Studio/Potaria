@@ -10,7 +10,8 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v0.2.4a** | October 2026 | *Side-by-Side Gear Comparison, Health HUD Contrast & Direct Culinary Descriptions (Current Active Build)* | Side-by-side equipment comparison tooltips ("katabi") when hovering gear with Character Info (C) or chest storage open, equipped gear comparison badge `[ CURRENTLY EQUIPPED ]`, direct factual culinary descriptions across all food items, raw fish, meats, seasonings, and cookbook generation scripts without flowery language, high-contrast backing badge plate for numerical Life HUD readout (`Life: X / Y`), decoupling death screen fade overlay from UI surface layer to prevent low-HP text obliteration, and 672 tests passing across 42 suites (100% Green). |
+| **v0.2.5a** | October 2026 | *Whole-Game Balance Overhaul, 5-Active-Meal Categorized Architecture & Equipment Tuning (Current Active Build)* | Full implementation of Potaria Game Balance Plan: 5-active-meal-buff category framework (Offense, Defense, Mobility, Resource, Utility) with strict 1-buff-per-category replacement and no additive stacking, food stat contribution caps (max +12% DMG, +10% ATK SPD, +6% Crit, +6% DR, +2 HP/s regen, +15% Move SPD), standardized meal durations (2/3/4/5 min), dish-effect assignment across Filipino, fish, and potato cuisine with Kinilaw na Tanigue conflict resolution, ranged projectile meal buff damage scaling, non-combat meal buffs (fishing reeling speed, block mining power, mob drop luck), strict affix slot limits (Rare 0, Epic 1, Legendary 1, Mythic 2, Ancient 2), Risk Register suspect item tuning, dedicated pre-balance backup branch (`pre-game-balance-backup`) pushed to origin, and 684 tests passing across 43 suites (100% Green). |
+| **v0.2.4a** | October 2026 | *Side-by-Side Gear Comparison, Health HUD Contrast & Direct Culinary Descriptions* | Side-by-side equipment comparison tooltips ("katabi") when hovering gear with Character Info (C) or chest storage open, equipped gear comparison badge `[ CURRENTLY EQUIPPED ]`, direct factual culinary descriptions across all food items, raw fish, meats, seasonings, and cookbook generation scripts without flowery language, high-contrast backing badge plate for numerical Life HUD readout (`Life: X / Y`), decoupling death screen fade overlay from UI surface layer to prevent low-HP text obliteration, and 672 tests passing across 42 suites (100% Green). |
 | **v0.2.3a** | October 2026 | *Performance, Lighting Downward Shadow & Persistent World Cache Overhaul* | 108+ FPS baseline performance optimization (down from 22.9ms to 8.8ms frame time, >60 FPS guarantee), roof/ceiling daylight occlusion tracing from y=0 to viewport min_ty, sunlight downward shadow casting with top surface exposure illumination, clamped emitter intensities [0..15] preventing IndexError, version-enveloped lighting cache with selective invalidation on algorithm updates, atomic chunk cache writes, swizzle-safe OpenGL texture streaming fallback, and 653 tests passing across 41 suites (100% Green). |
 | **v0.2.2a** | October 2026 | *Food Buff System, Decoupled Culinary Descriptions, Weapons Defense Scrub & UI Ergonomics* | 5-meal archetype food buff system with timed stat bonuses (Satiated, Attack Power, Damage Resistance, Swiftness, Health Regen), pure Filipino culinary descriptions decoupled from mechanical stat benefits, bottom-left food buff HUD overlay with hover tooltips and topmost z-order layering, main menu and settings hover tooltip cleanup (tooltips restricted strictly to icon-only buttons), Achievements card viewport bottom clearance fix, modal boundaries padding in Worlds and Key Bindings screens, complete weapon defense scrub across item registry, affix tables, stat ranges, and tooltip renderers, and 641 tests passing across 40 suites (100% Green). |
 | **v0.2.1a** | October 2026 | *Gameplay, UI, Visual & Persistence Overhaul* | Zero player dark illumination by default (equipped gear / held torch light emission only), merchant shop card widening (580px window, 265px card) with name ellipsis truncation, settings reset confirmation modal prompt (settings and keybindings), settings button layout standardization (Back left, Reset right), atomic settings persistence across launches, daytime roof block incident sunlight without shadow bands, 3-level discrete camera zoom (1x, 2x, 3x) with hotkey Z and settings toggle, default Easy difficulty, World Selection ADVENTURE label cleanup, cinematic pitch-black death transition with instant spawn camera snapping, culinary overhaul with authentic Filipino food assets, tree-specific sapling growth animations, tree-specific wood and leaves variants, and 621 tests passing across 39 suites (100% Green). |
@@ -39,7 +40,47 @@
 
 ## Detailed Version Logs
 
-### [v0.2.4a] — Side-by-Side Gear Comparison, Health HUD Contrast & Direct Culinary Descriptions (Current Release)
+### [v0.2.5a] — Whole-Game Balance Overhaul, 5-Active-Meal Categorized Architecture & Equipment Tuning (Current Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **5-Active-Meal-Buff Categorized Architecture**:
+  - Implemented the 5-meal category framework according to Section 6 of the Game Balance Plan:
+    - *Offense*: Physical/ranged/magic damage, attack speed, crit chance/damage, armor penetration.
+    - *Defense*: Flat defense, magic resistance, percentage damage reduction, knockback resistance.
+    - *Mobility*: Movement speed, jump force, dash speed/cooldown.
+    - *Resource*: HP/MP regeneration, mana cost reduction.
+    - *Utility*: Mining/woodcutting speed, fishing power, luck/drop rate, instant status cleanse.
+  - Enforced strict 1-buff-per-category limit (maximum 5 active meal buffs total). Consuming a meal in an occupied category replaces that category's buff without transferring remaining duration; consuming in an empty category adds it.
+  - Eating the same dish refreshes base duration without stacking stat magnitude or time additively.
+  - Immediate HP/MP restoration applies separately from timed meal buffs.
+  - Hard stat contribution caps enforced on food bonuses: Damage max +12%, Attack Speed max +10%, Crit Chance max +6%, Crit Damage max +16%, Armor Pen max +10%, Flat DEF max +6, Damage Reduction max +6%, Magic Resist max +15%, Move Speed max +15%, Jump Force max +15%, Dash max +15%, HP Regen max +2 HP/s, MP Regen max +2 MP/s, Mana Cost Reduction max -15%, Luck/Drop Rate max +10%, Mining/Woodcutting max +20%, Fishing Power max +15%.
+  - Standardized meal duration tiers: Common/Snack 2 min (120s), Standard 3 min (180s), Rare 4 min (240s), Signature/Feast 5 min (300s).
+  - Assigned candidate dish effects across all Filipino dishes, Fish dishes, and Potato dishes in `ITEM_REGISTRY`. Resolved Kinilaw na Tanigue conflict to canonical +90 HP and +12% movement speed (Mobility category, 3 min duration).
+- **Ranged Projectile & Non-Combat Meal Buff Integration**:
+  - Wired `ranged_damage_mult`, `damage_mult`, `crit_chance`, `crit_dmg_mult`, and `armor_pen` into `ArrowProjectile`, `StaffBoltProjectile`, `RodJavelinProjectile`, and `ScepterPulseProjectile` against both mobs and bosses.
+  - Scaled fishing minigame reeling speed by `1.0 + player.get_meal_buff_val("fishing_power")`.
+  - Scaled block mining speed by `gathering_speed` meal buff.
+  - Scaled mob item drop rates by `luck` meal buff.
+- **Affix Slot Budgets & Equipment Balancing**:
+  - Enforced strict affix slot limits in `src/rpg/enhancement.py` and trader interactions: Rare max 0 additional slots, Epic max 1, Legendary max 1, Mythic max 2, Ancient max 2.
+  - Audited and tuned suspect items from the Risk Register in Section 5:
+    - *Genesis World Cleaver*: Balanced to 88 ATK, 24% crit, +60 HP, +80 MP, area explosion, and 90s cooldown fatal-hit ward.
+    - *Celestial Titan Plate*: Adjusted to 32 DEF and +15% total damage mitigation.
+    - *Crown of Potaria*: 30 HP barrier recharging every 20s.
+    - *Ancient Heart*: 50% HP recovery upon reaching 1 HP with 120s cooldown.
+    - *Void Edge*: 44 ATK + 10 true damage.
+    - *Magma Greatsword*: 32 ATK + 8 fire damage.
+    - *Zephyr Striders*: +35% sprint speed.
+- **Git Backup Branch**:
+  - Created and pushed dedicated backup branch `pre-game-balance-backup` to `origin` before applying balance modifications.
+- **Automated Verification**:
+  - Added test suite `tests/test_game_balance_overhaul.py` (12/12 passed).
+  - Full test suite: 684 passed across 43 test suites (100% Green).
+
+---
+
+### [v0.2.4a] — Side-by-Side Gear Comparison, Health HUD Contrast & Direct Culinary Descriptions
 *Release Date: October 2026*
 
 #### Added & Improved
