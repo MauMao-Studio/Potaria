@@ -31,10 +31,14 @@ MEAL_BUFF_CAPS = {
     "magic_res": 0.15,
     "speed_mult": 0.15,
     "jump_mult": 0.15,
+    "dash_mult": 0.15,
     "knockback_res": 0.15,
     "hp_regen": 2.0,
     "mp_regen": 2.0,
     "mana_cost_reduction": 0.15,
+    "luck": 0.10,
+    "gathering_speed": 0.20,
+    "fishing_power": 0.15,
 }
 
 class PlayerFireball:
@@ -290,7 +294,8 @@ class Player:
         meal_spd = self.get_meal_buff_val("speed_mult")
         speed_cap = self.stats.total_speed * getattr(self, "speed_multiplier", 1.0) * (1.0 + meal_spd)
         if self.dash_timer > 0:
-            speed_cap *= 2.2  # Dash burst!
+            meal_dash = self.get_meal_buff_val("dash_mult")
+            speed_cap *= (2.2 * (1.0 + meal_dash))  # Dash burst!
 
         # Configurable key mappings
         k_left = key_bindings.get("Move Left", pygame.K_a) if key_bindings else pygame.K_a
@@ -694,12 +699,15 @@ class Player:
                     return True
         return False
 
-    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=-3.0, ignore_defense=False):
+    def take_damage(self, amount, knockback_vx=0.0, knockback_vy=-3.0, ignore_defense=False, is_magic=False):
         if self.i_frame_timer > 0 or self.is_dead:
             return False
 
         if ignore_defense:
             actual_damage = max(1, int(amount))
+            meal_magic_res = self.get_meal_buff_val("magic_res")
+            if meal_magic_res > 0:
+                actual_damage = max(1, int(actual_damage * (1.0 - meal_magic_res)))
         else:
             # Evasion Step: 15% Chance to evade incoming strikes
             if self.has_effect("evasion step"):
@@ -719,14 +727,21 @@ class Player:
             min_pierce = 1 if is_titan else max(1, math.ceil(amount * 0.15))
             actual_damage = max(min_pierce, amount - effective_def)
 
-            # Damage Mitigation: -25% Total Damage Mitigation
-            if self.has_effect("damage mitigation") or self.has_effect("-25%"):
+            # Damage Mitigation: 15% or 25% Total Damage Mitigation
+            if self.has_effect("15% total damage mitigation") or self.has_effect("+15% total damage mitigation") or self.has_effect("15% damage mitigation"):
+                actual_damage = max(min_pierce, int(actual_damage * 0.85))
+            elif self.has_effect("damage mitigation") or self.has_effect("-25%") or self.has_effect("25% total damage mitigation"):
                 actual_damage = max(min_pierce, int(actual_damage * 0.75))
 
             # Meal Buff Damage Reduction
             meal_dmg_red = self.get_meal_buff_val("dmg_reduction")
             if meal_dmg_red > 0:
                 actual_damage = max(min_pierce, int(actual_damage * (1.0 - meal_dmg_red)))
+
+            # Magic Resistance (applied on magic damage or general elemental checks)
+            meal_magic_res = self.get_meal_buff_val("magic_res")
+            if meal_magic_res > 0 and (is_magic or getattr(self, "taking_magic_damage", False)):
+                actual_damage = max(min_pierce, int(actual_damage * (1.0 - meal_magic_res)))
 
             # Radiant Shield: Absorbs 40 damage every 15s
             if self.has_effect("radiant shield") and self.radiant_shield_hp > 0:
@@ -748,9 +763,9 @@ class Player:
                 knockback_vx *= (1.0 - meal_kb_res)
                 knockback_vy *= (1.0 - meal_kb_res)
 
-        # Eternal Bloom: Full heal upon reaching 1 HP (180s cooldown)
+        # Eternal Bloom: Restores 50% HP upon reaching 1 HP (180s cooldown)
         if self.has_effect("eternal bloom") and (self.health - actual_damage <= 1) and self.eternal_bloom_cd <= 0:
-            self.health = self.max_health
+            self.health = max(1, int(self.max_health * 0.50))
             self.eternal_bloom_cd = 180.0
             self.i_frame_timer = 1.5
             self.sound_manager.play("craft")

@@ -1164,10 +1164,20 @@ class CombatManager:
             final_dmg = int(base_dmg * (crit_mult if is_crit else random.uniform(0.9, 1.15)))
 
             if not is_hand and hasattr(player, "has_effect"):
-                if player.has_effect("molten blaze"):
+                if player.has_effect("+8 fire damage") or player.has_effect("(+8 fire damage)"):
+                    final_dmg += 8
+                elif player.has_effect("molten blaze"):
                     final_dmg += 12
-                if player.has_effect("armor penetration"):
+
+                if player.has_effect("+8 true damage") or player.has_effect("(+8 true damage)"):
+                    final_dmg += 8
+                elif player.has_effect("armor penetration"):
                     final_dmg += 15
+
+            if hasattr(player, "get_meal_buff_val"):
+                meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                if meal_armor_pen > 0:
+                    final_dmg += int(base_dmg * meal_armor_pen)
 
         if self.boss and not self.boss.is_dead and self.boss.hurt_timer <= 0:
             if "boss" not in getattr(player, "swing_hit_targets", set()) and hitbox.colliderect(self.boss.rect):

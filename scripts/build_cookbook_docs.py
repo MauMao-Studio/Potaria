@@ -250,7 +250,11 @@ def build_docx(with_codes=True, output_filename=None):
     p_intro.add_run(
         "Culinary craft in the world of Potaria represents one of the most vital disciplines for survival, exploration, "
         "and legendary triumph. While potions offer instantaneous medicinal alchemy, prepared meals provide profound vitality, "
-        "replenishing substantial Health Points (HP) to keep adventurers thriving through unforgiving boss battles and deep cavern descents."
+        "replenishing substantial Health Points (HP) and conferring tactical nourishment through the 5-Active-Meal-Buff Architecture.\n\n"
+        "Under this gastronomic discipline, adventurers may maintain up to five distinct active food buffs simultaneously—strictly "
+        "one meal per category: Offense, Defense, Mobility, Resource, and Utility. Consuming a subsequent dish within an already "
+        "occupied category cleanly replaces the existing buff with the new recipe's full authored duration, preventing runaway magnitude "
+        "or duration stacking while empowering deliberate, strategic feast crafting."
     )
     
     p_stations = doc.add_paragraph()
@@ -621,11 +625,12 @@ def build_pdf(with_codes=True, output_filename=None):
     
     story.append(Paragraph("Culinary Framework & Gastronomic Lore", h1_style))
     story.append(Paragraph(
-        "Cooking in Potaria provides vital sustenance and tactical health sustainment for venturesome pioneers. "
-        "Through centuries of culinary development, the denizens of Potaria mastered the fusion of indigenous root vegetables, "
-        "abundant marine bounty, and farm-raised livestock. Recipes are processed through two traditional methods: "
-        "<b>Furnace Cooking</b> (requiring heat and fuel to boil broths, fry cutlets, and caramelize sugars) and "
-        "<b>By-Hand Assembly</b> (delicate cold preparations, iced sweets, curing fish in citrus, or rolling noodles).",
+        "Cooking in Potaria provides vital sustenance, restorative healing, and tactical nourishment through the 5-Active-Meal-Buff Architecture. "
+        "Adventurers may sustain up to five simultaneous meal buffs—strictly one per discipline: Offense, Defense, Mobility, Resource, and Utility. "
+        "Eating a dish within an active category replaces its predecessor with fresh duration, ensuring balanced tactical customization. "
+        "Recipes are prepared across two core traditions: "
+        "<b>Furnace Hearth Cooking</b> (requiring thermal combustion to simmer broths, fry catches, and bake loaves) and "
+        "<b>By-Hand Preparation</b> (delicate cold preparations, cured ceviches like Kinilaw na Tanigue, iced halo-halo, and herbal salves).",
         body_style
     ))
     

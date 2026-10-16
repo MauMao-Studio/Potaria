@@ -179,7 +179,7 @@ class TestFoodBuffsAndMenu(unittest.TestCase):
         self.assertEqual(inihaw["name"], "Inihaw na Tanigue")
         self.assertEqual(kinilaw["name"], "Kinilaw na Tanigue")
         self.assertEqual(inihaw["heal"], 90)
-        self.assertEqual(kinilaw["heal"], 110)
+        self.assertEqual(kinilaw["heal"], 90)
 
         self.assertEqual(inihaw["buff"]["category"], "mobility")
         self.assertEqual(kinilaw["buff"]["category"], "mobility")

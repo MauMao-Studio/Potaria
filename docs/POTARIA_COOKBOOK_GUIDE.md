@@ -31,7 +31,7 @@ Signature traditional dishes featuring complex savory, sour, and aromatic flavor
 | Daing na Bangus | `daing_na_bangus` | 75 HP | Furnace | 1x Bangus, 1x Bawang Garlic, 1x Sukang Paombong Vinegar | Marinated split milkfish in garlic vinegar, fried to a golden crisp. Restores 75 HP. |
 | Sinigang na Bangus | `sinigang_na_bangus` | 100 HP | Furnace | 1x Bangus, 1x Sampalok Tamarind, 1x Sibuyas Red Onion, 1x Talong Native Eggplant | Tamarind-sour soup with tender milkfish belly, eggplant, and onions. Restores 100 HP. |
 | Ginataang Tilapia | `ginataang_tilapia` | 105 HP | Furnace | 1x Tilapia, 1x Gata Coconut Milk, 1x Luya Fresh Ginger | Fresh tilapia simmered in rich creamy coconut milk with ginger and spices. Restores 105 HP. |
-| Kinilaw na Tanigue | `kinilaw_na_tanigue` | 110 HP | By Hand | 1x Tanigue, 1x Sukang Paombong Vinegar, 1x Calamansi Citrus, 1x Luya Fresh Ginger | Fresh Spanish mackerel cured in native vinegar, calamansi juice, ginger, and chili. Restores 110 HP and +15% Speed. |
+| Kinilaw na Tanigue | `kinilaw_na_tanigue` | 90 HP | By Hand | 1x Tanigue, 1x Sukang Paombong Vinegar, 1x Calamansi Citrus, 1x Luya Fresh Ginger | Fresh Spanish mackerel cured in native vinegar, calamansi juice, ginger, and chili. Restores 90 HP and Mobility (+12% Speed for 3m). |
 
 ---
 
@@ -44,7 +44,7 @@ Fresh marine and freshwater catches cooked over embers to maximize healing value
 | Pritong Tilapia | `cooked_tilapia` | 50 HP | Furnace | 1x Tilapia | Crispy fried whole tilapia seasoned with sea salt. Restores 50 HP. |
 | Pritong Galunggong | `cooked_galunggong` | 45 HP | Furnace | 1x Galunggong | Deep-fried round scad paired with spicy vinegar dipping. Restores 45 HP. |
 | Sinigang na Maya-Maya | `cooked_maya_maya` | 80 HP | Furnace | 1x Maya-Maya | Tamarind-sour savory soup with red snapper. Restores 80 HP. |
-| Kinilaw na Tanigue | `cooked_tanigue` | 90 HP | Furnace | 1x Tanigue | Citrus and coconut vinegar cured Spanish mackerel ceviche. Restores 90 HP. |
+| Inihaw na Tanigue | `cooked_tanigue` | 90 HP | Furnace | 1x Tanigue | Grilled Spanish mackerel over charcoal embers. Restores 90 HP and Mobility (+8% Speed for 2m). |
 | Inihaw na Tambakol | `cooked_tambakol` | 85 HP | Furnace | 1x Tambakol | Flame-broiled yellowfin steaks basted in sweet soy glaze. Restores 85 HP. |
 | Pasingaw na Lapu-Lapu | `cooked_lapu_lapu` | 110 HP | Furnace | 1x Lapu-Lapu | Ginger-steamed grouper dressed in sesame soy sauce. Restores 110 HP. |
 | Adobong Hito | `cooked_hito` | 70 HP | Furnace | 1x Hito | Catfish simmered in garlic, vinegar, and black peppercorns. Restores 70 HP. |

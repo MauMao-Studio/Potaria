@@ -41,7 +41,7 @@ ARMOR_DATA = {
     "magma_chestplate": {"slot": SLOT_CHEST, "name": "Magma Cuirass", "def": 19, "hp": 60, "atk": 7, "crit": 4.0, "speed": 0},
     "cryo_chestplate": {"slot": SLOT_CHEST, "name": "Cryo Carapace", "def": 22, "hp": 70, "atk": 5, "crit": 2.0, "speed": 0},
     "necro_chestplate": {"slot": SLOT_CHEST, "name": "Necro Bone Plate", "def": 18, "hp": 55, "atk": 9, "crit": 6.0, "speed": 0.1},
-    "titan_chestplate": {"slot": SLOT_CHEST, "name": "Celestial Titan Plate", "def": 32, "hp": 100, "atk": 18, "crit": 8.0, "speed": 0.3},
+    "titan_chestplate": {"slot": SLOT_CHEST, "name": "Celestial Titan Plate", "def": 30, "hp": 90, "atk": 16, "crit": 8.0, "speed": 0.3},
     "ancient_chestplate": {"slot": SLOT_CHEST, "name": "Ancient Plate of Ages", "def": 38, "hp": 120, "atk": 22, "crit": 10.0, "speed": 0.3, "rarity": "ancient", "effects": ["Aegis of the Forgotten", "Supernova Ward"]},
 
     # LEGGINGS / BOOTS
@@ -57,8 +57,8 @@ ARMOR_DATA = {
     "titan_greaves": {"slot": SLOT_LEGS, "name": "Celestial Titan Greaves", "def": 22, "hp": 60, "atk": 11, "crit": 6.0, "speed": 0.65},
     "ancient_greaves": {"slot": SLOT_LEGS, "name": "Ancient Greaves of the Cosmos", "def": 26, "hp": 80, "atk": 14, "crit": 8.0, "speed": 0.7, "rarity": "ancient", "effects": ["Timeless Stride (+70% Speed)", "Ancient Grace"]},
     "speed_boots": {"slot": SLOT_LEGS, "name": "Rootrunner Boots", "def": 4, "hp": 15, "atk": 0, "crit": 2.0, "speed": 0.75},
-    "zephyr_striders": {"slot": SLOT_LEGS, "name": "Zephyr Striders", "def": 5, "hp": 20, "atk": 2, "crit": 4.0, "speed": 1.15, "rarity": "epic", "effects": ["+115% Sprint Speed"]},
-    "hermes_boots": {"slot": SLOT_LEGS, "name": "Zephyr Striders", "def": 5, "hp": 20, "atk": 2, "crit": 4.0, "speed": 1.15, "rarity": "epic", "effects": ["+115% Sprint Speed"]},
+    "zephyr_striders": {"slot": SLOT_LEGS, "name": "Zephyr Striders", "def": 5, "hp": 20, "atk": 2, "crit": 4.0, "speed": 0.65, "rarity": "epic", "effects": ["+45% Sprint Speed"]},
+    "hermes_boots": {"slot": SLOT_LEGS, "name": "Zephyr Striders", "def": 5, "hp": 20, "atk": 2, "crit": 4.0, "speed": 0.65, "rarity": "epic", "effects": ["+45% Sprint Speed"]},
 
     # ACCESSORIES
     "warrior_charm": {"slot": SLOT_ACCESSORY, "name": "Warrior Charm", "def": 2, "hp": 20, "atk": 8, "crit": 4.0, "speed": 0},
@@ -84,12 +84,12 @@ ARMOR_DATA = {
     "sandstorm_spear": {"slot": SLOT_WEAPON, "name": "Sandstorm Spear", "def": 0, "hp": 0, "atk": 20, "crit": 6.0, "speed": 0},
     "gold_broadsword": {"slot": SLOT_WEAPON, "name": "Gold Broadsword", "def": 0, "hp": 0, "atk": 22, "crit": 6.0, "speed": 0},
     "shadow_cleaver": {"slot": SLOT_WEAPON, "name": "Shadow Cleaver", "def": 0, "hp": 0, "atk": 28, "crit": 8.0, "speed": 0.1},
-    "magma_greatsword": {"slot": SLOT_WEAPON, "name": "Magma Greatsword", "def": 0, "hp": 25, "atk": 38, "crit": 10.0, "speed": 0.15},
+    "magma_greatsword": {"slot": SLOT_WEAPON, "name": "Magma Greatsword", "def": 0, "hp": 25, "atk": 34, "crit": 10.0, "speed": 0.15},
     "bone_scythe": {"slot": SLOT_WEAPON, "name": "Bone Scythe", "def": 0, "hp": 15, "atk": 35, "crit": 14.0, "speed": 0.2},
     "starch_blade": {"slot": SLOT_WEAPON, "name": "Starch Blade", "def": 0, "hp": 25, "atk": 32, "crit": 10.0, "speed": 0.2},
     "astral_wrath": {"slot": SLOT_WEAPON, "name": "Astral Wrath", "def": 0, "hp": 15, "atk": 38, "crit": 12.0, "speed": 0.2, "rarity": "legendary", "lore": "'Forged in cosmic crucibles when falling meteors first pierced the heavens.'", "effects": ["Summons Celestial Star on swing", "AoE 72px Starburst Explosion"]},
     "starfury": {"slot": SLOT_WEAPON, "name": "Astral Wrath", "def": 0, "hp": 15, "atk": 38, "crit": 12.0, "speed": 0.2, "rarity": "legendary", "lore": "'Forged in cosmic crucibles when falling meteors first pierced the heavens.'", "effects": ["Summons Celestial Star on swing", "AoE 72px Starburst Explosion"]},
-    "void_edge": {"slot": SLOT_WEAPON, "name": "Void Edge", "def": 0, "hp": 35, "atk": 50, "crit": 16.0, "speed": 0.3},
+    "void_edge": {"slot": SLOT_WEAPON, "name": "Void Edge", "def": 0, "hp": 30, "atk": 46, "crit": 14.0, "speed": 0.3},
     "celestial_greatsword": {"slot": SLOT_WEAPON, "name": "Celestial Titan Greatsword", "def": 0, "hp": 55, "atk": 62, "crit": 20.0, "speed": 0.35},
     "wood_bow": {"slot": SLOT_WEAPON, "name": "Wood Bow", "def": 0, "hp": 0, "atk": 8, "crit": 2.0, "speed": 0},
     "bone_bow": {"slot": SLOT_WEAPON, "name": "Bone Bow", "def": 0, "hp": 0, "atk": 16, "crit": 4.0, "speed": 0},

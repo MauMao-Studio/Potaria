@@ -278,7 +278,7 @@ ITEM_REGISTRY = {
         "special": "Dark Cleave"
     },
     "magma_greatsword": {
-        "name": "Magma Greatsword", "cat": CAT_WEAPON, "power": 0, "damage": 38, "max_stack": 1, "tile": None,
+        "name": "Magma Greatsword", "cat": CAT_WEAPON, "power": 0, "damage": 34, "max_stack": 1, "tile": None,
         "rarity": RARITY_EPIC,
         "desc": "Dredged from molten caverns. Ignites monsters with intense heat.",
         "lore": "'Forged inside the belly of Potaria where liquid rock flows like water.'",
@@ -315,11 +315,11 @@ ITEM_REGISTRY = {
         "effects": ["Summons Celestial Star on swing", "AoE 72px Starburst Explosion", "Celestial Radiance"]
     },
     "void_edge": {
-        "name": "Void Edge", "cat": CAT_WEAPON, "power": 0, "damage": 50, "max_stack": 1, "tile": None,
+        "name": "Void Edge", "cat": CAT_WEAPON, "power": 0, "damage": 46, "max_stack": 1, "tile": None,
         "rarity": RARITY_LEGENDARY,
         "desc": "A blade of pure darkness that cleaves through matter effortlessly.",
         "lore": "'Peer too long into this blade, and it peers into you.'",
-        "special": "Armor Penetration (+15 True Damage)"
+        "special": "Armor Penetration (+8 True Damage)"
     },
     "celestial_greatsword": {
         "name": "Celestial Titan Greatsword", "cat": CAT_WEAPON, "power": 0, "damage": 62, "max_stack": 1, "tile": None,
@@ -705,16 +705,16 @@ ITEM_REGISTRY = {
         "rarity": RARITY_EPIC,
         "desc": "Winged boots discovered in treasure chests. Drastically increases running speed.",
         "lore": "'The wearer moves like a gale across the plains, unburdened by mortal weight.'",
-        "special": "+115% Sprint Speed",
-        "effects": ["+115% Sprint Speed", "Air Cushion Fall Resistance"]
+        "special": "+45% Sprint Speed",
+        "effects": ["+45% Sprint Speed", "Air Cushion Fall Resistance"]
     },
     "hermes_boots": {
         "name": "Zephyr Striders", "cat": "armor_legs", "def": 5, "max_stack": 1, "tile": None,
         "rarity": RARITY_EPIC,
         "desc": "Winged boots discovered in treasure chests. Drastically increases running speed.",
         "lore": "'The wearer moves like a gale across the plains, unburdened by mortal weight.'",
-        "special": "+115% Sprint Speed",
-        "effects": ["+115% Sprint Speed", "Air Cushion Fall Resistance"]
+        "special": "+45% Sprint Speed",
+        "effects": ["+45% Sprint Speed", "Air Cushion Fall Resistance"]
     },
 
     # ----------------------------------------------------
@@ -2063,7 +2063,7 @@ ITEM_REGISTRY = {
         "special": "[RESOURCE] -8% Mana Cost (3m)"
     },
     "kinilaw_na_tanigue": {
-        "name": "Kinilaw na Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
+        "name": "Kinilaw na Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 90, "max_stack": 99, "tile": None,
         "rarity": RARITY_EPIC,
         "desc": "Raw Spanish mackerel cured in vinegar and calamansi with ginger, onions, and chili.",
         "lore": "",
