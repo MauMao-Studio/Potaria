@@ -114,7 +114,7 @@ class FishingBattleMiniGame:
             self.is_active = False
             self.result = "cancelled"
 
-    def handle_click(self, is_right_click=True):
+    def handle_click(self, is_right_click=True, player=None):
         """Processes player click input during the battle."""
         if not self.is_active or self.result is not None:
             return False
@@ -125,6 +125,10 @@ class FishingBattleMiniGame:
 
         self.ui_scale_pulse = 0.15
         progress_per_click = 100.0 / float(self.target_clicks)
+        if player and hasattr(player, "get_meal_buff_val"):
+            fish_bonus = player.get_meal_buff_val("fishing_power")
+            if fish_bonus > 0:
+                progress_per_click *= (1.0 + fish_bonus)
 
         if self.is_thrashing:
             # Reeling while fish is thrashing spikes line tension!

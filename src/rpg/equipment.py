@@ -41,7 +41,7 @@ ARMOR_DATA = {
     "magma_chestplate": {"slot": SLOT_CHEST, "name": "Magma Cuirass", "def": 19, "hp": 60, "atk": 7, "crit": 4.0, "speed": 0},
     "cryo_chestplate": {"slot": SLOT_CHEST, "name": "Cryo Carapace", "def": 22, "hp": 70, "atk": 5, "crit": 2.0, "speed": 0},
     "necro_chestplate": {"slot": SLOT_CHEST, "name": "Necro Bone Plate", "def": 18, "hp": 55, "atk": 9, "crit": 6.0, "speed": 0.1},
-    "titan_chestplate": {"slot": SLOT_CHEST, "name": "Celestial Titan Plate", "def": 30, "hp": 90, "atk": 16, "crit": 8.0, "speed": 0.3},
+    "titan_chestplate": {"slot": SLOT_CHEST, "name": "Celestial Titan Plate", "def": 30, "hp": 90, "atk": 16, "crit": 8.0, "speed": 0.3, "rarity": "legendary", "effects": ["+15% Total Damage Mitigation"]},
     "ancient_chestplate": {"slot": SLOT_CHEST, "name": "Ancient Plate of Ages", "def": 38, "hp": 120, "atk": 22, "crit": 10.0, "speed": 0.3, "rarity": "ancient", "effects": ["Aegis of the Forgotten", "Supernova Ward"]},
 
     # LEGGINGS / BOOTS
@@ -90,7 +90,7 @@ ARMOR_DATA = {
     "astral_wrath": {"slot": SLOT_WEAPON, "name": "Astral Wrath", "def": 0, "hp": 15, "atk": 38, "crit": 12.0, "speed": 0.2, "rarity": "legendary", "lore": "'Forged in cosmic crucibles when falling meteors first pierced the heavens.'", "effects": ["Summons Celestial Star on swing", "AoE 72px Starburst Explosion"]},
     "starfury": {"slot": SLOT_WEAPON, "name": "Astral Wrath", "def": 0, "hp": 15, "atk": 38, "crit": 12.0, "speed": 0.2, "rarity": "legendary", "lore": "'Forged in cosmic crucibles when falling meteors first pierced the heavens.'", "effects": ["Summons Celestial Star on swing", "AoE 72px Starburst Explosion"]},
     "void_edge": {"slot": SLOT_WEAPON, "name": "Void Edge", "def": 0, "hp": 30, "atk": 46, "crit": 14.0, "speed": 0.3},
-    "celestial_greatsword": {"slot": SLOT_WEAPON, "name": "Celestial Titan Greatsword", "def": 0, "hp": 55, "atk": 62, "crit": 20.0, "speed": 0.35},
+    "celestial_greatsword": {"slot": SLOT_WEAPON, "name": "Celestial Titan Greatsword", "def": 0, "hp": 55, "atk": 62, "crit": 20.0, "speed": 0.35, "rarity": "mythic", "effects": ["Armor Penetration (+15 True Damage)"]},
     "wood_bow": {"slot": SLOT_WEAPON, "name": "Wood Bow", "def": 0, "hp": 0, "atk": 8, "crit": 2.0, "speed": 0},
     "bone_bow": {"slot": SLOT_WEAPON, "name": "Bone Bow", "def": 0, "hp": 0, "atk": 16, "crit": 4.0, "speed": 0},
     "magma_bow": {"slot": SLOT_WEAPON, "name": "Magma Bow", "def": 0, "hp": 10, "atk": 26, "crit": 8.0, "speed": 0.1},

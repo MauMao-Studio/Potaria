@@ -390,6 +390,119 @@ class TestGameBalanceOverhaul(unittest.TestCase):
             self.assertEqual(len(b5), 1)
             self.assertEqual(b5[0][1], 5)
 
+    # -------------------------------------------------------------------------
+    # 7. Enhancement Module Affix Slot Limits Verification
+    # -------------------------------------------------------------------------
+    def test_10_enhancement_can_add_affix_slot_limits(self):
+        """Verifies src.rpg.enhancement can_add_affix_slot strictly bounds Epic/Legendary to 1 and Mythic/Ancient to 2."""
+        from src.rpg.enhancement import can_add_affix_slot
+
+        class MockStack:
+            def __init__(self, rarity, slots=0):
+                self.data = {"rarity": rarity, "atk": 20, "def": 10}
+                self.affix_slots = slots
+                self.is_broken = False
+                self.removed_stats = []
+
+        # Common/Rare: 0 slots
+        self.assertFalse(can_add_affix_slot(MockStack("common", 0))[0])
+        self.assertFalse(can_add_affix_slot(MockStack("rare", 0))[0])
+
+        # Epic: 1 slot max
+        self.assertTrue(can_add_affix_slot(MockStack("epic", 0))[0])
+        self.assertFalse(can_add_affix_slot(MockStack("epic", 1))[0])
+
+        # Legendary: 1 slot max
+        self.assertTrue(can_add_affix_slot(MockStack("legendary", 0))[0])
+        self.assertFalse(can_add_affix_slot(MockStack("legendary", 1))[0])
+
+        # Mythic: 2 slots max
+        self.assertTrue(can_add_affix_slot(MockStack("mythic", 0))[0])
+        self.assertTrue(can_add_affix_slot(MockStack("mythic", 1))[0])
+        self.assertFalse(can_add_affix_slot(MockStack("mythic", 2))[0])
+
+        # Ancient: 2 slots max
+        self.assertTrue(can_add_affix_slot(MockStack("ancient", 0))[0])
+        self.assertTrue(can_add_affix_slot(MockStack("ancient", 1))[0])
+        self.assertFalse(can_add_affix_slot(MockStack("ancient", 2))[0])
+
+    # -------------------------------------------------------------------------
+    # 8. Ranged Weapon & Projectile Meal Buff Scaling
+    # -------------------------------------------------------------------------
+    def test_11_ranged_projectile_meal_buff_scaling(self):
+        """Verifies ArrowProjectile applies ranged_damage_mult, damage_mult, and armor_pen from meal buffs."""
+        from src.combat.combat_system import CombatManager
+        from src.entities.projectile import ArrowProjectile
+        from src.entities.mob import Zombie
+
+        from src.camera import Camera
+        from src.entities.particle import ParticleSystem
+
+        particles = ParticleSystem()
+        cam = Camera(1280, 720)
+        combat = CombatManager(self.asset_factory, self.sound_manager, particles, cam)
+        mob = Zombie(150, 100, self.asset_factory)
+        mob.hp = 500
+        mob.max_hp = 500
+        mob.hurt_timer = 0.0
+        combat.mobs = [mob]
+
+        # 1. Base damage without food buffs
+        self.player.meal_buffs.clear()
+        self.player.stats.base_crit_rate = 0.0
+        self.player.stats.bonus_crit = 0.0
+        self.player.stats.bonus_atk = 0
+        proj = ArrowProjectile(145, 100, angle_rad=0.0, speed=20.0, damage=30)
+        combat.projectiles = [proj]
+        combat.update(0.016, DummyWorld(), self.player)
+        dmg_unbuffed = 500 - mob.hp
+        self.assertGreaterEqual(dmg_unbuffed, 25)
+
+        # 2. Damage with Daing na Bangus (ranged_damage_mult: 0.06, damage_mult: 0.06) + armor_pen: 0.10
+        mob.hp = 500
+        mob.hurt_timer = 0.0
+        self.player.meal_buffs["offense"] = {
+            "item_id": "daing_na_bangus",
+            "category": "offense",
+            "duration": 180,
+            "stats": {"ranged_damage_mult": 0.06, "armor_pen": 0.10}
+        }
+        proj2 = ArrowProjectile(145, 100, angle_rad=0.0, speed=20.0, damage=30)
+        combat.projectiles = [proj2]
+        combat.update(0.016, DummyWorld(), self.player)
+        dmg_buffed = 500 - mob.hp
+        self.assertGreater(dmg_buffed, dmg_unbuffed, "Ranged damage meal buff failed to increase projectile damage!")
+
+    # -------------------------------------------------------------------------
+    # 9. Fishing Power & Gathering Speed Mechanics
+    # -------------------------------------------------------------------------
+    def test_12_fishing_power_reeling_speed_buff(self):
+        """Verifies fishing minigame reeling progress scales with fishing_power meal buff."""
+        from src.ui.fishing_minigame import FishingBattleMiniGame
+
+        mini = FishingBattleMiniGame(self.asset_factory, self.sound_manager)
+        mini.start(fish_id="raw_bangus")
+        mini.is_thrashing = False
+
+        # Reeling without buff
+        self.player.meal_buffs.clear()
+        mini.reeling_progress = 0.0
+        mini.handle_click(is_right_click=True, player=self.player)
+        base_progress = mini.reeling_progress
+
+        # Reeling with fishing_power: 0.15 buff
+        self.player.meal_buffs["utility"] = {
+            "item_id": "angler_broth",
+            "category": "utility",
+            "duration": 180,
+            "stats": {"fishing_power": 0.15}
+        }
+        mini.reeling_progress = 0.0
+        mini.handle_click(is_right_click=True, player=self.player)
+        buffed_progress = mini.reeling_progress
+        self.assertAlmostEqual(buffed_progress, base_progress * 1.15, places=4,
+                               msg="Fishing power meal buff failed to accelerate reeling progress!")
+
 
 if __name__ == "__main__":
     unittest.main()

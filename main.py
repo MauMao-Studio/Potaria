@@ -1621,7 +1621,7 @@ class PotariaGame:
 
                 # 0.4. Fishing Battle Mini-Game
                 if hasattr(self, "fishing_minigame") and self.fishing_minigame.is_active:
-                    self.fishing_minigame.handle_click(is_right_click=is_right_click)
+                    self.fishing_minigame.handle_click(is_right_click=is_right_click, player=self.player)
                     ui_consumed = True
 
                 # 0.5. Storage Chest Window
@@ -1807,7 +1807,7 @@ class PotariaGame:
         """Handles fishing, eating food, drinking potions, toggling doors, placing walls, opening chests, or placing blocks."""
         # 0. Active Fishing Battle Mini-Game takes top input priority
         if hasattr(self, "fishing_minigame") and self.fishing_minigame and self.fishing_minigame.is_active:
-            self.fishing_minigame.handle_click(is_right_click=True)
+            self.fishing_minigame.handle_click(is_right_click=True, player=self.player)
             return
 
         # 0a. Fishing Rod Cast / Reel with Right-Click
@@ -2123,7 +2123,7 @@ class PotariaGame:
 
     def handle_fishing_action(self, mouse_x, mouse_y):
         if hasattr(self, "fishing_minigame") and self.fishing_minigame.is_active:
-            return self.fishing_minigame.handle_click(is_right_click=True)
+            return self.fishing_minigame.handle_click(is_right_click=True, player=self.player)
 
         mouse_wx, mouse_wy = self.camera.screen_to_world(mouse_x, mouse_y)
         tx, ty = int(mouse_wx // SCALED_TILE), int(mouse_wy // SCALED_TILE)
@@ -2519,6 +2519,11 @@ class PotariaGame:
         power = get_mining_damage(active_item, tile_id)
         if power <= 0:
             return
+
+        if hasattr(self.player, "get_meal_buff_val"):
+            gather_bonus = self.player.get_meal_buff_val("gathering_speed")
+            if gather_bonus > 0:
+                power *= (1.0 + gather_bonus)
 
         broken, drop_id, tile_id = self.world.damage_tile_at(tx, ty, power)
         

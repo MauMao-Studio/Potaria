@@ -153,14 +153,14 @@ class TestRandomTraderAndFeatures(unittest.TestCase):
         self.assertGreater(weapon.data.get("damage", 0), 0, "Repaired weapon must deal damage again")
 
     def test_05_affix_slot_carving_on_legendary_and_ancient_only(self):
-        """Trader can carve affix slots up to 3 on Legendary and Ancient items, replacing a basic stat with an open affix slot."""
+        """Trader can carve affix slots on Legendary (max 1) and Ancient (max 2) items."""
         # Non-legendary item (iron sword is Common)
         common_item = ItemStack("iron_broadsword", 1)
         can_carve, reason = can_add_affix_slot(common_item)
         self.assertFalse(can_carve)
         self.assertIn("Legendary and Ancient", reason)
 
-        # Legendary item (astral_wrath)
+        # Legendary item (astral_wrath) - allowed max 1 slot
         legendary_item = ItemStack("astral_wrath", 1)
         can_carve, reason = can_add_affix_slot(legendary_item)
         self.assertTrue(can_carve, "Legendary items must be eligible for affix slots")
@@ -176,19 +176,27 @@ class TestRandomTraderAndFeatures(unittest.TestCase):
         self.assertEqual(self.inventory.total_coins_value(), 10000)
         self.assertEqual(self.inventory.gold_coins, 1)
 
-        # Add 2nd and 3rd affix slots
-        ok, msg = add_affix_slot_to_item(legendary_item, self.inventory, cost_copper=5000, sound_manager=self.sound_manager)
-        self.assertTrue(ok)
-        self.assertEqual(legendary_item.affix_slots, 2)
-
-        ok, msg = add_affix_slot_to_item(legendary_item, self.inventory, cost_copper=5000, sound_manager=self.sound_manager)
-        self.assertTrue(ok)
-        self.assertEqual(legendary_item.affix_slots, 3)
-
-        # 4th slot attempt: exceeds maximum 3 slots
+        # 2nd slot attempt on Legendary item: exceeds maximum 1 slot!
         can_carve, reason = can_add_affix_slot(legendary_item)
         self.assertFalse(can_carve)
-        self.assertIn("maximum of 3", reason)
+        self.assertIn("maximum limit of 1", reason)
+
+        # Ancient item (ancient_sword) - allowed max 2 slots
+        ancient_item = ItemStack("ancient_sword", 1)
+        self.assertTrue(can_add_affix_slot(ancient_item)[0])
+        ok, _ = add_affix_slot_to_item(ancient_item, self.inventory, cost_copper=5000)
+        self.assertTrue(ok)
+        self.assertEqual(ancient_item.affix_slots, 1)
+
+        self.assertTrue(can_add_affix_slot(ancient_item)[0])
+        ok, _ = add_affix_slot_to_item(ancient_item, self.inventory, cost_copper=5000)
+        self.assertTrue(ok)
+        self.assertEqual(ancient_item.affix_slots, 2)
+
+        # 3rd slot attempt on Ancient item: exceeds maximum 2 slots!
+        can_carve, reason = can_add_affix_slot(ancient_item)
+        self.assertFalse(can_carve)
+        self.assertIn("maximum limit of 2", reason)
 
     def test_06_affix_stone_crafting_and_application(self):
         """Crafting Affix Stone at workbench and applying it embeds god-tier affixes into open slots."""

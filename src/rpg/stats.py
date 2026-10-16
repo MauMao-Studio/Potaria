@@ -120,6 +120,10 @@ class PlayerStats:
         return min(75.0, self.base_crit_rate + self.bonus_crit)
 
     @property
+    def total_crit_damage_multiplier(self):
+        return 1.8
+
+    @property
     def total_speed(self):
         return self.base_speed + self.bonus_speed
 

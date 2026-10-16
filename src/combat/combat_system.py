@@ -235,7 +235,7 @@ class CombatManager:
         if leveled:
             self.sound_manager.play("craft")
             self.particle_system.spawn_sparks(player.center_x, player.center_y, (255, 240, 100), count=25)
-        self._drop_mob_loot(mob, tuned=True)
+        self._drop_mob_loot(mob, tuned=True, player=player)
 
     def update(self, dt, world, player, is_night=False, time_of_day=None):
         if time_of_day is None:
@@ -611,9 +611,16 @@ class CombatManager:
                                 continue
                             if not hasattr(p, "hit_entities"):
                                 p.hit_entities = set()
-                            p.hit_entities.add(mob)
-                            is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-                            dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
+                            effective_crit = player.stats.total_crit_rate + (player.get_meal_buff_val("crit_chance") * 100.0 if hasattr(player, "get_meal_buff_val") else 0.0)
+                            is_crit = (random.uniform(0, 100) < effective_crit)
+                            meal_dmg = (player.get_meal_buff_val("ranged_damage_mult") + player.get_meal_buff_val("damage_mult")) if hasattr(player, "get_meal_buff_val") else 0.0
+                            base_crit_mult = 2.0 if (hasattr(player, "has_effect") and player.has_effect("critical overdrive")) else getattr(player.stats, "total_crit_damage_multiplier", 1.8)
+                            crit_mult = base_crit_mult + (player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0)
+                            dmg = int((p.damage + player.stats.bonus_atk) * (1.0 + meal_dmg) * (crit_mult if is_crit else random.uniform(0.95, 1.15)))
+                            if hasattr(player, "get_meal_buff_val"):
+                                meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                                if meal_armor_pen > 0:
+                                    dmg += int((p.damage + player.stats.bonus_atk) * meal_armor_pen)
                             if is_crit:
                                 self.sound_manager.play_spatial("crit_hit", p.pos.x, p.pos.y, player.center_x, player.center_y)
                                 self.particle_system.spawn_sparks(p.pos.x, p.pos.y, (255, 235, 60), count=16)
@@ -658,9 +665,16 @@ class CombatManager:
                         else:
                             if not hasattr(p, "hit_entities"):
                                 p.hit_entities = set()
-                            p.hit_entities.add(self.boss)
-                        is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-                        dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
+                        effective_crit = player.stats.total_crit_rate + (player.get_meal_buff_val("crit_chance") * 100.0 if hasattr(player, "get_meal_buff_val") else 0.0)
+                        is_crit = (random.uniform(0, 100) < effective_crit)
+                        meal_dmg = (player.get_meal_buff_val("ranged_damage_mult") + player.get_meal_buff_val("damage_mult")) if hasattr(player, "get_meal_buff_val") else 0.0
+                        base_crit_mult = 2.0 if (hasattr(player, "has_effect") and player.has_effect("critical overdrive")) else getattr(player.stats, "total_crit_damage_multiplier", 1.8)
+                        crit_mult = base_crit_mult + (player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0)
+                        dmg = int((p.damage + player.stats.bonus_atk) * (1.0 + meal_dmg) * (crit_mult if is_crit else random.uniform(0.95, 1.15)))
+                        if hasattr(player, "get_meal_buff_val"):
+                            meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                            if meal_armor_pen > 0:
+                                dmg += int((p.damage + player.stats.bonus_atk) * meal_armor_pen)
                         self.boss.take_damage(dmg, knockback_vx=p.vel.x * 0.15)
                         if is_crit:
                             self.sound_manager.play_spatial("crit_hit", p.pos.x, p.pos.y, player.center_x, player.center_y)
@@ -767,8 +781,16 @@ class CombatManager:
                 if p.life > 0:
                     for mob in self.mobs:
                         if mob.is_alive and p.rect.colliderect(mob.rect):
-                            is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-                            dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
+                            effective_crit = player.stats.total_crit_rate + (player.get_meal_buff_val("crit_chance") * 100.0 if hasattr(player, "get_meal_buff_val") else 0.0)
+                            is_crit = (random.uniform(0, 100) < effective_crit)
+                            meal_dmg = player.get_meal_buff_val("damage_mult") if hasattr(player, "get_meal_buff_val") else 0.0
+                            base_crit_mult = 2.0 if (hasattr(player, "has_effect") and player.has_effect("critical overdrive")) else getattr(player.stats, "total_crit_damage_multiplier", 1.8)
+                            crit_mult = base_crit_mult + (player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0)
+                            dmg = int((p.damage + player.stats.bonus_atk) * (1.0 + meal_dmg) * (crit_mult if is_crit else random.uniform(0.95, 1.15)))
+                            if hasattr(player, "get_meal_buff_val"):
+                                meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                                if meal_armor_pen > 0:
+                                    dmg += int((p.damage + player.stats.bonus_atk) * meal_armor_pen)
                             mob.take_damage(dmg, knockback_vx=p.vx * 0.4, knockback_vy=-2.5)
                             if p.element == "frost" and hasattr(mob, "speed_mult"):
                                 mob.speed_mult = 0.65
@@ -785,8 +807,16 @@ class CombatManager:
                             p.life = 0
                             break
                     if p.life > 0 and self.boss and not self.boss.is_dead and p.rect.colliderect(self.boss.rect):
-                        is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-                        dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
+                        effective_crit = player.stats.total_crit_rate + (player.get_meal_buff_val("crit_chance") * 100.0 if hasattr(player, "get_meal_buff_val") else 0.0)
+                        is_crit = (random.uniform(0, 100) < effective_crit)
+                        meal_dmg = player.get_meal_buff_val("damage_mult") if hasattr(player, "get_meal_buff_val") else 0.0
+                        base_crit_mult = 2.0 if (hasattr(player, "has_effect") and player.has_effect("critical overdrive")) else getattr(player.stats, "total_crit_damage_multiplier", 1.8)
+                        crit_mult = base_crit_mult + (player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0)
+                        dmg = int((p.damage + player.stats.bonus_atk) * (1.0 + meal_dmg) * (crit_mult if is_crit else random.uniform(0.95, 1.15)))
+                        if hasattr(player, "get_meal_buff_val"):
+                            meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                            if meal_armor_pen > 0:
+                                dmg += int((p.damage + player.stats.bonus_atk) * meal_armor_pen)
                         self.boss.take_damage(dmg, knockback_vx=p.vx * 0.15)
                         col = (255, 140, 40) if p.element == "fire" else (100, 220, 255) if p.element == "frost" else (180, 100, 255)
                         self.spawn_damage_number(self.boss.center_x, self.boss.y - 14, dmg, color=col, is_crit=is_crit)
@@ -802,8 +832,16 @@ class CombatManager:
                         if mob.is_alive and mob not in p.hit_entities and p.rect.colliderect(mob.rect):
                             p.hit_entities.add(mob)
                             p.pierce_left -= 1
-                            is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-                            dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
+                            effective_crit = player.stats.total_crit_rate + (player.get_meal_buff_val("crit_chance") * 100.0 if hasattr(player, "get_meal_buff_val") else 0.0)
+                            is_crit = (random.uniform(0, 100) < effective_crit)
+                            meal_dmg = player.get_meal_buff_val("damage_mult") if hasattr(player, "get_meal_buff_val") else 0.0
+                            base_crit_mult = 2.0 if (hasattr(player, "has_effect") and player.has_effect("critical overdrive")) else getattr(player.stats, "total_crit_damage_multiplier", 1.8)
+                            crit_mult = base_crit_mult + (player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0)
+                            dmg = int((p.damage + player.stats.bonus_atk) * (1.0 + meal_dmg) * (crit_mult if is_crit else random.uniform(0.95, 1.15)))
+                            if hasattr(player, "get_meal_buff_val"):
+                                meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                                if meal_armor_pen > 0:
+                                    dmg += int((p.damage + player.stats.bonus_atk) * meal_armor_pen)
                             mob.take_damage(dmg, knockback_vx=p.vx * 0.35, knockback_vy=-2.0)
                             self.spawn_damage_number(mob.center_x, mob.y - 12, dmg, color=(140, 230, 255), is_crit=is_crit)
                             self.particle_system.spawn_sparks(p.x, p.y, (120, 240, 255), count=12)
@@ -818,8 +856,16 @@ class CombatManager:
                     if p.pierce_left > 0 and self.boss and not self.boss.is_dead and self.boss not in p.hit_entities and p.rect.colliderect(self.boss.rect):
                         p.hit_entities.add(self.boss)
                         p.pierce_left -= 1
-                        is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-                        dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
+                        effective_crit = player.stats.total_crit_rate + (player.get_meal_buff_val("crit_chance") * 100.0 if hasattr(player, "get_meal_buff_val") else 0.0)
+                        is_crit = (random.uniform(0, 100) < effective_crit)
+                        meal_dmg = player.get_meal_buff_val("damage_mult") if hasattr(player, "get_meal_buff_val") else 0.0
+                        base_crit_mult = 2.0 if (hasattr(player, "has_effect") and player.has_effect("critical overdrive")) else getattr(player.stats, "total_crit_damage_multiplier", 1.8)
+                        crit_mult = base_crit_mult + (player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0)
+                        dmg = int((p.damage + player.stats.bonus_atk) * (1.0 + meal_dmg) * (crit_mult if is_crit else random.uniform(0.95, 1.15)))
+                        if hasattr(player, "get_meal_buff_val"):
+                            meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                            if meal_armor_pen > 0:
+                                dmg += int((p.damage + player.stats.bonus_atk) * meal_armor_pen)
                         self.boss.take_damage(dmg, knockback_vx=p.vx * 0.15)
                         self.spawn_damage_number(self.boss.center_x, self.boss.y - 14, dmg, color=(140, 230, 255), is_crit=is_crit)
                         self.particle_system.spawn_sparks(p.x, p.y, (120, 240, 255), count=14)
@@ -833,8 +879,16 @@ class CombatManager:
                 if p.life > 0:
                     for mob in self.mobs:
                         if mob.is_alive and p.rect.colliderect(mob.rect):
-                            is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-                            dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
+                            effective_crit = player.stats.total_crit_rate + (player.get_meal_buff_val("crit_chance") * 100.0 if hasattr(player, "get_meal_buff_val") else 0.0)
+                            is_crit = (random.uniform(0, 100) < effective_crit)
+                            meal_dmg = player.get_meal_buff_val("damage_mult") if hasattr(player, "get_meal_buff_val") else 0.0
+                            base_crit_mult = 2.0 if (hasattr(player, "has_effect") and player.has_effect("critical overdrive")) else getattr(player.stats, "total_crit_damage_multiplier", 1.8)
+                            crit_mult = base_crit_mult + (player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0)
+                            dmg = int((p.damage + player.stats.bonus_atk) * (1.0 + meal_dmg) * (crit_mult if is_crit else random.uniform(0.95, 1.15)))
+                            if hasattr(player, "get_meal_buff_val"):
+                                meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                                if meal_armor_pen > 0:
+                                    dmg += int((p.damage + player.stats.bonus_atk) * meal_armor_pen)
                             mob.take_damage(dmg, knockback_vx=p.vx * 0.45, knockback_vy=-3.5)
                             self.spawn_damage_number(mob.center_x, mob.y - 12, dmg, color=(220, 140, 255), is_crit=is_crit)
                             self.particle_system.spawn_sparks(p.x, p.y, (210, 100, 255), count=15)
@@ -846,8 +900,16 @@ class CombatManager:
                             p.life = 0
                             break
                     if p.life > 0 and self.boss and not self.boss.is_dead and p.rect.colliderect(self.boss.rect):
-                        is_crit = (random.uniform(0, 100) < player.stats.total_crit_rate)
-                        dmg = int((p.damage + player.stats.bonus_atk) * (1.8 if is_crit else random.uniform(0.95, 1.15)))
+                        effective_crit = player.stats.total_crit_rate + (player.get_meal_buff_val("crit_chance") * 100.0 if hasattr(player, "get_meal_buff_val") else 0.0)
+                        is_crit = (random.uniform(0, 100) < effective_crit)
+                        meal_dmg = player.get_meal_buff_val("damage_mult") if hasattr(player, "get_meal_buff_val") else 0.0
+                        base_crit_mult = 2.0 if (hasattr(player, "has_effect") and player.has_effect("critical overdrive")) else getattr(player.stats, "total_crit_damage_multiplier", 1.8)
+                        crit_mult = base_crit_mult + (player.get_meal_buff_val("crit_dmg_mult") if hasattr(player, "get_meal_buff_val") else 0.0)
+                        dmg = int((p.damage + player.stats.bonus_atk) * (1.0 + meal_dmg) * (crit_mult if is_crit else random.uniform(0.95, 1.15)))
+                        if hasattr(player, "get_meal_buff_val"):
+                            meal_armor_pen = player.get_meal_buff_val("armor_pen")
+                            if meal_armor_pen > 0:
+                                dmg += int((p.damage + player.stats.bonus_atk) * meal_armor_pen)
                         self.boss.take_damage(dmg, knockback_vx=p.vx * 0.2)
                         self.spawn_damage_number(self.boss.center_x, self.boss.y - 14, dmg, color=(220, 140, 255), is_crit=is_crit)
                         self.particle_system.spawn_sparks(p.x, p.y, (210, 100, 255), count=16)
@@ -1303,9 +1365,10 @@ class CombatManager:
             DroppedItem(item_id, count, ox, my, self.asset_factory, vx=vx, vy=vy)
         )
 
-    def _drop_mob_loot(self, mob, tuned=None):
+    def _drop_mob_loot(self, mob, tuned=None, player=None):
         if tuned is None:
             tuned = getattr(self, "tuned_mob_drops", False)
+        luck_mult = 1.0 + (player.get_meal_buff_val("luck") if (player and hasattr(player, "get_meal_buff_val")) else 0.0)
         mx, my = mob.center_x, mob.center_y
         m_name = getattr(mob, "name", "")
         m_type = getattr(mob, "mob_type", "").lower()
@@ -1471,12 +1534,12 @@ class CombatManager:
             self._spawn_loot_drop("healing_potion", 1, mx, my)
 
         # 3. Uncommon Equipment Roll (3.5% chance - 1 in ~28):
-        if random.random() < 0.035 and self._catalog_rarity_pools.get("uncommon"):
+        if random.random() < 0.035 * luck_mult and self._catalog_rarity_pools.get("uncommon"):
             unc_item = random.choice(self._catalog_rarity_pools["uncommon"])
             self._spawn_loot_drop(unc_item, 1, mx, my)
 
         # 4. Rare Roll (1.5% chance - 1 in ~67): Skill Books, Accessories, Biome Weapons, Rare Gear
-        if random.random() < 0.015:
+        if random.random() < 0.015 * luck_mult:
             rare_pool = [
                 "skillbook_power_slash", "skillbook_whirlwind", "skillbook_dash", "skillbook_fireball",
                 "skillbook_meteor", "skillbook_frost_nova", "skillbook_celestial_shield", "skillbook_void_singularity",
@@ -1490,7 +1553,7 @@ class CombatManager:
             self._spawn_loot_drop(drop_id, 1, mx, my)
 
         # 5. Epic Roll (0.50% chance - 1 in 200):
-        if random.random() < 0.005:
+        if random.random() < 0.005 * luck_mult:
             epic_pool = ["golden_fry", "zephyr_striders", "starch_blade", "shadow_cleaver", "talisman_of_vigor", "lucky_clover", "arcane_orchid"]
             if random.random() < 0.5 and self._catalog_rarity_pools.get("epic"):
                 drop_id = random.choice(self._catalog_rarity_pools["epic"])
@@ -1499,14 +1562,14 @@ class CombatManager:
             self._spawn_loot_drop(drop_id, 1, mx, my)
 
         # 6. MYTHIC ROLL (0.15% chance - 1 in ~667):
-        if random.random() < 0.0015 and self._catalog_rarity_pools.get("mythic"):
+        if random.random() < 0.0015 * luck_mult and self._catalog_rarity_pools.get("mythic"):
             m_item = random.choice(self._catalog_rarity_pools["mythic"])
             print(f"[LOOT] MYTHIC DROP! {m_item} has dropped from a defeated monster!")
             self._spawn_loot_drop(m_item, 1, mx, my)
             self.particle_system.spawn_sparks(mx, my, (255, 152, 0), count=30)
 
         # 7. LEGENDARY ROLL (0.05% chance - 1 in 2,000):
-        if random.random() < 0.0005:
+        if random.random() < 0.0005 * luck_mult:
             if random.random() < 0.5 or not self._catalog_rarity_pools.get("legendary"):
                 leg_item = "astral_wrath"
             else:

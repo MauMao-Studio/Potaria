@@ -196,12 +196,12 @@ def can_add_affix_slot(item):
     if getattr(item, "is_broken", False):
         return False, "Cannot carve affix slot into a broken item! Repair it first."
 
-    if rarity in (RARITY_EPIC, "epic"):
+    if rarity in (RARITY_EPIC, RARITY_LEGENDARY, "epic", "legendary"):
         max_slots = 1
-    elif rarity in (RARITY_MYTHIC, "mythic"):
+    elif rarity in (RARITY_MYTHIC, RARITY_ANCIENT, "mythic", "ancient"):
         max_slots = 2
     else:
-        max_slots = 3
+        max_slots = 0
 
     cur_slots = getattr(item, "affix_slots", 0)
     if cur_slots >= max_slots:
