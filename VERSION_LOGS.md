@@ -2,7 +2,7 @@
 **Lead Developer:** Kurados  
 **Game Engine:** Pure Python 3.13 + Pygame Community Edition (`pygame-ce` 2.5.8+, SDL 2.32)  
 **Architecture:** 2D Boundless Sandbox Action RPG (100% Offline Standalone, Zero External Downloads)  
-**Repository:** [RetsardCo/Potaria](https://github.com/RetsardCo/Potaria.git)  
+**Repository:** [MauMao-Studio/Potaria](https://github.com/MauMao-Studio/Potaria.git)  
 
 ---
 
@@ -10,7 +10,8 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v0.2.5a** | October 2026 | *Whole-Game Balance Overhaul, 5-Active-Meal Categorized Architecture & Equipment Tuning (Current Active Build)* | Full implementation of Potaria Game Balance Plan: 5-active-meal-buff category framework (Offense, Defense, Mobility, Resource, Utility) with strict 1-buff-per-category replacement and no additive stacking, food stat contribution caps (max +12% DMG, +10% ATK SPD, +6% Crit, +6% DR, +2 HP/s regen, +15% Move SPD), standardized meal durations (2/3/4/5 min), dish-effect assignment across Filipino, fish, and potato cuisine with Kinilaw na Tanigue conflict resolution, ranged projectile meal buff damage scaling, non-combat meal buffs (fishing reeling speed, block mining power, mob drop luck), strict affix slot limits (Rare 0, Epic 1, Legendary 1, Mythic 2, Ancient 2), Risk Register suspect item tuning, dedicated pre-balance backup branch (`pre-game-balance-backup`) pushed to origin, and 684 tests passing across 43 suites (100% Green). |
+| **v0.2.6a** | October 2026 | *Weapon Skill Ordering & Streamlined Circular Affix Sockets UI (Current Active Build)* | Tooltip structure overhaul placing innate weapon skills/perks before affix slots, clean single-line circular socket indicators (`(○)` empty and `(●)` filled) adhering to item rarity socket limits (Epic: 1, Legendary: 1, Mythic: 2, Ancient: 2, Common/Uncommon/Rare: 0), total elimination of confusing 3-line status clutter (`AFFIX SLOTS`, `CARVED AFFIX SLOTS`, `[AVAILABLE TO CARVE]`), active affix deduplication in weapon skills, non-gear item socket exclusion, unified across HUD, Inventory, Chests, Character Panel, and NPC Dialogue windows, and 697 tests passing across 44 suites (100% Green). |
+| **v0.2.5a** | October 2026 | *Whole-Game Balance Overhaul, 5-Active-Meal Categorized Architecture & Equipment Tuning* | Full implementation of Potaria Game Balance Plan: 5-active-meal-buff category framework (Offense, Defense, Mobility, Resource, Utility) with strict 1-buff-per-category replacement and no additive stacking, food stat contribution caps (max +12% DMG, +10% ATK SPD, +6% Crit, +6% DR, +2 HP/s regen, +15% Move SPD), standardized meal durations (2/3/4/5 min), dish-effect assignment across Filipino, fish, and potato cuisine with Kinilaw na Tanigue conflict resolution, ranged projectile meal buff damage scaling, non-combat meal buffs (fishing reeling speed, block mining power, mob drop luck), strict affix slot limits (Rare 0, Epic 1, Legendary 1, Mythic 2, Ancient 2), Risk Register suspect item tuning, dedicated pre-balance backup branch (`pre-game-balance-backup`) pushed to origin, and 684 tests passing across 43 suites (100% Green). |
 | **v0.2.4a** | October 2026 | *Side-by-Side Gear Comparison, Health HUD Contrast & Direct Culinary Descriptions* | Side-by-side equipment comparison tooltips ("katabi") when hovering gear with Character Info (C) or chest storage open, equipped gear comparison badge `[ CURRENTLY EQUIPPED ]`, direct factual culinary descriptions across all food items, raw fish, meats, seasonings, and cookbook generation scripts without flowery language, high-contrast backing badge plate for numerical Life HUD readout (`Life: X / Y`), decoupling death screen fade overlay from UI surface layer to prevent low-HP text obliteration, and 672 tests passing across 42 suites (100% Green). |
 | **v0.2.3a** | October 2026 | *Performance, Lighting Downward Shadow & Persistent World Cache Overhaul* | 108+ FPS baseline performance optimization (down from 22.9ms to 8.8ms frame time, >60 FPS guarantee), roof/ceiling daylight occlusion tracing from y=0 to viewport min_ty, sunlight downward shadow casting with top surface exposure illumination, clamped emitter intensities [0..15] preventing IndexError, version-enveloped lighting cache with selective invalidation on algorithm updates, atomic chunk cache writes, swizzle-safe OpenGL texture streaming fallback, and 653 tests passing across 41 suites (100% Green). |
 | **v0.2.2a** | October 2026 | *Food Buff System, Decoupled Culinary Descriptions, Weapons Defense Scrub & UI Ergonomics* | 5-meal archetype food buff system with timed stat bonuses (Satiated, Attack Power, Damage Resistance, Swiftness, Health Regen), pure Filipino culinary descriptions decoupled from mechanical stat benefits, bottom-left food buff HUD overlay with hover tooltips and topmost z-order layering, main menu and settings hover tooltip cleanup (tooltips restricted strictly to icon-only buttons), Achievements card viewport bottom clearance fix, modal boundaries padding in Worlds and Key Bindings screens, complete weapon defense scrub across item registry, affix tables, stat ranges, and tooltip renderers, and 641 tests passing across 40 suites (100% Green). |
@@ -40,7 +41,43 @@
 
 ## Detailed Version Logs
 
-### [v0.2.5a] — Whole-Game Balance Overhaul, 5-Active-Meal Categorized Architecture & Equipment Tuning (Current Release)
+### [v0.2.6a] — Weapon Skill Ordering & Streamlined Circular Affix Sockets UI (Current Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Tooltip Structure Overhaul (Skill Before Affix)**:
+  - Reordered equipment tooltip layout across all UI windows: innate weapon skills and unique perks (e.g. `• Glacial Chill (-35% Target Speed)`) now render cleanly **before** affix socket lines.
+  - Active item affixes are automatically filtered from the native weapon skills list, preventing duplicate mentions of the same affix in both sections.
+- **Streamlined Circular Affix Socket Indicators**:
+  - Completely eliminated the cluttered, redundant 3-line affix status text:
+    - Removed `AFFIX SLOTS: 0/0 (CARVE AT MYSTIC TRADER)`.
+    - Removed `CARVED AFFIX SLOTS: 0/1 (LIMIT FOR EPIC)`.
+    - Removed `· [AVAILABLE TO CARVE] 1 SLOT(S) OPEN AT MYSTIC TRADER`.
+  - Replaced with clean, single-line ARPG circular socket indicators:
+    - Empty uncarved slot: `(○) Affix Slot (Carve at Mystic Trader)`
+    - Empty carved slot: `(○) Empty Affix Slot`
+    - Filled carved slot: `(●) Affix Name (+Bonus Details)`
+  - Total socket indicators strictly match item rarity capacity:
+    - *Common, Uncommon, Rare*: 0 sockets (no socket lines rendered).
+    - *Epic*: 1 socket.
+    - *Legendary*: 1 socket.
+    - *Mythic*: 2 sockets.
+    - *Ancient*: 2 sockets.
+  - Non-gear items (consumables, meals, materials, seeds, furniture, currency) are strictly excluded from rendering affix socket indicators.
+- **Universal Tooltip Consistency**:
+  - Unified this clean layout across all 5 game tooltip presentation modules:
+    - Main HUD hotbar & inventory tooltips (`src/ui/hud.py`).
+    - Inventory backpack tooltips (`src/ui/inventory.py`).
+    - Storage chest container tooltips (`src/ui/chest_ui.py`).
+    - Character Status panel tooltips (`src/ui/character_panel.py`).
+    - Wandering Trader shop ware tooltips (`src/ui/npc_dialogue.py`).
+- **Automated Verification**:
+  - Added dedicated test suite `tests/test_weapon_skill_and_affix_socket_ui.py` (13/13 passed).
+  - 697 tests passing across 44 test suites (100% Green).
+
+---
+
+### [v0.2.5a] — Whole-Game Balance Overhaul, 5-Active-Meal Categorized Architecture & Equipment Tuning
 *Release Date: October 2026*
 
 #### Added & Improved
