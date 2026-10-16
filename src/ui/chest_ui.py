@@ -346,7 +346,9 @@ class ChestStorageWindow:
             is_high_tier = rarity_str in ("epic", "mythic", "legendary", "ancient")
             if "wood" not in iid and (is_high_tier or effects or data.get("special")):
                 if effects and not data.get("buff"):
-                    for eff in effects:
+                    raw_affs = set(getattr(item, "affixes", []) or [])
+                    weapon_effects = [e for e in effects if not str(e).startswith("★ ") and e not in raw_affs]
+                    for eff in weapon_effects:
                         for el in wrap_text_lines(f"• {eff}", self.font_sm, 300):
                             lines.append((el, (100, 240, 240), self.font_sm))
                 elif data.get("special"):

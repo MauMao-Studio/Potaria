@@ -443,7 +443,7 @@ class TestEquipmentUpdate(unittest.TestCase):
         hud = HUD(af)
         chest_ui = ChestStorageWindow(af, None)
 
-        # 1. Legendary item with 0 carved slots displays carvable capacity
+        # 1. Ancient item with 0 carved slots displays carvable capacity with circular indicator
         item = ItemStack("kampilan", 1)
         item.additional_affix_slots = 0
         item.affix_slots = 0
@@ -452,25 +452,26 @@ class TestEquipmentUpdate(unittest.TestCase):
         surf = pygame.Surface((400, 400))
         lines1 = inv.render_tooltip(surf, item, 50, 50)
         text1 = " ".join([t[0] for t in lines1])
-        self.assertIn("Available to Carve", text1)
+        self.assertIn("○", text1)
+        self.assertIn("Carve at Mystic Trader", text1)
 
-        # 2. Carved item displays Available Slot open for affix stones
+        # 2. Carved item displays clean empty socket indicator awaiting affix stones
         item.additional_affix_slots = 1
         item.affix_slots = 1
         item.affixes = []
         lines2 = inv.render_tooltip(surf, item, 50, 50)
         text2 = " ".join([t[0] for t in lines2])
-        self.assertIn("Available Slot", text2)
-        self.assertIn("Open for Affix Stones", text2)
+        self.assertIn("○", text2)
+        self.assertIn("Empty Affix Slot", text2)
 
         # 3. Test HUD and ChestUI tooltips as well
         hud_lines = hud._render_tooltip(surf, 50, 50, item)
         hud_text = " ".join([t[0] for t in hud_lines])
-        self.assertIn("Available Slot", hud_text)
+        self.assertIn("Empty Affix Slot", hud_text)
 
         chest_lines = chest_ui.render_tooltip(surf, item, 50, 50)
         chest_text = " ".join([t[0] for t in chest_lines])
-        self.assertIn("Available Slot", chest_text)
+        self.assertIn("Empty Affix Slot", chest_text)
 
         # 4. Verify parameter order tolerance (surf, 50, 50, item)
         lines_inv_order = inv.render_tooltip(surf, 50, 50, item)

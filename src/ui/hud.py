@@ -906,7 +906,7 @@ class HUD:
                 else:
                     lines.append((f"Weapon Power: {data['damage']} Damage", (255, 215, 100), self.font_sm))
             if data.get("cat") == "weapon" or (data.get("damage", 0) > 0 and data.get("cat") != CAT_TOOL):
-                iid = item.item_id.lower()
+                iid = getattr(item, "item_id", str(item)).lower()
                 if any(w in iid for w in ("dagger", "shortsword", "knife", "stiletto")):
                     speed_str = "Very Fast Speed (0.22s)"
                 elif any(w in iid for w in ("greatsword", "cleaver", "hammer", "scythe", "titan", "colossus")):
@@ -978,12 +978,14 @@ class HUD:
 
             # 4. Special Weapon Effects / Skills (Bulleted for upper rarities or items with perks, displayed BEFORE affixes)
             effects = data.get("effects", [])
-            iid = item.item_id.lower()
+            iid = getattr(item, "item_id", str(item)).lower()
             rarity_str = str(rarity).lower()
             is_high_tier = rarity_str in ("epic", "mythic", "legendary", "ancient")
             if "wood" not in iid and (is_high_tier or effects or data.get("special")):
                 if effects and not data.get("buff"):
-                    for eff in effects:
+                    raw_affs = set(getattr(item, "affixes", []) or [])
+                    weapon_effects = [e for e in effects if not str(e).startswith("★ ") and e not in raw_affs]
+                    for eff in weapon_effects:
                         for el in wrap_text_lines(f"• {eff}", self.font_sm, 300):
                             lines.append((el, (100, 240, 240), self.font_sm))
                 elif data.get("special"):

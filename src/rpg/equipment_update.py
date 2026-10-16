@@ -1049,16 +1049,16 @@ def build_affix_socket_lines(item: Any, font: Any = None, wrap_width: int = 300)
 
     data: Dict[str, Any] = {}
     if hasattr(item, "data") and isinstance(item.data, dict):
-        data = item.data
+        data = dict(item.data)
     elif isinstance(item, dict):
-        data = item
-    else:
-        raw_id = str(getattr(item, "item_id", item)).lower()
-        from src.ui.inventory import ITEM_REGISTRY
-        from src.rpg.equipment import ARMOR_DATA
-        reg = ITEM_REGISTRY.get(raw_id, {})
-        armor = ARMOR_DATA.get(raw_id, {})
-        data = {**armor, **reg}
+        data = dict(item)
+
+    raw_id = str(data.get("item_id", getattr(item, "item_id", item if isinstance(item, str) else ""))).lower()
+    from src.ui.inventory import ITEM_REGISTRY
+    from src.rpg.equipment import ARMOR_DATA
+    reg = ITEM_REGISTRY.get(raw_id, {})
+    armor = ARMOR_DATA.get(raw_id, {})
+    data = {**armor, **reg, **data}
 
     rarity = str(data.get("rarity", getattr(item, "rarity", "common"))).lower()
 
@@ -1066,16 +1066,33 @@ def build_affix_socket_lines(item: Any, font: Any = None, wrap_width: int = 300)
     max_add = get_max_additional_slots(rarity)
     cur_add = getattr(item, "additional_affix_slots", 0)
     affix_slots = getattr(item, "affix_slots", cur_add)
-    total_slots = max(affix_slots, max_add)
+
+    raw_affixes = getattr(item, "affixes", [])
+    if isinstance(raw_affixes, (list, tuple)):
+        affixes = list(raw_affixes)
+    else:
+        affixes = []
+
+    total_slots = max(affix_slots, cur_add, max_add, len(affixes))
 
     # Check if item is gear / equipment / weapon (or has stats/affix slots)
     from src.constants import CAT_WEAPON, CAT_TOOL
-    cat = data.get("cat", "") or data.get("category", "")
-    is_gear = (
-        cat in (CAT_WEAPON, CAT_TOOL, "weapon", "tool", "armor", "equipment", "accessory", "head", "chest", "legs", "feet", "ring", "amulet", "shield")
-        or hasattr(item, "slot")
-        or hasattr(item, "enhancement_level")
-        or any(data.get(s, 0) > 0 for s in ("atk", "def", "crit", "damage", "hp", "mp"))
+    cat = str(data.get("cat", "") or data.get("category", "")).lower()
+    slot = str(data.get("slot", getattr(item, "slot", ""))).lower()
+
+    is_non_gear = (
+        cat in ("consumable", "material", "block", "wall", "currency", "special", "furniture", "seed", "fish")
+        or bool(data.get("buff"))
+        or bool(data.get("heal", 0) > 0 and cat != "weapon")
+    )
+
+    is_gear = not is_non_gear and (
+        cat in (CAT_WEAPON, CAT_TOOL, "weapon", "tool", "armor", "equipment", "accessory")
+        or cat.startswith("armor_")
+        or slot in ("weapon", "head", "chest", "legs", "feet", "accessory", "shield", "ring", "amulet", "tool")
+        or (data.get("damage", 0) > 0 and cat != "block")
+        or data.get("atk", 0) > 0
+        or data.get("def", 0) > 0
     )
 
     if total_slots <= 0 or (not is_gear and affix_slots <= 0):
@@ -1083,12 +1100,6 @@ def build_affix_socket_lines(item: Any, font: Any = None, wrap_width: int = 300)
 
     from src.ui.theme import wrap_text_lines, font_compact
     used_font = font if font is not None else font_compact(11)
-
-    raw_affixes = getattr(item, "affixes", [])
-    if isinstance(raw_affixes, (list, tuple)):
-        affixes = list(raw_affixes)
-    else:
-        affixes = []
 
     carved_slots = max(affix_slots, cur_add)
 
@@ -1118,11 +1129,11 @@ def build_affix_socket_lines(item: Any, font: Any = None, wrap_width: int = 300)
             col = (255, 230, 90)  # Bright golden amber for imbued affix
         elif i < carved_slots:
             # 2. Carved but empty, awaiting affix stone
-            socket_text = "(○) Empty Affix Slot (Available Slot - Open for Affix Stones)"
+            socket_text = "(○) Empty Affix Slot"
             col = (140, 240, 180)  # Soft seafoam green
         else:
             # 3. Uncarved slot capacity (available to carve at Mystic Trader)
-            socket_text = "(○) Affix Slot (Available to Carve at Mystic Trader)"
+            socket_text = "(○) Affix Slot (Carve at Mystic Trader)"
             col = (130, 220, 255)  # Soft crystal blue
 
         for sub_line in wrap_text_lines(socket_text, used_font, wrap_width):

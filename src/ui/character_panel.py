@@ -616,7 +616,9 @@ class CharacterPanel:
         from src.ui.theme import wrap_text_lines
         if "wood" not in iid and is_high_tier:
             if effects:
-                for eff in effects:
+                raw_affs = set(item_affixes or [])
+                weapon_effects = [e for e in effects if not str(e).startswith("★ ") and e not in raw_affs]
+                for eff in weapon_effects:
                     for el in wrap_text_lines(f"• {eff}", self.font_sm, 300):
                         lines.append((el, (100, 240, 240), self.font_sm))
             else:

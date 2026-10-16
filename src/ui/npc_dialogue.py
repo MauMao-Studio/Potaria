@@ -734,19 +734,14 @@ class NPCDialogueWindow:
                 sp = armor.get("speed", reg.get("speed", 0))
                 lines.append((f"+{sp} Movement Speed", (200, 210, 255), self.font_sm))
 
-            # Set Membership & Torchlight 2 Tiered Milestones
-            from src.rpg.equipment_update import build_set_tooltip_lines
-            p = getattr(self, "active_player", None)
-            set_lines = build_set_tooltip_lines(iid, player=p, font=self.font_sm, wrap_width=300)
-            lines.extend(set_lines)
-
-            # Effects for high tier
+            # Effects for high tier (Weapon skills / Perks displayed BEFORE affixes)
             from src.ui.theme import wrap_text_lines
             effects = reg.get("effects") or armor.get("effects", [])
             rarity_str = str(rarity).lower()
             if rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient") and "wood" not in iid.lower():
                 if effects:
-                    for eff in effects:
+                    weapon_effects = [e for e in effects if not str(e).startswith("★ ")]
+                    for eff in weapon_effects:
                         for el in wrap_text_lines(f"• {eff}", self.font_sm, 300):
                             lines.append((el, (100, 240, 240), self.font_sm))
                 elif reg.get("special") or armor.get("special"):
@@ -755,7 +750,13 @@ class NPCDialogueWindow:
 
             # Affix Sockets (Clean ARPG circular socket indicator per slot)
             from src.rpg.equipment_update import build_affix_socket_lines
-            lines.extend(build_affix_socket_lines(iid, font=self.font_sm, wrap_width=300))
+            lines.extend(build_affix_socket_lines(entry if isinstance(entry, dict) else iid, font=self.font_sm, wrap_width=300))
+
+            # Set Membership & Torchlight 2 Tiered Milestones
+            from src.rpg.equipment_update import build_set_tooltip_lines
+            p = getattr(self, "active_player", None)
+            set_lines = build_set_tooltip_lines(iid, player=p, font=self.font_sm, wrap_width=300)
+            lines.extend(set_lines)
 
             desc = reg.get("desc") or armor.get("desc")
             if not desc or str(desc).strip() == "":

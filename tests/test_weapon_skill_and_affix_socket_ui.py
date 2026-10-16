@@ -199,7 +199,7 @@ class TestWeaponSkillAndAffixSocketUI(unittest.TestCase):
         self.assertEqual(uncarved_circles, 1)
         text_uncarved = " ".join([l[0] for l in lines_uncarved])
         self.assertIn("○", text_uncarved)
-        self.assertIn("Available to Carve at Mystic Trader", text_uncarved)
+        self.assertIn("Carve at Mystic Trader", text_uncarved)
 
         # Carve 1 slot (empty)
         item.affix_slots = 1
@@ -209,8 +209,7 @@ class TestWeaponSkillAndAffixSocketUI(unittest.TestCase):
         self.assertEqual(empty_circles, 1)
         text_empty = " ".join([l[0] for l in lines_carved_empty])
         self.assertIn("○", text_empty)
-        self.assertIn("Empty Affix Slot", text_empty)
-        self.assertIn("Open for Affix Stones", text_empty)
+        self.assertEqual(text_empty, "(○) Empty Affix Slot")
 
         # Embed Affix Stone: "Titan's Might"
         item.affixes = ["Titan's Might"]
@@ -240,7 +239,7 @@ class TestWeaponSkillAndAffixSocketUI(unittest.TestCase):
 
         # Slot 2 is uncarved
         self.assertIn("○", combined)
-        self.assertIn("Available to Carve at Mystic Trader", combined)
+        self.assertIn("Carve at Mystic Trader", combined)
 
     def test_09_npc_dialogue_shop_tooltip_includes_affix_sockets(self):
         """Verifies NPC dialogue shop tooltips display clean socket capacity for high-tier gear."""
@@ -257,6 +256,61 @@ class TestWeaponSkillAndAffixSocketUI(unittest.TestCase):
         # Has affix circle
         has_circle = any("○" in t and "Affix Slot" in t for t in texts)
         self.assertTrue(has_circle, "Shop weapon tooltip should display affix socket capacity")
+
+    def test_10_no_duplicate_affix_in_weapon_skills(self):
+        """Verifies embedded affix is not duplicated in the weapon skills/effects section."""
+        item = ItemStack("magma_greatsword", 1, affix_slots=1, additional_affix_slots=1, affixes=["Titan's Might"])
+        hud_lines = self.hud._render_tooltip(self.surf, 100, 100, item, player=self.player)
+        texts = [t[0] for t in hud_lines]
+
+        # The affix should appear exactly once in the tooltip as (●) Titan's Might
+        affix_occurrences = [t for t in texts if "Titan's Might" in t]
+        self.assertEqual(len(affix_occurrences), 1, f"Affix must appear only once, found: {affix_occurrences}")
+        self.assertTrue(affix_occurrences[0].startswith("(●)"), "Affix must only appear in socket indicator")
+
+        # Must not appear as a bullet point in weapon skills
+        star_effects = [t for t in texts if "★" in t]
+        self.assertEqual(len(star_effects), 0, "No legacy star affix effects should appear in tooltip")
+
+    def test_11_non_gear_items_have_zero_sockets(self):
+        """Verifies consumables, food, and blocks do not display affix sockets even at high rarity."""
+        food_item = ItemStack("kinilaw_na_tanigue", 1)  # Epic food
+        lines = build_affix_socket_lines(food_item)
+        self.assertEqual(len(lines), 0, "Consumable food items must never receive affix sockets")
+
+        furniture_item = ItemStack("cartographer_desk", 1)
+        lines_f = build_affix_socket_lines(furniture_item)
+        self.assertEqual(len(lines_f), 0, "Furniture items must never receive affix sockets")
+
+    def test_12_dict_item_properly_resolves_registry_and_sockets(self):
+        """Verifies passing a raw dictionary item with only item_id properly resolves registry data."""
+        dict_item = {"item_id": "magma_greatsword"}
+        lines = build_affix_socket_lines(dict_item)
+        self.assertEqual(len(lines), 1, "Dict item should resolve to Epic rarity with 1 socket")
+        self.assertIn("Carve at Mystic Trader", lines[0][0])
+
+    def test_13_npc_dialogue_ordering(self):
+        """Verifies NPC dialogue shop tooltip ordering: Weapon Skill -> Affix Socket -> Set Lines."""
+        npc_dlg = NPCDialogueWindow(self.af, self.sm)
+        lines = npc_dlg._render_shop_item_tooltip(
+            self.surf, 100, 100, {"item_id": "pride_blade", "price": 1000, "currency": "gold_coin"}
+        )
+        texts = [t[0] for t in lines]
+
+        skill_indices = [i for i, t in enumerate(texts) if "•" in t or "Special" in t]
+        self.assertTrue(len(skill_indices) > 0, "Pride Blade should have skill/effects")
+        skill_idx = skill_indices[0]
+
+        affix_indices = [i for i, t in enumerate(texts) if "○" in t]
+        self.assertTrue(len(affix_indices) > 0, "Pride Blade should have affix sockets")
+        affix_idx = affix_indices[0]
+
+        set_indices = [i for i, t in enumerate(texts) if "Set:" in t]
+        self.assertTrue(len(set_indices) > 0, "Pride Blade should have set bonus lines")
+        set_idx = set_indices[0]
+
+        self.assertLess(skill_idx, affix_idx, "Weapon skill must precede affix socket in shop tooltip")
+        self.assertLess(affix_idx, set_idx, "Affix socket must precede set bonus lines in shop tooltip")
 
 
 if __name__ == "__main__":
