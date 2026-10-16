@@ -608,47 +608,11 @@ class CharacterPanel:
             tag_labels = [TAG_REGISTRY.get(t, {}).get("display_name", t.replace("_", " ").title()) for t in item_tags]
             lines.append((f"Tags: {' • '.join(tag_labels)}", (100, 220, 255), self.font_sm))
 
-        # Affix Slots & Available Slots
-        aff_cnt = len(item_affixes)
-        avail = max(0, aff_slots - aff_cnt)
-        from src.rpg.equipment_update import get_max_additional_slots
-        max_add = get_max_additional_slots(rarity)
-        avail_carve = max(0, max_add - cur_add) if max_add > 0 else 0
-
-        if aff_slots > 0:
-            slot_txt = f"Affix Slots: {aff_cnt}/{aff_slots}"
-            if avail > 0:
-                slot_txt += f" ({avail} Available)"
-            lines.append((slot_txt, (255, 215, 80), self.font_sm))
-            if avail > 0:
-                lines.append((f"• [Available Slot] {avail} Open for Affix Stones", (140, 240, 180), self.font_sm))
-        elif max_add > 0:
-            lines.append((f"Affix Slots: 0/0 (Carve at Mystic Trader)", (180, 190, 210), self.font_sm))
-
-        # Additional Affix Slot Capacity
-        if max_add > 0:
-            lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
-            if avail_carve > 0:
-                lines.append((f"• [Available to Carve] {avail_carve} Slot(s) Open at Mystic Trader", (130, 220, 255), self.font_sm))
-            else:
-                lines.append((f"• [Carve Limit Reached] Max {max_add} Slots Carved", (180, 170, 190), self.font_sm))
-
-        # Set Membership & Torchlight 2 Tiered Milestones
-        from src.rpg.equipment_update import build_set_tooltip_lines
-        set_lines = build_set_tooltip_lines(raw_id, player=player, font=self.font_sm, wrap_width=300)
-        lines.extend(set_lines)
-
-        # Imbued Affixes
-        if item_affixes:
-            for af in item_affixes:
-                af_name = af.get("name", str(af)) if isinstance(af, dict) else str(af)
-                lines.append((f"✦ {af_name}", (210, 150, 255), self.font_sm))
-
         # Effects & Special Perks (Only Epic, Mythic, Legendary, Ancient; suppressed for wooden and low-tier)
         effects = reg.get("effects") or armor.get("effects", [])
         iid = raw_id.lower()
         rarity_str = str(rarity).lower()
-        is_high_tier = rarity_str in (RARITY_EPIC, RARITY_MYTHIC, RARITY_LEGENDARY, RARITY_ANCIENT, "epic", "mythic", "legendary", "ancient")
+        is_high_tier = rarity_str in ("epic", "mythic", "legendary", "ancient")
         from src.ui.theme import wrap_text_lines
         if "wood" not in iid and is_high_tier:
             if effects:
@@ -660,6 +624,23 @@ class CharacterPanel:
                 if special:
                     for sl in wrap_text_lines(f"Special: {special}", self.font_sm, 300):
                         lines.append((sl, (100, 220, 255), self.font_sm))
+
+        # Affix Sockets (Clean ARPG circular socket indicator per slot)
+        from src.rpg.equipment_update import build_affix_socket_lines
+        proxy_item = type("ItemProxy", (), {
+            "item_id": raw_id,
+            "affix_slots": aff_slots,
+            "additional_affix_slots": cur_add,
+            "affixes": item_affixes,
+            "rarity": rarity,
+            "data": {**armor, **reg},
+        })()
+        lines.extend(build_affix_socket_lines(proxy_item, font=self.font_sm, wrap_width=300))
+
+        # Set Membership & Torchlight 2 Tiered Milestones
+        from src.rpg.equipment_update import build_set_tooltip_lines
+        set_lines = build_set_tooltip_lines(raw_id, player=player, font=self.font_sm, wrap_width=300)
+        lines.extend(set_lines)
 
         desc = reg.get("desc")
         if not desc or str(desc).strip() == "":
@@ -698,6 +679,8 @@ class CharacterPanel:
         for s in surfs:
             target_surf.blit(s, (tx + 10, cy))
             cy += s.get_height() + 3
+
+        return lines
 
 
 # Alias for backward compatibility

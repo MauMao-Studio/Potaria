@@ -1034,6 +1034,103 @@ def build_set_tooltip_lines(item_id: Any, player: Any = None, font: Any = None, 
     return lines
 
 
+def build_affix_socket_lines(item: Any, font: Any = None, wrap_width: int = 300) -> List[Tuple[str, Tuple[int, int, int], Any]]:
+    """
+    Builds clean ARPG-style circular affix socket lines for an item:
+    - Total circle count is determined by rarity capacity:
+      Epic: 1, Legendary: 1, Mythic: 2, Ancient: 2 (Common/Uncommon/Rare: 0)
+    - (●) Filled Socket: For carved slots with an embedded affix stone, displays
+      filled circle indicator with affix name and stat bonus.
+    - (○) Empty Affix Slot: For carved slots awaiting an affix stone.
+    - (○) Affix Slot: For uncarved capacity available at Mystic Trader.
+    """
+    if not item:
+        return []
+
+    data: Dict[str, Any] = {}
+    if hasattr(item, "data") and isinstance(item.data, dict):
+        data = item.data
+    elif isinstance(item, dict):
+        data = item
+    else:
+        raw_id = str(getattr(item, "item_id", item)).lower()
+        from src.ui.inventory import ITEM_REGISTRY
+        from src.rpg.equipment import ARMOR_DATA
+        reg = ITEM_REGISTRY.get(raw_id, {})
+        armor = ARMOR_DATA.get(raw_id, {})
+        data = {**armor, **reg}
+
+    rarity = str(data.get("rarity", getattr(item, "rarity", "common"))).lower()
+
+    # Determine total socket capacity
+    max_add = get_max_additional_slots(rarity)
+    cur_add = getattr(item, "additional_affix_slots", 0)
+    affix_slots = getattr(item, "affix_slots", cur_add)
+    total_slots = max(affix_slots, max_add)
+
+    # Check if item is gear / equipment / weapon (or has stats/affix slots)
+    from src.constants import CAT_WEAPON, CAT_TOOL
+    cat = data.get("cat", "") or data.get("category", "")
+    is_gear = (
+        cat in (CAT_WEAPON, CAT_TOOL, "weapon", "tool", "armor", "equipment", "accessory", "head", "chest", "legs", "feet", "ring", "amulet", "shield")
+        or hasattr(item, "slot")
+        or hasattr(item, "enhancement_level")
+        or any(data.get(s, 0) > 0 for s in ("atk", "def", "crit", "damage", "hp", "mp"))
+    )
+
+    if total_slots <= 0 or (not is_gear and affix_slots <= 0):
+        return []
+
+    from src.ui.theme import wrap_text_lines, font_compact
+    used_font = font if font is not None else font_compact(11)
+
+    raw_affixes = getattr(item, "affixes", [])
+    if isinstance(raw_affixes, (list, tuple)):
+        affixes = list(raw_affixes)
+    else:
+        affixes = []
+
+    carved_slots = max(affix_slots, cur_add)
+
+    from src.rpg.enhancement import GOD_TIER_AFFIXES
+
+    lines: List[Tuple[str, Tuple[int, int, int], Any]] = []
+
+    for i in range(total_slots):
+        if i < len(affixes):
+            # 1. Carved and filled with an affix stone
+            aff = affixes[i]
+            if isinstance(aff, dict):
+                aff_name = aff.get("name", str(aff))
+                aff_desc = aff.get("desc", "")
+            else:
+                aff_name = str(aff)
+                aff_desc = GOD_TIER_AFFIXES.get(aff_name, {}).get("desc", "")
+
+            if aff_desc:
+                if aff_desc.startswith("(") and aff_desc.endswith(")"):
+                    socket_text = f"(●) {aff_name} {aff_desc}"
+                else:
+                    socket_text = f"(●) {aff_name} ({aff_desc})"
+            else:
+                socket_text = f"(●) {aff_name}"
+
+            col = (255, 230, 90)  # Bright golden amber for imbued affix
+        elif i < carved_slots:
+            # 2. Carved but empty, awaiting affix stone
+            socket_text = "(○) Empty Affix Slot (Available Slot - Open for Affix Stones)"
+            col = (140, 240, 180)  # Soft seafoam green
+        else:
+            # 3. Uncarved slot capacity (available to carve at Mystic Trader)
+            socket_text = "(○) Affix Slot (Available to Carve at Mystic Trader)"
+            col = (130, 220, 255)  # Soft crystal blue
+
+        for sub_line in wrap_text_lines(socket_text, used_font, wrap_width):
+            lines.append((sub_line, col, used_font))
+
+    return lines
+
+
 # -----------------------------------------------------------------------------
 # 5. NEW EQUIPMENT CATALOG ENTRIES
 # -----------------------------------------------------------------------------

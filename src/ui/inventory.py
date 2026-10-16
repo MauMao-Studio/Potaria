@@ -3674,40 +3674,25 @@ class Inventory:
                 tag_labels = [TAG_REGISTRY.get(t, {}).get("display_name", t.replace("_", " ").title()) for t in item_tags]
                 lines.append((f"Tags: {' • '.join(tag_labels)}", (100, 220, 255), self.font_sm))
 
-            affix_slots = getattr(item, "affix_slots", 0)
-            affixes = getattr(item, "affixes", [])
-            aff_cnt = len(affixes)
-            avail_slots = max(0, affix_slots - aff_cnt)
-
-            from src.rpg.equipment_update import get_max_additional_slots
-            max_add = get_max_additional_slots(rarity)
-            cur_add = getattr(item, "additional_affix_slots", 0)
-            avail_carve = max(0, max_add - cur_add) if max_add > 0 else 0
-
-            if affix_slots > 0:
-                slot_info = f"Affix Slots: {aff_cnt}/{affix_slots}"
-                if avail_slots > 0:
-                    slot_info += f" ({avail_slots} Available)"
-                lines.append((slot_info, (255, 215, 80), self.font_sm))
-                if avail_slots > 0:
-                    lines.append((f"• [Available Slot] {avail_slots} Open for Affix Stones", (140, 240, 180), self.font_sm))
-            elif max_add > 0:
-                lines.append((f"Affix Slots: 0/0 (Carve at Mystic Trader)", (180, 190, 210), self.font_sm))
-
-            # Additional Affix Slot Capacity
-            if max_add > 0:
-                lines.append((f"Carved Affix Slots: {cur_add}/{max_add} (Limit for {rarity.title()})", (200, 170, 240), self.font_sm))
-                if avail_carve > 0:
-                    lines.append((f"• [Available to Carve] {avail_carve} Slot(s) Open at Mystic Trader", (130, 220, 255), self.font_sm))
-                else:
-                    lines.append((f"• [Carve Limit Reached] Max {max_add} Slots Carved", (180, 170, 190), self.font_sm))
-
             from src.ui.theme import wrap_text_lines
-            for aff in getattr(item, "affixes", []):
-                from src.rpg.enhancement import GOD_TIER_AFFIXES
-                aff_desc = GOD_TIER_AFFIXES.get(aff, {}).get("desc", "")
-                for al in wrap_text_lines(f"★ {aff}: {aff_desc}", self.font_sm, 300):
-                    lines.append((al, (255, 230, 90), self.font_sm))
+
+            # Special Weapon Effects / Skills (Bulleted for upper rarities or items with perks, displayed BEFORE affixes)
+            effects = data.get("effects", [])
+            iid = str(getattr(item, "item_id", "")).lower()
+            rarity_str = str(rarity).lower()
+            is_high_tier = rarity_str in ("epic", "mythic", "legendary", "ancient")
+            if "wood" not in iid and (is_high_tier or effects or data.get("special")):
+                if effects and not data.get("buff"):
+                    for eff in effects:
+                        for el in wrap_text_lines(f"• {eff}", self.font_sm, 300):
+                            lines.append((el, (100, 240, 240), self.font_sm))
+                elif data.get("special"):
+                    for sl in wrap_text_lines(f"Special: {data['special']}", self.font_sm, 300):
+                        lines.append((sl, (100, 240, 240), self.font_sm))
+
+            # Affix Sockets (Clean ARPG circular socket indicator per slot)
+            from src.rpg.equipment_update import build_affix_socket_lines
+            lines.extend(build_affix_socket_lines(item, font=self.font_sm, wrap_width=300))
 
             # Set Membership & Torchlight 2 Tiered Milestones
             from src.rpg.equipment_update import build_set_tooltip_lines

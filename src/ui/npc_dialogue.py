@@ -753,6 +753,10 @@ class NPCDialogueWindow:
                     for sl in wrap_text_lines(f"Special: {reg.get('special') or armor.get('special')}", self.font_sm, 300):
                         lines.append((sl, (100, 240, 240), self.font_sm))
 
+            # Affix Sockets (Clean ARPG circular socket indicator per slot)
+            from src.rpg.equipment_update import build_affix_socket_lines
+            lines.extend(build_affix_socket_lines(iid, font=self.font_sm, wrap_width=300))
+
             desc = reg.get("desc") or armor.get("desc")
             if not desc or str(desc).strip() == "":
                 desc = f"A fine {rarity.title()} item radiating elemental potency."
@@ -788,3 +792,5 @@ class NPCDialogueWindow:
         for s in rendered_surfs:
             target_surf.blit(s, (tx + 10, cur_y))
             cur_y += s.get_height() + 3
+
+        return lines
