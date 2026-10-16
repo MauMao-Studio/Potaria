@@ -328,6 +328,101 @@ except Exception:
     pass
 
 
+def get_item_equipment_slot(item):
+    """
+    Returns the designated equipment slot (SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_ACCESSORY, SLOT_WEAPON)
+    for an item, or None if the item is not equippable gear.
+    """
+    if not item:
+        return None
+    raw_id = getattr(item, "item_id", item if isinstance(item, str) else "")
+    from src.ui.inventory import ITEM_ALIASES
+    raw_id = ITEM_ALIASES.get(raw_id, raw_id)
+    data = getattr(item, "data", {}) if hasattr(item, "data") else {}
+    if not isinstance(data, dict):
+        data = {}
+
+    # 1. Direct slot attribute or dict entry
+    slot = getattr(item, "slot", None) or data.get("slot")
+    if slot in (SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_ACCESSORY, SLOT_WEAPON):
+        return slot
+
+    # 2. Check ARMOR_DATA
+    if raw_id in ARMOR_DATA:
+        s = ARMOR_DATA[raw_id].get("slot")
+        if s in (SLOT_HEAD, SLOT_CHEST, SLOT_LEGS, SLOT_ACCESSORY, SLOT_WEAPON):
+            return s
+
+    # 3. Fallback to ITEM_REGISTRY if data is missing
+    if not data and raw_id:
+        from src.ui.inventory import ITEM_REGISTRY
+        data = ITEM_REGISTRY.get(raw_id, {})
+
+    cat = data.get("cat") or data.get("category", "")
+    if cat in ("armor_head", "head"):
+        return SLOT_HEAD
+    if cat in ("armor_chest", "chest"):
+        return SLOT_CHEST
+    if cat in ("armor_legs", "legs"):
+        return SLOT_LEGS
+    if cat in ("accessory",):
+        return SLOT_ACCESSORY
+    if cat in ("weapon",):
+        return SLOT_WEAPON
+
+    return None
+
+
+def get_equipped_item_for_slot(player, slot):
+    """
+    Retrieves the currently equipped item or ItemStack in the given slot for the player.
+    """
+    if not player or not hasattr(player, "equipment") or not player.equipment:
+        return None
+    eq = player.equipment
+    val = None
+    if slot == SLOT_WEAPON:
+        val = (getattr(eq, "active_weapon_item", None) or 
+               eq.slots.get(SLOT_WEAPON) or 
+               getattr(eq, "active_weapon_id", None))
+    else:
+        val = eq.slots.get(slot)
+
+    if not val:
+        return None
+    if isinstance(val, str):
+        from src.ui.inventory import ItemStack
+        return ItemStack(val, 1)
+    return val
+
+
+def is_item_already_equipped(item, player):
+    """
+    Returns True if the item is currently equipped by the player (in paperdoll slots or active weapon).
+    """
+    if not player or not hasattr(player, "equipment") or not player.equipment or not item:
+        return False
+    eq = player.equipment
+    if item in eq.slots.values():
+        return True
+    item_id = getattr(item, "item_id", item if isinstance(item, str) else None)
+    if item_id:
+        for s_val in eq.slots.values():
+            if s_val is not None:
+                s_id = getattr(s_val, "item_id", s_val if isinstance(s_val, str) else None)
+                if s_id and s_id == item_id:
+                    return True
+        active_wpn = getattr(eq, "active_weapon_item", None)
+        if active_wpn is not None and item is active_wpn:
+            return True
+        active_wpn_id = getattr(eq, "active_weapon_id", None) or getattr(active_wpn, "item_id", None)
+        if active_wpn_id and active_wpn_id == item_id:
+            return True
+    if getattr(item, "is_equipped", False):
+        return True
+    return False
+
+
 class Equipment:
     def __init__(self):
         self.slots = {

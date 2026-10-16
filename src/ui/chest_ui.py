@@ -11,6 +11,7 @@ from src.constants import (
     RARITY_COLORS, RARITY_COMMON
 )
 from src.ui.inventory import ItemStack, ITEM_REGISTRY, ITEM_ALIASES
+from src.rpg.equipment import get_item_equipment_slot, get_equipped_item_for_slot, is_item_already_equipped
 
 CHEST_SLOT_SIZE = 38
 CHEST_SLOT_PAD = 4
@@ -167,7 +168,7 @@ class ChestStorageWindow:
 
         return True
 
-    def render(self, target_surf, inventory, mouse_x, mouse_y, render_dragged=True, player=None):
+    def render(self, target_surf, inventory, mouse_x, mouse_y, render_dragged=True, player=None, character_panel=None):
         if not self.is_open or not self.active_chest:
             return
 
@@ -270,7 +271,7 @@ class ChestStorageWindow:
         # Tooltip for hovered item
         if hovered_item:
             p = player if player is not None else (getattr(inventory, "player", None) if inventory else None)
-            self.render_tooltip(target_surf, hovered_item, mouse_x, mouse_y, player=p)
+            self.render_tooltip(target_surf, hovered_item, mouse_x, mouse_y, player=p, character_panel=character_panel)
 
         # Foreground Dragged Item (ensures dragged items appear on top of the chest panel)
         if render_dragged and inventory and getattr(inventory, "held_item", None):
@@ -282,17 +283,19 @@ class ChestStorageWindow:
                 cnt_txt = self.font_drag.render(str(held.count), True, (255, 255, 255))
                 target_surf.blit(cnt_txt, (mouse_x + 4, mouse_y + 4))
 
-    def render_tooltip(self, target_surf, item, mx, my, player=None):
-        """Renders rich item tooltip for chest slots."""
-        if isinstance(item, (int, float)) and not isinstance(my, (int, float)):
-            item, mx, my = my, item, mx
+    def _build_chest_tooltip_lines(self, item, player=None, is_equipped=False):
         if not item:
             return []
+        if isinstance(item, str):
+            item = ItemStack(item, 1)
         data = item.data if hasattr(item, "data") else {}
         name = data.get("name", getattr(item, "item_id", "Item"))
         rarity = str(data.get("rarity", "common")).lower()
         r_color = RARITY_COLORS.get(rarity, (220, 220, 220))
-        lines = [(name, r_color, self.font_title)]
+        lines = []
+        if is_equipped:
+            lines.append(("[ CURRENTLY EQUIPPED ]", COLOR_GOLD, self.font_title))
+        lines.append((name, r_color, self.font_title))
         is_compact = getattr(self, "tooltip_mode", "detailed") == "compact"
         cat = data.get("cat", "item").replace("_", " ").title()
         lines.append((f"[{rarity.upper()} {cat.upper()}]", r_color, self.font_sm))
@@ -323,13 +326,11 @@ class ChestStorageWindow:
             if getattr(item, "is_broken", False):
                 lines.append(("[BROKEN] Requires 1 Gold Coin repair at Mystic Trader!", (255, 70, 70), self.font_sm))
 
-            # Rolled Base Stats indicator
             base_rolls = getattr(item, "base_rolls", None)
             if base_rolls:
                 roll_parts = [f"+{v} {k.upper()}" for k, v in base_rolls.items()]
                 lines.append((f"Rolled Base Stats: {', '.join(roll_parts)}", (255, 230, 140), self.font_sm))
 
-            # Special Tags
             item_tags = getattr(item, "tags", None) or data.get("tags", [])
             if item_tags:
                 from src.rpg.equipment_update import TAG_REGISTRY
@@ -369,7 +370,6 @@ class ChestStorageWindow:
                 for al in wrap_text_lines(f"★ {aff}: {desc}", self.font_sm, 300):
                     lines.append((al, (255, 230, 90), self.font_sm))
 
-            # Set Membership & Torchlight 2 Tiered Milestones
             from src.rpg.equipment_update import build_set_tooltip_lines
             raw_id = getattr(item, "item_id", item if isinstance(item, str) else "")
             set_lines = build_set_tooltip_lines(raw_id, player=player, font=self.font_sm, wrap_width=300)
@@ -380,16 +380,15 @@ class ChestStorageWindow:
                 for dl in wrap_text_lines(desc, self.font_sm, 300):
                     lines.append((dl, (200, 210, 225), self.font_sm))
 
-        content_w = max(self.font_sm.size(text)[0] for text, _, _ in lines)
+        return lines
+
+    def _measure_chest_tooltip(self, lines):
+        content_w = max((self.font_sm.size(text)[0] for text, _, _ in lines), default=140)
         tw = max(160, min(330, content_w + 24))
         th = sum(16 for _ in lines) + 12
-        tx = min(SCREEN_WIDTH - tw - 10, max(10, mx + 14))
-        ty = my + 14
-        if ty + th > SCREEN_HEIGHT - 10:
-            ty = max(10, my - th - 8)
-        if ty < 10:
-            ty = 10
+        return tw, th
 
+    def _draw_chest_card(self, target_surf, tx, ty, tw, th, lines):
         bg_rect = pygame.Rect(tx, ty, tw, th)
         t_surf = pygame.Surface((tw, th), pygame.SRCALPHA)
         t_surf.fill((16, 20, 32, 240))
@@ -401,4 +400,61 @@ class ChestStorageWindow:
             rendered = font.render(text, True, col)
             target_surf.blit(rendered, (tx + 10, cur_y))
             cur_y += rendered.get_height() + 2
-        return lines
+
+    def render_tooltip(self, target_surf, item, mx, my, player=None, character_panel=None):
+        """Renders rich item tooltip for chest slots with side-by-side comparison if character panel is open."""
+        if isinstance(item, (int, float)) and not isinstance(my, (int, float)):
+            item, mx, my = my, item, mx
+        if not item:
+            return []
+
+        # Check side-by-side comparison
+        is_comparison = False
+        equipped_item = None
+        if character_panel and getattr(character_panel, "is_open", False) and player:
+            slot = get_item_equipment_slot(item)
+            if slot and not is_item_already_equipped(item, player):
+                equipped_item = get_equipped_item_for_slot(player, slot)
+                if equipped_item is not None and not is_item_already_equipped(item, player):
+                    if item is not equipped_item:
+                        is_comparison = True
+
+        if is_comparison and equipped_item:
+            lines1 = self._build_chest_tooltip_lines(item, player=player, is_equipped=False)
+            lines2 = self._build_chest_tooltip_lines(equipped_item, player=player, is_equipped=True)
+            tw1, th1 = self._measure_chest_tooltip(lines1)
+            tw2, th2 = self._measure_chest_tooltip(lines2)
+
+            gap = 12
+            total_w = tw1 + gap + tw2
+            total_h = max(th1, th2)
+
+            if mx + 16 + total_w <= SCREEN_WIDTH - 10:
+                tx1 = mx + 16
+            elif mx - 16 - total_w >= 10:
+                tx1 = mx - 16 - total_w
+            else:
+                tx1 = max(10, min(SCREEN_WIDTH - total_w - 10, mx + 16))
+            tx2 = tx1 + tw1 + gap
+
+            ty = my + 14
+            if ty + total_h > SCREEN_HEIGHT - 10:
+                ty = max(10, my - total_h - 8)
+            if ty < 10:
+                ty = 10
+
+            self._draw_chest_card(target_surf, tx1, ty, tw1, th1, lines1)
+            self._draw_chest_card(target_surf, tx2, ty, tw2, th2, lines2)
+            return lines1 + lines2
+        else:
+            lines = self._build_chest_tooltip_lines(item, player=player, is_equipped=False)
+            tw, th = self._measure_chest_tooltip(lines)
+            tx = min(SCREEN_WIDTH - tw - 10, max(10, mx + 14))
+            ty = my + 14
+            if ty + th > SCREEN_HEIGHT - 10:
+                ty = max(10, my - th - 8)
+            if ty < 10:
+                ty = 10
+
+            self._draw_chest_card(target_surf, tx, ty, tw, th, lines)
+            return lines

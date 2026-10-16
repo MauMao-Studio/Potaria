@@ -87,6 +87,7 @@ ITEM_ALIASES = {
     "dirt": "dirt_block",
     "tile_wood": "wood",
     "arrow": "wooden_arrow",
+    "wooden_bow": "wood_bow",
     "iron_sword": "iron_broadsword",
     "star": "fallen_star",
     "falling_star": "fallen_star",
@@ -1407,7 +1408,7 @@ ITEM_REGISTRY = {
     "mashed_potato": {
         "name": "Mashed Potato Meal", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 60, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Freshly harvested tubers boiled and mashed with churned carabao butter and sweet cream until velvety smooth.",
+        "desc": "Boiled potatoes mashed with carabao butter, cream, and salt.",
         "lore": "",
         "buff": {"category": "defense", "name": "Creamy Tuber Armor", "duration": 180, "stats": {"def": 3}},
         "effects": ["+3 Flat Defense (3m)"],
@@ -1416,7 +1417,7 @@ ITEM_REGISTRY = {
     "golden_fry": {
         "name": "Golden French Fry", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 100, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Crisp potato batons double-fried to a golden crunch and dusted with sea salt and shimmering edible gold flakes.",
+        "desc": "French-fried potato strips seasoned with sea salt and gold flakes.",
         "lore": "",
         "buff": {"category": "offense", "name": "Auric Crisp Haste", "duration": 180, "stats": {"atk_speed_mult": 0.05}},
         "effects": ["+5% Attack Speed (3m)"],
@@ -1568,7 +1569,7 @@ ITEM_REGISTRY = {
     "cooked_bangus": {
         "name": "Inihaw na Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 65, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Whole milkfish stuffed with fresh diced tomatoes and sweet red onions, wrapped in banana leaves and slow-grilled over coconut husk embers.",
+        "desc": "Grilled milkfish stuffed with tomatoes, onions, and wrapped in banana leaves.",
         "lore": "",
         "buff": {"category": "offense", "name": "Charred Belly Focus", "duration": 180, "stats": {"damage_mult": 0.06, "ranged_damage_mult": 0.06}},
         "effects": ["+6% Ranged Damage (3m)"],
@@ -1577,7 +1578,7 @@ ITEM_REGISTRY = {
     "cooked_tilapia": {
         "name": "Pritong Tilapia", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 50, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Scored whole freshwater tilapia seasoned with coarse sea salt and flash-fried in boiling oil until the skin is blistered and crisp.",
+        "desc": "Whole tilapia seasoned with sea salt and pan-fried until crisp.",
         "lore": "",
         "buff": {"category": "offense", "name": "River Crisp Quickness", "duration": 120, "stats": {"atk_speed_mult": 0.05}},
         "effects": ["+5% Attack Speed (2m)"],
@@ -1586,7 +1587,7 @@ ITEM_REGISTRY = {
     "cooked_galunggong": {
         "name": "Pritong Galunggong", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 45, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Deep-fried round scad fried to a dark golden crunch, paired with a spiced vinegar dip to highlight its rich oily meat.",
+        "desc": "Pan-fried round scad served with a spiced vinegar dip.",
         "lore": "",
         "buff": {"category": "mobility", "name": "Open Ocean Dart", "duration": 120, "stats": {"speed_mult": 0.08}},
         "effects": ["+8% Movement Speed (2m)"],
@@ -1595,7 +1596,7 @@ ITEM_REGISTRY = {
     "cooked_maya_maya": {
         "name": "Sinigang na Maya-Maya", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 80, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Crimson red snapper simmered with native string beans and tomatoes in an authentic sour tamarind and tomato broth.",
+        "desc": "Red snapper simmered with tomatoes and string beans in sour tamarind broth.",
         "lore": "",
         "buff": {"category": "defense", "name": "Red Snapper Resilience", "duration": 180, "stats": {"dmg_reduction": 0.04}},
         "effects": ["+4% Damage Reduction (3m)"],
@@ -1604,7 +1605,7 @@ ITEM_REGISTRY = {
     "cooked_tanigue": {
         "name": "Inihaw na Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 90, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Thick Spanish mackerel steaks seasoned with sea salt, basted with calamansi juice, and flame-grilled over glowing coals.",
+        "desc": "Grilled Spanish mackerel steaks basted with calamansi and seasoned with salt.",
         "lore": "",
         "buff": {"category": "mobility", "name": "Pelagic Swimmer Glide", "duration": 120, "stats": {"speed_mult": 0.08}},
         "effects": ["+8% Movement Speed (2m)"],
@@ -1613,7 +1614,7 @@ ITEM_REGISTRY = {
     "cooked_tambakol": {
         "name": "Inihaw na Tambakol", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 85, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Dense yellowfin tuna steaks brushed with sweet soy and calamansi marinade, seared rapidly over white-hot embers.",
+        "desc": "Seared tuna steaks marinated in soy sauce, calamansi, and black pepper.",
         "lore": "",
         "buff": {"category": "offense", "name": "Yellowfin Cleave", "duration": 180, "stats": {"crit_dmg_mult": 0.08}},
         "effects": ["+8% Critical Damage (3m)"],
@@ -1622,7 +1623,7 @@ ITEM_REGISTRY = {
     "cooked_lapu_lapu": {
         "name": "Pasingaw na Lapu-Lapu", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
         "rarity": RARITY_EPIC,
-        "desc": "Whole spotted coral grouper delicately steamed with julienned ginger, spring scallions, sesame oil, and light savory soy broth.",
+        "desc": "Steamed grouper topped with ginger, scallions, and light soy sauce.",
         "lore": "",
         "buff": {"category": "defense", "name": "Reef Monarch Bulwark", "duration": 240, "stats": {"def": 3, "knockback_res": 0.05}},
         "effects": ["+3 Flat Defense (4m)", "+5% Knockback Resistance (4m)"],
@@ -1631,7 +1632,7 @@ ITEM_REGISTRY = {
     "cooked_hito": {
         "name": "Adobong Hito", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 70, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Freshwater catfish chunks simmered gently in coconut vinegar, garlic cloves, bay leaves, and cracked black pepper until buttery and glazed.",
+        "desc": "Catfish braised in vinegar, soy sauce, garlic, and bay leaves.",
         "lore": "",
         "buff": {"category": "offense", "name": "Marsh Predator Strike", "duration": 180, "stats": {"damage_mult": 0.06}},
         "effects": ["+6% Physical Damage (3m)"],
@@ -1640,7 +1641,7 @@ ITEM_REGISTRY = {
     "cooked_dilis": {
         "name": "Pritong Dilis", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Sun-dried silver anchovies pan-fried with caramelized brown sugar and toasted chili flakes for an addictive sweet-spicy crunch.",
+        "desc": "Crispy pan-fried dried anchovies glazed with brown sugar and chili flakes.",
         "lore": "",
         "buff": {"category": "resource", "name": "Anchovy Spark Sustain", "duration": 120, "stats": {"mp_regen": 1.0}},
         "effects": ["+1 MP/sec Regeneration (2m)"],
@@ -1649,7 +1650,7 @@ ITEM_REGISTRY = {
     "cooked_dalagang_bukid": {
         "name": "Pritong Dalagang Bukid", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 60, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Vibrant yellowtail fusilier dredged lightly in spiced rice flour and pan-fried until its red-gold skin turns crackling crisp.",
+        "desc": "Pan-fried yellowtail fusilier dredged in flour until crispy.",
         "lore": "",
         "buff": {"category": "offense", "name": "Crimson Maiden Aim", "duration": 180, "stats": {"crit_chance": 0.03}},
         "effects": ["+3% Critical Chance (3m)"],
@@ -1851,14 +1852,14 @@ ITEM_REGISTRY = {
     "coconut_milk": {
         "name": "Gata Coconut Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 20, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Rich, velvety cream pressed from freshly grated mature coconut meat.",
+        "desc": "Cream pressed from grated mature coconut meat.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "peanut_butter": {
         "name": "Ground Peanut Butter", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 22, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Savory roasted peanut paste that thickens luscious Kare-Kare sauce.",
+        "desc": "Roasted ground peanut paste for cooking and sauces.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
@@ -1879,28 +1880,28 @@ ITEM_REGISTRY = {
     "pancit_noodles": {
         "name": "Bihon Rice Noodles", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Delicate sun-dried translucent rice noodles. Symbolizes long life and health.",
+        "desc": "Thin dried rice noodles for stir-frying.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "shaved_ice": {
         "name": "Yelo Shaved Ice", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Fine snowy ice flakes scooped to create the ultimate tropical cooling treat.",
+        "desc": "Crushed ice flakes for desserts.",
         "lore": "",
         "special": "Dessert Ingredient"
     },
     "condensed_milk": {
         "name": "Sweet Condensed Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Sweet, golden thick milk syrup poured lavishly over shaved ice desserts.",
+        "desc": "Sweet condensed milk syrup for desserts.",
         "lore": "",
         "special": "Dessert Ingredient"
     },
     "ube_halaya": {
         "name": "Ube Halaya Jam", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Decadent purple yam jam simmered slowly with butter and milk until thick and glossy.",
+        "desc": "Purple yam jam cooked with butter and milk until thick.",
         "lore": "",
         "special": "Sweet Yam Delicacy"
     },
@@ -1911,7 +1912,7 @@ ITEM_REGISTRY = {
     "chicken_adobo": {
         "name": "Classic Chicken Adobo", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 90, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Native chicken cuts slowly braised in cane vinegar, dark soy sauce, crushed garlic, whole black peppercorns, and bay leaves until savory and tender.",
+        "desc": "Chicken stewed in vinegar, soy sauce, garlic, black peppercorns, and bay leaves.",
         "lore": "",
         "buff": {"category": "offense", "name": "Adobo Savory Vigor", "duration": 180, "stats": {"damage_mult": 0.06}},
         "effects": ["+6% Physical Damage (3m)"],
@@ -1920,7 +1921,7 @@ ITEM_REGISTRY = {
     "pork_adobo": {
         "name": "Rich Pork Adobo", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 95, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Succulent pork belly braised gently in aged sugarcane vinegar and aromatic garlic, producing a rich, unctuous sauce that intensifies overnight.",
+        "desc": "Pork belly braised in vinegar, soy sauce, garlic, and black peppercorns.",
         "lore": "",
         "buff": {"category": "offense", "name": "Braised Pork Strength", "duration": 180, "stats": {"damage_mult": 0.08, "speed_mult": -0.03}},
         "effects": ["+8% Physical Damage (3m)", "-3% Movement Speed (3m)"],
@@ -1929,7 +1930,7 @@ ITEM_REGISTRY = {
     "sinigang": {
         "name": "Sinigang na Baboy", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 105, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Tender pork ribs simmered in an invigorating crushed green tamarind broth with crisp water spinach, radish, and finger peppers for a sour, cleansing finish.",
+        "desc": "Sour tamarind soup with pork ribs, kangkong, radish, and green chili.",
         "lore": "",
         "buff": {"category": "defense", "name": "Tamarind Broth Fortitude", "duration": 180, "stats": {"dmg_reduction": 0.04}},
         "effects": ["+4% Damage Reduction (3m)"],
@@ -1938,7 +1939,7 @@ ITEM_REGISTRY = {
     "kare_kare": {
         "name": "Fiesta Kare-Kare", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 115, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Rich, velvety peanut and toasted rice stew colored with annatto oil, loaded with tender braised beef shank, banana blossom, and long beans.",
+        "desc": "Peanut and toasted rice stew with beef shank, eggplant, and string beans.",
         "lore": "",
         "buff": {"category": "defense", "name": "Peanut Annatto Aegis", "duration": 240, "stats": {"def": 3}},
         "effects": ["+3 Flat Defense (4m)"],
@@ -1947,7 +1948,7 @@ ITEM_REGISTRY = {
     "bulalo": {
         "name": "Batangas Bulalo", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 120, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Slow-simmered beef shank and bone marrow consommé enriched with sweet native corn and cabbage, releasing nourishing melted gelatin and rich aromatics.",
+        "desc": "Beef shank and bone marrow soup with sweet corn and cabbage.",
         "lore": "",
         "buff": {"category": "resource", "name": "Marrow Bone Vitality", "duration": 240, "stats": {"hp_regen": 1.0}},
         "effects": ["+1 HP/sec Regeneration (4m)"],
@@ -1956,7 +1957,7 @@ ITEM_REGISTRY = {
     "tinola": {
         "name": "Tinolang Manok", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 85, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Fragrant clear chicken soup infused with young crushed ginger root, lemongrass, and sweet green papaya that imparts a gentle, invigorating warmth.",
+        "desc": "Chicken ginger broth soup with green papaya and chili leaves.",
         "lore": "",
         "buff": {"category": "mobility", "name": "Warming Ginger Fleetness", "duration": 180, "stats": {"speed_mult": 0.08}},
         "effects": ["+8% Movement Speed (3m)"],
@@ -1965,7 +1966,7 @@ ITEM_REGISTRY = {
     "lechon": {
         "name": "Crispy Lechon Kawali", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Prime seasoned pork belly simmered until tender, then deep-fried until the rind blisters into an airy, shattering crisp encasing succulent meat.",
+        "desc": "Deep-fried pork belly boiled tender then fried until crispy.",
         "lore": "",
         "buff": {"category": "offense", "name": "Crackling Golden Fury", "duration": 180, "stats": {"damage_mult": 0.08}},
         "effects": ["+8% Physical Damage (3m)"],
@@ -1974,7 +1975,7 @@ ITEM_REGISTRY = {
     "pancit_bihon": {
         "name": "Pancit Guisado", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 80, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Thin rice vermicelli stir-fried in a searing wok with julienned native vegetables, tender shredded poultry, and a spritz of tart calamansi juice.",
+        "desc": "Stir-fried rice noodles with chicken, vegetables, and calamansi.",
         "lore": "",
         "buff": {"category": "offense", "name": "Stir-Fried Cadence", "duration": 180, "stats": {"atk_speed_mult": 0.05}},
         "effects": ["+5% Attack Speed (3m)"],
@@ -1983,7 +1984,7 @@ ITEM_REGISTRY = {
     "arroz_caldo": {
         "name": "Arroz Caldo with Egg", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 75, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Thick, comforting glutinous rice porridge infused with crushed ginger and aromatic toasted garlic bits, topped with a soft-boiled farm egg.",
+        "desc": "Warm rice porridge cooked with chicken, ginger, toasted garlic, and a boiled egg.",
         "lore": "",
         "buff": {"category": "resource", "name": "Ginger Rice Serenity", "duration": 180, "stats": {"mp_regen": 1.0}},
         "effects": ["+1 MP/sec Regeneration (3m)"],
@@ -1992,7 +1993,7 @@ ITEM_REGISTRY = {
     "halo_halo": {
         "name": "Special Halo-Halo", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 90, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Layered tropical parfait of shaved mountain ice, purple ube halaya, sweet preserves, and silky leche flan crowned with evaporated carabao cream.",
+        "desc": "Shaved ice dessert layered with ube halaya, sweet preserves, and evaporated milk.",
         "lore": "",
         "buff": {"category": "mobility", "name": "Sweet Glacier Spring", "duration": 180, "stats": {"speed_mult": 0.08, "jump_mult": 0.08}},
         "effects": ["+8% Movement Speed (3m)", "+8% Jump Force (3m)"],
@@ -2001,7 +2002,7 @@ ITEM_REGISTRY = {
     "kaldereta": {
         "name": "Kalderetang Kambing", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Mountain goat meat stewed until fork-tender in spiced tomato paste, rich liver spread, sweet bell peppers, and chili pods for deep spicy complexity.",
+        "desc": "Spicy goat meat stew in rich tomato sauce, liver spread, and bell peppers.",
         "lore": "",
         "buff": {"category": "offense", "name": "Highland Spice Ferocity", "duration": 180, "stats": {"crit_dmg_mult": 0.08}},
         "effects": ["+8% Critical Damage (3m)"],
@@ -2010,7 +2011,7 @@ ITEM_REGISTRY = {
     "balut": {
         "name": "Balut with Rock Salt", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 65, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Steamed incubated duck egg sipped piping hot from the shell with a dash of spiced cane vinegar and crushed sea salt crystals.",
+        "desc": "Steamed fertilized duck egg seasoned with salt and spiced vinegar.",
         "lore": "",
         "buff": {"category": "utility", "name": "Broodborn Steadfastness", "duration": 180, "stats": {"knockback_res": 0.08}},
         "effects": ["+8% Knockback Resistance (3m)"],
@@ -2019,7 +2020,7 @@ ITEM_REGISTRY = {
     "itlog_na_maalat": {
         "name": "Itlog na Maalat", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 45, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Traditional cured duck egg encased in clay and brine, yielding a rich, buttery crimson yolk served alongside diced sun-ripened tomatoes.",
+        "desc": "Brined salted duck egg served with sliced fresh tomatoes.",
         "lore": "",
         "buff": {"category": "offense", "name": "Cured Yolk Precision", "duration": 120, "stats": {"crit_chance": 0.03}},
         "effects": ["+3% Critical Chance (2m)"],
@@ -2028,7 +2029,7 @@ ITEM_REGISTRY = {
     "sinangag": {
         "name": "Garlic Sinangag Rice", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 50, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Day-old steamed rice tossed in a hot pan with crackling golden garlic slivers and a touch of sea salt, radiating a fragrant toasted bouquet.",
+        "desc": "Fried rice sauteed with toasted garlic and sea salt.",
         "lore": "",
         "buff": {"category": "offense", "name": "Toasted Garlic Rhythm", "duration": 120, "stats": {"atk_speed_mult": 0.05}},
         "effects": ["+5% Attack Speed (2m)"],
@@ -2037,7 +2038,7 @@ ITEM_REGISTRY = {
     "daing_na_bangus": {
         "name": "Daing na Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 75, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Butterflied milkfish steeped in native garlic, crushed black pepper, and cane vinegar, then sun-dried and pan-fried until golden and crunchy.",
+        "desc": "Marinated butterflied milkfish in vinegar and garlic, pan-fried until crisp.",
         "lore": "",
         "buff": {"category": "offense", "name": "Crisp Fin Focus", "duration": 180, "stats": {"damage_mult": 0.06, "ranged_damage_mult": 0.06}},
         "effects": ["+6% Ranged Damage (3m)"],
@@ -2046,7 +2047,7 @@ ITEM_REGISTRY = {
     "sinigang_na_bangus": {
         "name": "Sinigang na Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 100, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Plump milkfish belly simmered gently with tender swamp cabbage and sweet long peppers in a tart crushed tamarind broth.",
+        "desc": "Sour tamarind soup with milkfish belly, kangkong, and long green peppers.",
         "lore": "",
         "buff": {"category": "defense", "name": "Tamarind Ward of Snappers", "duration": 180, "stats": {"magic_res": 0.08}},
         "effects": ["+8% Magic Resistance (3m)"],
@@ -2055,7 +2056,7 @@ ITEM_REGISTRY = {
     "ginataang_tilapia": {
         "name": "Ginataang Tilapia", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 105, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Fresh freshwater tilapia gently braised in thick pressed coconut cream with shredded ginger, garlic, and fresh leafy greens.",
+        "desc": "Tilapia simmered in rich coconut milk with ginger and leafy greens.",
         "lore": "",
         "buff": {"category": "resource", "name": "Coconut Cream Flow", "duration": 180, "stats": {"mana_cost_reduction": 0.08}},
         "effects": ["-8% Mana Cost (3m)"],
@@ -2064,7 +2065,7 @@ ITEM_REGISTRY = {
     "kinilaw_na_tanigue": {
         "name": "Kinilaw na Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
         "rarity": RARITY_EPIC,
-        "desc": "Pristine raw Spanish mackerel cubes cured cold in fermented coconut sap vinegar, infused with fresh calamansi, slivered ginger, and fiery chili.",
+        "desc": "Raw Spanish mackerel cured in vinegar and calamansi with ginger, onions, and chili.",
         "lore": "",
         "buff": {"category": "mobility", "name": "Reef Runner Surge", "duration": 180, "stats": {"speed_mult": 0.12}},
         "effects": ["+12% Movement Speed (3m)"],
@@ -2424,7 +2425,7 @@ ITEM_REGISTRY = {
     "hearty_root_stew": {
         "name": "Hearty Root Stew", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 60,
         "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
-        "desc": "Rustic cauldron stew of cubed russet potatoes, aromatic cavern mushrooms, and wild root vegetables simmered in herbal broth.",
+        "desc": "Thick stew cooked with diced potatoes, mushrooms, and root vegetables.",
         "lore": "",
         "buff": {"category": "resource", "name": "Earthen Root Vitality", "duration": 180, "stats": {"hp_regen": 1.0}},
         "effects": ["+1 HP/sec Regeneration (3m)"], "special": "[RESOURCE] +1 HP/sec Regen (3m)"
@@ -2432,7 +2433,7 @@ ITEM_REGISTRY = {
     "glazed_golden_tuber": {
         "name": "Glazed Golden Tuber", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 100, "mp": 30,
         "max_stack": 99, "tile": None, "rarity": RARITY_RARE,
-        "desc": "Heirloom golden tuber roasted slowly with clover nectar and wild honeycomb until glazed with a sweet, sticky crust.",
+        "desc": "Roasted golden potato glazed with honey and nectar.",
         "lore": "",
         "buff": {"category": "resource", "name": "Nectar Bloom Flow", "duration": 240, "stats": {"mana_cost_reduction": 0.08}},
         "effects": ["-8% Mana Cost (4m)"], "special": "[RESOURCE] -8% Mana Cost (4m)"
@@ -2440,7 +2441,7 @@ ITEM_REGISTRY = {
     "herbal_salve": {
         "name": "Herbal Salve", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35,
         "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
-        "desc": "Cool botanical poultice blended from crushed tuber pulp, wild mint, and soothing tree sap to draw out inflammation.",
+        "desc": "Soothing paste made from mashed potato, wild mint, and tree sap.",
         "lore": "",
         "cleanse": True,
         "effects": ["Cleanses 1 debuff"], "special": "[UTILITY] Instant Debuff Cleanse"
@@ -2462,7 +2463,7 @@ ITEM_REGISTRY = {
     "smoked_spud_jerky": {
         "name": "Smoked Spud Jerky", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 30,
         "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
-        "desc": "Thin slices of spiced tuber cured over fragrant hickory smoke and seasoned with coarse sea salt for an enduring trail provision.",
+        "desc": "Thin slices of potato smoked with wood and seasoned with salt.",
         "lore": "",
         "buff": {"category": "mobility", "name": "Trailbound Stride", "duration": 120, "stats": {"speed_mult": 0.08}},
         "effects": ["+8% Movement Speed (2m)"], "special": "[MOBILITY] +8% Movement Speed (2m)"
@@ -2470,7 +2471,7 @@ ITEM_REGISTRY = {
     "gilded_russet": {
         "name": "Gilded Russet", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 140, "mp": 50,
         "max_stack": 99, "tile": None, "rarity": RARITY_EPIC,
-        "desc": "Supreme royal potato roasted in a hearth oven, drizzled with gold-infused truffle butter, and dusted with fragrant herbal salt.",
+        "desc": "Baked potato seasoned with butter, gold flakes, and herbs.",
         "lore": "",
         "buff": {"category": "defense", "name": "Imperial Russet Carapace", "duration": 240, "stats": {"dmg_reduction": 0.04}},
         "effects": ["+4% Damage Reduction (4m)"], "special": "[DEFENSE] +4% Damage Reduction (4m)"
@@ -2526,7 +2527,7 @@ ITEM_REGISTRY = {
     "potato_bread": {
         "name": "Oven-Baked Potato Loaf", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 45,
         "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
-        "desc": "Crusty golden bread baked with finely milled potato flour and yeast, yielding a dense, steaming loaf that retains hearth warmth.",
+        "desc": "Loaf of crusty bread baked with potato flour.",
         "lore": "",
         "buff": {"category": "resource", "name": "Hearthwarm Sustenance", "duration": 120, "stats": {"hp_regen": 1.0}},
         "effects": ["+1 HP/sec Regeneration (2m)"], "special": "[RESOURCE] +1 HP/sec Regen (2m)"
@@ -2534,7 +2535,7 @@ ITEM_REGISTRY = {
     "sweet_tuber_pie": {
         "name": "Sweet Tuber Pie", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 70, "mp": 10,
         "max_stack": 99, "tile": None, "rarity": RARITY_COMMON,
-        "desc": "Flaky butter pastry shell filled with spiced mashed sweet tubers, brown cane sugar, cinnamon bark, and fresh dairy cream.",
+        "desc": "Pastry pie baked with spiced mashed sweet tubers, sugar, and cream.",
         "lore": "",
         "buff": {"category": "offense", "name": "Candied Sweet Focus", "duration": 180, "stats": {"crit_chance": 0.03}},
         "effects": ["+3% Critical Chance (3m)"], "special": "[OFFENSE] +3% Critical Chance (3m)"

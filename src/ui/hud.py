@@ -13,7 +13,8 @@ from src.constants import (
     RARITY_COLORS, RARITY_COMMON, RARITY_EPIC, RARITY_LEGENDARY, RARITY_MYTHIC, RARITY_ANCIENT,
     CAT_TOOL, CAT_WEAPON
 )
-from src.ui.inventory import ITEM_REGISTRY
+from src.ui.inventory import ITEM_REGISTRY, ItemStack
+from src.rpg.equipment import get_item_equipment_slot, get_equipped_item_for_slot, is_item_already_equipped
 from src.rpg.skills import SKILL_DEFINITIONS
 from src.ui.minimap import MiniMap
 
@@ -44,6 +45,7 @@ class HUD:
         self.font = font_semibold(13)
         self.font_sm = font_compact(11)
         self.font_lg = font_bold(16)
+        self.font_bold = font_bold(12)
         self.font_lore = font_regular(12)
 
         # Pre-rendered reticle variants (avoids copying & blending every frame)
@@ -62,8 +64,11 @@ class HUD:
         self._cached_count_surfs = {}
         self._cached_hp_key = None
         self._cached_hp_surf = None
+        self._cached_hp_shadow = None
         self._cached_mp_key = None
         self._cached_mp_surf = None
+        self._last_hovered_slot = None
+        self._last_mouse_pos = (0, 0)
 
         # Chat & Console input state
         self.chat_active = False
@@ -72,7 +77,7 @@ class HUD:
         self.tooltip_mode = "detailed"
         self._hovered_food_buff = None
 
-    def render(self, target_surf, player, inventory, crafting_system, camera, mouse_x, mouse_y, world=None, combat=None, lan_client=None, render_dragged=True, sky=None):
+    def render(self, target_surf, player, inventory, crafting_system, camera, mouse_x, mouse_y, world=None, combat=None, lan_client=None, render_dragged=True, sky=None, character_panel=None, render_tooltips=True):
         # 1. Health & Mana (Top Right)
         self._render_hp_and_mp(target_surf, player)
 
@@ -92,6 +97,8 @@ class HUD:
 
         # 4. Inventory Slots (Hotbar & Backpack)
         hovered_slot = self._render_inventory(target_surf, inventory, mouse_x, mouse_y, player=player)
+        self._last_hovered_slot = hovered_slot if (hovered_slot and hovered_slot.data) else None
+        self._last_mouse_pos = (mouse_x, mouse_y)
 
         # 5. Quick Skill Bar with Cooldown Overlays (Bottom Center)
         self._render_skill_bar(target_surf, player)
@@ -104,8 +111,11 @@ class HUD:
             crafting_system.render(target_surf, mouse_x, mouse_y, self.font)
 
         # 7. Item Tooltip (Rich Rarity, Stats, Description, Special Effects & Lore)
-        if hovered_slot and hovered_slot.data:
-            self._render_tooltip(target_surf, mouse_x, mouse_y, hovered_slot, player=player)
+        # Defer if character_panel is open or render_tooltips is False to guarantee topmost z-order over panels
+        if render_tooltips and not (character_panel and getattr(character_panel, "is_open", False)):
+            if hovered_slot and hovered_slot.data:
+                self._render_tooltip(target_surf, mouse_x, mouse_y, hovered_slot, player=player, character_panel=character_panel)
+                self._last_hovered_slot = None
 
         # 8. Held Dragging Item
         if render_dragged:
@@ -129,6 +139,14 @@ class HUD:
 
         # 10. Reticle & Attack Recharge Gauge & Mining Progress
         self._render_reticle(target_surf, player, camera, mouse_x, mouse_y, inventory=inventory, world=world)
+
+    def render_hovered_tooltip(self, target_surf, mouse_x=None, mouse_y=None, player=None, character_panel=None):
+        """Renders deferred item tooltip in topmost z-order over character and chest panels."""
+        if getattr(self, "_last_hovered_slot", None) and self._last_hovered_slot.data:
+            mx = mouse_x if mouse_x is not None else getattr(self, "_last_mouse_pos", (0, 0))[0]
+            my = mouse_y if mouse_y is not None else getattr(self, "_last_mouse_pos", (0, 0))[1]
+            self._render_tooltip(target_surf, mx, my, self._last_hovered_slot, player=player, character_panel=character_panel)
+            self._last_hovered_slot = None
 
     def render_dragged_item(self, target_surf, inventory, mouse_x, mouse_y):
         """Renders the currently dragged item at the cursor in the foreground."""
@@ -161,14 +179,19 @@ class HUD:
         # Position to the left of the minimap radar so they never overlap (Minimap is at x=1116..1264)
         container_w = 260 # Fixed 10-heart container width prevents horizontal HUD shifting on level-up
         start_x = 840     # SCREEN_WIDTH (1280) - right_margin (180) - container_w (260)
-        start_y = 18
+        start_y = 20
 
-        # Life Label (Cached)
-        hp_key = (player.stats.hp, player.stats.max_hp, player.stats.level)
+        # Life Label (Cached with contrast drop shadow and clamped hp >= 0)
+        hp_val = max(0, int(round(player.stats.hp)))
+        max_hp_val = max(1, int(round(player.stats.max_hp)))
+        hp_key = (hp_val, max_hp_val, player.stats.level)
         if hp_key != self._cached_hp_key:
             self._cached_hp_key = hp_key
-            self._cached_hp_surf = self.font.render(f"Life: {player.stats.hp} / {player.stats.max_hp}  (Lv.{player.stats.level})", True, (255, 90, 90))
-        target_surf.blit(self._cached_hp_surf, (start_x, start_y - 15))
+            text_str = f"Life: {hp_val} / {max_hp_val}  (Lv.{player.stats.level})"
+            self._cached_hp_shadow = self.font.render(text_str, True, (0, 0, 0))
+            self._cached_hp_surf = self.font.render(text_str, True, (255, 100, 100))
+        target_surf.blit(self._cached_hp_shadow, (start_x + 1, start_y - 15))
+        target_surf.blit(self._cached_hp_surf, (start_x, start_y - 16))
 
         rows = (total_hearts + 9) // 10
         for i in range(total_hearts):
@@ -794,14 +817,27 @@ class HUD:
         target_surf.blit(sh, (SCREEN_WIDTH // 2 - txt.get_width() // 2 + 1, by + 14))
         target_surf.blit(txt, (SCREEN_WIDTH // 2 - txt.get_width() // 2, by + 13))
 
-    def _render_tooltip(self, target_surf, mx, my, item, player=None):
-        """Rich Diablo/Torchlight-style item tooltip with rarity tiers, stats, lore, and descriptions."""
-        if not isinstance(mx, (int, float)) and isinstance(item, (int, float)):
-            item, mx, my = mx, my, item
-        if not item or not hasattr(item, "data"):
+    def _get_item_rarity_color(self, item):
+        if isinstance(item, str):
+            data = ITEM_REGISTRY.get(item, {})
+        elif hasattr(item, "data"):
+            data = item.data
+        else:
+            data = {}
+        rarity = data.get("rarity", RARITY_COMMON)
+        return RARITY_COLORS.get(rarity, (220, 220, 220))
+
+    def _build_tooltip_lines(self, item, player=None, is_equipped=False):
+        """Constructs formatted text lines and colors for rich Diablo/Torchlight-style item tooltip."""
+        if not item:
+            return []
+        if isinstance(item, str):
+            item = ItemStack(item, 1)
+        if not hasattr(item, "data"):
             return []
         if player is None:
             player = getattr(item, "player", None)
+
         data = item.data
         name = data.get("name", item.item_id)
         cat = data.get("cat", "item").replace("_", " ").title()
@@ -810,6 +846,11 @@ class HUD:
 
         is_compact = getattr(self, "tooltip_mode", "detailed") == "compact"
         lines = []
+
+        # 0. Equipped Banner (for currently equipped comparison card)
+        if is_equipped:
+            lines.append(("[ CURRENTLY EQUIPPED ]", (255, 215, 0), self.font_bold))
+
         # 1. Item Name in Rarity Color
         lines.append((name, r_color, self.font))
 
@@ -983,21 +1024,19 @@ class HUD:
                 for ll in wrap_text_lines(data["lore"], self.font_lore, 300):
                     lines.append((ll, (240, 205, 120), self.font_lore))
 
-        # Calculate bounding dimensions with bounded max width
+        return lines
+
+    def _measure_tooltip(self, lines):
+        """Calculates surface renderings and bounding box dimensions for a tooltip."""
         rendered_surfs = [fnt.render(text, True, col) for text, col, fnt in lines]
-        content_w = max(s.get_width() for s in rendered_surfs)
+        content_w = max((s.get_width() for s in rendered_surfs), default=140)
         tw = max(160, min(330, content_w + 20))
         th = sum(s.get_height() + 3 for s in rendered_surfs) + 12
+        return rendered_surfs, tw, th
 
-        tx = max(10, min(SCREEN_WIDTH - tw - 12, mx + 16))
-        ty = my + 16
-        if ty + th > SCREEN_HEIGHT - 10:
-            ty = max(10, my - th - 8)
-        if ty < 10:
-            ty = 10
-
+    def _draw_tooltip_box(self, target_surf, tx, ty, tw, th, rendered_surfs, r_color):
+        """Draws background plate, rarity border, and text surfaces for a tooltip card."""
         rect = pygame.Rect(tx, ty, tw, th)
-        # Background plate with rarity-colored border
         pygame.draw.rect(target_surf, (20, 24, 38, 245), rect, border_radius=6)
         pygame.draw.rect(target_surf, r_color, rect, 1, border_radius=6)
 
@@ -1005,7 +1044,78 @@ class HUD:
         for s in rendered_surfs:
             target_surf.blit(s, (tx + 10, cur_y))
             cur_y += s.get_height() + 3
-        return lines
+
+    def _render_tooltip(self, target_surf, mx, my, item, player=None, character_panel=None):
+        """Rich Diablo/Torchlight-style item tooltip with rarity tiers, stats, lore, and descriptions."""
+        if not isinstance(mx, (int, float)) and isinstance(item, (int, float)):
+            item, mx, my = mx, my, item
+        if not item:
+            return []
+        if isinstance(item, str):
+            item = ItemStack(item, 1)
+        if not hasattr(item, "data"):
+            return []
+        if player is None:
+            player = getattr(item, "player", None)
+
+        # Check side-by-side equipment comparison condition ("katabi"):
+        # Hovering an equippable item while Character Info panel is open (Button C)
+        is_comparison = False
+        equipped_item = None
+        if character_panel and getattr(character_panel, "is_open", False) and player:
+            slot = get_item_equipment_slot(item)
+            if slot and not is_item_already_equipped(item, player):
+                equipped_item = get_equipped_item_for_slot(player, slot)
+                if equipped_item is not None and not is_item_already_equipped(item, player):
+                    if item is not equipped_item:
+                        is_comparison = True
+
+        if is_comparison and equipped_item:
+            lines1 = self._build_tooltip_lines(item, player=player, is_equipped=False)
+            lines2 = self._build_tooltip_lines(equipped_item, player=player, is_equipped=True)
+            surfs1, tw1, th1 = self._measure_tooltip(lines1)
+            surfs2, tw2, th2 = self._measure_tooltip(lines2)
+
+            gap = 12
+            total_w = tw1 + gap + tw2
+            total_h = max(th1, th2)
+
+            # Horizontal placement: right of cursor, or flip left if overflowing
+            if mx + 16 + total_w <= SCREEN_WIDTH - 10:
+                tx1 = mx + 16
+            elif mx - 16 - total_w >= 10:
+                tx1 = mx - 16 - total_w
+            else:
+                tx1 = max(10, min(SCREEN_WIDTH - total_w - 10, mx + 16))
+            tx2 = tx1 + tw1 + gap
+
+            # Vertical placement: below cursor, or flip up if overflowing
+            ty = my + 16
+            if ty + total_h > SCREEN_HEIGHT - 10:
+                ty = max(10, my - total_h - 8)
+            if ty < 10:
+                ty = 10
+
+            r1 = self._get_item_rarity_color(item)
+            r2 = self._get_item_rarity_color(equipped_item)
+
+            self._draw_tooltip_box(target_surf, tx1, ty, tw1, th1, surfs1, r1)
+            self._draw_tooltip_box(target_surf, tx2, ty, tw2, th2, surfs2, r2)
+            return lines1 + lines2
+        else:
+            lines = self._build_tooltip_lines(item, player=player, is_equipped=False)
+            surfs, tw, th = self._measure_tooltip(lines)
+
+            tx = max(10, min(SCREEN_WIDTH - tw - 12, mx + 16))
+            ty = my + 16
+            if ty + th > SCREEN_HEIGHT - 10:
+                ty = max(10, my - th - 8)
+            if ty < 10:
+                ty = 10
+
+            r = self._get_item_rarity_color(item)
+            self._draw_tooltip_box(target_surf, tx, ty, tw, th, surfs, r)
+            return lines
 
     def _render_reticle(self, target_surf, player, camera, mouse_x, mouse_y, inventory=None, world=None):
         tx, ty = camera.screen_to_tile(mouse_x, mouse_y)

@@ -3477,6 +3477,16 @@ class PotariaGame:
             self.camera.render_to_world_surf = False
             pygame.transform.scale(world_target, (self.camera.base_width, self.camera.base_height), self.screen)
 
+        # Cinematic Death Transition Pitch-Black Overlay (Blitted to screen before HUD so UI remains crisp & readable)
+        if getattr(self.player, "death_fade_alpha", 0) > 0:
+            alpha = min(255, max(0, int(self.player.death_fade_alpha)))
+            fade_w, fade_h = self.screen.get_size()
+            if not hasattr(self, "_death_fade_surf") or self._death_fade_surf.get_size() != (fade_w, fade_h):
+                self._death_fade_surf = pygame.Surface((fade_w, fade_h))
+                self._death_fade_surf.fill((0, 0, 0))
+            self._death_fade_surf.set_alpha(alpha)
+            self.screen.blit(self._death_fade_surf, (0, 0))
+
         # Layer 7-12: Floating Damage Numbers, Boss Bar, HUD, Minimap & Overlays
         with self.profiler.section("render_hud"):
             # Layer 7: Floating Damage Numbers (pure text, no background box)
@@ -3495,7 +3505,7 @@ class PotariaGame:
             self.hud.render(
                 ui_surf, self.player, self.inventory, self.crafting,
                 self.camera, mouse_x, mouse_y, world=self.world, combat=self.combat, lan_client=self.client,
-                render_dragged=False, sky=self.sky
+                render_dragged=False, sky=self.sky, character_panel=self.character_panel
             )
 
             # Layer 9.5: Character & Paperdoll Equipment Panel (Chroisen Style)
@@ -3508,7 +3518,11 @@ class PotariaGame:
 
             # Layer 9.7: Storage Chest Window
             if hasattr(self, "chest_ui") and self.chest_ui.is_open:
-                self.chest_ui.render(ui_surf, self.inventory, mouse_x, mouse_y, render_dragged=False)
+                self.chest_ui.render(ui_surf, self.inventory, mouse_x, mouse_y, render_dragged=False, player=self.player, character_panel=self.character_panel)
+
+            # Layer 9.72: Topmost Item Tooltip (Side-by-side or deferred tooltips over panels)
+            if hasattr(self.hud, "render_hovered_tooltip"):
+                self.hud.render_hovered_tooltip(ui_surf, mouse_x, mouse_y, player=self.player, character_panel=self.character_panel)
 
             # Layer 9.75: Foreground Dragged Item (Always above Chest UI, Character Panel, and NPC Shop)
             if hasattr(self.hud, "render_dragged_item"):
@@ -3531,15 +3545,6 @@ class PotariaGame:
             # Layer 9.9: Mobile Virtual Touch Controls
             if hasattr(self, "touch_controller") and self.touch_controller.is_visible():
                 self.touch_controller.render(ui_surf, self.player, self.inventory, self.camera, game=self)
-
-            # Cinematic Death Transition Pitch-Black Overlay
-            if getattr(self.player, "death_fade_alpha", 0) > 0:
-                alpha = min(255, max(0, int(self.player.death_fade_alpha)))
-                if not hasattr(self, "_death_fade_surf") or self._death_fade_surf.get_size() != ui_surf.get_size():
-                    self._death_fade_surf = pygame.Surface(ui_surf.get_size())
-                    self._death_fade_surf.fill((0, 0, 0))
-                self._death_fade_surf.set_alpha(alpha)
-                ui_surf.blit(self._death_fade_surf, (0, 0))
 
             # Layer 10: Debug Overlay
             if self.show_debug:
