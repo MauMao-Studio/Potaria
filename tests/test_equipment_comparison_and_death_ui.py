@@ -144,6 +144,43 @@ class TestEquipmentComparisonAndDeathUI(unittest.TestCase):
         equipped_banners = [line[0] for line in lines if line[0] == "[ CURRENTLY EQUIPPED ]"]
         self.assertEqual(len(equipped_banners), 0, "No comparison when item is already equipped")
 
+    def test_side_by_side_comparison_with_duplicate_id_different_stats(self):
+        """Comparing a duplicate item ID with different enhancement level or affixes shows both cards."""
+        equipped_item = ItemStack("copper_helmet", 1)
+        equipped_item.enhancement_level = 0
+        self.player.equipment.slots[SLOT_HEAD] = equipped_item
+        self.char_panel.is_open = True
+
+        # In inventory: copper_helmet +3
+        inv_item = ItemStack("copper_helmet", 1)
+        inv_item.enhancement_level = 3
+
+        lines = self.hud._render_tooltip(
+            self.screen_surf, 400, 300, inv_item,
+            player=self.player, character_panel=self.char_panel
+        )
+        equipped_banners = [line[0] for line in lines if line[0] == "[ CURRENTLY EQUIPPED ]"]
+        self.assertEqual(len(equipped_banners), 1, "Duplicate item ID with different enhancement must trigger comparison")
+
+    def test_single_tooltip_when_identical_duplicate(self):
+        """Hovering an unequipped item identical in ID, enhancement, and affixes displays only a single card."""
+        equipped_item = ItemStack("copper_helmet", 1)
+        equipped_item.enhancement_level = 2
+        equipped_item.affixes = ["Titan's Grasp"]
+        self.player.equipment.slots[SLOT_HEAD] = equipped_item
+        self.char_panel.is_open = True
+
+        duplicate_item = ItemStack("copper_helmet", 1)
+        duplicate_item.enhancement_level = 2
+        duplicate_item.affixes = ["Titan's Grasp"]
+
+        lines = self.hud._render_tooltip(
+            self.screen_surf, 400, 300, duplicate_item,
+            player=self.player, character_panel=self.char_panel
+        )
+        equipped_banners = [line[0] for line in lines if line[0] == "[ CURRENTLY EQUIPPED ]"]
+        self.assertEqual(len(equipped_banners), 0, "Identical duplicate item should not show redundant comparison card")
+
     def test_single_tooltip_when_character_panel_closed(self):
         """When character panel is closed, hovering equipment displays single standard tooltip."""
         self.player.equipment.slots[SLOT_HEAD] = "copper_helmet"
@@ -210,6 +247,48 @@ class TestEquipmentComparisonAndDeathUI(unittest.TestCase):
         equipped_banners = [line[0] for line in lines if line[0] == "[ CURRENTLY EQUIPPED ]"]
         self.assertEqual(len(equipped_banners), 1)
 
+    def test_chest_ui_side_by_side_duplicate_id_different_stats(self):
+        """Chest UI compares items with same ID but different enhancement or affixes."""
+        chest_ui = ChestStorageWindow(self.asset_factory, self.sound_manager)
+        chest = StorageChest(10, 10, capacity=20)
+        chest_item = ItemStack("copper_helmet", 1)
+        chest_item.enhancement_level = 5
+        chest.slots[0] = chest_item
+        chest_ui.open(chest)
+
+        equipped_item = ItemStack("copper_helmet", 1)
+        equipped_item.enhancement_level = 0
+        self.player.equipment.slots[SLOT_HEAD] = equipped_item
+        self.char_panel.is_open = True
+
+        lines = chest_ui.render_tooltip(
+            self.screen_surf, chest.slots[0], 200, 200,
+            player=self.player, character_panel=self.char_panel
+        )
+        equipped_banners = [line[0] for line in lines if line[0] == "[ CURRENTLY EQUIPPED ]"]
+        self.assertEqual(len(equipped_banners), 1, "Chest should compare duplicate ID with different stats")
+
+    def test_chest_ui_single_tooltip_identical_duplicate(self):
+        """Chest UI shows single card if chest item is identical in ID, enhancement, and affixes."""
+        chest_ui = ChestStorageWindow(self.asset_factory, self.sound_manager)
+        chest = StorageChest(10, 10, capacity=20)
+        chest_item = ItemStack("copper_helmet", 1)
+        chest_item.enhancement_level = 2
+        chest.slots[0] = chest_item
+        chest_ui.open(chest)
+
+        equipped_item = ItemStack("copper_helmet", 1)
+        equipped_item.enhancement_level = 2
+        self.player.equipment.slots[SLOT_HEAD] = equipped_item
+        self.char_panel.is_open = True
+
+        lines = chest_ui.render_tooltip(
+            self.screen_surf, chest.slots[0], 200, 200,
+            player=self.player, character_panel=self.char_panel
+        )
+        equipped_banners = [line[0] for line in lines if line[0] == "[ CURRENTLY EQUIPPED ]"]
+        self.assertEqual(len(equipped_banners), 0, "Chest should not show comparison for identical duplicate")
+
     # =========================================================================
     # 4. LOW HP / DYING NUMERIC LIFE RENDERING
     # =========================================================================
@@ -269,6 +348,45 @@ class TestEquipmentComparisonAndDeathUI(unittest.TestCase):
             desc_lower = desc.lower()
             for buzzword in poetic_buzzwords:
                 self.assertNotIn(buzzword, desc_lower, f"Description for {item_id} contains flowery word: '{buzzword}'")
+
+    def test_raw_ingredients_and_produce_descriptions_are_concise(self):
+        """Verifies raw ingredients and produce in ITEM_REGISTRY also have direct, factual descriptions."""
+        ingredients_to_test = [
+            "raw_potato", "apple", "raw_bangus", "raw_tilapia", "raw_galunggong",
+            "raw_maya_maya", "raw_tanigue", "raw_tambakol", "raw_lapu_lapu",
+            "raw_hito", "raw_dilis", "raw_dalagang_bukid", "raw_chicken",
+            "raw_duck_meat", "duck_egg", "egg", "raw_pork", "pork_belly",
+            "raw_beef", "carabao_milk", "raw_goat_meat", "goat_milk",
+            "garlic", "onion", "ginger", "calamansi", "tamarind", "soy_sauce",
+            "vinegar", "black_pepper", "salt", "rice", "eggplant", "string_beans"
+        ]
+        poetic_buzzwords = [
+            "symphony", "whisper", "ethereal", "poetic", "transcendent",
+            "celestial", "sun-drenched", "plump", "aromatic treasure",
+            "savory treasure", "pride of the", "fiery embrace"
+        ]
+        for item_id in ingredients_to_test:
+            self.assertIn(item_id, ITEM_REGISTRY, f"Ingredient {item_id} missing from registry")
+            desc = ITEM_REGISTRY[item_id].get("desc", "").lower()
+            for buzzword in poetic_buzzwords:
+                self.assertNotIn(buzzword, desc, f"Description for {item_id} contains '{buzzword}'")
+
+    def test_cookbook_script_acquisition_descriptions_are_direct(self):
+        """Verifies build_cookbook_docs.py ITEM_ACQUISITION and SECTIONS entries are direct and factual."""
+        import scripts.build_cookbook_docs as bcd
+        self.assertTrue(hasattr(bcd, "ITEM_ACQUISITION"))
+        poetic_buzzwords = ["whisper", "symphony", "ethereal", "poetic", "transcendent", "celestial"]
+        for item_id, acq in bcd.ITEM_ACQUISITION.items():
+            acq_lower = acq.lower()
+            for buzzword in poetic_buzzwords:
+                self.assertNotIn(buzzword, acq_lower, f"Acquisition for {item_id} contains '{buzzword}'")
+
+        for title, items, desc_text in bcd.SECTIONS:
+            header = title.lower()
+            desc = desc_text.lower()
+            for buzzword in poetic_buzzwords:
+                self.assertNotIn(buzzword, header, f"Section header {title} contains '{buzzword}'")
+                self.assertNotIn(buzzword, desc, f"Section desc {title} contains '{buzzword}'")
 
     # =========================================================================
     # 6. COOKBOOK & CATALOG FILES INTEGRITY INVARIANT

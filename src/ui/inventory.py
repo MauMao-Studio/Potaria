@@ -1401,7 +1401,7 @@ ITEM_REGISTRY = {
     "raw_potato": {
         "name": "Raw Potato", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Crisp subterranean tuber freshly dug from rich loam. Can be eaten raw in emergencies or cooked in a furnace.",
+        "desc": "Raw harvested potato. Can be eaten raw or cooked in a furnace.",
         "lore": "",
         "special": "Raw Edible Root"
     },
@@ -1447,7 +1447,7 @@ ITEM_REGISTRY = {
     "apple": {
         "name": "Crisp Apple", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Crisp red orchard fruit with sweet fragrant flesh and refreshing juice.",
+        "desc": "Fresh red apple that restores health.",
         "lore": "",
         "special": "Fresh Fruit"
     },
@@ -1499,70 +1499,70 @@ ITEM_REGISTRY = {
     "raw_bangus": {
         "name": "Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "National silvery fish of Potaria, prized for its tender belly. Best cooked before eating.",
+        "desc": "Fresh raw milkfish. Best cooked before eating.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_tilapia": {
         "name": "Tilapia", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Freshwater cichlid with hardy scales, thriving in inland streams. Cook over fire.",
+        "desc": "Fresh raw tilapia. Cook over fire.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_galunggong": {
         "name": "Galunggong", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 10, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Round scad, the beloved everyday staple fish with rich flavor.",
+        "desc": "Fresh raw round scad fish. Best cooked before eating.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_maya_maya": {
         "name": "Maya-Maya", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 20, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Vibrant red snapper found patrolling deep rocky reefs.",
+        "desc": "Fresh raw red snapper fish. Best cooked before eating.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_tanigue": {
         "name": "Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Sleek Spanish mackerel with firm, prized steaks.",
+        "desc": "Fresh raw Spanish mackerel. Best grilled or cured.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_tambakol": {
         "name": "Tambakol", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 22, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Yellowfin tuna relative with deep crimson flesh and powerful fins.",
+        "desc": "Fresh raw yellowfin tuna. Best seared or grilled.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_lapu_lapu": {
         "name": "Lapu-Lapu", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 28, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Esteemed spotted reef grouper named after the brave chieftain warrior.",
+        "desc": "Fresh raw reef grouper fish. Best steamed or simmered.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_hito": {
         "name": "Hito", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 16, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Whiskered freshwater catfish dwelling in muddy bottoms and waterways.",
+        "desc": "Fresh raw freshwater catfish. Best braised or fried.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_dilis": {
         "name": "Dilis", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 8, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Tiny anchovies swimming in shimmering schools along shores.",
+        "desc": "Small fresh raw anchovies. Best pan-fried.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
     "raw_dalagang_bukid": {
         "name": "Dalagang Bukid", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Yellowtail fusilier with radiant crimson-gold scales.",
+        "desc": "Fresh raw yellowtail fusilier fish. Best pan-fried until crisp.",
         "lore": "",
         "special": "Raw Fresh Catch"
     },
@@ -1701,70 +1701,70 @@ ITEM_REGISTRY = {
     "raw_chicken": {
         "name": "Native Chicken Meat", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 16, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Fresh native poultry cut. Lean and flavorful, best stewed in adobo or tinola.",
+        "desc": "Raw chicken meat for cooking.",
         "lore": "",
         "special": "Raw Poultry"
     },
     "raw_duck_meat": {
         "name": "Native Duck Meat", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 18, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Rich, tender dark meat from free-range Pateros duck.",
+        "desc": "Raw duck meat for cooking.",
         "lore": "",
         "special": "Raw Poultry"
     },
     "duck_egg": {
         "name": "Itik Duck Egg", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Thick-shelled duck egg, key ingredient for Balut and Itlog na Maalat.",
+        "desc": "Duck egg used for Balut, salted egg, or cooking.",
         "lore": "",
         "special": "Fresh Duck Egg"
     },
     "egg": {
         "name": "Native Hen Egg", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 10, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Farm fresh native chicken egg with deep golden yolk.",
+        "desc": "Chicken egg for cooking.",
         "lore": "",
         "special": "Fresh Hen Egg"
     },
     "raw_pork": {
         "name": "Native Pork Cut", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 20, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Succulent cut of native black pig. Essential for classic pork adobo and sinigang.",
+        "desc": "Raw pork meat for cooking.",
         "lore": "",
         "special": "Raw Pork"
     },
     "pork_belly": {
         "name": "Liempo Pork Belly", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 25, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Layered fatty pork belly slab, prime cut for crispy lechon kawali.",
+        "desc": "Raw pork belly slab for roasting and frying.",
         "lore": "",
         "special": "Prime Pork Belly"
     },
     "raw_beef": {
         "name": "Bulalo Beef Shank", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 28, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Meaty beef shank bone with rich marrow center from native cattle.",
+        "desc": "Beef shank with bone marrow for cooking.",
         "lore": "",
         "special": "Beef Marrow Shank"
     },
     "carabao_milk": {
         "name": "Fresh Carabao Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Rich, creamy milk from Philippine water buffalo. High in butterfat.",
+        "desc": "Fresh milk from water buffalo.",
         "lore": "",
         "special": "Fresh Buffalo Milk"
     },
     "raw_goat_meat": {
         "name": "Native Goat Meat", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 24, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Lean, aromatic goat meat cut, traditional centerpiece for Kaldereta.",
+        "desc": "Raw goat meat for stews.",
         "lore": "",
         "special": "Raw Goat Meat"
     },
     "goat_milk": {
         "name": "Native Goat Milk", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 28, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Easily digestible rich milk from native Philippine goats.",
+        "desc": "Fresh goat milk.",
         "lore": "",
         "special": "Fresh Goat Milk"
     },
@@ -1782,70 +1782,70 @@ ITEM_REGISTRY = {
     "garlic": {
         "name": "Bawang Garlic", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Pungent native garlic cloves. The aromatic foundation of Filipino cuisine.",
+        "desc": "Garlic cloves used for sauteing and seasoning.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "onion": {
         "name": "Sibuyas Red Onion", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Sweet, vibrant red onion bulbs essential for sauteing.",
+        "desc": "Red onion bulbs used for sauteing and seasoning.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "ginger": {
         "name": "Luya Fresh Ginger", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Zesty, warming ginger root that infuses tinola and arroz caldo broth.",
+        "desc": "Fresh ginger root used for flavoring soups and broths.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "calamansi": {
         "name": "Calamansi Citrus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 10, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Tart and aromatic Philippine lime. Adds bright acidity to dipping sauces.",
+        "desc": "Sour citrus fruit used for marinades and dipping sauces.",
         "lore": "",
         "special": "Native Citrus Fruit"
     },
     "tamarind": {
         "name": "Sampalok Tamarind", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Tangy tamarind pods that give Sinigang its signature appetizing sourness.",
+        "desc": "Sour tamarind pods used for soup broths.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "soy_sauce": {
         "name": "Toyo Soy Sauce", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Fermented rich black soy sauce. Savory cornerstone of adobo.",
+        "desc": "Fermented soy sauce used for seasoning.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "vinegar": {
         "name": "Sukang Paombong Vinegar", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Traditional cane and palm vinegar with sharp, clean tartness.",
+        "desc": "Cane vinegar with a sharp, sour flavor.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "black_pepper": {
         "name": "Paminta Peppercorns", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Whole black peppercorns from aromatic spice groves.",
+        "desc": "Whole dried black peppercorns.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "salt": {
         "name": "Asin Sea Salt", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Pure crystallized white sea salt harvested from coastal pans.",
+        "desc": "Coarse white sea salt.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "rice": {
         "name": "Milagrosa White Rice", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Fragrant polished grain. A meal in Potaria is never complete without rice.",
+        "desc": "White rice grains for boiling or frying.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
@@ -1866,14 +1866,14 @@ ITEM_REGISTRY = {
     "eggplant": {
         "name": "Talong Native Eggplant", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Glossy purple tender eggplant, key vegetable for Sinigang and Tortang Talong.",
+        "desc": "Purple eggplant used for stews and frying.",
         "lore": "",
         "special": "Cooking Ingredient"
     },
     "string_beans": {
         "name": "Sitaw String Beans", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 12, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Crisp green yardlong beans harvested fresh from farm trellises.",
+        "desc": "Fresh green string beans for vegetable dishes.",
         "lore": "",
         "special": "Cooking Ingredient"
     },

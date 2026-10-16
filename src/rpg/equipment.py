@@ -358,16 +358,16 @@ def get_item_equipment_slot(item):
         from src.ui.inventory import ITEM_REGISTRY
         data = ITEM_REGISTRY.get(raw_id, {})
 
-    cat = data.get("cat") or data.get("category", "")
-    if cat in ("armor_head", "head"):
+    cat = str(data.get("cat") or data.get("category", "")).lower()
+    if cat in ("armor_head", "head", "helmet", "hat"):
         return SLOT_HEAD
-    if cat in ("armor_chest", "chest"):
+    if cat in ("armor_chest", "chest", "chestplate", "armor"):
         return SLOT_CHEST
-    if cat in ("armor_legs", "legs"):
+    if cat in ("armor_legs", "legs", "greaves", "boots", "pants"):
         return SLOT_LEGS
-    if cat in ("accessory",):
+    if cat in ("accessory", "shield", "ring", "amulet", "charm", "talisman"):
         return SLOT_ACCESSORY
-    if cat in ("weapon",):
+    if cat in ("weapon", "melee_weapon", "ranged_weapon", "bow", "sword", "spear", "staff") or (data.get("damage", 0) > 0 and cat not in ("tool", "pickaxe", "axe", "shovel", "material", "block")):
         return SLOT_WEAPON
 
     return None
@@ -399,27 +399,33 @@ def get_equipped_item_for_slot(player, slot):
 def is_item_already_equipped(item, player):
     """
     Returns True if the item is currently equipped by the player (in paperdoll slots or active weapon).
+    For ItemStack objects, checks object identity to allow inventory duplicates to be compared.
+    For raw string IDs, checks if any slot is currently wearing that item ID.
     """
     if not player or not hasattr(player, "equipment") or not player.equipment or not item:
         return False
     eq = player.equipment
+
+    # Direct object identity checks
     if item in eq.slots.values():
         return True
-    item_id = getattr(item, "item_id", item if isinstance(item, str) else None)
-    if item_id:
+    if getattr(item, "is_equipped", False):
+        return True
+    active_wpn = getattr(eq, "active_weapon_item", None)
+    if active_wpn is not None and item is active_wpn:
+        return True
+
+    # If item is passed as a raw string ID, check slot occupancy by ID
+    if isinstance(item, str):
         for s_val in eq.slots.values():
             if s_val is not None:
                 s_id = getattr(s_val, "item_id", s_val if isinstance(s_val, str) else None)
-                if s_id and s_id == item_id:
+                if s_id and s_id == item:
                     return True
-        active_wpn = getattr(eq, "active_weapon_item", None)
-        if active_wpn is not None and item is active_wpn:
-            return True
         active_wpn_id = getattr(eq, "active_weapon_id", None) or getattr(active_wpn, "item_id", None)
-        if active_wpn_id and active_wpn_id == item_id:
+        if active_wpn_id and active_wpn_id == item:
             return True
-    if getattr(item, "is_equipped", False):
-        return True
+
     return False
 
 

@@ -181,18 +181,7 @@ class HUD:
         start_x = 840     # SCREEN_WIDTH (1280) - right_margin (180) - container_w (260)
         start_y = 20
 
-        # Life Label (Cached with contrast drop shadow and clamped hp >= 0)
-        hp_val = max(0, int(round(player.stats.hp)))
-        max_hp_val = max(1, int(round(player.stats.max_hp)))
-        hp_key = (hp_val, max_hp_val, player.stats.level)
-        if hp_key != self._cached_hp_key:
-            self._cached_hp_key = hp_key
-            text_str = f"Life: {hp_val} / {max_hp_val}  (Lv.{player.stats.level})"
-            self._cached_hp_shadow = self.font.render(text_str, True, (0, 0, 0))
-            self._cached_hp_surf = self.font.render(text_str, True, (255, 100, 100))
-        target_surf.blit(self._cached_hp_shadow, (start_x + 1, start_y - 15))
-        target_surf.blit(self._cached_hp_surf, (start_x, start_y - 16))
-
+        # 1. Health Hearts (Positioned to the left of the radar map, container_w=260)
         rows = (total_hearts + 9) // 10
         for i in range(total_hearts):
             r_idx = i // 10
@@ -203,6 +192,35 @@ class HUD:
                 target_surf.blit(self.heart_full, (hx, hy))
             else:
                 target_surf.blit(self.heart_empty, (hx, hy))
+
+        # 1.5. Numerical Life Display (High-contrast badge plate in topmost z-order above hearts & bars)
+        hp_val = max(0, int(round(player.stats.hp)))
+        max_hp_val = max(1, int(round(player.stats.max_hp)))
+        hp_key = (hp_val, max_hp_val, player.stats.level)
+        if hp_key != self._cached_hp_key:
+            self._cached_hp_key = hp_key
+            text_str = f"Life: {hp_val} / {max_hp_val}  (Lv.{player.stats.level})"
+            is_dying = (hp_val <= 0)
+            is_critical = (hp_val <= max_hp_val * 0.25)
+            txt_color = (255, 120, 120) if is_dying else ((255, 160, 160) if is_critical else (255, 130, 130))
+            self._cached_hp_shadow = self.font.render(text_str, True, (0, 0, 0))
+            self._cached_hp_surf = self.font.render(text_str, True, txt_color)
+
+        tw = self._cached_hp_surf.get_width()
+        th = self._cached_hp_surf.get_height()
+        bx = start_x
+        by = start_y - 17
+        bw = tw + 12
+        bh = 16
+        is_dying = (hp_val <= 0)
+        is_critical = (hp_val <= max_hp_val * 0.25)
+        badge_bg = (28, 16, 20, 240) if is_dying else ((24, 18, 22, 235) if is_critical else (18, 22, 34, 230))
+        badge_border = (200, 60, 60, 240) if is_dying else ((180, 75, 75, 235) if is_critical else (60, 75, 105, 230))
+        badge_rect = pygame.Rect(bx, by, bw, bh)
+        pygame.draw.rect(target_surf, badge_bg, badge_rect, border_radius=4)
+        pygame.draw.rect(target_surf, badge_border, badge_rect, 1, border_radius=4)
+        target_surf.blit(self._cached_hp_shadow, (bx + 7, by + 1))
+        target_surf.blit(self._cached_hp_surf, (bx + 6, by))
 
         # Mana Bar (Positioned with clean 12px padding below hearts to eliminate visual collision)
         mp_h = 12
@@ -1064,10 +1082,13 @@ class HUD:
         equipped_item = None
         if character_panel and getattr(character_panel, "is_open", False) and player:
             slot = get_item_equipment_slot(item)
-            if slot and not is_item_already_equipped(item, player):
+            if slot:
                 equipped_item = get_equipped_item_for_slot(player, slot)
-                if equipped_item is not None and not is_item_already_equipped(item, player):
-                    if item is not equipped_item:
+                if equipped_item is not None and item is not equipped_item and not getattr(item, "is_equipped", False):
+                    same_id = (getattr(item, "item_id", None) == getattr(equipped_item, "item_id", None))
+                    same_enh = (getattr(item, "enhancement_level", 0) == getattr(equipped_item, "enhancement_level", 0))
+                    same_aff = (getattr(item, "affixes", []) == getattr(equipped_item, "affixes", []))
+                    if not (same_id and same_enh and same_aff):
                         is_comparison = True
 
         if is_comparison and equipped_item:

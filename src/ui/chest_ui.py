@@ -413,10 +413,13 @@ class ChestStorageWindow:
         equipped_item = None
         if character_panel and getattr(character_panel, "is_open", False) and player:
             slot = get_item_equipment_slot(item)
-            if slot and not is_item_already_equipped(item, player):
+            if slot:
                 equipped_item = get_equipped_item_for_slot(player, slot)
-                if equipped_item is not None and not is_item_already_equipped(item, player):
-                    if item is not equipped_item:
+                if equipped_item is not None and item is not equipped_item and not getattr(item, "is_equipped", False):
+                    same_id = (getattr(item, "item_id", None) == getattr(equipped_item, "item_id", None))
+                    same_enh = (getattr(item, "enhancement_level", 0) == getattr(equipped_item, "enhancement_level", 0))
+                    same_aff = (getattr(item, "affixes", []) == getattr(equipped_item, "affixes", []))
+                    if not (same_id and same_enh and same_aff):
                         is_comparison = True
 
         if is_comparison and equipped_item:
