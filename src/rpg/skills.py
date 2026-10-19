@@ -415,9 +415,9 @@ class SkillManager:
         # Skill combos / charge windows: skill_id -> {"charges_left": int, "window_timer": float, "cd": float}
         self.skill_combos = {}
         
-        # Active Skill Slots & Hotkey Bindings
+        # Active Skill Slots & Hotkey Bindings (Q, F, V, R, Z)
         self.active_slots = ["power_slash", "whirlwind", "dash", "fireball"]
-        self.hotkey_bindings = {"Q": "power_slash", "F": "whirlwind", "V": "dash", "R": "fireball"}
+        self.hotkey_bindings = {"Q": "power_slash", "F": "whirlwind", "V": "dash", "R": "fireball", "Z": None}
 
     @property
     def all_skills(self):
@@ -499,6 +499,8 @@ class SkillManager:
         if skill_id not in self.learned_skills:
             self.learned_skills.add(skill_id)
             self.skill_levels[skill_id] = 1
+            if skill_id == "celestial_reversal" and self.hotkey_bindings.get("Z") is None:
+                self.hotkey_bindings["Z"] = "celestial_reversal"
             return True
         else:
             cur_lvl = self.skill_levels.get(skill_id, 1)

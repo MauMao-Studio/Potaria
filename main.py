@@ -1471,6 +1471,7 @@ class PotariaGame:
                 k_sf = self.menu.key_bindings.get("Skill F", pygame.K_f)
                 k_sv = self.menu.key_bindings.get("Skill V", pygame.K_v)
                 k_sr = self.menu.key_bindings.get("Skill R", pygame.K_r)
+                k_sz = self.menu.key_bindings.get("Skill Z", pygame.K_z)
                 k_zoom = self.menu.key_bindings.get("Camera Zoom", pygame.K_z)
 
                 if event.key == pygame.K_ESCAPE:
@@ -1514,8 +1515,8 @@ class PotariaGame:
                 elif self.character_panel.is_open and self.character_panel.handle_key(event, self.player, self.menu.key_bindings):
                     pass
 
-                # Combat Skills (Skill Q, Skill F, Skill V, Skill R)
-                elif event.key in (k_sq, k_sf, k_sv, k_sr):
+                # Combat Skills (Skill Q, Skill F, Skill V, Skill R, Skill Z)
+                elif event.key in (k_sq, k_sf, k_sv, k_sr, k_sz):
                     if event.key == k_sq:
                         self.player.cast_skill_hotkey("Q", self.particle_system, self.camera)
                     elif event.key == k_sf:
@@ -1524,6 +1525,14 @@ class PotariaGame:
                         self.player.cast_skill_hotkey("V", self.particle_system, self.camera)
                     elif event.key == k_sr:
                         self.player.cast_skill_hotkey("R", self.particle_system, self.camera)
+                    elif event.key == k_sz:
+                        # Attempt to cast hotkey Z (e.g. Celestial Reversal); if uncastable and matches k_zoom, fall back to zoom cycle
+                        cast_done = self.player.cast_skill_hotkey("Z", self.particle_system, self.camera)
+                        if not cast_done and event.key in (k_zoom, pygame.K_z) and hasattr(self, "camera"):
+                            new_zoom = self.camera.cycle_zoom()
+                            self.settings["zoom"] = new_zoom
+                            if hasattr(self, "menu") and hasattr(self.menu, "save_settings"):
+                                self.menu.save_settings()
 
                 elif event.key in (k_zoom, pygame.K_z):
                     if hasattr(self, "camera"):

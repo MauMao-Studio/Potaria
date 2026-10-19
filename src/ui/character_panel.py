@@ -115,7 +115,8 @@ class CharacterPanel:
             pygame.K_q: "Q",
             pygame.K_f: "F",
             pygame.K_v: "V",
-            pygame.K_r: "R"
+            pygame.K_r: "R",
+            pygame.K_z: "Z"
         }
         if key_bindings:
             k_map = {
@@ -123,6 +124,7 @@ class CharacterPanel:
                 key_bindings.get("Skill F", pygame.K_f): "F",
                 key_bindings.get("Skill V", pygame.K_v): "V",
                 key_bindings.get("Skill R", pygame.K_r): "R",
+                key_bindings.get("Skill Z", pygame.K_z): "Z",
             }
         if event.key in k_map:
             hotkey = k_map[event.key]
@@ -307,13 +309,15 @@ class CharacterPanel:
         active_title = self.font_bold.render("ACTIVE SKILL LOADOUT (Select Hotkey):", True, (255, 230, 100))
         target_surf.blit(active_title, (px + 30, by))
 
-        hotkeys = [("Q", "power_slash"), ("F", "whirlwind"), ("V", "dash"), ("R", "fireball")]
+        hotkeys = [("Q", "power_slash"), ("F", "whirlwind"), ("V", "dash"), ("R", "fireball"), ("Z", "celestial_reversal")]
         self.hovered_skill_id = None
 
+        slot_w = 96
+        slot_gap = 6
         for i, (key, def_sid) in enumerate(hotkeys):
-            hx = px + 30 + i * 126
+            hx = px + 28 + i * (slot_w + slot_gap)
             hy = by + 22
-            h_rect = pygame.Rect(hx, hy, 120, 36)
+            h_rect = pygame.Rect(hx, hy, slot_w, 36)
             self.hotkey_rects[key] = h_rect
 
             # Determine currently assigned skill
@@ -331,7 +335,7 @@ class CharacterPanel:
 
             # Hotkey Badge & Skill Name / Icon
             badge = self.font_bold.render(f"[{key}]", True, COLOR_GOLD if is_selected else (220, 220, 220))
-            target_surf.blit(badge, (hx + 6, hy + 9))
+            target_surf.blit(badge, (hx + 5, hy + 9))
 
             icon_drawn = False
             if curr_sid and hasattr(self.asset_factory, "skill_icons"):
@@ -341,16 +345,21 @@ class CharacterPanel:
                 if not icon_surf:
                     icon_surf = self.asset_factory.skill_icons.get(curr_sid)
                 if icon_surf:
-                    icon_sc = pygame.transform.scale(icon_surf, (22, 22))
+                    icon_sc = pygame.transform.scale(icon_surf, (20, 20))
                     if not is_learned:
                         icon_sc.fill((70, 70, 70, 160), special_flags=pygame.BLEND_RGBA_MULT)
-                    target_surf.blit(icon_sc, (hx + 30, hy + 7))
+                    target_surf.blit(icon_sc, (hx + 26, hy + 8))
                     icon_drawn = True
 
             full_skill_name = s_data.get("name", "") if (curr_sid and is_learned) else ("(Empty)" if not curr_sid else s_data.get("name", ""))
-            name_font = self.font_reg_xs if self.font_reg_sm.size(full_skill_name)[0] > 62 else self.font_reg_sm
-            name_txt = name_font.render(full_skill_name, True, (255, 255, 255) if is_learned else (135, 140, 150))
-            target_surf.blit(name_txt, (hx + (56 if icon_drawn else 36), hy + 10))
+            name_font = self.font_reg_xs
+            text_x = hx + (49 if icon_drawn else 28)
+            avail_w = max(10, slot_w - (text_x - hx) - 2)
+            disp_name = full_skill_name
+            while disp_name and name_font.size(disp_name)[0] > avail_w:
+                disp_name = disp_name[:-1]
+            name_txt = name_font.render(disp_name, True, (255, 255, 255) if is_learned else (135, 140, 150))
+            target_surf.blit(name_txt, (text_x, hy + 10))
 
             if h_rect.collidepoint(mouse_x, mouse_y):
                 pygame.draw.rect(target_surf, (255, 240, 120), h_rect, 2, border_radius=6)

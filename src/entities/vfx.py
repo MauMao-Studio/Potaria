@@ -11,7 +11,8 @@ import pygame
 
 class AnimatedVFX:
     def __init__(self, x, y, frames, duration=0.5, loop=False, rot_deg=0.0, scale=1.0,
-                 anchor=None, offset=(0, 0), blend_mode=None, flip_x=False, flip_y=False):
+                 anchor=None, offset=(0, 0), blend_mode=None, flip_x=False, flip_y=False,
+                 anim_name=None):
         self.x = float(x)
         self.y = float(y)
         self.frames = frames if isinstance(frames, list) else [frames]
@@ -24,6 +25,7 @@ class AnimatedVFX:
         self.blend_mode = blend_mode
         self.flip_x = bool(flip_x)
         self.flip_y = bool(flip_y)
+        self.anim_name = anim_name
         self.elapsed = 0.0
         self.is_alive = True
         self.frame_idx = 0
@@ -129,13 +131,20 @@ class VisualEffectManager:
                 "ancient_cleave_grand": 0.55,
                 "ancient_radiant_aura": 1.4,
                 "weapon_charge_burst": 0.35,
+                "celestial_reversal_activate": 0.45,
+                "projectile_reflect": 0.35,
+                "blight_apocalypse_telegraph": 0.75,
+                "caldera_catastrophe_telegraph": 0.75,
+                "absolute_zero_telegraph": 0.75,
+                "kingdom_of_the_unburied_telegraph": 0.75,
             }
             duration = default_durations.get(anim_name, 0.45)
 
         vfx = AnimatedVFX(
             x=x, y=y, frames=frames, duration=duration, loop=loop,
             rot_deg=rot_deg, scale=scale, anchor=anchor, offset=offset,
-            blend_mode=blend_mode, flip_x=flip_x, flip_y=flip_y
+            blend_mode=blend_mode, flip_x=flip_x, flip_y=flip_y,
+            anim_name=anim_name
         )
         self.effects.append(vfx)
         return vfx

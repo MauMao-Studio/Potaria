@@ -817,6 +817,8 @@ class Player:
 
         if self.health <= 0:
             self.is_dead = True
+            self.reflection_field_timer = 0.0
+            self.reflection_budget = 0
             self.respawn_timer = 3.0
             self.death_fade_alpha = 0
             self.death_teleported = False
@@ -825,6 +827,11 @@ class Player:
                 self.killed_by_boss = True
 
         return True
+
+    def reset_reflection_state(self):
+        """Immediately collapses active projectile reflection field and exhausts budget."""
+        self.reflection_field_timer = 0.0
+        self.reflection_budget = 0
 
     def on_graze(self):
         """Called when a boss projectile grazes player perimeter without hitting core hitbox (Touhou style)."""

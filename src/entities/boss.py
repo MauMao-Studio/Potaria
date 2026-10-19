@@ -56,6 +56,7 @@ class DungeonMiniBoss:
         self.is_dead = False
         self.hurt_timer = 0.0
         self.phase = 1
+        self.triggered_phase2_signature = False
         self.projectiles = []
         self.attack_cooldown = 1.1
 
@@ -161,7 +162,8 @@ class DungeonMiniBoss:
 
         if self.hp <= self.max_hp * 0.5 and self.phase == 1:
             self.phase = 2
-            self.attack_cooldown = 0.70
+            self.attack_cooldown = 0.50
+            self.triggered_phase2_signature = True
 
         if self.hp <= 0:
             self.hp = 0
@@ -185,6 +187,11 @@ class DungeonMiniBoss:
 
         self.state_timer -= dt
         self.attack_cooldown -= dt
+
+        # Phase 2 HP Threshold Signature Trigger
+        if getattr(self, "triggered_phase2_signature", False):
+            self.triggered_phase2_signature = False
+            self.cast_signature_attack(player, particle_system, camera)
 
         # Step active streaming bullet-hell pattern
         if self.active_pattern:
@@ -237,6 +244,7 @@ class DungeonMiniBoss:
 
             # Celestial Reversal: Timed reflection field
             if (p.life > 0 and not getattr(p, "reflected", False)
+                and not getattr(player, "is_dead", False)
                 and getattr(player, "reflection_field_timer", 0.0) > 0
                 and getattr(player, "reflection_budget", 0) > 0):
                 if math.hypot(p.x - player.center_x, p.y - player.center_y) < 52.0:
@@ -245,8 +253,12 @@ class DungeonMiniBoss:
                         player.reflected_projectiles_count = getattr(player, "reflected_projectiles_count", 0) + 1
                         if self.sound_manager:
                             self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
-                        particle_system.spawn_sparks(p.x, p.y, (255, 240, 130), count=14)
-                        particle_system.spawn_debris(p.x, p.y, (120, 240, 255), count=6)
+                        if particle_system:
+                            particle_system.spawn_sparks(p.x, p.y, (255, 240, 130), count=14)
+                            particle_system.spawn_debris(p.x, p.y, (120, 240, 255), count=6)
+                        vfx = getattr(player, "vfx_manager", None)
+                        if vfx:
+                            vfx.spawn("projectile_reflect", p.x, p.y, duration=0.35, scale=1.3)
                         continue
 
             # Reflected projectile hitting the boss!
@@ -570,21 +582,15 @@ class LordMalus(DungeonMiniBoss):
                 particle_system.spawn_sparks(self.center_x, self.center_y, (140, 30, 190), count=18)
 
         else:
-            # Pattern 4: Blight Cross Spread
-            cnt = 5 if self.phase == 1 else 7
-            spread = BulletHellPatterns.spawn_aimed_spread(
-                self.center_x, self.center_y, player.center_x, player.center_y,
-                count=cnt, spread_angle_deg=50, speed=5.8,
-                color=(80, 235, 100), core_color=(245, 255, 245),
-                radius=9, damage=self.damage - 4, shape="needle"
-            )
-            self.projectiles.extend(spread)
-            if particle_system:
-                particle_system.spawn_sparks(self.center_x, self.center_y, (80, 235, 100), count=12)
+            # Pattern 4 (M4 Signature): Blight Apocalypse with safe corridor & telegraph
+            self.cast_blight_apocalypse(player, particle_system, camera)
 
     def cast_blight_apocalypse(self, player, particle_system=None, camera=None):
         """Lord Malus Signature (M4): Blight Apocalypse with clearly marked safe corridor."""
         is_violet = (self.phase == 2)
+        vfx = getattr(player, "vfx_manager", None)
+        if vfx:
+            vfx.spawn("blight_apocalypse_telegraph", self.center_x, self.center_y, duration=0.75, scale=2.0)
         projs = BulletHellPatterns.spawn_blight_apocalypse(
             self.center_x, self.center_y, player.center_x, player.center_y,
             count=26 if is_violet else 22, speed=4.8, damage=self.damage - 2,
@@ -691,21 +697,15 @@ class IgnisColossus(DungeonMiniBoss):
                 particle_system.spawn_sparks(self.center_x, self.center_y, (255, 140, 30), count=16)
 
         else:
-            # Pattern 4: Magma Bomb Spread
-            cnt = 5 if self.phase == 1 else 7
-            spread = BulletHellPatterns.spawn_aimed_spread(
-                self.center_x, self.center_y, player.center_x, player.center_y,
-                count=cnt, spread_angle_deg=45, speed=6.0,
-                color=(255, 90, 30), core_color=(255, 255, 180),
-                radius=11, damage=self.damage - 4, shape="meteor"
-            )
-            self.projectiles.extend(spread)
-            if particle_system:
-                particle_system.spawn_sparks(self.center_x, self.center_y, (255, 90, 30), count=14)
+            # Pattern 4 (I4 Signature): Caldera Catastrophe progressive seismic shockwaves
+            self.cast_caldera_catastrophe(player, particle_system, camera, slam_step=3 if self.phase == 2 else 2)
 
     def cast_caldera_catastrophe(self, player, particle_system=None, camera=None, slam_step=1):
         """Ignis Colossus Signature (I4): Caldera Catastrophe progressive seismic shockwaves."""
         cnt = 26 if self.phase == 2 else 22
+        vfx = getattr(player, "vfx_manager", None)
+        if vfx:
+            vfx.spawn("caldera_catastrophe_telegraph", self.center_x, self.center_y, duration=0.75, scale=2.0)
         projs = BulletHellPatterns.spawn_caldera_catastrophe(
             self.center_x, self.center_y, slam_step=slam_step, count=cnt, damage=self.damage - 2
         )
@@ -828,21 +828,15 @@ class CryoSpud(DungeonMiniBoss):
                 particle_system.spawn_sparks(self.center_x, self.center_y, (80, 210, 255), count=20)
 
         else:
-            # Pattern 4: Glacial Shard Wall
-            cnt = 7 if self.phase == 1 else 9
-            spread = BulletHellPatterns.spawn_aimed_spread(
-                self.center_x, self.center_y, player.center_x, player.center_y,
-                count=cnt, spread_angle_deg=55, speed=5.8,
-                color=(140, 235, 255), core_color=(255, 255, 255),
-                radius=10, damage=self.damage - 5, shape="needle"
-            )
-            self.projectiles.extend(spread)
-            if particle_system:
-                particle_system.spawn_sparks(self.center_x, self.center_y, (140, 235, 255), count=14)
+            # Pattern 4 (C4 Signature): Absolute Zero contracting ring with escape gap
+            self.cast_absolute_zero(player, particle_system, camera)
 
     def cast_absolute_zero(self, player, particle_system=None, camera=None):
         """Cryo-Spud Signature (C4): Absolute Zero contracting ring with safe escape gap."""
         cnt = 26 if self.phase == 2 else 22
+        vfx = getattr(player, "vfx_manager", None)
+        if vfx:
+            vfx.spawn("absolute_zero_telegraph", self.center_x, self.center_y, duration=0.75, scale=2.0)
         projs = BulletHellPatterns.spawn_absolute_zero(
             self.center_x, self.center_y, count=cnt, speed=4.4, damage=self.damage - 4
         )
@@ -947,20 +941,15 @@ class NecroTuber(DungeonMiniBoss):
                 particle_system.spawn_sparks(self.center_x, self.center_y, (190, 190, 215), count=20)
 
         else:
-            # Pattern 4: Ghost Skull Swarm
-            cnt = 6 if self.phase == 1 else 8
-            skulls = BulletHellPatterns.spawn_homing_swarm(
-                self.center_x, self.center_y, player.center_x, player.center_y,
-                count=cnt, speed=4.5, color=(180, 80, 230),
-                core_color=(235, 220, 245), radius=10, damage=self.damage - 4
-            )
-            self.projectiles.extend(skulls)
-            if particle_system:
-                particle_system.spawn_sparks(self.center_x, self.center_y, (180, 80, 230), count=15)
+            # Pattern 4 (N4 Signature): Kingdom of the Unburied lane curtains and sweeping scythes
+            self.cast_kingdom_of_the_unburied(player, particle_system, camera)
 
     def cast_kingdom_of_the_unburied(self, player, particle_system=None, camera=None):
         """Necro-Tuber Signature (N4): Kingdom of the Unburied lane curtains and sweeping scythes."""
         cnt = 18 if self.phase == 2 else 14
+        vfx = getattr(player, "vfx_manager", None)
+        if vfx:
+            vfx.spawn("kingdom_of_the_unburied_telegraph", self.center_x, self.center_y, duration=0.75, scale=2.0)
         projs = BulletHellPatterns.spawn_kingdom_of_the_unburied(
             self.center_x, self.center_y, player.center_x, player.center_y,
             count=cnt, speed=4.5, damage=self.damage - 4
@@ -1322,6 +1311,7 @@ class GrandBossSolRho:
 
             # Celestial Reversal: Timed reflection field
             if (p.life > 0 and not getattr(p, "reflected", False)
+                and not getattr(player, "is_dead", False)
                 and getattr(player, "reflection_field_timer", 0.0) > 0
                 and getattr(player, "reflection_budget", 0) > 0):
                 if math.hypot(p.x - player.center_x, p.y - player.center_y) < 52.0:
@@ -1330,8 +1320,12 @@ class GrandBossSolRho:
                         player.reflected_projectiles_count = getattr(player, "reflected_projectiles_count", 0) + 1
                         if self.sound_manager:
                             self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
-                        particle_system.spawn_sparks(p.x, p.y, (255, 240, 130), count=14)
-                        particle_system.spawn_debris(p.x, p.y, (120, 240, 255), count=6)
+                        if particle_system:
+                            particle_system.spawn_sparks(p.x, p.y, (255, 240, 130), count=14)
+                            particle_system.spawn_debris(p.x, p.y, (120, 240, 255), count=6)
+                        vfx = getattr(player, "vfx_manager", None)
+                        if vfx:
+                            vfx.spawn("projectile_reflect", p.x, p.y, duration=0.35, scale=1.3)
                         continue
 
             # Reflected projectile hitting the boss!

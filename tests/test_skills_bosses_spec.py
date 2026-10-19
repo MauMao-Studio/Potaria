@@ -36,6 +36,9 @@ from src.entities.boss import (
     DungeonMiniBoss, LordMalus, IgnisColossus, CryoSpud, NecroTuber,
     GrandBossSolRho, create_boss_by_type
 )
+from src.entities.vfx import VisualEffectManager
+from src.ui.character_panel import CharacterPanel
+
 
 
 class TestSkillsBossesSpec(unittest.TestCase):
@@ -381,6 +384,116 @@ class TestSkillsBossesSpec(unittest.TestCase):
         machine_paths = re.findall(r"[A-Za-z]:[/\\]", content)
         self.assertEqual(len(machine_paths), 0, f"Found machine paths in {tracker_path}: {machine_paths[:5]}")
 
+    # =========================================================================
+    # 5. BUG FIXES & EDGE CASE REGRESSION TESTS
+    # =========================================================================
+    def test_19_reflected_homing_and_curved_neutralization(self):
+        """Reflecting a homing or curved projectile neutralizes steering and curves, directing it straight to boss."""
+        p = BossProjectile(
+            x=200, y=200, vx=2.0, vy=2.0, damage=25,
+            p_type="homing", curve_rate=0.08, wave_amplitude=15.0,
+            wave_frequency=3.0, delay_move=1.0, reflectable=True
+        )
+        self.assertEqual(p.p_type, "homing")
+        self.assertEqual(p.curve_rate, 0.08)
+
+        # Reflect toward boss at (100, 100)
+        p.reflect(100, 100)
+        self.assertTrue(p.reflected)
+        self.assertEqual(p.p_type, "linear")
+        self.assertEqual(p.curve_rate, 0.0)
+        self.assertEqual(p.wave_amplitude, 0.0)
+        self.assertEqual(p.wave_frequency, 0.0)
+        self.assertEqual(p.delay_move, 0.0)
+
+        # Verify update does NOT steer back toward player at (400, 400)
+        vx_before, vy_before = p.vx, p.vy
+        p.update(0.016, self.player)
+        self.assertAlmostEqual(p.vx, vx_before, places=3)
+        self.assertAlmostEqual(p.vy, vy_before, places=3)
+
+    def test_20_reflection_field_collapses_on_death(self):
+        """Player death immediately zeroes reflection timer and budget, preventing corpse reflection."""
+        self.player.reflection_field_timer = 0.50
+        self.player.reflection_budget = 10
+        self.assertFalse(self.player.is_dead)
+
+        # Lethal damage
+        self.player.take_damage(9999)
+        self.assertTrue(self.player.is_dead)
+        self.assertEqual(self.player.reflection_field_timer, 0.0)
+        self.assertEqual(self.player.reflection_budget, 0)
+
+        # Mini-boss attempts update with projectile over dead player
+        boss = LordMalus(400, 200, self.af, self.sm)
+        orb = BossProjectile(x=self.player.center_x, y=self.player.center_y, vx=0, vy=1, damage=20, reflectable=True)
+        boss.projectiles.append(orb)
+
+        # Even if timer was somehow restored on dead player, boss guard ensures no reflection
+        self.player.reflection_field_timer = 0.50
+        self.player.reflection_budget = 10
+        boss.update(0.016, None, self.player, self.particles, self.camera)
+        self.assertFalse(orb.reflected, "Dead player must not reflect projectiles")
+
+    def test_21_mini_bosses_trigger_signature_and_telegraph_vfx(self):
+        """Mini-bosses trigger phase 2 signatures and spawn associated telegraph VFX."""
+        vfx = VisualEffectManager(self.af)
+        self.player.vfx_manager = vfx
+
+        # Lord Malus
+        malus = LordMalus(400, 200, self.af, self.sm)
+        malus.cast_blight_apocalypse(self.player, self.particles, self.camera)
+        self.assertTrue(any(e.anim_name == "blight_apocalypse_telegraph" for e in vfx.effects))
+
+        # Ignis Colossus
+        ignis = IgnisColossus(400, 200, self.af, self.sm)
+        ignis.cast_caldera_catastrophe(self.player, self.particles, self.camera, slam_step=1)
+        self.assertTrue(any(e.anim_name == "caldera_catastrophe_telegraph" for e in vfx.effects))
+
+        # Cryo Spud
+        cryo = CryoSpud(400, 200, self.af, self.sm)
+        cryo.cast_absolute_zero(self.player, self.particles, self.camera)
+        self.assertTrue(any(e.anim_name == "absolute_zero_telegraph" for e in vfx.effects))
+
+        # Necro Tuber
+        necro = NecroTuber(400, 200, self.af, self.sm)
+        necro.cast_kingdom_of_the_unburied(self.player, self.particles, self.camera)
+        self.assertTrue(any(e.anim_name == "kingdom_of_the_unburied_telegraph" for e in vfx.effects))
+
+        # Test Phase 2 HP trigger in take_damage
+        test_boss = LordMalus(400, 200, self.af, self.sm)
+        self.assertFalse(test_boss.triggered_phase2_signature)
+        test_boss.take_damage(test_boss.max_hp * 0.6, ignore_defense=True)
+        self.assertTrue(test_boss.triggered_phase2_signature)
+
+    def test_22_hotkey_z_and_character_panel_integration(self):
+        """SkillManager binds Z for celestial_reversal, and CharacterPanel renders and handles slot Z."""
+        sm = SkillManager()
+        self.assertIn("Z", sm.hotkey_bindings)
+        self.assertIsNone(sm.hotkey_bindings["Z"])
+
+        sm.learn_skill("celestial_reversal")
+        self.assertEqual(sm.hotkey_bindings["Z"], "celestial_reversal")
+
+        # CharacterPanel verification
+        cp = CharacterPanel(self.af)
+        cp.is_open = True
+        self.player.skills = sm
+        surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        cp.render(surf, self.player, 0, 0)
+
+        self.assertIn("Z", cp.hotkey_rects)
+        self.assertEqual(len(cp.hotkey_rects), 5)
+
+        # Keyboard assignment to slot Z
+        cp.hovered_skill_id = "fireball"
+        sm.learn_skill("fireball")
+        fake_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_z)
+        handled = cp.handle_key(fake_event, self.player)
+        self.assertTrue(handled)
+        self.assertEqual(sm.hotkey_bindings["Z"], "fireball")
+
 
 if __name__ == "__main__":
     unittest.main()
+

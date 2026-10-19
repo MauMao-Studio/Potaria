@@ -254,6 +254,13 @@ class BossProjectile:
             self.vx = -self.vx
             self.vy = -self.vy
 
+        # Reset motion behavior to direct return shot (neutralizes homing, wave, and curvature)
+        self.p_type = "linear"
+        self.curve_rate = 0.0
+        self.wave_amplitude = 0.0
+        self.wave_frequency = 0.0
+        self.delay_move = 0.0
+
         # Celestial reflection styling: radiant gold/cyan shimmer
         self.color = (255, 235, 120)
         self.core_color = (255, 255, 255)
