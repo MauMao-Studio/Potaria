@@ -150,7 +150,7 @@
 | 96 | `desert_rune` | `assets/craftable_items/desert_rune.png` | special | rare | `7ce76361a363` | COMPLETED |
 | 97 | `dried_thatch_bale` | `assets/craftable_items/dried_thatch_bale.png` | block | common | `b3fe420cf2a3` | COMPLETED |
 | 98 | `dungeon_rune` | `assets/craftable_items/dungeon_rune.png` | special | epic | `17d107b561e8` | COMPLETED |
-| 99 | `enchanted_fry` | `assets/craftable_items/enchanted_fry.png` | craftable_items | Standard | `778f50ad0cd3` | COMPLETED |
+| 99 | `enchanted_fry` | `assets/craftable_items/enchanted_fry.png` | consumable | rare | `778f50ad0cd3` | COMPLETED |
 | 100 | `explorers_satchel` | `assets/craftable_items/explorers_satchel.png` | accessory | common | `1b04eab94680` | COMPLETED |
 | 101 | `fiber_clippers` | `assets/craftable_items/fiber_clippers.png` | tool | common | `f8c790817f8b` | COMPLETED |
 | 102 | `fishing_rod` | `assets/craftable_items/fishing_rod.png` | tool | common | `34c94ec370d9` | COMPLETED |
@@ -198,12 +198,12 @@
 | 144 | `mashed_potato` | `assets/craftable_items/mashed_potato.png` | consumable | uncommon | `e624d7e87eb6` | COMPLETED |
 | 145 | `masonry_saw` | `assets/craftable_items/masonry_saw.png` | block | common | `2f9ca918374e` | COMPLETED |
 | 146 | `mosaic_tiles` | `assets/craftable_items/mosaic_tiles.png` | block | uncommon | `d57f44b2e4cb` | COMPLETED |
-| 147 | `nebula_graviton_core` | `assets/craftable_items/nebula_graviton_core.png` | craftable_items | Standard | `77b827616afc` | COMPLETED |
+| 147 | `nebula_graviton_core` | `assets/craftable_items/nebula_graviton_core.png` | accessory | ancient | `77b827616afc` | COMPLETED |
 | 148 | `necro_rune` | `assets/craftable_items/necro_rune.png` | special | rare | `9112079b526b` | COMPLETED |
 | 149 | `neptune_tide_rod` | `assets/craftable_items/neptune_tide_rod.png` | tool | legendary | `7c57a79990ba` | COMPLETED |
 | 150 | `night_gazer_elixir` | `assets/craftable_items/night_gazer_elixir.png` | consumable | uncommon | `f13b0effadad` | COMPLETED |
 | 151 | `oak_buckler` | `assets/craftable_items/oak_buckler.png` | accessory | common | `5c3a61e3ea8a` | COMPLETED |
-| 152 | `orbital_stardust_blade` | `assets/craftable_items/orbital_stardust_blade.png` | craftable_items | Standard | `6d362a7fe245` | COMPLETED |
+| 152 | `orbital_stardust_blade` | `assets/craftable_items/orbital_stardust_blade.png` | weapon | legendary | `6d362a7fe245` | COMPLETED |
 | 153 | `painting` | `assets/craftable_items/painting.png` | block | rare | `c191929afb47` | COMPLETED |
 | 154 | `pancit_bihon` | `assets/craftable_items/pancit_bihon.png` | consumable | uncommon | `42c5b3bd8fb7` | COMPLETED |
 | 155 | `pancit_noodles` | `assets/craftable_items/pancit_noodles.png` | material | common | `b3a2ff8b9ccd` | COMPLETED |
@@ -229,7 +229,7 @@
 | 175 | `spectral_lantern` | `assets/craftable_items/spectral_lantern.png` | block | uncommon | `9345fc83068f` | COMPLETED |
 | 176 | `speed_potion` | `assets/craftable_items/speed_potion.png` | consumable | uncommon | `40e0bcc3e468` | COMPLETED |
 | 177 | `spud_angler_rod` | `assets/craftable_items/spud_angler_rod.png` | tool | uncommon | `ccd788e4f87f` | COMPLETED |
-| 178 | `spud_of_destiny` | `assets/craftable_items/spud_of_destiny.png` | craftable_items | Standard | `1b305001dd16` | COMPLETED |
+| 178 | `spud_of_destiny` | `assets/craftable_items/spud_of_destiny.png` | accessory | mythic | `1b305001dd16` | COMPLETED |
 | 179 | `spud_quiver` | `assets/craftable_items/spud_quiver.png` | accessory | common | `aa41ae67473c` | COMPLETED |
 | 180 | `starch_blade` | `assets/craftable_items/starch_blade.png` | weapon | legendary | `3dc9813b5825` | COMPLETED |
 | 181 | `stone_brick` | `assets/craftable_items/stone_brick.png` | block | common | `2d51cce62884` | COMPLETED |

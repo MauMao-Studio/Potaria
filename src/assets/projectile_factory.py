@@ -755,12 +755,18 @@ PROJECTILE_BUILDERS = {
     "p40_abyssal_seed": _create_p40_abyssal_seed,
 }
 
+# Export individual public builder functions for direct imports (e.g. build_p01_iron_arrow)
+for _key, _fn in PROJECTILE_BUILDERS.items():
+    globals()[f"build_{_key}"] = _fn
+    globals()[f"create_{_key}"] = _fn
+
 
 class ProjectileRegistry(dict):
     """
     Specialized dictionary for Potaria projectiles supporting canonical keys
-    (e.g., 'p01_iron_arrow') while resolving aliases ('iron_arrow', 'P01', 'p01')
-    transparently during lookups without multiplying keys in iterations or disk exports.
+    (e.g., 'p01_iron_arrow') while resolving aliases ('iron_arrow', 'P01', 'p01',
+    case variants, and '.png' filenames) transparently without duplicating keys
+    in iterations, serialization, or disk exports.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -769,22 +775,96 @@ class ProjectileRegistry(dict):
     def register_alias(self, alias, canonical_key):
         self._aliases[alias] = canonical_key
 
-    def get(self, key, default=None):
+    @property
+    def aliases(self):
+        """Returns a copy of registered alias mappings."""
+        return dict(self._aliases)
+
+    def _normalize_key(self, key):
+        if not isinstance(key, str):
+            key = str(getattr(key, "item_id", getattr(key, "projectile_id", key)))
+        # Strip directory or file path prefix
+        if "/" in key or "\\" in key:
+            key = key.replace("\\", "/").split("/")[-1]
+        # Strip .png extension if present
+        if key.lower().endswith(".png"):
+            key = key[:-4]
+        return key
+
+    def _resolve_canonical_key(self, key):
+        # 1. Exact match in super()
         if super().__contains__(key):
-            return super().get(key, default)
+            return key
+        # 2. Exact match in aliases
         if key in self._aliases:
-            return super().get(self._aliases[key], default)
+            target = self._aliases[key]
+            if super().__contains__(target):
+                return target
+        # 3. Normalized string
+        norm = self._normalize_key(key)
+        if super().__contains__(norm):
+            return norm
+        if norm in self._aliases:
+            target = self._aliases[norm]
+            if super().__contains__(target):
+                return target
+        # 4. Lowercase and snake_case variant
+        low = norm.lower().replace("-", "_").replace(" ", "_")
+        if super().__contains__(low):
+            return low
+        if low in self._aliases:
+            target = self._aliases[low]
+            if super().__contains__(target):
+                return target
+        # 5. Uppercase variant (e.g. 'P01')
+        up = norm.upper()
+        if up in self._aliases:
+            target = self._aliases[up]
+            if super().__contains__(target):
+                return target
+        return None
+
+    def get(self, key, default=None):
+        canon = self._resolve_canonical_key(key)
+        if canon is not None:
+            return super().get(canon, default)
         return default
 
     def __getitem__(self, key):
-        if super().__contains__(key):
-            return super().__getitem__(key)
-        if key in self._aliases:
-            return super().__getitem__(self._aliases[key])
+        canon = self._resolve_canonical_key(key)
+        if canon is not None:
+            return super().__getitem__(canon)
         return super().__getitem__(key)
 
     def __contains__(self, key):
-        return super().__contains__(key) or key in self._aliases
+        return self._resolve_canonical_key(key) is not None
+
+    def pop(self, key, *args):
+        canon = self._resolve_canonical_key(key)
+        if canon is not None:
+            return super().pop(canon)
+        if args:
+            return args[0]
+        raise KeyError(key)
+
+    def __delitem__(self, key):
+        canon = self._resolve_canonical_key(key)
+        if canon is not None:
+            super().__delitem__(canon)
+            return
+        super().__delitem__(key)
+
+    def setdefault(self, key, default=None):
+        canon = self._resolve_canonical_key(key)
+        if canon is not None:
+            return super().__getitem__(canon)
+        norm = self._normalize_key(key)
+        return super().setdefault(norm, default)
+
+    def copy(self):
+        new_reg = ProjectileRegistry(super().copy())
+        new_reg._aliases = dict(self._aliases)
+        return new_reg
 
 
 def generate_library_projectiles():
@@ -793,4 +873,11 @@ def generate_library_projectiles():
     for key, builder in PROJECTILE_BUILDERS.items():
         sprites[key] = builder()
     return sprites
+
+
+__all__ = [
+    "ProjectileRegistry",
+    "generate_library_projectiles",
+    "PROJECTILE_BUILDERS",
+] + [f"build_{k}" for k in PROJECTILE_BUILDERS] + [f"create_{k}" for k in PROJECTILE_BUILDERS]
 

@@ -105,6 +105,70 @@ class TestGeneratedProjectileAssets(unittest.TestCase):
             self.assertIn(name_snake, self.af.projectiles)
             self.assertIn(pid_upper, self.af.projectiles)
 
+    def test_06_public_builder_functions(self):
+        import src.assets.projectile_factory as pf
+        for key in self.builder_keys:
+            build_name = f"build_{key}"
+            create_name = f"create_{key}"
+            self.assertTrue(hasattr(pf, build_name), f"Missing public builder function: {build_name}")
+            self.assertTrue(hasattr(pf, create_name), f"Missing public builder function: {create_name}")
+            builder = getattr(pf, build_name)
+            self.assertTrue(callable(builder))
+            surf = builder()
+            self.assertIsInstance(surf, pygame.Surface)
+            self.assertEqual(surf.get_size(), (32, 32))
+
+    def test_07_projectile_registry_dict_protocol(self):
+        reg = self.af.projectiles.copy()
+        self.assertIsInstance(reg, type(self.af.projectiles), "copy() must return a ProjectileRegistry instance")
+        self.assertIsNotNone(reg.get("iron_arrow"), "Copied registry must preserve alias lookups")
+
+        # aliases property
+        self.assertIsInstance(reg.aliases, dict)
+        self.assertIn("iron_arrow", reg.aliases)
+        self.assertEqual(reg.aliases["iron_arrow"], "p01_iron_arrow")
+
+        # setdefault on alias
+        val = reg.setdefault("iron_arrow", None)
+        self.assertIsNotNone(val)
+        self.assertNotIn("iron_arrow", list(reg.keys()), "setdefault on alias must not pollute canonical keys")
+
+        # pop on alias
+        popped = reg.pop("iron_arrow")
+        self.assertIs(popped, val)
+        self.assertNotIn("p01_iron_arrow", reg)
+        self.assertNotIn("iron_arrow", reg)
+
+        # pop with default
+        missing = reg.pop("iron_arrow", "DEFAULT")
+        self.assertEqual(missing, "DEFAULT")
+
+        # __delitem__ on alias
+        self.assertIn("p02_heavy_bolt", reg)
+        self.assertIn("heavy_bolt", reg)
+        del reg["heavy_bolt"]
+        self.assertNotIn("p02_heavy_bolt", reg)
+        self.assertNotIn("heavy_bolt", reg)
+        self.assertIsNone(reg.get("heavy_bolt"))
+
+    def test_08_flexible_normalization_lookups(self):
+        # .png extension lookup
+        self.assertIsNotNone(self.af.projectiles.get("p01_iron_arrow.png"))
+        self.assertIsNotNone(self.af.projectiles.get("iron_arrow.png"))
+        self.assertIn("p01_iron_arrow.png", self.af.projectiles)
+
+        # directory path lookup
+        self.assertIsNotNone(self.af.projectiles.get("assets/projectiles/p01_iron_arrow.png"))
+        self.assertIn("assets/projectiles/p01_iron_arrow.png", self.af.projectiles)
+
+        # case and space/hyphen variants
+        self.assertIsNotNone(self.af.projectiles.get("Iron Arrow"))
+        self.assertIsNotNone(self.af.projectiles.get("IRON_ARROW"))
+        self.assertIsNotNone(self.af.projectiles.get("P01_IRON_ARROW"))
+        self.assertIn("Iron Arrow", self.af.projectiles)
+        self.assertIn("P01_IRON_ARROW", self.af.projectiles)
+
 
 if __name__ == "__main__":
     unittest.main()
+

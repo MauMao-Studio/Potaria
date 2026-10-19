@@ -8834,9 +8834,10 @@ class AssetFactory:
             and os.path.exists(os.path.join(proj_dir, "rod_javelin.png"))
             and os.path.exists(os.path.join(proj_dir, "scepter_pulse.png"))
         )
+        from src.assets.projectile_factory import PROJECTILE_BUILDERS
         has_library_projs = (
-            os.path.exists(os.path.join(proj_dir, "p01_iron_arrow.png"))
-            and os.path.exists(os.path.join(proj_dir, "p40_abyssal_seed.png"))
+            all(os.path.exists(os.path.join(proj_dir, f"{k}.png")) for k in PROJECTILE_BUILDERS)
+            if os.path.exists(proj_dir) else False
         )
         has_effects = os.path.exists(os.path.join(eff_dir, "ancient_slash_0.png")) and len(os.listdir(eff_dir)) >= 100 if os.path.exists(eff_dir) else False
         from src.ui.crafting import load_craftable_recipes
@@ -9065,7 +9066,14 @@ def write_unique_assets_tracker(target_dir="assets", tracker_path="UNIQUE_ASSETS
     and writes a comprehensive checkpoint tracking markdown file (UNIQUE_ASSETS_TRACKER.md)
     with zero emojis and zero local machine file paths/URIs.
     """
-    from src.ui.inventory import ITEM_REGISTRY
+    from src.ui.inventory import ITEM_REGISTRY, load_custom_items
+    load_custom_items()
+    try:
+        from src.modding.mod_manager import ModManager
+        mm = ModManager()
+        mm.load_all()
+    except Exception:
+        pass
 
     asset_records = []
     category_counts = {}
