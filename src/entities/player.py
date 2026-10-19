@@ -129,6 +129,11 @@ class Player:
         self.fireball_sprite = pygame.transform.scale(asset_factory.boss["fireball"], (24, 24))
         self.vfx_manager = None
 
+        # Celestial Reversal & Timed Projectile Reflection
+        self.reflection_field_timer = 0.0
+        self.reflection_budget = 0
+        self.reflected_projectiles_count = 0
+
         # Catalog Passive Gear Buff States
         self.radiant_shield_hp = 40.0
         self.radiant_shield_max = 40.0
@@ -408,13 +413,21 @@ class Player:
 
     def cast_skill_hotkey(self, key_name, particle_system, camera):
         """Executes active skill mapped to hotkey (Q, F, V, R)."""
-        k = key_name.upper()
+        k = str(key_name).upper()
         if k == "C":
             k = "V"
         s_id = self.skills.hotkey_bindings.get(k)
         if not s_id:
-            mapping = {"Q": "power_slash", "F": "whirlwind", "V": "dash", "R": "fireball"}
+            mapping = {
+                "Q": "power_slash",
+                "F": "whirlwind",
+                "V": "dash",
+                "R": "fireball",
+                "Z": "celestial_reversal",
+            }
             s_id = mapping.get(k)
+        if not s_id and str(key_name).lower() in getattr(self.skills, "all_skills", {}):
+            s_id = str(key_name).lower()
         if not s_id:
             return False
 
@@ -568,6 +581,20 @@ class Player:
             if self.vfx_manager:
                 self.vfx_manager.spawn("shield_bash", bash_x, self.center_y, duration=0.45, scale=1.4 if is_evolved else 1.2)
                 self.vfx_manager.spawn("ancient_cleave_grand", bash_x, self.center_y, duration=0.4, scale=1.1)
+
+        elif s_id == "celestial_reversal":
+            lvl = self.skills.get_skill_level("celestial_reversal") if hasattr(self.skills, "get_skill_level") else 1
+            is_evolved = hasattr(self.skills, "is_skill_evolved") and self.skills.is_skill_evolved("celestial_reversal")
+            # Action timeline: reflection window ~0.40s + level scaling (0.40s - 0.52s)
+            self.reflection_field_timer = 0.40 + (lvl - 1) * 0.03
+            self.reflection_budget = 12 + (lvl - 1) * 3
+            self.i_frame_timer = max(self.i_frame_timer, self.reflection_field_timer + 0.15)
+            camera.add_shake(8.0 if is_evolved else 6.0, 0.35)
+            particle_system.spawn_sparks(self.center_x, self.center_y, (255, 235, 120), count=45 if is_evolved else 30)
+            particle_system.spawn_debris(self.center_x, self.center_y, (120, 240, 255), count=25 if is_evolved else 15)
+            if self.vfx_manager:
+                self.vfx_manager.spawn("celestial_reversal_activate", self.center_x, self.center_y, duration=0.45, scale=1.4, anchor=self)
+                self.vfx_manager.spawn("ancient_radiant_aura", self.center_x, self.center_y, duration=0.45, scale=1.3, anchor=self)
 
         return True
 
@@ -940,6 +967,10 @@ class Player:
             self.i_frame_timer -= dt
         if self.dash_timer > 0:
             self.dash_timer -= dt
+        if self.reflection_field_timer > 0:
+            self.reflection_field_timer = max(0.0, self.reflection_field_timer - dt)
+            if self.reflection_field_timer <= 0:
+                self.reflection_budget = 0
         if self.ignore_platforms_timer > 0:
             self.ignore_platforms_timer -= 1
 

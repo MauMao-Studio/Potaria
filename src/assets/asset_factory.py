@@ -8530,6 +8530,157 @@ class AssetFactory:
                 pygame.draw.circle(surf, (255, 220, 80, fa), (32, 32), fr + 3, 2)
             self.animated_effects["weapon_charge_burst"].append(surf)
 
+        # 22. celestial_reversal_activate (8 frames, 64x64) - Radiant celestial reflection shield
+        self.animated_effects["celestial_reversal_activate"] = []
+        for i in range(8):
+            surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+            prog = (i + 1) / 8.0
+            r = int(12 + prog * 16)
+            alpha = max(30, int(255 * (1.0 - prog * 0.4)))
+            # Hexagonal celestial barrier
+            pts = []
+            for h in range(6):
+                hang = h * (math.pi / 3.0) + prog * 0.2
+                hx = int(32 + math.cos(hang) * r)
+                hy = int(32 + math.sin(hang) * r)
+                pts.append((hx, hy))
+            pygame.draw.polygon(surf, (255, 230, 90, int(alpha * 0.35)), pts)
+            pygame.draw.polygon(surf, (255, 245, 140, alpha), pts, 2)
+            # Inner gleaming rings
+            pygame.draw.circle(surf, (120, 240, 255, alpha), (32, 32), max(2, r - 6), 1)
+            pygame.draw.circle(surf, (255, 255, 255, alpha), (32, 32), max(1, r - 12), 1)
+            # Six orbital starlight runes
+            for h in range(6):
+                hang = h * (math.pi / 3.0) - prog * 0.4
+                sx = int(32 + math.cos(hang) * (r + 4))
+                sy = int(32 + math.sin(hang) * (r + 4))
+                pygame.draw.circle(surf, (255, 255, 220, alpha), (sx, sy), 2)
+            self.animated_effects["celestial_reversal_activate"].append(surf)
+
+        # 23. projectile_reflect (8 frames, 64x64) - Radiant counter-shockwave & deflecting burst
+        self.animated_effects["projectile_reflect"] = []
+        for i in range(8):
+            surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+            prog = (i + 1) / 8.0
+            r = int(6 + prog * 24)
+            alpha = max(20, int(255 * (1.0 - prog * 0.75)))
+            # Expanding deflection shockwave ring
+            pygame.draw.circle(surf, (255, 235, 120, alpha), (32, 32), r, 3)
+            pygame.draw.circle(surf, (140, 245, 255, alpha), (32, 32), max(1, r - 4), 2)
+            pygame.draw.circle(surf, (255, 255, 255, alpha), (32, 32), max(1, r - 8), 1)
+            # Radiant deflection spark rays
+            for sp in range(8):
+                sang = sp * (math.pi / 4.0) + prog * 0.3
+                sx = int(32 + math.cos(sang) * (r + 5))
+                sy = int(32 + math.sin(sang) * (r + 5))
+                pygame.draw.line(surf, (255, 250, 180, alpha), (32, 32), (sx, sy), 2)
+            self.animated_effects["projectile_reflect"].append(surf)
+
+        # 24. blight_apocalypse_telegraph (8 frames, 64x64) - Safe corridor telegraph with corrupted blight runes
+        self.animated_effects["blight_apocalypse_telegraph"] = []
+        for i in range(8):
+            surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+            prog = (i + 1) / 8.0
+            alpha = max(30, int(130 + 110 * math.sin(prog * math.pi)))
+            r_outer = int(21 + i)
+            r_inner = max(8, int(18 - i))
+            # Corrupted ground rune with expanding / pulsing boundary
+            pygame.draw.circle(surf, (65, 220, 85, max(25, int(alpha * 0.4))), (32, 32), r_outer, 2)
+            pygame.draw.circle(surf, (175, 45, 230, max(25, int(alpha * 0.5))), (32, 32), r_inner, 1)
+            # Marked directional safe corridor
+            corridor_w = 12
+            pygame.draw.line(surf, (240, 255, 220, alpha), (32 - corridor_w, 6), (32 + corridor_w, 6), 2)
+            pygame.draw.line(surf, (240, 255, 220, alpha), (32 - corridor_w, 6), (32 - corridor_w, 58), 2)
+            pygame.draw.line(surf, (240, 255, 220, alpha), (32 + corridor_w, 6), (32 + corridor_w, 58), 2)
+            pygame.draw.line(surf, (240, 255, 220, alpha), (32 - corridor_w, 58), (32 + corridor_w, 58), 2)
+            # Dynamic orbiting blight rune markers (angle strictly changes with i)
+            for rn in range(4):
+                ang = rn * (math.pi / 2.0) + (i * (math.pi / 8.0))
+                rx = int(32 + math.cos(ang) * (r_outer - 2))
+                ry = int(32 + math.sin(ang) * (r_outer - 2))
+                pygame.draw.circle(surf, (120, 255, 140, alpha), (rx, ry), 2)
+            # Moving corridor chevron indicator along y
+            chev_y = int(10 + (i * 5))
+            pygame.draw.lines(surf, (180, 255, 190, alpha), False, [(26, chev_y + 4), (32, chev_y), (38, chev_y + 4)], 2)
+            self.animated_effects["blight_apocalypse_telegraph"].append(surf)
+
+        # 25. caldera_catastrophe_telegraph (8 frames, 64x64) - Seismic floor fractures and warning shockwave ring
+        self.animated_effects["caldera_catastrophe_telegraph"] = []
+        for i in range(8):
+            surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+            prog = (i + 1) / 8.0
+            r = int(8 + prog * 22)
+            alpha = int(160 + 90 * math.sin(prog * math.pi))
+            # Concentric magma warning rings
+            pygame.draw.circle(surf, (255, 75, 20, alpha), (32, 32), r, 2)
+            pygame.draw.circle(surf, (255, 180, 40, int(alpha * 0.6)), (32, 32), max(2, r - 6), 1)
+            # Molten ground cracks radiating outward
+            cracks = [(32, 10), (52, 22), (54, 46), (32, 54), (12, 46), (10, 22)]
+            for cx, cy in cracks:
+                pygame.draw.line(surf, (255, 220, 80, alpha), (32, 32), (cx, cy), 1)
+            self.animated_effects["caldera_catastrophe_telegraph"].append(surf)
+
+        # 26. absolute_zero_telegraph (8 frames, 64x64) - Contracting frost ring with geometric snowflake facets
+        self.animated_effects["absolute_zero_telegraph"] = []
+        for i in range(8):
+            surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+            prog = (i + 1) / 8.0
+            r = int(28 - prog * 10)
+            alpha = int(150 + 95 * math.sin(prog * math.pi))
+            # Contracting frost snowflake perimeter
+            pygame.draw.circle(surf, (130, 230, 255, alpha), (32, 32), r, 2)
+            # Snowflake spokes with escape gap
+            for sp in range(6):
+                if sp in (1, 4):
+                    continue  # Safe escape gap
+                sp_ang = sp * (math.pi / 3.0)
+                sx = int(32 + math.cos(sp_ang) * (r + 4))
+                sy = int(32 + math.sin(sp_ang) * (r + 4))
+                pygame.draw.line(surf, (240, 255, 255, alpha), (32, 32), (sx, sy), 2)
+            self.animated_effects["absolute_zero_telegraph"].append(surf)
+
+        # 27. kingdom_of_the_unburied_telegraph (8 frames, 64x64) - Spectral bone lane divisions and scythe arcs
+        self.animated_effects["kingdom_of_the_unburied_telegraph"] = []
+        for i in range(8):
+            surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+            prog = (i + 1) / 8.0
+            alpha = max(30, int(130 + 110 * math.sin(prog * math.pi)))
+            # Lane curtain lines
+            lane_x1 = 16
+            lane_x2 = 48
+            pygame.draw.line(surf, (215, 215, 230, alpha), (lane_x1, 6), (lane_x1, 58), 2)
+            pygame.draw.line(surf, (215, 215, 230, alpha), (lane_x2, 6), (lane_x2, 58), 2)
+            # Dynamic sweeping scythe danger arc preview with progressive angle rotation
+            rot = i * (math.pi / 8.0)
+            s_rect = pygame.Rect(12, 12, 40, 40)
+            pygame.draw.arc(surf, (165, 75, 245, alpha), s_rect, 0.4 + rot, 2.0 + rot, 2)
+            pygame.draw.arc(surf, (240, 210, 255, alpha), s_rect, math.pi + 0.4 + rot, math.pi + 2.0 + rot, 2)
+            # Spectral soul wisps floating along lanes
+            wisp1_y = int(8 + (i * 6))
+            wisp2_y = int(54 - (i * 6))
+            pygame.draw.circle(surf, (160, 235, 255, alpha), (lane_x1, wisp1_y), 2)
+            pygame.draw.circle(surf, (210, 150, 255, alpha), (lane_x2, wisp2_y), 2)
+            self.animated_effects["kingdom_of_the_unburied_telegraph"].append(surf)
+
+        # Guarantee all animated effects exist on disk in assets/effects/
+        eff_dir = os.path.join("assets", "effects")
+        os.makedirs(eff_dir, exist_ok=True)
+        for eff_name, frames in self.animated_effects.items():
+            if isinstance(frames, list):
+                for idx, frame in enumerate(frames):
+                    fpath = os.path.join(eff_dir, f"{eff_name}_{idx}.png")
+                    if isinstance(frame, pygame.Surface):
+                        try:
+                            pygame.image.save(frame, fpath)
+                        except Exception:
+                            pass
+            elif isinstance(frames, pygame.Surface):
+                fpath = os.path.join(eff_dir, f"{eff_name}.png")
+                try:
+                    pygame.image.save(frames, fpath)
+                except Exception:
+                    pass
+
         # Guarantee all registered craftable items exist on disk in assets/craftable_items/
         c_dir = os.path.join("assets", "craftable_items")
         if os.path.exists(c_dir):
@@ -8808,6 +8959,196 @@ class AssetFactory:
         pygame.draw.circle(eh, (255, 255, 255), (16, 24), 2)
         self.skill_icons["event_horizon"] = eh
 
+        # 11. Celestial Reversal / Celestial Mirror (Ancient Tier)
+        cr = make_base_frame((40, 35, 15), (85, 75, 25), (255, 225, 90))
+        # Hexagonal celestial reflection shield
+        pts = [(16, 7), (24, 11), (24, 21), (16, 25), (8, 21), (8, 11)]
+        pygame.draw.polygon(cr, (255, 240, 140), pts, 2)
+        pygame.draw.polygon(cr, (120, 240, 255), [(16, 10), (22, 13), (22, 19), (16, 22), (10, 19), (10, 13)], 1)
+        # Deflected light ray
+        pygame.draw.line(cr, (255, 255, 255), (6, 24), (16, 16), 2)
+        pygame.draw.line(cr, (255, 235, 100), (16, 16), (26, 8), 2)
+        pygame.draw.circle(cr, (255, 255, 255), (16, 16), 2)
+        self.skill_icons["celestial_reversal"] = cr
+
+        cm = make_base_frame((50, 45, 20), (100, 90, 35), (255, 240, 120))
+        # Prismatic diamond celestial mirror with astral aura
+        pygame.draw.polygon(cm, (255, 255, 255), [(16, 5), (26, 16), (16, 27), (6, 16)], 2)
+        pygame.draw.polygon(cm, (140, 245, 255), [(16, 8), (23, 16), (16, 24), (9, 16)], 1)
+        pygame.draw.line(cm, (255, 215, 60), (16, 5), (16, 27), 1)
+        pygame.draw.line(cm, (255, 215, 60), (6, 16), (26, 16), 1)
+        for mx, my in [(16, 8), (23, 16), (16, 24), (9, 16)]:
+            cm.set_at((mx, my), (255, 255, 255))
+        self.skill_icons["celestial_mirror"] = cm
+
+        # 12. Shuriken Storm
+        ss = make_base_frame((25, 30, 40), (45, 55, 75), (180, 200, 225))
+        # Quad-blade rotating shuriken
+        pygame.draw.polygon(ss, (230, 240, 255), [(16, 7), (18, 14), (25, 16), (18, 18), (16, 25), (14, 18), (7, 16), (14, 14)])
+        pygame.draw.circle(ss, (30, 35, 50), (16, 16), 3)
+        pygame.draw.circle(ss, (255, 255, 255), (16, 16), 1)
+        self.skill_icons["shuriken_storm"] = ss
+
+        # 13. Star Seeker
+        st = make_base_frame((20, 20, 50), (45, 40, 100), (240, 210, 80))
+        # 5-point homing star with celestial streak
+        pygame.draw.line(st, (140, 220, 255), (6, 26), (16, 16), 2)
+        for sa in range(5):
+            sang = sa * (2.0 * math.pi / 5.0) - math.pi / 2.0
+            sx = int(16 + math.cos(sang) * 7)
+            sy = int(16 + math.sin(sang) * 7)
+            pygame.draw.line(st, (255, 235, 90), (16, 16), (sx, sy), 2)
+        pygame.draw.circle(st, (255, 255, 255), (16, 16), 2)
+        self.skill_icons["star_seeker"] = st
+
+        # 14. Arcane Barrage
+        ab = make_base_frame((35, 15, 60), (70, 30, 110), (220, 120, 255))
+        # Arcane orb + lance beam
+        pygame.draw.circle(ab, (240, 140, 255), (11, 16), 4)
+        pygame.draw.circle(ab, (255, 255, 255), (11, 16), 2)
+        pygame.draw.line(ab, (240, 120, 255), (16, 16), (26, 16), 3)
+        pygame.draw.line(ab, (255, 255, 255), (16, 16), (26, 16), 1)
+        self.skill_icons["arcane_barrage"] = ab
+
+        # 15. Venom Volley
+        vv = make_base_frame((20, 45, 25), (35, 85, 45), (110, 240, 90))
+        # Splattering toxic poison globes
+        pygame.draw.circle(vv, (85, 230, 75), (14, 15), 5)
+        pygame.draw.circle(vv, (210, 255, 160), (13, 14), 2)
+        pygame.draw.circle(vv, (140, 245, 60), (22, 11), 3)
+        pygame.draw.circle(vv, (90, 210, 120), (20, 22), 3)
+        self.skill_icons["venom_volley"] = vv
+
+        # 16. Void Implosion
+        vi = make_base_frame((25, 10, 40), (50, 20, 75), (170, 70, 240))
+        # Condensing void sphere with inward arrows
+        pygame.draw.circle(vi, (15, 5, 25), (16, 16), 6)
+        pygame.draw.circle(vi, (200, 90, 255), (16, 16), 7, 2)
+        for d in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            pygame.draw.line(vi, (230, 140, 255), (16 + d[0] * 12, 16 + d[1] * 12), (16 + d[0] * 8, 16 + d[1] * 8), 2)
+        self.skill_icons["void_implosion"] = vi
+
+        # 17. Crystal Shatter
+        cs = make_base_frame((15, 40, 50), (30, 75, 95), (100, 230, 240))
+        # Sharp faceted crystal cluster
+        pygame.draw.polygon(cs, (180, 245, 255), [(16, 6), (22, 16), (16, 26), (10, 16)])
+        pygame.draw.polygon(cs, (255, 255, 255), [(16, 8), (20, 16), (16, 24), (12, 16)], 1)
+        pygame.draw.polygon(cs, (120, 220, 240), [(22, 12), (26, 16), (22, 20)])
+        pygame.draw.polygon(cs, (120, 220, 240), [(10, 12), (6, 16), (10, 20)])
+        self.skill_icons["crystal_shatter"] = cs
+
+        # 18. Chain Discharge
+        cd = make_base_frame((15, 30, 60), (30, 65, 120), (130, 210, 255))
+        # High-voltage zigzag lightning
+        pygame.draw.lines(cd, (255, 255, 255), False, [(17, 6), (12, 14), (19, 14), (14, 26)], 2)
+        pygame.draw.lines(cd, (110, 210, 255), False, [(17, 6), (12, 14), (19, 14), (14, 26)], 1)
+        self.skill_icons["chain_discharge"] = cd
+
+        # 19. Meteor Shower
+        ms = make_base_frame((55, 25, 15), (100, 40, 20), (255, 120, 40))
+        # Multiple falling meteor fragments
+        pygame.draw.line(ms, (255, 90, 20), (10, 6), (18, 14), 2)
+        pygame.draw.circle(ms, (255, 220, 100), (18, 14), 3)
+        pygame.draw.line(ms, (255, 90, 20), (16, 12), (24, 20), 2)
+        pygame.draw.circle(ms, (255, 220, 100), (24, 20), 3)
+        self.skill_icons["meteor_shower"] = ms
+
+        # 20. Piercing Blizzard
+        pb = make_base_frame((15, 35, 60), (30, 75, 120), (140, 230, 255))
+        # Piercing frost spear with snowflake
+        pygame.draw.line(pb, (255, 255, 255), (8, 24), (24, 8), 3)
+        pygame.draw.line(pb, (140, 220, 255), (8, 24), (24, 8), 1)
+        pygame.draw.circle(pb, (220, 245, 255), (16, 16), 4, 1)
+        self.skill_icons["piercing_blizzard"] = pb
+
+        # 21. Solar Detonation
+        sd = make_base_frame((55, 40, 15), (105, 75, 25), (255, 210, 50))
+        # Radiant 8-ray sun sigil
+        pygame.draw.circle(sd, (255, 220, 80), (16, 16), 6)
+        pygame.draw.circle(sd, (255, 255, 255), (16, 16), 3)
+        for ray in range(8):
+            rang = ray * (math.pi / 4.0)
+            rx = int(16 + math.cos(rang) * 9)
+            ry = int(16 + math.sin(rang) * 9)
+            pygame.draw.line(sd, (255, 190, 40), (16, 16), (rx, ry), 2)
+        self.skill_icons["solar_detonation"] = sd
+
+        # 22. Arcane Minefield
+        am = make_base_frame((30, 20, 50), (60, 40, 95), (200, 130, 255))
+        # Runic proximity mine
+        pygame.draw.rect(am, (170, 80, 245), (11, 11, 10, 10), 2)
+        pygame.draw.circle(am, (255, 215, 100), (16, 16), 3)
+        pygame.draw.circle(am, (255, 255, 255), (16, 16), 1)
+        self.skill_icons["arcane_minefield"] = am
+
+        # 23. Frost Bomb
+        fbm = make_base_frame((15, 40, 55), (30, 80, 110), (120, 230, 255))
+        # Round cryogenic bomb with frost fuse
+        pygame.draw.circle(fbm, (70, 180, 225), (16, 17), 7)
+        pygame.draw.circle(fbm, (210, 250, 255), (14, 15), 2)
+        pygame.draw.line(fbm, (255, 255, 255), (16, 10), (19, 7), 2)
+        fbm.set_at((20, 6), (255, 225, 120))
+        self.skill_icons["frost_bomb"] = fbm
+
+        # 24. Ember Cluster
+        ec = make_base_frame((55, 20, 15), (105, 35, 20), (255, 110, 30))
+        # Central flame cluster
+        pygame.draw.circle(ec, (255, 90, 20), (16, 16), 6)
+        pygame.draw.circle(ec, (255, 220, 70), (16, 16), 3)
+        for ex, ey in [(10, 11), (22, 12), (12, 22), (21, 21)]:
+            pygame.draw.circle(ec, (255, 160, 40), (ex, ey), 2)
+        self.skill_icons["ember_cluster"] = ec
+
+        # 25. Spectral Pursuit
+        sp = make_base_frame((30, 15, 50), (60, 25, 95), (190, 90, 240))
+        # Ghostly skull silhouette
+        pygame.draw.circle(sp, (220, 210, 245), (16, 14), 6)
+        pygame.draw.rect(sp, (220, 210, 245), (13, 18, 6, 4))
+        sp.set_at((14, 13), (35, 15, 55))
+        sp.set_at((18, 13), (35, 15, 55))
+        pygame.draw.line(sp, (170, 70, 220), (11, 24), (16, 21), 2)
+        self.skill_icons["spectral_pursuit"] = sp
+
+        # 26. Returning Hatchet
+        rh = make_base_frame((45, 30, 20), (85, 55, 35), (220, 180, 110))
+        # Thrown waraxe with rotation arc
+        pygame.draw.line(rh, (160, 105, 60), (10, 22), (22, 10), 3)
+        pygame.draw.polygon(rh, (220, 230, 245), [(20, 8), (25, 6), (26, 13), (19, 11)])
+        pygame.draw.arc(rh, (255, 255, 255), (7, 7, 18, 18), 0.5, 2.5, 1)
+        self.skill_icons["returning_hatchet"] = rh
+
+        # 27. Bolo Cyclone
+        bc = make_base_frame((35, 45, 25), (65, 85, 45), (180, 225, 100))
+        # Curved bolo blade with wind vortex
+        pygame.draw.arc(bc, (225, 235, 250), (6, 6, 20, 20), 0.2, 2.2, 3)
+        pygame.draw.ellipse(bc, (160, 245, 200), (5, 9, 22, 14), 1)
+        pygame.draw.circle(bc, (255, 215, 60), (10, 22), 2)
+        self.skill_icons["bolo_cyclone"] = bc
+
+        # 28. Ancestral Guidance
+        ag = make_base_frame((25, 40, 45), (45, 80, 90), (140, 240, 210))
+        # Diwa wisp orb with protective aura
+        pygame.draw.circle(ag, (140, 245, 215), (16, 16), 6)
+        pygame.draw.circle(ag, (255, 255, 255), (16, 16), 3)
+        pygame.draw.arc(ag, (180, 255, 235), (6, 6, 20, 20), 0.0, 3.14, 1)
+        self.skill_icons["ancestral_guidance"] = ag
+
+        # 29. Sumpang Sibat
+        ssb = make_base_frame((40, 15, 30), (80, 25, 55), (240, 80, 120))
+        # Cursed spear head with barbed wings
+        pygame.draw.line(ssb, (140, 80, 40), (8, 24), (21, 11), 2)
+        pygame.draw.polygon(ssb, (245, 70, 100), [(24, 8), (20, 13), (17, 12), (19, 9)])
+        pygame.draw.line(ssb, (255, 220, 120), (24, 8), (17, 15), 1)
+        self.skill_icons["sumpang_sibat"] = ssb
+
+        # 30. Magma Eruption
+        me = make_base_frame((60, 20, 15), (115, 35, 20), (255, 100, 20))
+        # Ground fissure erupting molten pillar
+        pygame.draw.line(me, (40, 15, 10), (6, 24), (26, 24), 3)
+        pygame.draw.polygon(me, (255, 90, 20), [(12, 23), (16, 8), (20, 23)])
+        pygame.draw.polygon(me, (255, 235, 100), [(14, 23), (16, 12), (18, 23)])
+        self.skill_icons["magma_eruption"] = me
+
         # Export all skill icons directly to assets/skills/
         skills_dir = os.path.join("assets", "skills")
         os.makedirs(skills_dir, exist_ok=True)
@@ -8839,7 +9180,7 @@ class AssetFactory:
             all(os.path.exists(os.path.join(proj_dir, f"{k}.png")) for k in PROJECTILE_BUILDERS)
             if os.path.exists(proj_dir) else False
         )
-        has_effects = os.path.exists(os.path.join(eff_dir, "ancient_slash_0.png")) and len(os.listdir(eff_dir)) >= 100 if os.path.exists(eff_dir) else False
+        has_effects = os.path.exists(os.path.join(eff_dir, "ancient_slash_0.png")) and os.path.exists(os.path.join(eff_dir, "celestial_reversal_activate_0.png")) and len(os.listdir(eff_dir)) >= 140 if os.path.exists(eff_dir) else False
         from src.ui.crafting import load_craftable_recipes
         craftable_recipes = load_craftable_recipes()
         crafting_item_ids = {r["result"] for r in craftable_recipes}

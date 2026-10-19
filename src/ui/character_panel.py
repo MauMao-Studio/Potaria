@@ -365,12 +365,19 @@ class CharacterPanel:
         target_surf.blit(grim_title, (px + 30, gy))
 
         all_skills = list(SKILL_DEFINITIONS.keys())
+        card_w = 82
+        card_h = 21
+        col_gap = 4
+        row_step = 23
+        start_x = px + 24
+        gy_start = gy + 17
+
         for i, s_id in enumerate(all_skills):
-            col = i % 4
-            row = i // 4
-            gx = px + 30 + col * 126
-            gy_pos = gy + 22 + row * 40
-            g_rect = pygame.Rect(gx, gy_pos, 120, 34)
+            col = i % 6
+            row = i // 6
+            gx = start_x + col * (card_w + col_gap)
+            gy_pos = gy_start + row * row_step
+            g_rect = pygame.Rect(gx, gy_pos, card_w, card_h)
             self.grimoire_rects[s_id] = g_rect
 
             s_data = SKILL_DEFINITIONS[s_id]
@@ -385,9 +392,9 @@ class CharacterPanel:
                     break
 
             bg_col = (42, 68, 98) if is_selected_grim else ((30, 48, 70) if is_learned else (24, 26, 32))
-            pygame.draw.rect(target_surf, bg_col, g_rect, border_radius=5)
+            pygame.draw.rect(target_surf, bg_col, g_rect, border_radius=4)
             bd_col = COLOR_GOLD if is_selected_grim else ((80, 180, 240) if is_learned else (55, 60, 70))
-            pygame.draw.rect(target_surf, bd_col, g_rect, 2 if is_selected_grim else 1, border_radius=5)
+            pygame.draw.rect(target_surf, bd_col, g_rect, 2 if is_selected_grim else 1, border_radius=4)
 
             # Draw skill icon if available
             g_icon_drawn = False
@@ -398,32 +405,34 @@ class CharacterPanel:
                 if not icon_surf:
                     icon_surf = self.asset_factory.skill_icons.get(s_id)
                 if icon_surf:
-                    icon_sc = pygame.transform.scale(icon_surf, (24, 24))
+                    icon_sc = pygame.transform.scale(icon_surf, (17, 17))
                     if not is_learned:
                         icon_sc.fill((60, 60, 60, 160), special_flags=pygame.BLEND_RGBA_MULT)
-                    target_surf.blit(icon_sc, (gx + 5, gy_pos + 5))
+                    target_surf.blit(icon_sc, (gx + 2, gy_pos + 2))
                     g_icon_drawn = True
 
-            text_offset_x = gx + (32 if g_icon_drawn else 6)
+            text_offset_x = gx + (21 if g_icon_drawn else 4)
+            avail_w = max(10, card_w - (text_offset_x - gx) - 2)
 
             # Name and status badge
             skill_full_name = s_data.get("name", s_id)
-            name_font = self.font_reg_xs if self.font_reg_sm.size(skill_full_name)[0] > 84 else self.font_reg_sm
+            disp_font = self.font_reg_xs
             if is_learned:
-                lvl = player.skills.get_skill_level(s_id) if hasattr(player.skills, "get_skill_level") else 1
-                s_name = name_font.render(skill_full_name, True, (255, 255, 255))
+                prefix = f"[{bound_key}] " if bound_key else ""
+                disp_text = f"{prefix}{skill_full_name}"
+                while disp_text and disp_font.size(disp_text)[0] > avail_w:
+                    disp_text = disp_text[:-1]
+                s_name = disp_font.render(disp_text, True, COLOR_GOLD if bound_key else (255, 255, 255))
                 target_surf.blit(s_name, (text_offset_x, gy_pos + 4))
-                status_txt = f"[{bound_key}] Lv.{lvl}" if bound_key else f"[Ready] Lv.{lvl}"
-                stat_surf = self.font_reg_xs.render(status_txt, True, COLOR_GOLD if bound_key else (80, 220, 120))
-                target_surf.blit(stat_surf, (text_offset_x, gy_pos + 18))
             else:
-                s_name = name_font.render(skill_full_name, True, (135, 140, 150))
+                disp_text = skill_full_name
+                while disp_text and disp_font.size(disp_text)[0] > avail_w:
+                    disp_text = disp_text[:-1]
+                s_name = disp_font.render(disp_text, True, (135, 140, 150))
                 target_surf.blit(s_name, (text_offset_x, gy_pos + 4))
-                stat_surf = self.font_reg_xs.render("[Locked]", True, (180, 85, 85))
-                target_surf.blit(stat_surf, (text_offset_x, gy_pos + 18))
 
             if g_rect.collidepoint(mouse_x, mouse_y):
-                pygame.draw.rect(target_surf, (255, 230, 80), g_rect, 2, border_radius=5)
+                pygame.draw.rect(target_surf, (255, 230, 80), g_rect, 2, border_radius=4)
                 self.hovered_skill_id = s_id
 
         # ----------------------------------------------------

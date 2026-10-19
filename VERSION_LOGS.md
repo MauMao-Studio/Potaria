@@ -10,7 +10,8 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v0.2.7a** | October 2026 | *Potaria Projectile Asset Library Procedural Synthesis & Asset Registry Integration (Current Active Build)* | Procedural high-art synthesis of all 40 projectile specifications (P01 to P40) from Potaria Projectile Asset Library (crisp 32x32 pixel art, transparent backgrounds, strict palette and silhouette adherence, clean dark outlines, 0 stray pixels), dedicated `ProjectileRegistry` in `src/assets/projectile_factory.py` with multi-alias lookups (`canonical`, `snake_case`, `ID`, `id_lower`, `.png`, path stems), full dict protocol support (`copy`, `pop`, `setdefault`, `del`), public builder functions, automatic disk export to `assets/projectiles/` (58 unique projectile assets, zero collisions), updated `UNIQUE_ASSETS_TRACKER.md` (2,370 verified unique assets), and 714 tests passing across 45 suites (100% Green). |
+| **v0.2.8a** | October 2026 | *Skills, Boss Signature Attacks & Timed Projectile Reflection Integration (Current Active Build)* | Full integration of Potaria Skills and Bosses Design Spec: Ancient skill `celestial_reversal` (evolves to Celestial Mirror) with dynamic projectile reflection, reflection budget (12-24), 0.40s-0.52s active timing window, 1.5x damage amplification, and celestial gold/cyan shimmer; 19 new active combat skills with 32x32 icons in `assets/skills/`; 4 dungeon mini-boss signature attacks (`blight_apocalypse`, `caldera_catastrophe`, `absolute_zero`, `kingdom_of_the_unburied`) with animated 8-frame telegraph VFX; projectile preview contact sheet at `assets/projectiles/preview_contact_sheet.png` and `docs/projectiles_preview.png`; updated `UNIQUE_ASSETS_TRACKER.md` (2,445 verified unique assets with 0 collisions); and 732 tests passing across 46 suites (100% Green). |
+| **v0.2.7a** | October 2026 | *Potaria Projectile Asset Library Procedural Synthesis & Asset Registry Integration* | Procedural high-art synthesis of all 40 projectile specifications (P01 to P40) from Potaria Projectile Asset Library (crisp 32x32 pixel art, transparent backgrounds, strict palette and silhouette adherence, clean dark outlines, 0 stray pixels), dedicated `ProjectileRegistry` in `src/assets/projectile_factory.py` with multi-alias lookups (`canonical`, `snake_case`, `ID`, `id_lower`, `.png`, path stems), full dict protocol support (`copy`, `pop`, `setdefault`, `del`), public builder functions, automatic disk export to `assets/projectiles/` (58 unique projectile assets, zero collisions), updated `UNIQUE_ASSETS_TRACKER.md` (2,370 verified unique assets), and 714 tests passing across 45 suites (100% Green). |
 | **v0.2.6a** | October 2026 | *Weapon Skill Ordering & Streamlined Circular Affix Sockets UI* | Tooltip structure overhaul placing innate weapon skills/perks before affix slots, clean single-line circular socket indicators (`(○)` empty and `(●)` filled) adhering to item rarity socket limits (Epic: 1, Legendary: 1, Mythic: 2, Ancient: 2, Common/Uncommon/Rare: 0), total elimination of confusing 3-line status clutter (`AFFIX SLOTS`, `CARVED AFFIX SLOTS`, `[AVAILABLE TO CARVE]`), active affix deduplication in weapon skills, non-gear item socket exclusion, unified across HUD, Inventory, Chests, Character Panel, and NPC Dialogue windows, and 697 tests passing across 44 suites (100% Green). |
 | **v0.2.5a** | October 2026 | *Whole-Game Balance Overhaul, 5-Active-Meal Categorized Architecture & Equipment Tuning* | Full implementation of Potaria Game Balance Plan: 5-active-meal-buff category framework (Offense, Defense, Mobility, Resource, Utility) with strict 1-buff-per-category replacement and no additive stacking, food stat contribution caps (max +12% DMG, +10% ATK SPD, +6% Crit, +6% DR, +2 HP/s regen, +15% Move SPD), standardized meal durations (2/3/4/5 min), dish-effect assignment across Filipino, fish, and potato cuisine with Kinilaw na Tanigue conflict resolution, ranged projectile meal buff damage scaling, non-combat meal buffs (fishing reeling speed, block mining power, mob drop luck), strict affix slot limits (Rare 0, Epic 1, Legendary 1, Mythic 2, Ancient 2), Risk Register suspect item tuning, dedicated pre-balance backup branch (`pre-game-balance-backup`) pushed to origin, and 684 tests passing across 43 suites (100% Green). |
 | **v0.2.4a** | October 2026 | *Side-by-Side Gear Comparison, Health HUD Contrast & Direct Culinary Descriptions* | Side-by-side equipment comparison tooltips ("katabi") when hovering gear with Character Info (C) or chest storage open, equipped gear comparison badge `[ CURRENTLY EQUIPPED ]`, direct factual culinary descriptions across all food items, raw fish, meats, seasonings, and cookbook generation scripts without flowery language, high-contrast backing badge plate for numerical Life HUD readout (`Life: X / Y`), decoupling death screen fade overlay from UI surface layer to prevent low-HP text obliteration, and 672 tests passing across 42 suites (100% Green). |
@@ -42,7 +43,30 @@
 
 ## Detailed Version Logs
 
-### [v0.2.7a] — Potaria Projectile Asset Library Procedural Synthesis & Asset Registry Integration (Current Release)
+### [v0.2.8a] — Skills, Boss Signature Attacks & Timed Projectile Reflection Integration (Current Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Ancient Skill Celestial Reversal & Timed Projectile Reflection**:
+  - Implemented Ancient skill `celestial_reversal` (evolution `celestial_mirror` at Level 3, hotkey `Z`, MP cost 24, cooldown 8.0s) in `src/rpg/skills.py`.
+  - Added timed reflection field (`reflection_field_timer`, `reflection_budget`, `reflected_projectiles_count`) to `Player` in `src/entities/player.py` with 0.40s-0.52s timing window and 12-24 projectile budget.
+  - Implemented `BossProjectile.reflect(target_x, target_y, damage_mult=1.5)` in `src/entities/bullet_hell.py` with infinite loop deflection prevention, velocity redirection, damage amplification, celestial gold/cyan trail shimmering, and multiplayer synchronization serialization.
+  - Integrated reflection damage processing into `DungeonMiniBoss` and `GrandBossSolRho` in `src/entities/boss.py`.
+- **Expanded Combat Skills Arsenal**:
+  - Registered all 19 proposed skills from Section 4: `shuriken_storm`, `star_seeker`, `arcane_barrage`, `venom_volley`, `void_implosion`, `crystal_shatter`, `chain_discharge`, `meteor_shower`, `piercing_blizzard`, `solar_detonation`, `arcane_minefield`, `frost_bomb`, `ember_cluster`, `spectral_pursuit`, `returning_hatchet`, `bolo_cyclone`, `ancestral_guidance`, `sumpang_sibat`, and `magma_eruption`.
+  - Added 21 procedural 32x32 skill icons to `_generate_skill_icons()` in `src/assets/asset_factory.py` and exported to `assets/skills/`.
+  - Redesigned Grimoire skill layout in `CharacterPanel` (`src/ui/character_panel.py`) into 6 columns to cleanly display all 30 skills with guaranteed >= 40px margin from panel bottom border.
+- **Dungeon Mini-Boss Signature Attack Patterns**:
+  - Implemented signature bullet-hell patterns in `BulletHellPatterns` (`src/entities/bullet_hell.py`): `spawn_blight_apocalypse`, `spawn_blight_constellation`, `spawn_rotting_roots`, `spawn_caldera_catastrophe`, `spawn_absolute_zero`, `spawn_frozen_clock`, and `spawn_kingdom_of_the_unburied`.
+  - Added signature casting methods and HP threshold triggers to all four dungeon mini-bosses in `src/entities/boss.py`.
+  - Generated 6 animated 8-frame telegraph and reflection VFX (`celestial_reversal_activate`, `projectile_reflect`, `blight_apocalypse_telegraph`, `caldera_catastrophe_telegraph`, `absolute_zero_telegraph`, `kingdom_of_the_unburied_telegraph`) with strictly unique per-frame geometry and zero hash collisions.
+- **Visual Contact Sheet & Verification Suite**:
+  - Generated projectile preview contact sheet (1328x794) at `assets/projectiles/preview_contact_sheet.png` and `docs/projectiles_preview.png`.
+  - Updated `UNIQUE_ASSETS_TRACKER.md` (2,445 verified unique assets with 0 duplicate collisions).
+  - Added comprehensive test suite `tests/test_skills_bosses_spec.py` with 18 tests.
+  - Full test suite passes 100% green: 732 passed across 46 test suites.
+
+### [v0.2.7a] — Potaria Projectile Asset Library Procedural Synthesis & Asset Registry Integration
 *Release Date: October 2026*
 
 #### Added & Improved

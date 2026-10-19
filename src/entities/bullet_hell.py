@@ -173,7 +173,9 @@ class BossProjectile:
         curve_rate=0.0,
         accel=1.0,
         delay_move=0.0,
-        p_id=None
+        p_id=None,
+        reflectable=True,
+        reflected=False
     ):
         self.p_id = p_id if p_id is not None else _get_next_proj_id()
         self.x = float(x)
@@ -188,6 +190,12 @@ class BossProjectile:
         self.age = 0.0
         self.p_type = p_type  # "linear", "homing", "gravity", "singularity", "meteor", "wave", "spiral"
         self.gravity = float(gravity)
+
+        # Reflection contract (Section 7 Ancient Skill — Celestial Reversal)
+        # Designated hazards like black holes/singularities and meteors are non-reflectable
+        self.reflectable = bool(reflectable) and (self.p_type not in ("singularity", "meteor"))
+        self.reflected = bool(reflected)
+        self.reflect_count = 0
 
         # Fair collision core (classic Touhou / Gungeon dodge feel)
         if core_radius is not None:
@@ -218,6 +226,43 @@ class BossProjectile:
         self.frect = pygame.FRect(self.x - self.core_radius, self.y - self.core_radius, self.core_radius * 2, self.core_radius * 2)
         self.visual_frect = pygame.FRect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
         self.graze_frect = pygame.FRect(self.x - self.graze_radius, self.y - self.graze_radius, self.graze_radius * 2, self.graze_radius * 2)
+
+    def reflect(self, target_x, target_y, damage_mult=1.5):
+        """
+        Reflects this eligible projectile back towards (target_x, target_y).
+        Switches ownership, boosts damage, alters visual styling, and prevents infinite reflection loops.
+        """
+        if self.reflected or not self.reflectable:
+            return False
+        self.reflected = True
+        self.reflect_count += 1
+        self.damage = int(self.damage * damage_mult)
+
+        dx = target_x - self.x
+        dy = target_y - self.y
+        dist = math.hypot(dx, dy)
+        speed = math.hypot(self.vx, self.vy)
+        if speed < 1.0:
+            speed = 7.0
+        else:
+            speed = min(14.0, max(6.0, speed * 1.25))
+
+        if dist > 0.001:
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+        else:
+            self.vx = -self.vx
+            self.vy = -self.vy
+
+        # Celestial reflection styling: radiant gold/cyan shimmer
+        self.color = (255, 235, 120)
+        self.core_color = (255, 255, 255)
+        self.glow_color = (120, 220, 255)
+
+        # Reset lifetime so reflected shot has time to reach target
+        self.life = min(self.max_life, max(3.2, self.life))
+        self.age = 0.0
+        return True
 
     @property
     def rect(self):
@@ -345,7 +390,7 @@ class BossProjectile:
 
     def to_sync_dict(self):
         """Serializes bullet state for multiplayer network broadcast."""
-        return {
+        d = {
             "id": self.p_id,
             "x": round(self.x, 1),
             "y": round(self.y, 1),
@@ -367,6 +412,9 @@ class BossProjectile:
             "del": round(self.delay_move, 2),
             "age": round(self.age, 2),
         }
+        if getattr(self, "reflected", False):
+            d["ref"] = 1
+        return d
 
     @classmethod
     def from_sync_dict(cls, d, sprite=None):
@@ -391,9 +439,13 @@ class BossProjectile:
             curve_rate=d.get("curv", 0.0),
             accel=d.get("acc", 1.0),
             delay_move=d.get("del", 0.0),
-            p_id=d.get("id")
+            p_id=d.get("id"),
+            reflected=bool(d.get("ref", 0))
         )
         proj.age = float(d.get("age", 0.0))
+        if proj.reflected:
+            proj.color = (255, 235, 120)
+            proj.core_color = (255, 255, 255)
         return proj
 
 
@@ -648,3 +700,184 @@ class BulletHellPatterns:
                 shape="shard", p_type="linear"
             ))
         return projs
+
+    @staticmethod
+    def spawn_blight_apocalypse(
+        cx, cy, player_x, player_y, count=24, speed=4.8, damage=22, is_violet=False
+    ):
+        """
+        Lord Malus Signature (M4): Blight Apocalypse.
+        Dense expanding spiral stream leaving a clearly marked, navigable corridor toward the player.
+        """
+        if count <= 0:
+            return []
+        projs = []
+        ang_to_player = math.atan2(player_y - cy, player_x - cx)
+        # Safe corridor: ~45 degrees centered towards player
+        safe_half_width = 0.40
+        safe_min = ang_to_player - safe_half_width
+        safe_max = ang_to_player + safe_half_width
+
+        color = (175, 45, 230) if is_violet else (65, 220, 85)
+        core_color = (250, 210, 255) if is_violet else (240, 255, 235)
+
+        step = (2.0 * math.pi) / count
+        for i in range(count):
+            ang = i * step
+            norm_diff = abs((ang - ang_to_player + math.pi) % (2.0 * math.pi) - math.pi)
+            if norm_diff < safe_half_width:
+                continue  # Navigable safe corridor
+
+            vx = math.cos(ang) * speed
+            vy = math.sin(ang) * speed
+            curve = 0.22 if not is_violet else 0.32
+            projs.append(BossProjectile(
+                cx, cy, vx, vy,
+                damage=damage, radius=10,
+                color=color, core_color=core_color,
+                shape="orb", curve_rate=curve, p_type="linear"
+            ))
+        return projs
+
+    @staticmethod
+    def spawn_blight_constellation(
+        cx, cy, player_x, player_y, count=18, speed=4.4, damage=18
+    ):
+        """
+        Lord Malus (M1): Blight Constellation.
+        Radial field of curving blight orbs with preview trajectories and clear gaps.
+        """
+        if count <= 0:
+            return []
+        projs = []
+        ang = math.atan2(player_y - cy, player_x - cx)
+        gaps = [(ang - 0.45, ang + 0.45), (ang + math.pi - 0.45, ang + math.pi + 0.45)]
+        return BulletHellPatterns.spawn_concentric_ring(
+            cx, cy, count=count, speed=speed,
+            color=(75, 225, 95), core_color=(235, 255, 240),
+            radius=10, damage=damage, base_angle=ang,
+            gaps=gaps, shape="orb"
+        )
+
+    @staticmethod
+    def spawn_rotting_roots(
+        target_x, target_y, count=8, damage=22
+    ):
+        """
+        Lord Malus (M2): Rotting Roots.
+        Sequential marked floor eruptions rising from lane to lane.
+        """
+        projs = []
+        for i in range(count):
+            rx = target_x - 160 + i * 45 + random.uniform(-10, 10)
+            ry = target_y + random.uniform(-20, 20)
+            projs.append(BossProjectile(
+                rx, ry, 0.0, -3.5,
+                damage=damage, radius=11, life=1.8,
+                color=(90, 200, 70), core_color=(240, 255, 220),
+                shape="shard", p_type="linear", delay_move=i * 0.12,
+                reflectable=False
+            ))
+        return projs
+
+    @staticmethod
+    def spawn_caldera_catastrophe(
+        cx, cy, slam_step=1, count=24, damage=26
+    ):
+        """
+        Ignis Colossus Signature (I4): Caldera Catastrophe.
+        Progressive seismic shockwaves (slam 1: slow, slam 2: medium, slam 3: fast)
+        followed by delayed marked eruptions.
+        """
+        speeds = {1: 4.2, 2: 5.6, 3: 7.2}
+        spd = speeds.get(slam_step, 5.0)
+        projs = []
+        step = (2.0 * math.pi) / count
+        # Leave 2 clear passage gaps
+        gap_1 = (0.2, 0.7)
+        gap_2 = (math.pi + 0.2, math.pi + 0.7)
+
+        for i in range(count):
+            ang = i * step
+            norm_ang = ang % (2.0 * math.pi)
+            if (gap_1[0] <= norm_ang <= gap_1[1]) or (gap_2[0] <= norm_ang <= gap_2[1]):
+                continue
+
+            vx = math.cos(ang) * spd
+            vy = math.sin(ang) * spd
+            projs.append(BossProjectile(
+                cx, cy, vx, vy,
+                damage=damage, radius=11,
+                color=(255, 75, 20), core_color=(255, 245, 160),
+                shape="shard", p_type="linear"
+            ))
+        return projs
+
+    @staticmethod
+    def spawn_absolute_zero(
+        cx, cy, radius_corridor=180, count=24, speed=4.2, damage=22
+    ):
+        """
+        Cryo-Spud Signature (C4): Absolute Zero.
+        Contracting frost ring into a narrow corridor, with alternating cross-shards
+        and outward shatter leaving an escape gap.
+        """
+        projs = []
+        step = (2.0 * math.pi) / count
+        for i in range(count):
+            ang = i * step
+            # Leave safe exit gap on opposite sides
+            if 0.35 <= (ang % math.pi) <= 0.85:
+                continue
+            vx = math.cos(ang) * speed
+            vy = math.sin(ang) * speed
+            projs.append(BossProjectile(
+                cx, cy, vx, vy,
+                damage=damage, radius=10,
+                color=(130, 230, 255), core_color=(255, 255, 255),
+                shape="snowflake", p_type="linear"
+            ))
+        return projs
+
+    @staticmethod
+    def spawn_frozen_clock(
+        cx, cy, arms=4, angle=0.0, speed=4.6, damage=18, reversed_dir=False
+    ):
+        """
+        Cryo-Spud (C3): Frozen Clock.
+        Pinwheel spirals that slow down and reverse direction.
+        """
+        direction_mult = -1.0 if reversed_dir else 1.0
+        return BulletHellPatterns.spawn_spiral_step(
+            cx, cy, arms=arms, current_angle=angle,
+            speed=speed, color=(140, 240, 255), core_color=(255, 255, 255),
+            radius=10, damage=damage, shape="shard",
+            curve_rate=0.28 * direction_mult
+        )
+
+    @staticmethod
+    def spawn_kingdom_of_the_unburied(
+        cx, cy, player_x, player_y, count=16, speed=4.4, damage=20
+    ):
+        """
+        Necro-Tuber Signature (N4): Kingdom of the Unburied.
+        Bone curtains divide arena into lanes, sequential scythes sweep, and opening spiral corridor.
+        """
+        projs = []
+        curtain = BulletHellPatterns.spawn_criss_cross_curtains(
+            player_x, player_y, count=count, speed=speed,
+            color=(215, 215, 230), core_color=(255, 255, 255), damage=damage
+        )
+        projs.extend(curtain)
+        # Add sequential sweeping scythes with clear gaps
+        ang = math.atan2(player_y - cy, player_x - cx)
+        scythe_spread = [ang - 0.7, ang + 0.7]
+        for sa in scythe_spread:
+            projs.append(BossProjectile(
+                cx, cy, math.cos(sa) * (speed * 1.2), math.sin(sa) * (speed * 1.2),
+                damage=damage, radius=11,
+                color=(165, 75, 245), core_color=(245, 220, 255),
+                shape="scythe", p_type="linear"
+            ))
+        return projs
+

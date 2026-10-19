@@ -235,6 +235,32 @@ class DungeonMiniBoss:
                     particle_system.spawn_sparks(p.x, p.y, (100, 220, 255), count=10)
                     continue
 
+            # Celestial Reversal: Timed reflection field
+            if (p.life > 0 and not getattr(p, "reflected", False)
+                and getattr(player, "reflection_field_timer", 0.0) > 0
+                and getattr(player, "reflection_budget", 0) > 0):
+                if math.hypot(p.x - player.center_x, p.y - player.center_y) < 52.0:
+                    if p.reflect(self.center_x, self.center_y, damage_mult=1.5):
+                        player.reflection_budget -= 1
+                        player.reflected_projectiles_count = getattr(player, "reflected_projectiles_count", 0) + 1
+                        if self.sound_manager:
+                            self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
+                        particle_system.spawn_sparks(p.x, p.y, (255, 240, 130), count=14)
+                        particle_system.spawn_debris(p.x, p.y, (120, 240, 255), count=6)
+                        continue
+
+            # Reflected projectile hitting the boss!
+            if p.life > 0 and getattr(p, "reflected", False):
+                if p.rect.colliderect(self.frect):
+                    self.take_damage(p.damage, knockback_vx=p.vx * 0.2, knockback_vy=p.vy * 0.2)
+                    p.life = 0
+                    particle_system.spawn_sparks(p.x, p.y, (255, 235, 120), count=16)
+                    if combat and hasattr(combat, "spawn_damage_number"):
+                        combat.spawn_damage_number(self.center_x, self.y - 10, p.damage, color=(255, 235, 80))
+                    continue
+                # Reflected projectiles do not harm the player!
+                continue
+
             if p.life > 0 and p.rect.colliderect(player.rect):
                 damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-3.5)
                 # Dissipate non-singularity projectile upon core collision (prevents lingering stunlock during i-frames)
@@ -556,6 +582,25 @@ class LordMalus(DungeonMiniBoss):
             if particle_system:
                 particle_system.spawn_sparks(self.center_x, self.center_y, (80, 235, 100), count=12)
 
+    def cast_blight_apocalypse(self, player, particle_system=None, camera=None):
+        """Lord Malus Signature (M4): Blight Apocalypse with clearly marked safe corridor."""
+        is_violet = (self.phase == 2)
+        projs = BulletHellPatterns.spawn_blight_apocalypse(
+            self.center_x, self.center_y, player.center_x, player.center_y,
+            count=26 if is_violet else 22, speed=4.8, damage=self.damage - 2,
+            is_violet=is_violet
+        )
+        self.projectiles.extend(projs)
+        if camera:
+            camera.add_shake(7.0 if is_violet else 5.5, 0.4)
+        if particle_system:
+            particle_system.spawn_sparks(self.center_x, self.center_y, (175, 45, 230) if is_violet else (65, 220, 85), count=24)
+            particle_system.spawn_debris(self.center_x, self.center_y, (40, 15, 60), count=12)
+        return projs
+
+    def cast_signature_attack(self, player, particle_system=None, camera=None):
+        return self.cast_blight_apocalypse(player, particle_system, camera)
+
 
 class IgnisColossus(DungeonMiniBoss):
     boss_type = "ignis_colossus"
@@ -657,6 +702,23 @@ class IgnisColossus(DungeonMiniBoss):
             self.projectiles.extend(spread)
             if particle_system:
                 particle_system.spawn_sparks(self.center_x, self.center_y, (255, 90, 30), count=14)
+
+    def cast_caldera_catastrophe(self, player, particle_system=None, camera=None, slam_step=1):
+        """Ignis Colossus Signature (I4): Caldera Catastrophe progressive seismic shockwaves."""
+        cnt = 26 if self.phase == 2 else 22
+        projs = BulletHellPatterns.spawn_caldera_catastrophe(
+            self.center_x, self.center_y, slam_step=slam_step, count=cnt, damage=self.damage - 2
+        )
+        self.projectiles.extend(projs)
+        if camera:
+            camera.add_shake(8.5, 0.45)
+        if particle_system:
+            particle_system.spawn_sparks(self.center_x, self.center_y, (255, 75, 20), count=28)
+            particle_system.spawn_debris(self.center_x, self.center_y, (140, 40, 10), count=16)
+        return projs
+
+    def cast_signature_attack(self, player, particle_system=None, camera=None):
+        return self.cast_caldera_catastrophe(player, particle_system, camera, slam_step=2)
 
 
 class CryoSpud(DungeonMiniBoss):
@@ -778,6 +840,23 @@ class CryoSpud(DungeonMiniBoss):
             if particle_system:
                 particle_system.spawn_sparks(self.center_x, self.center_y, (140, 235, 255), count=14)
 
+    def cast_absolute_zero(self, player, particle_system=None, camera=None):
+        """Cryo-Spud Signature (C4): Absolute Zero contracting ring with safe escape gap."""
+        cnt = 26 if self.phase == 2 else 22
+        projs = BulletHellPatterns.spawn_absolute_zero(
+            self.center_x, self.center_y, count=cnt, speed=4.4, damage=self.damage - 4
+        )
+        self.projectiles.extend(projs)
+        if camera:
+            camera.add_shake(7.5, 0.4)
+        if particle_system:
+            particle_system.spawn_sparks(self.center_x, self.center_y, (130, 230, 255), count=26)
+            particle_system.spawn_debris(self.center_x, self.center_y, (200, 245, 255), count=14)
+        return projs
+
+    def cast_signature_attack(self, player, particle_system=None, camera=None):
+        return self.cast_absolute_zero(player, particle_system, camera)
+
 
 class NecroTuber(DungeonMiniBoss):
     boss_type = "necro_tuber"
@@ -878,6 +957,24 @@ class NecroTuber(DungeonMiniBoss):
             self.projectiles.extend(skulls)
             if particle_system:
                 particle_system.spawn_sparks(self.center_x, self.center_y, (180, 80, 230), count=15)
+
+    def cast_kingdom_of_the_unburied(self, player, particle_system=None, camera=None):
+        """Necro-Tuber Signature (N4): Kingdom of the Unburied lane curtains and sweeping scythes."""
+        cnt = 18 if self.phase == 2 else 14
+        projs = BulletHellPatterns.spawn_kingdom_of_the_unburied(
+            self.center_x, self.center_y, player.center_x, player.center_y,
+            count=cnt, speed=4.5, damage=self.damage - 4
+        )
+        self.projectiles.extend(projs)
+        if camera:
+            camera.add_shake(7.0, 0.35)
+        if particle_system:
+            particle_system.spawn_sparks(self.center_x, self.center_y, (165, 75, 245), count=24)
+            particle_system.spawn_debris(self.center_x, self.center_y, (215, 215, 230), count=14)
+        return projs
+
+    def cast_signature_attack(self, player, particle_system=None, camera=None):
+        return self.cast_kingdom_of_the_unburied(player, particle_system, camera)
 
 
 # ==============================================================================
@@ -1222,6 +1319,32 @@ class GrandBossSolRho:
                         self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
                     particle_system.spawn_sparks(p.x, p.y, (100, 220, 255), count=10)
                     continue
+
+            # Celestial Reversal: Timed reflection field
+            if (p.life > 0 and not getattr(p, "reflected", False)
+                and getattr(player, "reflection_field_timer", 0.0) > 0
+                and getattr(player, "reflection_budget", 0) > 0):
+                if math.hypot(p.x - player.center_x, p.y - player.center_y) < 52.0:
+                    if p.reflect(self.center_x, self.center_y, damage_mult=1.5):
+                        player.reflection_budget -= 1
+                        player.reflected_projectiles_count = getattr(player, "reflected_projectiles_count", 0) + 1
+                        if self.sound_manager:
+                            self.sound_manager.play_spatial("hit_block", p.x, p.y, player.center_x, player.center_y)
+                        particle_system.spawn_sparks(p.x, p.y, (255, 240, 130), count=14)
+                        particle_system.spawn_debris(p.x, p.y, (120, 240, 255), count=6)
+                        continue
+
+            # Reflected projectile hitting the boss!
+            if p.life > 0 and getattr(p, "reflected", False):
+                if p.rect.colliderect(self.frect):
+                    self.take_damage(p.damage, knockback_vx=p.vx * 0.08, knockback_vy=p.vy * 0.08)
+                    p.life = 0
+                    particle_system.spawn_sparks(p.x, p.y, (255, 235, 120), count=16)
+                    if combat and hasattr(combat, "spawn_damage_number"):
+                        combat.spawn_damage_number(self.center_x, self.y - 10, p.damage, color=(255, 235, 80))
+                    continue
+                # Reflected projectiles do not harm the player!
+                continue
 
             if p.life > 0 and p.rect.colliderect(player.rect):
                 damaged = player.take_damage(p.damage, knockback_vx=p.vx * 0.7, knockback_vy=-4.0)
