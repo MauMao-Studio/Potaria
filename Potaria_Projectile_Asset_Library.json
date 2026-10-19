@@ -1,0 +1,929 @@
+{
+  "schema_version": "1.0.0",
+  "project": "Potaria",
+  "document_type": "projectile_asset_library",
+  "purpose": "Detailed visual specifications and reusable prompts for generating projectile sprites. These entries describe art direction; they do not set gameplay balance values.",
+  "shared_asset_guidelines": {
+    "default_canvas": "32x32 pixels",
+    "format": "PNG with transparent background",
+    "style": "Crisp 2D pixel art with a consistent dark outline, deliberate pixel clusters, limited palette, and a readable silhouette at native size.",
+    "camera_and_view": "Side-facing projectile sprite suitable for a 2D game; rotate in the game engine when the projectile travels at an angle.",
+    "background": "Fully transparent. No mockup, checkerboard, scene, ground, cast shadow, character, hand, weapon wielder, text, labels, watermark, or UI.",
+    "lighting": "Use clustered pixel highlights rather than smooth gradients or blur. Glow and trails should usually be separate effect sprites so they can be recolored and toggled.",
+    "animation_sheets": "When animation is requested, use consistent cell dimensions, aligned centers, equal spacing, transparent gutters, and no labels. Specify frame count explicitly.",
+    "scaling": "Use nearest-neighbor scaling to preserve pixel edges. Confirm final canvas size against Potaria's actual sprite scale before batch generation.",
+    "readability": "The projectile's silhouette and travel direction must remain identifiable at 1x scale. Avoid excessive micro-detail, excessive bloom, and colors too similar to the common background.",
+    "cultural_direction": "For Filipino-inspired entries, use original fantasy designs inspired by item forms or broad motifs. Do not copy a specific sacred, ceremonial, or community-specific symbol without appropriate research and approval.",
+    "pipeline": [
+      "Generate one projectile at a time using its asset_generation_prompt.",
+      "Inspect transparency, silhouette, outline consistency, and native-size readability.",
+      "Normalize canvas, pivot, and orientation before importing.",
+      "Generate trails and impact effects as separate assets where possible.",
+      "Record approved assets and variants in the project's asset manifest."
+    ]
+  },
+  "behavior_types_not_separate_art_by_default": [
+    {
+      "name": "straight",
+      "description": "Travels in a fixed direction."
+    },
+    {
+      "name": "arc",
+      "description": "Follows a gravity-affected arc."
+    },
+    {
+      "name": "piercing",
+      "description": "Continues through eligible targets."
+    },
+    {
+      "name": "returning",
+      "description": "Returns toward its owner after a trigger or time."
+    },
+    {
+      "name": "homing",
+      "description": "Steers toward a valid target."
+    },
+    {
+      "name": "ricochet",
+      "description": "Bounces from eligible surfaces or targets."
+    },
+    {
+      "name": "splitting",
+      "description": "Creates child projectiles at a trigger point."
+    },
+    {
+      "name": "spiral",
+      "description": "Moves along a spiral path."
+    },
+    {
+      "name": "burst",
+      "description": "Creates a radial group of child projectiles."
+    },
+    {
+      "name": "persistent",
+      "description": "Remains active for a duration or creates a lingering hazard."
+    },
+    {
+      "name": "boomerang",
+      "description": "Travels outward and then returns."
+    },
+    {
+      "name": "charged",
+      "description": "Changes appearance or gameplay parameters based on charge state."
+    },
+    {
+      "name": "chain",
+      "description": "Jumps to additional targets after a valid hit."
+    },
+    {
+      "name": "orbiting",
+      "description": "Circles a player, target, or point."
+    }
+  ],
+  "effect_asset_families": [
+    {
+      "id": "FX01",
+      "name": "Physical Hit",
+      "description": "Small metal sparks, wood splinters, stone chips, and a brief hit flash."
+    },
+    {
+      "id": "FX02",
+      "name": "Magic Hit",
+      "description": "A compact color-matched ring, 3–5 motes, and a short flash."
+    },
+    {
+      "id": "FX03",
+      "name": "Fire Impact",
+      "description": "Radial flame burst, embers, and a brief warm flash."
+    },
+    {
+      "id": "FX04",
+      "name": "Ice Impact",
+      "description": "Angular ice fragments, snow motes, and a pale-blue ring."
+    },
+    {
+      "id": "FX05",
+      "name": "Lightning Impact",
+      "description": "Sharp electric flash with branching arcs."
+    },
+    {
+      "id": "FX06",
+      "name": "Poison or Acid Impact",
+      "description": "Colored splat, droplets, and optional short-lived vapor."
+    },
+    {
+      "id": "FX07",
+      "name": "Explosion",
+      "description": "Small, medium, and large radial bursts with smoke and fragments on separate layers."
+    },
+    {
+      "id": "FX08",
+      "name": "Piercing Hit",
+      "description": "Narrow directional flash with a compact puncture mark."
+    },
+    {
+      "id": "FX09",
+      "name": "Shield Impact",
+      "description": "Brief curved defensive flash with a few sparks; keep it separate from projectile art."
+    },
+    {
+      "id": "FX10",
+      "name": "Boss Impact",
+      "description": "Larger ring and high-contrast burst, with duration and intensity tuned in gameplay."
+    },
+    {
+      "id": "FX11",
+      "name": "Projectile Trail",
+      "description": "Reusable short streaks, ember particles, motes, smoke, or color-matched afterimages."
+    },
+    {
+      "id": "FX12",
+      "name": "Projectile Destruction",
+      "description": "A short disappearance animation for ordinary hits, expiry, or cancellation."
+    }
+  ],
+  "projectiles": [
+    {
+      "id": "P01",
+      "name": "Iron Arrow",
+      "category": "physical_ranged",
+      "visual_description": "A slim straight arrow with a dark iron arrowhead, narrow wooden shaft, and two small muted feather fletchings. Keep the arrowhead as the strongest silhouette; avoid tiny ornamental details.",
+      "palette": "iron gray, warm brown wood, muted cream feathers",
+      "material_and_surface": "metal head with a sharp triangular profile; straight wood grain suggested by one or two pixels; matte feathers",
+      "flight_animation": "Static flight sprite; optional 2-frame fletching flick for fast travel. Orient horizontally by default and rotate in-game if supported.",
+      "trail_effect": "Very short faint motion streak at high speed; no persistent glow.",
+      "impact_effect": "Small metallic spark and a tiny directional hit mark; wood or stone may add a small splinter.",
+      "suggested_variants": [
+        "wooden",
+        "iron",
+        "steel",
+        "poisoned",
+        "flaming"
+      ],
+      "asset_generation_prompt": "A single centered pixel-art arrow projectile, crisp 32x32 transparent PNG, dark consistent outline, readable triangular iron arrowhead, wooden shaft and muted feather fletching, side view, no bow, hand, character, scenery, text, or UI. Strong silhouette, limited palette, game-ready sprite.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P02",
+      "name": "Heavy Bolt",
+      "category": "physical_ranged",
+      "visual_description": "A compact, thick crossbow bolt with a broad squared metal tip, short dark shaft, and small rear stabilizer fins. It should look heavier and more forceful than an arrow.",
+      "palette": "gunmetal gray, charcoal, dark brown",
+      "material_and_surface": "dense metal tip, stout shaft, small rigid fins; low decorative detail",
+      "flight_animation": "Static sprite; optional 2-frame recoil wobble on launch, not during normal flight.",
+      "trail_effect": "Short, sharp streak rather than a long trail.",
+      "impact_effect": "Hard impact spark with a small chip or puncture mark.",
+      "suggested_variants": [
+        "iron",
+        "steel",
+        "armor-piercing",
+        "explosive-tip"
+      ],
+      "asset_generation_prompt": "A single centered heavy crossbow bolt projectile in crisp pixel art, 32x32 transparent background, broad gunmetal tip, thick dark shaft and small stabilizer fins, strong compact silhouette, dark outline, no crossbow, hand, character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P03",
+      "name": "Throwing Knife",
+      "category": "physical_ranged",
+      "visual_description": "A small balanced throwing knife with a pointed blade and short wrapped handle. Blade and handle must remain distinguishable at tiny scale; keep the profile narrow and directional.",
+      "palette": "silver steel, charcoal handle, muted leather brown",
+      "material_and_surface": "clean blade edge, simple handle wrap, restrained specular pixels",
+      "flight_animation": "Static sprite; rotate with its travel direction. Optional 2-frame spin only for a dedicated spinning variant.",
+      "trail_effect": "No trail by default; brief one-pixel glint is acceptable.",
+      "impact_effect": "Tiny metallic spark and a short slash-shaped hit flash.",
+      "suggested_variants": [
+        "steel",
+        "poisoned",
+        "serrated",
+        "returning"
+      ],
+      "asset_generation_prompt": "A single centered throwing knife projectile, crisp 32x32 pixel art, transparent background, narrow pointed silver blade and short dark wrapped handle, side view, clear readable silhouette and dark outline, no hand, character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P04",
+      "name": "Spinning Shuriken",
+      "category": "physical_ranged",
+      "visual_description": "A four-pointed metal throwing star with a clear central hub. Points should be broad enough to read at 32x32; avoid excessive cutouts or micro-details.",
+      "palette": "steel gray, charcoal, one pale edge highlight",
+      "material_and_surface": "flat metal, four symmetrical points, centered dark hub",
+      "flight_animation": "4-frame rotation loop with identical size and center point; keep the silhouette consistent across frames.",
+      "trail_effect": "Optional tiny neutral motion streak at high speed.",
+      "impact_effect": "Two or three small metal sparks; brief star-shaped flash.",
+      "suggested_variants": [
+        "iron",
+        "steel",
+        "poisoned",
+        "shadow-coated"
+      ],
+      "asset_generation_prompt": "A four-frame pixel-art animation sheet of a single four-pointed steel shuriken rotating around its exact center, 32x32 cell per frame, transparent background, consistent dark outline and steel-gray palette, clean symmetric silhouette, no text, UI, hands, characters, or scenery.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P05",
+      "name": "Returning Throwing Axe",
+      "category": "physical_ranged",
+      "visual_description": "A compact hand axe designed as a projectile, with a crescent metal head and short sturdy handle. It should be recognizable as an axe even when small.",
+      "palette": "steel gray, dark wood, muted leather wrap",
+      "material_and_surface": "heavy blade, short handle, visible head-to-handle contrast",
+      "flight_animation": "2–4 frame spin loop; return path can be handled by game logic rather than separate art.",
+      "trail_effect": "Subtle curved motion streak only during return, preferably an effect layer.",
+      "impact_effect": "Metal spark plus a small chopping flash.",
+      "suggested_variants": [
+        "iron",
+        "steel",
+        "flaming",
+        "returning"
+      ],
+      "asset_generation_prompt": "A compact returning hand-axe projectile in crisp pixel art, 32x32 transparent PNG, crescent steel head, short dark wooden handle with simple wrap, strong silhouette, dark outline, side view, no wielder, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P06",
+      "name": "Fireball",
+      "category": "magic_elemental",
+      "visual_description": "A bright orange-red magical flame mass with a hot yellow core and a tapered tail. The outer silhouette should look like a flame moving forward, not a perfect circle.",
+      "palette": "yellow-white core, gold, orange, ember red, dark red edge",
+      "material_and_surface": "layered flame tongues and a bright center; avoid smooth gradients",
+      "flight_animation": "4-frame looping flight animation with flickering outer flame; keep core centered enough for stable gameplay.",
+      "trail_effect": "Short ember trail, warm and bright; separate trail particles from the base sprite when possible.",
+      "impact_effect": "Small radial flame burst with a few ember pixels.",
+      "suggested_variants": [
+        "small",
+        "large",
+        "blue flame",
+        "cursed fire",
+        "explosive"
+      ],
+      "asset_generation_prompt": "A four-frame looping pixel-art fireball animation, each frame 32x32 on transparent background, orange-red flame shell, bright yellow core, tapered forward-facing flame silhouette, consistent dark outline and palette, no caster, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P07",
+      "name": "Ice Shard",
+      "category": "magic_elemental",
+      "visual_description": "A sharp faceted crystal shard, elongated and angled forward. Use a distinct icy silhouette with a pointed tip and a few large facets rather than many tiny reflective pixels.",
+      "palette": "pale cyan, ice blue, white highlights, blue shadow",
+      "material_and_surface": "translucent-looking facets represented by flat pixel clusters; crisp pointed edges",
+      "flight_animation": "Static flight sprite; optional 2-frame shimmer by changing a few highlight pixels.",
+      "trail_effect": "A faint cold-blue trail or two tiny snow motes.",
+      "impact_effect": "Sharp crystalline burst with 3–5 angular fragments and a brief frost flash.",
+      "suggested_variants": [
+        "small shard",
+        "piercing shard",
+        "frost-coated",
+        "multi-shard"
+      ],
+      "asset_generation_prompt": "A single elongated ice-shard projectile in crisp pixel art, 32x32 transparent PNG, pointed faceted cyan-blue crystal with white highlights and dark blue outline, clear forward direction, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P08",
+      "name": "Lightning Bolt",
+      "category": "magic_elemental",
+      "visual_description": "A short jagged bolt with a zigzag silhouette and bright center. Make the shape legible against bright and dark backgrounds; avoid a thin one-pixel line as the only form.",
+      "palette": "electric cyan, pale yellow-white core, deep blue edge",
+      "material_and_surface": "angular energy, hard pixel corners, high contrast",
+      "flight_animation": "2–4 frames with small shape changes or a two-frame flicker; no smooth morphing.",
+      "trail_effect": "A very brief cyan afterimage; use separate impact arcs for chains.",
+      "impact_effect": "Sharp electric flash with branching mini-arcs lasting only a few frames.",
+      "suggested_variants": [
+        "chain lightning",
+        "charged",
+        "blue lightning",
+        "storm"
+      ],
+      "asset_generation_prompt": "A small jagged lightning-bolt projectile in crisp high-contrast pixel art, 32x32 transparent PNG, cyan outer energy and pale yellow-white core, angular zigzag silhouette with dark blue edge, no text, UI, character, or scenery.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P09",
+      "name": "Shadow Orb",
+      "category": "magic_elemental",
+      "visual_description": "A dense dark sphere with a violet rim and a small inner crescent or eye-like glow. It should read as magical darkness, not a plain black dot.",
+      "palette": "near-black purple, violet, muted magenta",
+      "material_and_surface": "softness implied through clustered pixels, strong outer rim, restrained inner glow",
+      "flight_animation": "4-frame slow pulsing animation; preserve the circular silhouette and center.",
+      "trail_effect": "Short smoky violet wisps; keep the core unobscured.",
+      "impact_effect": "Dark radial ripple with a few purple motes.",
+      "suggested_variants": [
+        "small",
+        "draining",
+        "cursed",
+        "splitting"
+      ],
+      "asset_generation_prompt": "A 4-frame pulsing shadow-orb pixel-art animation, 32x32 transparent cells, near-black purple core, violet rim and a tiny inner glow, readable round silhouette, consistent dark outline, no text, character, scenery, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P10",
+      "name": "Poison Glob",
+      "category": "magic_elemental",
+      "visual_description": "A viscous green glob with an irregular rounded outline and one or two hanging droplets. Use a clearly toxic green center and darker rim; avoid realistic gore.",
+      "palette": "acid green, lime, deep forest green",
+      "material_and_surface": "wet-looking highlight pixels, uneven organic contour",
+      "flight_animation": "2-frame wobble animation; optional 3-frame splat for impact asset.",
+      "trail_effect": "A few tiny green droplets that fade quickly.",
+      "impact_effect": "Green splat with 3–5 droplets and a short-lived stain or vapor effect handled separately.",
+      "suggested_variants": [
+        "toxic",
+        "acid",
+        "venom",
+        "lingering cloud"
+      ],
+      "asset_generation_prompt": "A single toxic poison-glob projectile in crisp pixel art, 32x32 transparent PNG, irregular rounded lime-green blob, darker green rim and two small droplets, glossy pixel highlights, dark outline, no gore, character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P11",
+      "name": "Holy Bolt",
+      "category": "magic_elemental",
+      "visual_description": "A compact golden-white projectile shaped like a tapered beam or small radiant diamond. Use a clear bright center with restrained rays so the sprite remains readable.",
+      "palette": "ivory white, gold, pale yellow, warm amber",
+      "material_and_surface": "clean geometric core, short ray accents, luminous but crisp edges",
+      "flight_animation": "2–4 frame pulse or tiny ray flicker; maintain the same core size.",
+      "trail_effect": "Short golden streak with a few tiny sparks.",
+      "impact_effect": "Bright cross-like or radial flash, with no religious iconography unless separately approved.",
+      "suggested_variants": [
+        "purifying",
+        "piercing",
+        "radiant",
+        "charged"
+      ],
+      "asset_generation_prompt": "A compact holy-energy bolt in crisp pixel art, 32x32 transparent PNG, tapered ivory-white core, gold rim and a few short golden rays, high contrast and clean silhouette, no text, UI, character, scenery, or specific real-world religious symbol.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P12",
+      "name": "Earth Shard",
+      "category": "magic_elemental",
+      "visual_description": "A rough angular stone splinter with a broad base and pointed tip. It should look heavy, chipped, and mineral-based rather than crystalline or icy.",
+      "palette": "sandstone tan, muted brown, slate gray",
+      "material_and_surface": "rock facets, chipped edges, a few darker cracks",
+      "flight_animation": "Static sprite; optional one-frame rotation variation for randomization.",
+      "trail_effect": "Dust motes or a short brown dust streak.",
+      "impact_effect": "Stone chips and a compact dust puff.",
+      "suggested_variants": [
+        "granite",
+        "obsidian",
+        "piercing",
+        "clustered shards"
+      ],
+      "asset_generation_prompt": "A single rough earth-shard projectile in crisp pixel art, 32x32 transparent PNG, angular chipped stone with a pointed tip, tan-brown-gray mineral palette, dark outline, chunky readable facets, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P13",
+      "name": "Water Orb",
+      "category": "magic_elemental",
+      "visual_description": "A rounded droplet-like orb with a tapered top or forward-facing point, a pale highlight, and a darker blue lower edge. It should look fluid but retain a compact silhouette.",
+      "palette": "deep blue, teal, cyan, pale aqua",
+      "material_and_surface": "smooth shape suggested with clustered pixels, one clear highlight",
+      "flight_animation": "3-frame bobbing or internal ripple animation; avoid changing the hitbox silhouette too much.",
+      "trail_effect": "Tiny droplets or a short cyan ripple trail.",
+      "impact_effect": "Water splash with several blue droplets and a brief ring.",
+      "suggested_variants": [
+        "pressurized",
+        "healing",
+        "ice-water",
+        "tidal"
+      ],
+      "asset_generation_prompt": "A single magical water-orb projectile in crisp pixel art, 32x32 transparent PNG, rounded droplet form with forward point, deep-blue and teal body, pale aqua highlight and dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P14",
+      "name": "Magma Core",
+      "category": "magic_elemental",
+      "visual_description": "A dark volcanic rock core split by bright molten cracks. The shape is uneven and heavy, with orange-yellow fissures visible even at small size.",
+      "palette": "charcoal, volcanic black, ember orange, molten yellow",
+      "material_and_surface": "cracked stone surface, bright fissure clusters, no smooth gradient",
+      "flight_animation": "3-frame slow internal flicker; keep major cracks and outer silhouette recognizable.",
+      "trail_effect": "Sparse ember particles and a very short heat shimmer effect.",
+      "impact_effect": "Small molten splash with dark rock chips and orange embers.",
+      "suggested_variants": [
+        "large",
+        "erupting",
+        "explosive",
+        "lingering lava"
+      ],
+      "asset_generation_prompt": "A single magma-core projectile in crisp pixel art, 32x32 transparent PNG, irregular dark volcanic rock with bright orange-yellow molten cracks, strong chunky silhouette, dark outline, ember details, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P15",
+      "name": "Wind Crescent",
+      "category": "magic_elemental",
+      "visual_description": "A curved crescent-shaped gust blade with a pale center and teal outer edge. Use two broad curved arms or one clean crescent, not a wispy cloud.",
+      "palette": "pale mint, cyan, white, teal",
+      "material_and_surface": "airy curved silhouette represented with crisp separated pixel clusters",
+      "flight_animation": "2–3 frames with slight curve shift or rotation; avoid excessive transparency.",
+      "trail_effect": "A few short pale streaks trailing behind.",
+      "impact_effect": "Small circular gust ring with a couple of leaf-like particles.",
+      "suggested_variants": [
+        "wide",
+        "piercing",
+        "spinning",
+        "vacuum"
+      ],
+      "asset_generation_prompt": "A curved wind-crescent projectile in crisp pixel art, 32x32 transparent PNG, clean crescent-shaped gust blade, pale mint-white center and teal edge, airy but sharply readable silhouette, dark teal outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P16",
+      "name": "Arcane Orb",
+      "category": "magic_elemental",
+      "visual_description": "A balanced magical sphere with a bright central diamond or rune-like abstract core and a darker colored shell. Keep the core generic so it can support multiple spell colors.",
+      "palette": "violet, indigo, cyan accent, pale center",
+      "material_and_surface": "geometric inner core, clustered glow pixels, clear circular boundary",
+      "flight_animation": "4-frame pulse animation with inner core shifting brightness, not position.",
+      "trail_effect": "Short colored spark trail; optional tiny orbiting pixels on a separate effect layer.",
+      "impact_effect": "Small magical ring and 3–4 star motes.",
+      "suggested_variants": [
+        "fire",
+        "ice",
+        "lightning",
+        "neutral",
+        "charged"
+      ],
+      "asset_generation_prompt": "A 4-frame pulsing arcane-orb pixel-art animation, 32x32 transparent cells, violet-indigo shell, pale geometric central core and a few cyan accents, clear circular silhouette, dark outline, no text, character, scenery, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P17",
+      "name": "Arcane Lance",
+      "category": "magic_elemental",
+      "visual_description": "A long narrow spear-shaped beam of condensed energy with a sharp leading point and a thicker luminous rear. It should read as a piercing projectile, not a sword.",
+      "palette": "cyan-white core, violet edge, indigo shadow",
+      "material_and_surface": "long directional silhouette, hard angular edges, minimal ornament",
+      "flight_animation": "Static projectile sprite; rotation should be supported by the game engine. Optional 2-frame core flicker.",
+      "trail_effect": "Narrow straight beam trail, separate from projectile sprite.",
+      "impact_effect": "A thin puncture flash with a small ring.",
+      "suggested_variants": [
+        "piercing",
+        "charged",
+        "split-lance",
+        "elemental"
+      ],
+      "asset_generation_prompt": "A long narrow arcane-lance projectile in crisp pixel art, designed within a 32x32 transparent canvas, sharp forward point, cyan-white core and violet-indigo edge, strong directional silhouette, dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P18",
+      "name": "Energy Disc",
+      "category": "magic_tech_magic",
+      "visual_description": "A flat circular disc of energy with a bright rim and darker center. Include a small notch or segmented edge to suggest rotation without tiny mechanical details.",
+      "palette": "cyan, electric blue, pale white, navy",
+      "material_and_surface": "ring-like edge, flat disc silhouette, central dark hub",
+      "flight_animation": "2–4 frame rotation loop with the same center and outer diameter.",
+      "trail_effect": "Short circular afterimage or two blue streaks.",
+      "impact_effect": "Ring-shaped flash with a few energy fragments.",
+      "suggested_variants": [
+        "returning",
+        "ricochet",
+        "charged",
+        "splitting"
+      ],
+      "asset_generation_prompt": "A four-frame rotating energy-disc projectile in crisp pixel art, 32x32 transparent cells, circular cyan-blue disc with pale rim, dark central hub and a small segmented edge, consistent dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P19",
+      "name": "Homing Star",
+      "category": "magic_magic",
+      "visual_description": "A bright five-pointed magical star with a compact glowing center and a colored outline. The star shape must remain distinct from a UI icon by adding a small irregular energy halo.",
+      "palette": "gold or cyan, pale yellow-white core, contrasting dark edge",
+      "material_and_surface": "five broad points, center glow clustered into pixels",
+      "flight_animation": "3-frame sparkle cycle; homing motion is gameplay behavior and does not require different art.",
+      "trail_effect": "Two or three tiny spark pixels that fade quickly.",
+      "impact_effect": "Small starburst with short rays.",
+      "suggested_variants": [
+        "gold",
+        "frost",
+        "shadow",
+        "multi-star",
+        "seeking"
+      ],
+      "asset_generation_prompt": "A compact homing-star projectile in crisp pixel art, 32x32 transparent PNG, five broad readable points, bright central core and a small irregular energy halo, gold-and-cyan palette with dark outline, no UI icon framing, character, scenery, or text.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P20",
+      "name": "Void Sphere",
+      "category": "magic_magic",
+      "visual_description": "A nearly black orb with a sharp magenta or deep-violet rim and a tiny central void point. Distinguish it from Shadow Orb using a more geometric rim or a small broken ring.",
+      "palette": "black, deep violet, magenta, sparse white-violet pixels",
+      "material_and_surface": "dense dark center, broken ring, angular rim accents",
+      "flight_animation": "3–4 frame broken-ring rotation or pulsing center; keep orb dimensions stable.",
+      "trail_effect": "Sparse inward-pulling motes, visually distinct from a normal outward trail.",
+      "impact_effect": "Brief dark ring collapse followed by a violet pixel flash.",
+      "suggested_variants": [
+        "imploding",
+        "draining",
+        "splitting",
+        "boss"
+      ],
+      "asset_generation_prompt": "A 4-frame pixel-art void-sphere animation, 32x32 transparent cells, near-black core, broken deep-violet and magenta ring, tiny central point, geometric and ominous silhouette, dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P21",
+      "name": "Spectral Skull",
+      "category": "magic_magic",
+      "visual_description": "A tiny ghostly skull-shaped projectile with two clear eye sockets and a tapered smoky tail. Keep it stylized and non-gory, with a strong skull silhouette.",
+      "palette": "bone ivory, pale cyan, ghost blue, dark navy",
+      "material_and_surface": "simple skull face, large eye sockets, wispy tail",
+      "flight_animation": "2–4 frame bob or jaw/eye flicker; keep facial features readable.",
+      "trail_effect": "Short cyan mist trail.",
+      "impact_effect": "Ghostly burst with pale motes and a fading face-shaped flash.",
+      "suggested_variants": [
+        "cursed",
+        "seeking",
+        "split-skulls",
+        "boss"
+      ],
+      "asset_generation_prompt": "A small spectral-skull projectile in crisp pixel art, 32x32 transparent PNG, stylized ivory-cyan skull with two dark eye sockets and a short ghostly tail, non-gory, readable face, dark navy outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P22",
+      "name": "Crystal Bolt",
+      "category": "magic_magic",
+      "visual_description": "A short faceted bolt made from a hard crystal point and compact shaft. Unlike Ice Shard, this should feel mineral, polished, and magical rather than frozen.",
+      "palette": "amethyst purple, rose crystal, pale lilac, dark plum",
+      "material_and_surface": "large polygon-like facets, sharp tip, compact body",
+      "flight_animation": "2-frame shimmer or a single static sprite; optional palette variants for crystal types.",
+      "trail_effect": "A few matching crystal motes, no broad glow cloud.",
+      "impact_effect": "Angular crystal fragments with a tiny color-matched flash.",
+      "suggested_variants": [
+        "amethyst",
+        "emerald",
+        "ruby",
+        "piercing",
+        "splitting"
+      ],
+      "asset_generation_prompt": "A compact crystal-bolt projectile in crisp pixel art, 32x32 transparent PNG, sharp faceted amethyst point and short crystal body, lilac highlights and dark plum outline, mineral-polished appearance, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P23",
+      "name": "Fuse Bomb",
+      "category": "explosive",
+      "visual_description": "A small round or slightly square iron bomb with a visible short fuse and bright ember tip. The fuse must remain readable at 32x32 and not extend too far beyond the body.",
+      "palette": "iron gray, charcoal, dark brown, orange fuse spark",
+      "material_and_surface": "metal casing, simple seam, lit fuse tip",
+      "flight_animation": "Static projectile sprite; fuse sparkle can be a separate 2–3 frame effect.",
+      "trail_effect": "A few ember pixels from the fuse.",
+      "impact_effect": "Round explosion with smoke puffs and small fragments; separate effect sprites recommended.",
+      "suggested_variants": [
+        "small",
+        "large",
+        "sticky",
+        "timed",
+        "elemental"
+      ],
+      "asset_generation_prompt": "A small fuse-bomb projectile in crisp pixel art, 32x32 transparent PNG, compact dark iron sphere with simple seam, short fuse and bright orange ember tip, bold readable silhouette and dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P24",
+      "name": "Spiked Blast Core",
+      "category": "explosive",
+      "visual_description": "A compact dark explosive core with 6–8 broad spikes or plates radiating outward. It should read as a dangerous projectile before detonation without looking like a real-world grenade.",
+      "palette": "dark iron, charcoal, muted orange warning glow",
+      "material_and_surface": "chunky spikes, central round core, simple panel divisions",
+      "flight_animation": "2-frame pulse before detonation; keep spikes broad and count limited.",
+      "trail_effect": "Short dark smoke or orange spark trail.",
+      "impact_effect": "Sharp radial blast with chunky fragments and a brief ring.",
+      "suggested_variants": [
+        "cluster",
+        "timed",
+        "shrapnel",
+        "boss"
+      ],
+      "asset_generation_prompt": "A stylized spiked blast-core projectile in crisp pixel art, 32x32 transparent PNG, dark iron central core with 6–8 broad spikes and a restrained orange inner glow, chunky readable silhouette, dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P25",
+      "name": "Meteor Fragment",
+      "category": "explosive",
+      "visual_description": "A jagged chunk of dark rock with a bright molten leading edge and trailing flame. The rock should occupy most of the sprite; the flame tail can be a separate effect.",
+      "palette": "charcoal rock, ember orange, molten yellow, red",
+      "material_and_surface": "rough rock planes, glowing edge, directional flame",
+      "flight_animation": "2–4 frame flame-tail flicker; keep the rock core stable.",
+      "trail_effect": "Bright orange flame and a few falling embers, aligned opposite travel direction.",
+      "impact_effect": "Heavy impact crater flash, dust cloud, and scattered rock fragments.",
+      "suggested_variants": [
+        "small",
+        "large",
+        "splitting",
+        "falling meteor"
+      ],
+      "asset_generation_prompt": "A jagged meteor-fragment projectile in crisp pixel art, 32x32 transparent PNG, dark rough rock core with orange-yellow molten leading cracks and a tapered flame tail, strong directional silhouette, dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P26",
+      "name": "Arcane Mine",
+      "category": "explosive",
+      "visual_description": "A small floating magical mine: central orb or diamond surrounded by 4–6 short prongs. It should look stationary when deployed and distinct from a flying orb.",
+      "palette": "violet, cyan, dark indigo, pale center",
+      "material_and_surface": "symmetrical prongs, clear central core, simple geometry",
+      "flight_animation": "3-frame idle pulse; optional separate armed/disarmed states.",
+      "trail_effect": "No travel trail; faint periodic glow pulse after placement.",
+      "impact_effect": "Compact radial burst with a circular shock ring.",
+      "suggested_variants": [
+        "proximity",
+        "timed",
+        "elemental",
+        "trap"
+      ],
+      "asset_generation_prompt": "A floating arcane-mine sprite in crisp pixel art, 32x32 transparent PNG, violet-cyan central core surrounded by 4–6 short symmetrical prongs, readable symmetrical silhouette, dark indigo outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P27",
+      "name": "Frost Bomb",
+      "category": "explosive",
+      "visual_description": "A rounded icy charge with a pale blue center and angular crystal spikes. It should look like a thrown cold explosive, distinct from an ordinary Ice Shard.",
+      "palette": "ice blue, cyan, white, deep blue",
+      "material_and_surface": "faceted shell, a few broad spikes, frosted edge",
+      "flight_animation": "2-frame pulsing frost glow; use separate snow particles for the armed state.",
+      "trail_effect": "Small snowflakes or cold motes.",
+      "impact_effect": "Circular frost burst with radial ice shards and a pale-blue ground ring.",
+      "suggested_variants": [
+        "large",
+        "lingering frost",
+        "shatter",
+        "freezing"
+      ],
+      "asset_generation_prompt": "A compact frost-bomb projectile in crisp pixel art, 32x32 transparent PNG, rounded icy core with 4–6 broad crystal spikes, pale blue and cyan facets, white highlights and dark-blue outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P28",
+      "name": "Acid Glob",
+      "category": "explosive_magic",
+      "visual_description": "A more aggressive acidic projectile than Poison Glob: a pointed, asymmetrical glob with a few bright bubbles and a yellow-green core. Keep its silhouette sharp and corrosive.",
+      "palette": "yellow-green, lime, deep olive, tiny pale highlights",
+      "material_and_surface": "viscous surface, uneven spikes or droplets, high contrast",
+      "flight_animation": "2-frame wobble; avoid excessive bubbling that makes the shape noisy.",
+      "trail_effect": "A few tiny acid droplets; avoid a long cloud unless it is a variant.",
+      "impact_effect": "Corrosive splash with small droplets and a brief green vapor puff.",
+      "suggested_variants": [
+        "splash",
+        "lingering puddle",
+        "armor-corroding",
+        "toxic"
+      ],
+      "asset_generation_prompt": "A single acidic glob projectile in crisp pixel art, 32x32 transparent PNG, pointed asymmetrical yellow-green blob with deep olive rim and a few bright bubbles, corrosive but non-gory, dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P29",
+      "name": "Bolo Throw",
+      "category": "filipino_physical",
+      "visual_description": "A stylized Filipino bolo-inspired thrown blade: broad forward blade, slightly curved cutting edge, and a short dark handle. Keep it fantasy-game stylized rather than depicting a specific regional ceremonial artifact.",
+      "palette": "steel gray, dark wood, muted brass accent",
+      "material_and_surface": "broad agricultural blade silhouette, simple handle wrap, limited highlights",
+      "flight_animation": "Static flight sprite with engine-driven rotation; optional 2-frame spin for a special attack.",
+      "trail_effect": "Short neutral motion streak.",
+      "impact_effect": "Metallic slash flash with a few sparks.",
+      "suggested_variants": [
+        "rusted",
+        "refined steel",
+        "ancestral",
+        "returning"
+      ],
+      "asset_generation_prompt": "A stylized Filipino bolo-inspired thrown-blade projectile in crisp pixel art, 32x32 transparent PNG, broad slightly curved steel blade and short dark wooden handle, respectful fantasy-game design, strong silhouette, dark outline, no hand, character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P30",
+      "name": "Araw Sigil",
+      "category": "filipino_magic",
+      "visual_description": "An original sun-inspired magical projectile: a small golden central disc with 6–8 short angular rays. It is a fictional game symbol, not a copy of a national seal or existing emblem.",
+      "palette": "gold, amber, warm white, deep orange",
+      "material_and_surface": "bold sun disk, broad geometric rays, clean symmetry",
+      "flight_animation": "3-frame radiance pulse; keep ray count and central disk consistent.",
+      "trail_effect": "Short golden rays and a few warm motes.",
+      "impact_effect": "Radial sunburst with short rays and a bright center flash.",
+      "suggested_variants": [
+        "charged",
+        "solar flare",
+        "healing",
+        "piercing"
+      ],
+      "asset_generation_prompt": "An original sun-inspired magic projectile in crisp pixel art, 32x32 transparent PNG, gold central disk with 6–8 short angular rays, amber and warm-white highlights, fictional fantasy sigil, clear symmetric silhouette and dark outline, not a national seal, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P31",
+      "name": "Anting-Anting Charm",
+      "category": "filipino_magic",
+      "visual_description": "A small protective charm projectile based on a fictional amulet form: a compact pendant or carved token with a central geometric mark. Avoid copying a real sacred symbol without design approval.",
+      "palette": "aged brass, dark brown, jade or amber accent",
+      "material_and_surface": "simple pendant shape, central geometric mark, worn edges",
+      "flight_animation": "2-frame bob or pulse; can have a separate thrown and hovering state.",
+      "trail_effect": "Tiny gold motes; no heavy trail.",
+      "impact_effect": "A protective ring or brief amber ward flash.",
+      "suggested_variants": [
+        "warding",
+        "ricochet",
+        "blessing",
+        "returning"
+      ],
+      "asset_generation_prompt": "A fictional Filipino-inspired amulet-charm projectile in crisp pixel art, 32x32 transparent PNG, compact aged-brass pendant or carved token with a simple original geometric center mark and amber accent, readable silhouette, dark outline, respectful fantasy design, no text, character, scenery, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P32",
+      "name": "Diwa Wisp",
+      "category": "filipino_magic",
+      "visual_description": "A small spirit-light with a bright core and a flowing comma-shaped tail. It should feel alive and ethereal, but not resemble a specific religious figure or a real person's likeness.",
+      "palette": "pale cyan, mint, ivory, soft teal",
+      "material_and_surface": "simple bright core, flowing tail, a few separated glow pixels",
+      "flight_animation": "4-frame bobbing loop; tail changes shape slightly while core remains visually stable.",
+      "trail_effect": "A few tiny fading motes, matching the core color.",
+      "impact_effect": "Soft spirit-pop with a small ring and fading particles.",
+      "suggested_variants": [
+        "healing",
+        "seeking",
+        "ancestral",
+        "splitting"
+      ],
+      "asset_generation_prompt": "A 4-frame looping Diwa Wisp projectile in crisp pixel art, 32x32 transparent cells, pale-cyan and mint spirit-light with bright ivory core and comma-shaped flowing tail, gentle ethereal appearance, dark teal outline, original fantasy design, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P33",
+      "name": "Sumpa Spear",
+      "category": "filipino_magic",
+      "visual_description": "A narrow spectral spear with a dark shaft and a jagged cursed head. This is a fictional curse projectile; avoid attributing it to a specific real ritual or community.",
+      "palette": "deep violet, black, muted magenta, pale purple edge",
+      "material_and_surface": "long spear silhouette, broken angular head, restrained rune-like marks",
+      "flight_animation": "Static sprite; optional 2-frame curse flicker in the spearhead.",
+      "trail_effect": "Thin violet trail with sparse dark motes.",
+      "impact_effect": "Sharp violet burst with a brief broken-ring effect.",
+      "suggested_variants": [
+        "piercing",
+        "draining",
+        "splitting",
+        "boss"
+      ],
+      "asset_generation_prompt": "A fictional cursed spectral spear projectile in crisp pixel art, 32x32 transparent PNG, narrow dark shaft and jagged violet-magenta energy head, strong directional silhouette, restrained abstract markings, dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P34",
+      "name": "Ancestral Spirit Orb",
+      "category": "filipino_magic",
+      "visual_description": "A calm spirit orb containing a small abstract spiral or layered ring. Use a warm, reverent palette and original symbols; do not copy specific sacred designs without consultation.",
+      "palette": "warm ivory, muted gold, teal, deep brown",
+      "material_and_surface": "layered circular rings, a few orbiting pixels, balanced shape",
+      "flight_animation": "3–4 frame slow orbit or pulse; the central mark remains centered.",
+      "trail_effect": "Slowly drifting gold and teal motes.",
+      "impact_effect": "Gentle expanding ring and fading spirit motes.",
+      "suggested_variants": [
+        "healing",
+        "warding",
+        "seeking",
+        "ancestral blessing"
+      ],
+      "asset_generation_prompt": "A 4-frame ancestral-spirit-orb pixel-art animation, 32x32 transparent cells, warm ivory core, muted gold and teal concentric rings, original abstract spiral mark, calm fantasy mood, dark outline, culturally respectful and not copied from a specific sacred symbol, no text, character, scenery, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P35",
+      "name": "Kampilan Wave",
+      "category": "filipino_physical_magic",
+      "visual_description": "A wide crescent slash shaped by a stylized Kampilan-inspired blade silhouette. This is an energy wave, not a full weapon sprite: broad leading crescent with a tapering rear edge.",
+      "palette": "steel blue, pale cyan, silver-white, dark navy",
+      "material_and_surface": "long curved blade-wave, one bright cutting edge, limited ornament",
+      "flight_animation": "2–3 frame expansion or flicker; keep the arc direction consistent.",
+      "trail_effect": "Short matching slash afterimage.",
+      "impact_effect": "Wide curved slash flash with a few bright fragments.",
+      "suggested_variants": [
+        "wide",
+        "piercing",
+        "charged",
+        "ancestral"
+      ],
+      "asset_generation_prompt": "A stylized Kampilan-inspired energy-wave projectile in crisp pixel art, 32x32 transparent PNG, broad curved silver-cyan slash crescent with a dark-blue edge, elegant directional silhouette, fantasy energy rather than a complete weapon, respectful cultural inspiration, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P36",
+      "name": "Monster Spit",
+      "category": "monster",
+      "visual_description": "An organic projectile with a rounded body, uneven lobes, and a small tapered front. It should look creature-made but remain generic enough for multiple enemy species.",
+      "palette": "muted green, ochre, dark olive, pale yellow highlight",
+      "material_and_surface": "organic uneven surface, simple wet highlight, no gore",
+      "flight_animation": "2-frame wobble; use palette swaps for creature families.",
+      "trail_effect": "Small droplets in the same palette.",
+      "impact_effect": "Small splat and droplets; optional brief puddle for a poison-capable species.",
+      "suggested_variants": [
+        "acidic",
+        "venomous",
+        "sticky",
+        "explosive"
+      ],
+      "asset_generation_prompt": "A generic monster-spit projectile in crisp pixel art, 32x32 transparent PNG, irregular organic green-ochre glob with tapered front and one wet highlight, non-gory, strong dark outline, adaptable to fantasy creatures, no creature, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P37",
+      "name": "Curse Bolt",
+      "category": "monster_magic",
+      "visual_description": "A compact jagged dark projectile with a central violet core and two or three broken prongs. It should feel hostile and unstable, distinct from a smooth Shadow Orb.",
+      "palette": "black-purple, magenta, deep red accent, violet core",
+      "material_and_surface": "broken angular silhouette, bright inner core, sparse cracks",
+      "flight_animation": "2–3 frame flicker with slight prong changes; do not alter the core center.",
+      "trail_effect": "Short jagged purple afterimage.",
+      "impact_effect": "Brief dark flash with a broken ring and a few fading motes.",
+      "suggested_variants": [
+        "weakening",
+        "draining",
+        "splitting",
+        "homing"
+      ],
+      "asset_generation_prompt": "A compact curse-bolt projectile in crisp pixel art, 32x32 transparent PNG, jagged black-purple energy shape with magenta-violet core and 2–3 broken prongs, unstable angular silhouette, dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P38",
+      "name": "Boss Core",
+      "category": "boss",
+      "visual_description": "A large, visually dense but readable projectile core with a distinct central eye or crystal and an outer ring of plates. This is a reusable boss projectile base, recolored per boss identity.",
+      "palette": "deep crimson, gold, violet, or boss-specific palette",
+      "material_and_surface": "central core, 4–6 outer plates, bold symmetry and high contrast",
+      "flight_animation": "3–4 frame pulse or ring rotation; preserve a stable central point for hitbox alignment.",
+      "trail_effect": "Stronger color-matched trail with several particles, but do not obscure the core.",
+      "impact_effect": "Large boss-impact flash with a clear ring and a few fragments.",
+      "suggested_variants": [
+        "fire boss",
+        "frost boss",
+        "void boss",
+        "ancient boss"
+      ],
+      "asset_generation_prompt": "A reusable boss-core projectile in crisp pixel art, 32x32 transparent PNG, bright central eye or crystal surrounded by 4–6 bold outer plates, high contrast, dark outline, clear stable silhouette, use a boss-specific palette, no boss character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P39",
+      "name": "Tracking Shards",
+      "category": "boss",
+      "visual_description": "A small cluster of 3–5 narrow crystal or energy splinters arranged around an implied center. The art should read as a volley or cluster, while actual tracking behavior is implemented in code.",
+      "palette": "boss-specific palette such as crimson, cyan, or violet",
+      "material_and_surface": "separate shard silhouettes, each pointed and readable; avoid a single noisy blob",
+      "flight_animation": "Create one shard sprite plus optional 3-frame cluster preview; spawn and steering are gameplay logic.",
+      "trail_effect": "Short matching trails on each shard, handled separately.",
+      "impact_effect": "Multiple tiny impact flashes, not one large explosion.",
+      "suggested_variants": [
+        "crystal",
+        "fire",
+        "frost",
+        "void",
+        "splitting volley"
+      ],
+      "asset_generation_prompt": "A small cluster of 3–5 pointed tracking-energy shards in crisp pixel art, 32x32 transparent PNG, each shard clearly separated, shared boss-specific palette, dark outline, strong individual silhouettes, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    },
+    {
+      "id": "P40",
+      "name": "Abyssal Seed",
+      "category": "boss_magic",
+      "visual_description": "A dark seed-shaped projectile with a tapered end, layered shell, and a tiny glowing fissure. It should look ancient and ominous, distinct from a round Void Sphere.",
+      "palette": "near-black teal, deep navy, muted violet, pale cyan fissure",
+      "material_and_surface": "seed/teardrop silhouette, layered shell, one bright crack",
+      "flight_animation": "3-frame slow pulse; optional shell-opening frame for a charged attack.",
+      "trail_effect": "Sparse dark motes drifting inward or a short teal wake.",
+      "impact_effect": "Brief implosion ring followed by a few dark fragments.",
+      "suggested_variants": [
+        "charged",
+        "splitting",
+        "blooming",
+        "abyssal bloom"
+      ],
+      "asset_generation_prompt": "A dark abyssal-seed projectile in crisp pixel art, 32x32 transparent PNG, tapered seed-shaped shell in near-black teal and deep navy, one pale-cyan glowing fissure, ancient ominous fantasy mood, clear silhouette and dark outline, no character, scenery, text, or UI.",
+      "implementation_note": "Visual specification only. Projectile speed, damage, collision, lifetime, homing, piercing, and other behavior should be defined separately in gameplay data."
+    }
+  ],
+  "prompt_template": "Create a game-ready projectile sprite for Potaria using this specification: {visual_description}. Palette: {palette}. Material/surface: {material_and_surface}. Animation: {flight_animation}. Trail: {trail_effect}. Impact concept: {impact_effect}. Use crisp 2D pixel art, default 32x32 transparent PNG, strong readable silhouette, consistent dark outline, deliberate pixel clusters, limited palette, no smooth gradients, and nearest-neighbor-friendly edges. Show only the projectile asset centered on a transparent background. No character, hand, weapon wielder, scenery, ground, UI, text, label, watermark, or mockup. If animation is requested, use aligned equal-size frames and no labels. Treat gameplay behavior as separate from the art.",
+  "starter_batch_recommendation": [
+    "P01",
+    "P02",
+    "P06",
+    "P07",
+    "P08",
+    "P10",
+    "P16",
+    "P19",
+    "P23",
+    "P25",
+    "P29",
+    "P32"
+  ]
+}
