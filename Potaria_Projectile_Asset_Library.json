@@ -666,7 +666,7 @@
       "id": "P28",
       "name": "Acid Glob",
       "category": "explosive_magic",
-      "visual_description": "A more aggressive acidic projectile than Poison Glob: a pointed, asymmetrical glob with a few bright bubbles and a yellow-green core. Keep its silhouette sharp and corrosive.",
+      "visual_description": "A more aggressive acidic projectile than Poison Glob: a pointed, asymmetrical glob with a sharp corrosive silhouette and a few bright bubbles.",
       "palette": "yellow-green, lime, deep olive, tiny pale highlights",
       "material_and_surface": "viscous surface, uneven spikes or droplets, high contrast",
       "flight_animation": "2-frame wobble; avoid excessive bubbling that makes the shape noisy.",

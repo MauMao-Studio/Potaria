@@ -160,6 +160,14 @@ class TestProjectileAssetLibrary(unittest.TestCase):
         self.assertEqual(by_id["P01"]["category"], "physical_ranged")
         self.assertIn("wooden", by_id["P01"]["suggested_variants"])
 
+        # P28 Acid Glob
+        self.assertEqual(by_id["P28"]["name"], "Acid Glob")
+        self.assertEqual(by_id["P28"]["category"], "explosive_magic")
+        self.assertEqual(
+            by_id["P28"]["visual_description"],
+            "A more aggressive acidic projectile than Poison Glob: a pointed, asymmetrical glob with a sharp corrosive silhouette and a few bright bubbles.",
+        )
+
         # P29 Bolo Throw
         self.assertEqual(by_id["P29"]["name"], "Bolo Throw")
         self.assertEqual(by_id["P29"]["category"], "filipino_physical")
