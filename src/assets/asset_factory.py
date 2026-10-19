@@ -14,6 +14,7 @@ import math
 import hashlib
 import random
 import pygame
+from src.assets.projectile_factory import ProjectileRegistry, generate_library_projectiles
 from src.constants import (
     TILE_SIZE, TILE_AIR, TILE_DIRT, TILE_GRASS, TILE_STONE, TILE_WOOD,
     TILE_LEAVES, TILE_WOOD_TRUNK, TILE_COPPER_ORE, TILE_IRON_ORE,
@@ -232,7 +233,7 @@ class AssetFactory:
         self.npc_portraits = {}
         self.torch_frames = []
         self.crack_overlays = []
-        self.projectiles = {}
+        self.projectiles = ProjectileRegistry()
         self.animated_effects = {}
         self.skill_icons = {}
 
@@ -8116,6 +8117,20 @@ class AssetFactory:
         self.projectiles["astral_arrow"] = aa_surf
         self.items["astral_arrow"] = self.generate_item_icon("astral_arrow")
 
+        # 6. Potaria Projectile Asset Library (40 Crisp 32x32 Specifications: P01 to P40)
+        lib_projs = generate_library_projectiles()
+        for p_key, p_surf in lib_projs.items():
+            self.projectiles[p_key] = p_surf
+            parts = p_key.split("_", 1)
+            if len(parts) == 2:
+                pid_lower = parts[0]
+                name_snake = parts[1]
+                pid_upper = pid_lower.upper()
+                if hasattr(self.projectiles, "register_alias"):
+                    self.projectiles.register_alias(name_snake, p_key)
+                    self.projectiles.register_alias(pid_upper, p_key)
+                    self.projectiles.register_alias(pid_lower, p_key)
+
     def _generate_grand_animated_effects(self):
         # 1. ancient_slash (8 frames, 64x64)
         self.animated_effects["ancient_slash"] = []
@@ -8819,6 +8834,10 @@ class AssetFactory:
             and os.path.exists(os.path.join(proj_dir, "rod_javelin.png"))
             and os.path.exists(os.path.join(proj_dir, "scepter_pulse.png"))
         )
+        has_library_projs = (
+            os.path.exists(os.path.join(proj_dir, "p01_iron_arrow.png"))
+            and os.path.exists(os.path.join(proj_dir, "p40_abyssal_seed.png"))
+        )
         has_effects = os.path.exists(os.path.join(eff_dir, "ancient_slash_0.png")) and len(os.listdir(eff_dir)) >= 100 if os.path.exists(eff_dir) else False
         from src.ui.crafting import load_craftable_recipes
         craftable_recipes = load_craftable_recipes()
@@ -8848,7 +8867,7 @@ class AssetFactory:
             os.path.exists(os.path.join(tiles_dir, f"tile_{tid}.png"))
             for tid in (65, 66, 67, 68, 69, 70, 71, 72, 73)
         )
-        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_effects and has_fish_mobs and has_all_saplings and has_tree_items and has_tree_tiles:
+        if not force and os.path.exists(items_dir) and len(os.listdir(items_dir)) >= 1300 and has_craftable and os.path.exists(os.path.join(proj_dir, "freezing_needle.png")) and os.path.exists(cutscene_sample) and has_new_projs and has_library_projs and has_effects and has_fish_mobs and has_all_saplings and has_tree_items and has_tree_tiles:
             return
 
         os.makedirs(target_dir, exist_ok=True)
