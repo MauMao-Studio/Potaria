@@ -27,6 +27,7 @@ from src.constants import (
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, TILE_LAMP,
     TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT, SAPLING_TILES,
+    TILE_FARMLAND, TILE_FARMLAND_WET, TILE_CROP, TILE_WILD_PLANT,
     TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     TILE_OAK_WOOD, TILE_OAK_LEAVES, TILE_OAK_TRUNK,
     TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
@@ -93,6 +94,17 @@ ITEM_ALIASES = {
     "falling_star": "fallen_star",
     "wooden_chest": "chest",
     "lamp": "brass_lamp",
+    "hoe": "bamboo_hoe",
+    "inihaw_na_bangus": "cooked_bangus",
+    "inihaw_na_tilapia": "cooked_tilapia",
+    "inihaw_na_galunggong": "cooked_galunggong",
+    "inihaw_na_maya_maya": "cooked_maya_maya",
+    "inihaw_na_tanigue": "cooked_tanigue",
+    "inihaw_na_tambakol": "cooked_tambakol",
+    "inihaw_na_lapu_lapu": "cooked_lapu_lapu",
+    "inihaw_na_hito": "cooked_hito",
+    "inihaw_na_dilis": "cooked_dilis",
+    "inihaw_na_dalagang_bukid": "cooked_dalagang_bukid",
     # Seven Deadly Sins aliases
     "cinderheart_cuirass": "wrath_cuirass",
     "wrathbound_visage": "wrath_helm",
@@ -1496,6 +1508,31 @@ ITEM_REGISTRY = {
         "lore": "'Rule the waters, harvest the boundless cosmos.'",
         "special": "Fishing Tool"
     },
+
+    # ----------------------------------------------------
+    # Philippine Farming Tools & Agriculture System
+    # ----------------------------------------------------
+    "bamboo_hoe": {
+        "name": "Kawayan Bamboo Hoe", "cat": CAT_TOOL, "power": 10, "damage": 3, "max_stack": 1, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Lightweight bamboo farming hoe crafted for tilling soil into fertile Philippine farmland.",
+        "lore": "'Traditional tool of the industrious Filipino magsasaka.'",
+        "special": "Farming Tool (Tills Dirt & Grass)"
+    },
+    "iron_hoe": {
+        "name": "Iron Farming Hoe", "cat": CAT_TOOL, "power": 25, "damage": 6, "max_stack": 1, "tile": None,
+        "rarity": RARITY_UNCOMMON,
+        "desc": "Sturdy forged iron hoe that tills soil with effortless precision.",
+        "lore": "'Built to endure generations of paddy cultivation.'",
+        "special": "Farming Tool (Tills Dirt & Grass)"
+    },
+    "watering_can": {
+        "name": "Regadera Watering Can", "cat": CAT_TOOL, "power": 0, "damage": 1, "max_stack": 1, "tile": None,
+        "rarity": RARITY_COMMON,
+        "desc": "Traditional tin watering can. Fill at any water source without draining it, and water crops to hydrate farmland.",
+        "lore": "'Nurtures tender seedlings until harvest day.'",
+        "special": "Watering Tool (Hydrates Farmland, Infinite Water Refill)"
+    },
     "raw_bangus": {
         "name": "Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 15, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
@@ -1569,34 +1606,34 @@ ITEM_REGISTRY = {
     "cooked_bangus": {
         "name": "Inihaw na Bangus", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 65, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Grilled milkfish stuffed with tomatoes, onions, and wrapped in banana leaves.",
+        "desc": "Grilled milkfish stuffed with diced tomatoes and onions, basted over hot coals.",
         "lore": "",
         "buff": {"category": "offense", "name": "Charred Belly Focus", "duration": 180, "stats": {"damage_mult": 0.06, "ranged_damage_mult": 0.06}},
         "effects": ["+6% Ranged Damage (3m)"],
         "special": "[OFFENSE] +6% Ranged Damage (3m)"
     },
     "cooked_tilapia": {
-        "name": "Pritong Tilapia", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 50, "max_stack": 99, "tile": None,
+        "name": "Inihaw na Tilapia", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 50, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Whole tilapia seasoned with sea salt and pan-fried until crisp.",
+        "desc": "Whole tilapia scored and charcoal-grilled with salt and calamansi until crisp.",
         "lore": "",
         "buff": {"category": "offense", "name": "River Crisp Quickness", "duration": 120, "stats": {"atk_speed_mult": 0.05}},
         "effects": ["+5% Attack Speed (2m)"],
         "special": "[OFFENSE] +5% Attack Speed (2m)"
     },
     "cooked_galunggong": {
-        "name": "Pritong Galunggong", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 45, "max_stack": 99, "tile": None,
+        "name": "Inihaw na Galunggong", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 45, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Pan-fried round scad served with a spiced vinegar dip.",
+        "desc": "Charcoal-grilled round scad served hot off the campfire grill.",
         "lore": "",
         "buff": {"category": "mobility", "name": "Open Ocean Dart", "duration": 120, "stats": {"speed_mult": 0.08}},
         "effects": ["+8% Movement Speed (2m)"],
         "special": "[MOBILITY] +8% Movement Speed (2m)"
     },
     "cooked_maya_maya": {
-        "name": "Sinigang na Maya-Maya", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 80, "max_stack": 99, "tile": None,
+        "name": "Inihaw na Maya-Maya", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 80, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Red snapper simmered with tomatoes and string beans in sour tamarind broth.",
+        "desc": "Flame-grilled red snapper basted with garlic butter and calamansi.",
         "lore": "",
         "buff": {"category": "defense", "name": "Red Snapper Resilience", "duration": 180, "stats": {"dmg_reduction": 0.04}},
         "effects": ["+4% Damage Reduction (3m)"],
@@ -1605,7 +1642,7 @@ ITEM_REGISTRY = {
     "cooked_tanigue": {
         "name": "Inihaw na Tanigue", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 90, "max_stack": 99, "tile": None,
         "rarity": RARITY_RARE,
-        "desc": "Grilled Spanish mackerel steaks basted with calamansi and seasoned with salt.",
+        "desc": "Grilled Spanish mackerel steak seared over embers with calamansi marinade.",
         "lore": "",
         "buff": {"category": "mobility", "name": "Pelagic Swimmer Glide", "duration": 120, "stats": {"speed_mult": 0.08}},
         "effects": ["+8% Movement Speed (2m)"],
@@ -1614,43 +1651,43 @@ ITEM_REGISTRY = {
     "cooked_tambakol": {
         "name": "Inihaw na Tambakol", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 85, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Seared tuna steaks marinated in soy sauce, calamansi, and black pepper.",
+        "desc": "Grilled yellowfin tuna steak marinated in soy sauce, calamansi, and black pepper.",
         "lore": "",
         "buff": {"category": "offense", "name": "Yellowfin Cleave", "duration": 180, "stats": {"crit_dmg_mult": 0.08}},
         "effects": ["+8% Critical Damage (3m)"],
         "special": "[OFFENSE] +8% Critical Damage (3m)"
     },
     "cooked_lapu_lapu": {
-        "name": "Pasingaw na Lapu-Lapu", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
+        "name": "Inihaw na Lapu-Lapu", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 110, "max_stack": 99, "tile": None,
         "rarity": RARITY_EPIC,
-        "desc": "Steamed grouper topped with ginger, scallions, and light soy sauce.",
+        "desc": "Whole premium reef grouper grilled in banana leaves with ginger and scallions.",
         "lore": "",
         "buff": {"category": "defense", "name": "Reef Monarch Bulwark", "duration": 240, "stats": {"def": 3, "knockback_res": 0.05}},
         "effects": ["+3 Flat Defense (4m)", "+5% Knockback Resistance (4m)"],
         "special": "[DEFENSE] +3 DEF & +5% Knockback Res (4m)"
     },
     "cooked_hito": {
-        "name": "Adobong Hito", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 70, "max_stack": 99, "tile": None,
+        "name": "Inihaw na Hito", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 70, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Catfish braised in vinegar, soy sauce, garlic, and bay leaves.",
+        "desc": "Charcoal-grilled freshwater catfish with crisp blistered skin.",
         "lore": "",
         "buff": {"category": "offense", "name": "Marsh Predator Strike", "duration": 180, "stats": {"damage_mult": 0.06}},
         "effects": ["+6% Physical Damage (3m)"],
         "special": "[OFFENSE] +6% Physical Damage (3m)"
     },
     "cooked_dilis": {
-        "name": "Pritong Dilis", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35, "max_stack": 99, "tile": None,
+        "name": "Inihaw na Dilis", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 35, "max_stack": 99, "tile": None,
         "rarity": RARITY_COMMON,
-        "desc": "Crispy pan-fried dried anchovies glazed with brown sugar and chili flakes.",
+        "desc": "Toasted skewered anchovies grilled crispy over glowing campfire embers.",
         "lore": "",
         "buff": {"category": "resource", "name": "Anchovy Spark Sustain", "duration": 120, "stats": {"mp_regen": 1.0}},
         "effects": ["+1 MP/sec Regeneration (2m)"],
         "special": "[RESOURCE] +1 MP/sec Regen (2m)"
     },
     "cooked_dalagang_bukid": {
-        "name": "Pritong Dalagang Bukid", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 60, "max_stack": 99, "tile": None,
+        "name": "Inihaw na Dalagang Bukid", "cat": CAT_CONSUMABLE, "power": 0, "damage": 0, "heal": 60, "max_stack": 99, "tile": None,
         "rarity": RARITY_UNCOMMON,
-        "desc": "Pan-fried yellowtail fusilier dredged in flour until crispy.",
+        "desc": "Grilled crimson yellowtail fusilier with smoky charred scales and lemon.",
         "lore": "",
         "buff": {"category": "offense", "name": "Crimson Maiden Aim", "duration": 180, "stats": {"crit_chance": 0.03}},
         "effects": ["+3% Critical Chance (3m)"],
@@ -1876,6 +1913,66 @@ ITEM_REGISTRY = {
         "desc": "Fresh green string beans for vegetable dishes.",
         "lore": "",
         "special": "Cooking Ingredient"
+    },
+
+    # ----------------------------------------------------
+    # Philippine Crop Seeds (Native Pinoy Farming)
+    # ----------------------------------------------------
+    "rice_seeds": {
+        "name": "Palay Rice Seeds", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CROP,
+        "rarity": RARITY_COMMON,
+        "desc": "Seeds of the sacred Palay rice plant. Plant on tilled farmland to cultivate staple rice grains.",
+        "lore": "'Butil ng buhay, handog ng masaganang bukid.'",
+        "special": "Crop Seed (Grows Palay Rice)"
+    },
+    "garlic_seeds": {
+        "name": "Bawang Garlic Cloves", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CROP,
+        "rarity": RARITY_COMMON,
+        "desc": "Pungent seed cloves of garlic. Plant on tilled farmland to harvest aromatic Bawang.",
+        "lore": "'Wards off pests and malady alike.'",
+        "special": "Crop Seed (Grows Bawang Garlic)"
+    },
+    "onion_seeds": {
+        "name": "Sibuyas Onion Seeds", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CROP,
+        "rarity": RARITY_COMMON,
+        "desc": "Crisp red onion seeds. Plant on tilled farmland to harvest central Luzon red onions.",
+        "lore": "'Rich layers cultivated across vast central plains.'",
+        "special": "Crop Seed (Grows Sibuyas Red Onion)"
+    },
+    "ginger_seeds": {
+        "name": "Luya Ginger Rhizome", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CROP,
+        "rarity": RARITY_COMMON,
+        "desc": "Budding rhizome seed of fresh ginger. Plant on tilled farmland to produce spicy Luya roots.",
+        "lore": "'Fiery root of morning salabat and comforting Tinola.'",
+        "special": "Crop Seed (Grows Luya Fresh Ginger)"
+    },
+    "eggplant_seeds": {
+        "name": "Talong Eggplant Seeds", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CROP,
+        "rarity": RARITY_COMMON,
+        "desc": "Seeds of native Philippine eggplant. Plant on tilled farmland to grow glossy purple Talong.",
+        "lore": "'Hardy vegetable thriving under tropical sun.'",
+        "special": "Crop Seed (Grows Talong Eggplant)"
+    },
+    "string_beans_seeds": {
+        "name": "Sitaw Bean Seeds", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CROP,
+        "rarity": RARITY_COMMON,
+        "desc": "Seeds of yardlong string beans. Plant on tilled farmland to cultivate lush climbing Sitaw vines.",
+        "lore": "'Slender green vines that climb high.'",
+        "special": "Crop Seed (Grows Sitaw Yardlong Beans)"
+    },
+    "tamarind_seeds": {
+        "name": "Sampalok Tamarind Seeds", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CROP,
+        "rarity": RARITY_COMMON,
+        "desc": "Smooth brown seeds of the sour tamarind tree. Plant on tilled farmland to produce souring Sampalok pods.",
+        "lore": "'The sour soul of every genuine Sinigang.'",
+        "special": "Crop Seed (Grows Sampalok Tamarind)"
+    },
+    "calamansi_seeds": {
+        "name": "Kalamansi Citrus Seeds", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": TILE_CROP,
+        "rarity": RARITY_COMMON,
+        "desc": "Fragrant seeds of the Philippine lime. Plant on tilled farmland to cultivate golden-green Kalamansi shrubs.",
+        "lore": "'A burst of zesty tropical sunshine in every droplet.'",
+        "special": "Crop Seed (Grows Kalamansi Citrus)"
     },
     "pancit_noodles": {
         "name": "Bihon Rice Noodles", "cat": CAT_MATERIAL, "power": 0, "damage": 0, "max_stack": 99, "tile": None,

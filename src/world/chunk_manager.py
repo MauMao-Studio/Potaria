@@ -36,7 +36,8 @@ from src.constants import (
     TILE_PINE_WOOD, TILE_PINE_LEAVES, TILE_PINE_TRUNK,
     TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
     TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
-    TRUNK_TILES, ALL_LEAF_TILES
+    TRUNK_TILES, ALL_LEAF_TILES,
+    TILE_FARMLAND, TILE_FARMLAND_WET, TILE_CROP, TILE_WILD_PLANT
 )
 from src.world.noise import PerlinNoise
 
@@ -132,7 +133,7 @@ class ChunkSection:
 
                 # 2. Foreground Tiles
                 if t_id != TILE_AIR:
-                    if t_id in (TILE_TORCH, TILE_WATER) or t_id in SAPLING_TILES or t_id == TILE_SAPLING:
+                    if t_id in (TILE_TORCH, TILE_WATER, TILE_CROP, TILE_WILD_PLANT) or t_id in SAPLING_TILES or t_id == TILE_SAPLING:
                         self.animated_tiles.append((local_px, local_py, t_id))
                     elif t_id in TRUNK_TILES:
                         below_id = chunk.get_tile_local(lx, ty + 1)

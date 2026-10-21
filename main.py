@@ -57,7 +57,8 @@ from src.constants import (
     TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
     ALL_WOOD_TILES, ALL_LEAF_TILES, WOOD_VARIANTS_SET,
     CAT_TOOL, CAT_WEAPON, CAT_BLOCK, CAT_WALL, CAT_CONSUMABLE, CAT_SPECIAL,
-    PLAYER_WIDTH, PLAYER_HEIGHT
+    PLAYER_WIDTH, PLAYER_HEIGHT,
+    TILE_FURNACE, TILE_FARMLAND, TILE_FARMLAND_WET, TILE_CROP, TILE_WILD_PLANT
 )
 from src.world.save_manager import save_world, load_world, delete_world, list_saved_worlds, wait_for_pending_saves
 from src.assets.asset_factory import AssetFactory
@@ -1855,6 +1856,51 @@ class PotariaGame:
                 self._open_or_break_chest(tx, ty, tile_world_x, tile_world_y)
                 return
 
+            # 0b_furnace. Furnace or Campfire Cooking Interaction
+            if t_id in (TILE_FURNACE, TILE_FIREPLACE):
+                if hasattr(self.world, "active_furnaces") and (tx, ty) in self.world.active_furnaces:
+                    job = self.world.active_furnaces[(tx, ty)]
+                    if job.get("finished", False):
+                        item, count = self.world.collect_furnace_food(tx, ty, self.inventory)
+                        if item:
+                            from src.ui.inventory import ITEM_REGISTRY
+                            food_name = ITEM_REGISTRY.get(item, {}).get("name", item.replace("_", " ").title())
+                            self.inventory.notify(f"Collected {food_name} x{count} from furnace!")
+                            self.sound_manager.play("pickup")
+                            self.particle_system.spawn_sparks(tile_world_x + 16, tile_world_y + 16, (255, 215, 60), count=15)
+                            return
+                    else:
+                        time_left = job.get("time_left", 0.0)
+                        from src.ui.inventory import ITEM_REGISTRY
+                        food_name = ITEM_REGISTRY.get(job["item"], {}).get("name", job["item"].replace("_", " ").title())
+                        self.inventory.notify(f"Cooking {food_name}... ({time_left:.1f}s remaining)")
+                        self.sound_manager.play("craft")
+                        return
+
+            # 0b_crop. Harvest mature crop or wild plant
+            if t_id == TILE_CROP:
+                crop_info = getattr(self.world, "farm_crops", {}).get((tx, ty))
+                if crop_info and crop_info.get("stage", 0) >= 3:
+                    drops = self.world.harvest_crop(tx, ty)
+                    for item_id, count in drops:
+                        self.inventory.add_item(item_id, count)
+                        from src.ui.inventory import ITEM_REGISTRY
+                        i_name = ITEM_REGISTRY.get(item_id, {}).get("name", item_id.replace("_", " ").title())
+                        self.inventory.notify(f"Harvested {i_name} x{count}!")
+                    self.sound_manager.play("pickup")
+                    self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (100, 220, 100), count=10)
+                    return
+            elif t_id == TILE_WILD_PLANT:
+                drops = self.world.harvest_crop(tx, ty)
+                for item_id, count in drops:
+                    self.inventory.add_item(item_id, count)
+                    from src.ui.inventory import ITEM_REGISTRY
+                    i_name = ITEM_REGISTRY.get(item_id, {}).get("name", item_id.replace("_", " ").title())
+                    self.inventory.notify(f"Harvested {i_name} x{count}!")
+                self.sound_manager.play("pickup")
+                self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (120, 210, 80), count=10)
+                return
+
             # 0c. Dungeon Altar (Summon / Awaken Biome Boss)
             if t_id == TILE_DUNGEON_ALTAR:
                 if not self.combat.boss:
@@ -1943,6 +1989,43 @@ class PotariaGame:
             return
 
         cat = active.data.get("cat")
+
+        # Farming Tools: Hoe (tilling soil)
+        if active and ("hoe" in active.item_id or getattr(active, "special", "") == "Farming Tool (Hoe)"):
+            if reach <= SCALED_TILE * 5.5:
+                if self.world.till_soil(tx, ty):
+                    self.sound_manager.play("dig_dirt")
+                    self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (140, 95, 60), count=12)
+                    self.inventory.notify("Tilled farmland soil.")
+                    return
+
+        # Farming Tools: Watering Can
+        if active and ("watering_can" in active.item_id or getattr(active, "special", "") == "Farming Tool (Watering Can)"):
+            if reach <= SCALED_TILE * 5.5:
+                if self.world.get_tile(tx, ty) == TILE_WATER or self.world.is_water(tx, ty):
+                    self.sound_manager.play("pickup")
+                    self.inventory.notify("Refilled watering can with fresh water.")
+                    self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (80, 160, 240), count=10)
+                    return
+                elif self.world.water_soil(tx, ty):
+                    self.sound_manager.play("craft")
+                    self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (60, 150, 235), count=10)
+                    self.inventory.notify("Watered farmland.")
+                    return
+
+        # Crop Seeds: Planting
+        if active and (active.item_id.endswith("_seeds") or active.data.get("tile") == TILE_CROP):
+            if reach <= SCALED_TILE * 5.5:
+                plant_tx, plant_ty = tx, ty
+                if self.world.get_tile(plant_tx, plant_ty) != TILE_AIR and self.world.get_tile(plant_tx, plant_ty - 1) == TILE_AIR:
+                    plant_ty = plant_ty - 1
+                if self.world.plant_crop(plant_tx, plant_ty, active.item_id):
+                    self.sound_manager.play("place")
+                    self.particle_system.spawn_debris(plant_tx * SCALED_TILE + 16, plant_ty * SCALED_TILE + 16, (100, 210, 80), count=6)
+                    active.count -= 1
+                    if active.count <= 0:
+                        self.inventory.slots[self.inventory.selected_slot] = None
+                    return
 
         # 1. Consumable Food or Potions
         if cat == CAT_CONSUMABLE:
@@ -2282,6 +2365,8 @@ class PotariaGame:
                 return True
             else:
                 self.sound_manager.play("dig_dirt")
+                if hasattr(self.inventory, "notify"):
+                    self.inventory.notify("Reeled in too early! The fish was spooked.")
 
             self.fishing_bobber = None
             return True
@@ -2291,6 +2376,42 @@ class PotariaGame:
         FISHING_ROD_IDS = ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod")
         if active and (active.item_id in FISHING_ROD_IDS or getattr(active, "special", "") == "Fishing Tool" or "angler_rod" in active.item_id):
             return self.handle_fishing_action(mouse_x, mouse_y)
+
+        # Farming Tools & Seeds action on primary click
+        if active and ("hoe" in active.item_id or getattr(active, "special", "") == "Farming Tool (Hoe)"):
+            tx, ty = self.camera.screen_to_tile(mouse_x, mouse_y)
+            reach = math.hypot(self.player.center_x - (tx * SCALED_TILE + 16), self.player.center_y - (ty * SCALED_TILE + 16))
+            if reach <= SCALED_TILE * 5.5 and self.world.till_soil(tx, ty):
+                self.sound_manager.play("dig_dirt")
+                self.particle_system.spawn_debris(tx * SCALED_TILE + 16, ty * SCALED_TILE + 16, (140, 95, 60), count=12)
+                return True
+        if active and ("watering_can" in active.item_id or getattr(active, "special", "") == "Farming Tool (Watering Can)"):
+            tx, ty = self.camera.screen_to_tile(mouse_x, mouse_y)
+            reach = math.hypot(self.player.center_x - (tx * SCALED_TILE + 16), self.player.center_y - (ty * SCALED_TILE + 16))
+            if reach <= SCALED_TILE * 5.5:
+                if self.world.get_tile(tx, ty) == TILE_WATER or self.world.is_water(tx, ty):
+                    self.sound_manager.play("pickup")
+                    self.inventory.notify("Refilled watering can with fresh water.")
+                    self.particle_system.spawn_debris(tx * SCALED_TILE + 16, ty * SCALED_TILE + 16, (80, 160, 240), count=10)
+                    return True
+                elif self.world.water_soil(tx, ty):
+                    self.sound_manager.play("craft")
+                    self.particle_system.spawn_debris(tx * SCALED_TILE + 16, ty * SCALED_TILE + 16, (60, 150, 235), count=10)
+                    return True
+        if active and (active.item_id.endswith("_seeds") or active.data.get("tile") == TILE_CROP):
+            tx, ty = self.camera.screen_to_tile(mouse_x, mouse_y)
+            reach = math.hypot(self.player.center_x - (tx * SCALED_TILE + 16), self.player.center_y - (ty * SCALED_TILE + 16))
+            if reach <= SCALED_TILE * 5.5:
+                plant_tx, plant_ty = tx, ty
+                if self.world.get_tile(plant_tx, plant_ty) != TILE_AIR and self.world.get_tile(plant_tx, plant_ty - 1) == TILE_AIR:
+                    plant_ty = plant_ty - 1
+                if self.world.plant_crop(plant_tx, plant_ty, active.item_id):
+                    self.sound_manager.play("place")
+                    self.particle_system.spawn_debris(plant_tx * SCALED_TILE + 16, plant_ty * SCALED_TILE + 16, (100, 210, 80), count=6)
+                    active.count -= 1
+                    if active.count <= 0:
+                        self.inventory.slots[self.inventory.selected_slot] = None
+                    return True
         if active and getattr(active, "is_broken", False):
             if hasattr(self.inventory, "notify"):
                 self.inventory.notify("This weapon is broken! Repair it at the Mystic Trader.")
@@ -2791,14 +2912,17 @@ class PotariaGame:
                 bob["timer"] -= dt
                 if bob["timer"] <= 0:
                     bob["state"] = "bite"
-                    bob["bite_timer"] = 2.5
+                    bob["bite_timer"] = random.uniform(1.6, 2.0)
+                    bob["bite_duration"] = bob["bite_timer"]
                     self.sound_manager.play("hit")
                     self.particle_system.spawn_debris(bob["x"], bob["y"], (80, 180, 255), count=8)
             elif bob.get("state") == "bite":
                 bob["bite_timer"] -= dt
                 if bob["bite_timer"] <= 0:
-                    bob["state"] = "waiting"
-                    bob["timer"] = random.uniform(3.0, 5.0)
+                    self.fishing_bobber = None
+                    if hasattr(self.inventory, "notify"):
+                        self.inventory.notify("The fish bit and got away! Reel timing missed.")
+                    self.sound_manager.play("dig_dirt")
 
         # 1. Continuous Mining & Continuous Attacking / Block Placing (Paced by Fire Rate & Mining Rate)
         is_attack_active = (
@@ -3457,17 +3581,27 @@ class PotariaGame:
                 pygame.draw.circle(world_target, (20, 20, 20), (bsx, bsy), bob_r + 1, 1)
                 if bob.get("state") == "bite":
                     pygame.draw.circle(world_target, (100, 200, 255), (bsx, bsy), bob_r + 6, 2)
-                    pulse = (pygame.time.get_ticks() // 250) % 2
-                    ex_col = (255, 235, 60) if pulse else (255, 90, 90)
+                    pulse = (pygame.time.get_ticks() // 200) % 2
+                    ex_col = (255, 235, 60) if pulse else (255, 80, 80)
                     if getattr(self, "boss_font", None):
                         ex_surf = self.boss_font.render("!", True, ex_col)
                         world_target.blit(ex_surf, (bsx - ex_surf.get_width() // 2, bsy - 34))
                     if getattr(self, "font_fps", None):
-                        rc_surf = self.font_fps.render("[RIGHT CLICK!]", True, (255, 255, 255))
-                        bg_w, bg_h = rc_surf.get_width() + 6, rc_surf.get_height() + 2
-                        bg_rect = pygame.Rect(bsx - bg_w // 2, bsy - 18, bg_w, bg_h)
-                        pygame.draw.rect(world_target, (15, 20, 30, 200), bg_rect, border_radius=3)
-                        world_target.blit(rc_surf, (bsx - rc_surf.get_width() // 2, bsy - 17))
+                        rc_surf = self.font_fps.render("[STRIKE! REEL NOW]", True, (255, 255, 255))
+                        bg_w, bg_h = rc_surf.get_width() + 8, rc_surf.get_height() + 8
+                        bg_rect = pygame.Rect(bsx - bg_w // 2, bsy - 22, bg_w, bg_h)
+                        pygame.draw.rect(world_target, (15, 20, 30, 210), bg_rect, border_radius=3)
+                        world_target.blit(rc_surf, (bsx - rc_surf.get_width() // 2, bsy - 21))
+
+                        # Bite reaction countdown timer bar
+                        b_dur = max(0.1, bob.get("bite_duration", 1.8))
+                        b_rem = max(0.0, bob.get("bite_timer", 0.0))
+                        ratio = max(0.0, min(1.0, b_rem / b_dur))
+                        c_bar_w = bg_w - 4
+                        c_bar_y = bsy - 22 + bg_h - 4
+                        pygame.draw.rect(world_target, (30, 30, 40), (bsx - bg_w // 2 + 2, c_bar_y, c_bar_w, 3))
+                        timer_color = (100, 240, 120) if ratio > 0.4 else (255, 70, 70)
+                        pygame.draw.rect(world_target, timer_color, (bsx - bg_w // 2 + 2, c_bar_y, int(c_bar_w * ratio), 3))
 
             # Layer 5.2: Aquatic Foreground Water Pass
             self.world.render_water(world_target, self.camera)

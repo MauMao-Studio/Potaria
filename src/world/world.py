@@ -34,7 +34,8 @@ from src.constants import (
     TILE_PALM_WOOD, TILE_PALM_LEAVES, TILE_PALM_TRUNK,
     TILE_BLIGHT_WOOD, TILE_BLIGHT_LEAVES, TILE_BLIGHT_TRUNK,
     WOOD_TILES, TRUNK_TILES, ALL_WOOD_TILES, ALL_LEAF_TILES,
-    WOOD_VARIANTS, WOOD_VARIANTS_SET, LEAF_VARIANTS, LEAF_VARIANTS_SET
+    WOOD_VARIANTS, WOOD_VARIANTS_SET, LEAF_VARIANTS, LEAF_VARIANTS_SET,
+    TILE_FARMLAND, TILE_FARMLAND_WET, TILE_CROP, TILE_WILD_PLANT
 )
 from src.world.chunk_manager import ChunkManager, CHUNK_WIDTH, CHUNK_HEIGHT, SKY_MIN_Y, SECTION_HEIGHT, NUM_SECTIONS
 
@@ -172,6 +173,13 @@ class World:
         self.town_npcs = []
         self.housing_check_timer = 0.0
         self.town_housing_enabled = False  # Town checking disabled: Potaria does not have towns
+
+        # Philippine Farming & Culinary Furnace Cooking Management
+        self.farm_crops = {}            # (gx, gy) -> {"crop": name, "stage": int, "growth_timer": float, "stage_duration": float}
+        self.active_furnaces = {}       # (gx, gy) -> {"item": str, "count": int, "duration": float, "time_left": float, "station_type": str, "finished": bool}
+        self.soil_water_timers = {}     # (gx, gy) -> float (seconds remaining until wet farmland reverts to dry)
+        self.wild_crop_timer = 0.0      # timer for periodic wild crop spawning
+        self.scaled_crop_sprites = {}   # (crop_name, stage) -> pygame.Surface
         self.mystic_trader_timer = 0.0
         self.mystic_trader_interval = 240.0
         self.chests = {}  # (tx, ty) -> StorageChest
@@ -250,6 +258,8 @@ class World:
             self.damage_decay_timer = 0
 
         self.update_tree_decay(dt)
+        self.update_crops(dt)
+        self.update_furnaces(dt)
 
         # Bare ground wild sapling regeneration on natural surface grass
         self.wild_sapling_timer += dt
@@ -765,6 +775,25 @@ class World:
                     drop = broken_chest.chest_type
                 elif t_id == TILE_IRON_CHEST:
                     drop = "iron_chest"
+            elif t_id == TILE_CROP:
+                crop_info = self.farm_crops.pop((tx, ty), None)
+                c_name = crop_info.get("crop", "rice") if crop_info else "rice"
+                c_stage = crop_info.get("stage", 0) if crop_info else 0
+                if c_stage >= 3:
+                    drop = c_name
+                    self.last_bonus_drop = f"{c_name}_seeds"
+                else:
+                    drop = f"{c_name}_seeds" if random.random() < 0.65 else None
+            elif t_id == TILE_WILD_PLANT:
+                pinoy_crops = ["rice", "garlic", "onion", "ginger", "eggplant", "string_beans", "tamarind", "calamansi"]
+                c_name = random.choice(pinoy_crops)
+                drop = c_name
+                self.last_bonus_drop = f"{c_name}_seeds"
+            elif t_id in (TILE_GRASS, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS):
+                # 15% chance to drop wild seeds when breaking grass
+                if random.random() < 0.15:
+                    pinoy_seeds = ["rice_seeds", "garlic_seeds", "onion_seeds", "ginger_seeds", "eggplant_seeds", "string_beans_seeds", "tamarind_seeds", "calamansi_seeds"]
+                    self.last_bonus_drop = random.choice(pinoy_seeds)
 
             # Felling only cascades for natural tree trunks or unplaced tree wood when tree_cascade_felling is True
             if (t_id in ALL_WOOD_TILES) and not is_player_placed:
@@ -830,6 +859,26 @@ class World:
                             combat._spawn_loot_drop(sap_item, 1, cx, cy)
                         else:
                             self.decay_drops.append((sap_item, 1, cx, cy))
+                elif (ndx == 0 and ndy == -1) and (nt_id in (TILE_CROP, TILE_WILD_PLANT)):
+                    # Farmland beneath planted crop was destroyed
+                    below_tid = self.get_tile(ntx, nty + 1)
+                    if below_tid not in (TILE_FARMLAND, TILE_FARMLAND_WET):
+                        c_info = self.farm_crops.pop((ntx, nty), None)
+                        c_name = c_info.get("crop", "rice") if c_info else "rice"
+                        c_stage = c_info.get("stage", 0) if c_info else 0
+                        self.set_tile(ntx, nty, TILE_AIR)
+                        self.player_placed_tiles.discard((ntx, nty))
+                        self.last_broken_extra_tiles.append((ntx, nty, TILE_AIR))
+                        cx = ntx * self.scaled_tile + self.scaled_tile / 2
+                        cy = nty * self.scaled_tile + self.scaled_tile / 2
+                        p_drop = c_name if c_stage >= 3 else f"{c_name}_seeds"
+                        combat = getattr(self, "combat", None)
+                        if combat:
+                            combat._spawn_loot_drop(p_drop, 1, cx, cy)
+                        else:
+                            if not hasattr(self, "decay_drops"):
+                                self.decay_drops = []
+                            self.decay_drops.append((p_drop, 1, cx, cy))
             return True, drop, t_id
 
         return False, None, t_id
@@ -1077,8 +1126,17 @@ class World:
             if not self.is_tile_solid(tx, ty + 1):
                 return False
 
+        # Physical placement rules for crops:
+        is_crop = (actual_tile_id == TILE_CROP)
+        if is_crop:
+            if cur != TILE_AIR or self.is_water(tx, ty):
+                return False
+            below_id = self.get_tile(tx, ty + 1)
+            if below_id not in (TILE_FARMLAND, TILE_FARMLAND_WET):
+                return False
+
         # Adjacency check
-        has_neighbor = (self.get_wall(tx, ty) != WALL_AIR) or (is_sap and self.is_tile_solid(tx, ty + 1))
+        has_neighbor = (self.get_wall(tx, ty) != WALL_AIR) or (is_sap and self.is_tile_solid(tx, ty + 1)) or (is_crop and self.get_tile(tx, ty + 1) in (TILE_FARMLAND, TILE_FARMLAND_WET))
         for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
             if self.get_tile(tx + dx, ty + dy) not in (TILE_AIR, TILE_WATER):
                 has_neighbor = True
@@ -1096,6 +1154,14 @@ class World:
             elif is_sap:
                 sap_type = str(chest_type) if "sapling" in str(chest_type) else SAPLING_TILE_TO_ITEM.get(actual_tile_id, "oak_sapling")
                 self.planted_saplings[(tx, ty)] = {"growth_days": 0, "sapling_type": sap_type}
+            elif is_crop:
+                seed_to_crop = {
+                    "rice_seeds": "rice", "garlic_seeds": "garlic", "onion_seeds": "onion",
+                    "ginger_seeds": "ginger", "eggplant_seeds": "eggplant", "string_beans_seeds": "string_beans",
+                    "tamarind_seeds": "tamarind", "calamansi_seeds": "calamansi"
+                }
+                c_name = seed_to_crop.get(chest_type, "rice")
+                self.farm_crops[(tx, ty)] = {"crop": c_name, "stage": 0, "growth_timer": 0.0, "stage_duration": 40.0}
         return placed
 
     def toggle_door(self, tx, ty, player_rect=None):
@@ -1117,6 +1183,263 @@ class World:
         if self.get_wall(tx, ty) == wall_id:
             return False
         return self.chunk_manager.set_wall(tx, ty, wall_id)
+
+    # =========================================================================
+    # Philippine Farming System (Palay, Bawang, Sibuyas, Luya, Talong, etc.)
+    # =========================================================================
+
+    def is_farmland_near_water(self, gx, gy):
+        """Checks if farmland tile is within 4 horizontal tiles of water for permanent hydration."""
+        for dx in range(-4, 5):
+            for dy in range(-1, 2):
+                if self.get_tile(gx + dx, gy + dy) == TILE_WATER:
+                    return True
+        return False
+
+    def has_crop_light(self, gx, gy):
+        """Returns True if crop has sufficient light: natural sky light OR artificial torchlight."""
+        # 1. Artificial light nearby (within 5 tiles)
+        for dx in range(-5, 6):
+            for dy in range(-5, 6):
+                tid = self.get_tile(gx + dx, gy + dy)
+                if tid in (TILE_TORCH, TILE_FIREPLACE, TILE_FURNACE, TILE_CARVED_TUBER_LANTERN,
+                           TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, TILE_CANDELABRA, TILE_CHANDELIER):
+                    return True
+
+        # 2. Natural sky light (no solid tiles above to sky)
+        if gy <= SURFACE_LEVEL + 5:
+            solid_above = False
+            for uy in range(max(SKY_MIN_Y, gy - 30), gy):
+                if self.is_tile_solid(gx, uy):
+                    solid_above = True
+                    break
+            if not solid_above:
+                return True
+
+        return False
+
+    def till_soil(self, gx, gy):
+        """Tills dirt or grass into farmland using a hoe."""
+        cur = self.get_tile(gx, gy)
+        if cur in (TILE_DIRT, TILE_GRASS, TILE_BLIGHT_GRASS, TILE_CORRUPT_GRASS):
+            above = self.get_tile(gx, gy - 1)
+            if above in (TILE_AIR, TILE_WATER):
+                wet = self.is_farmland_near_water(gx, gy)
+                target_tid = TILE_FARMLAND_WET if wet else TILE_FARMLAND
+                self.set_tile(gx, gy, target_tid)
+                self.player_placed_tiles.add((gx, gy))
+                return True
+        return False
+
+    def water_soil(self, gx, gy, duration=240.0):
+        """Hydrates dry farmland with a watering can for duration seconds."""
+        if self.get_tile(gx, gy) == TILE_FARMLAND:
+            self.set_tile(gx, gy, TILE_FARMLAND_WET)
+            self.soil_water_timers[(gx, gy)] = float(duration)
+            return True
+        elif self.get_tile(gx, gy) == TILE_FARMLAND_WET:
+            self.soil_water_timers[(gx, gy)] = float(duration)
+            return True
+        return False
+
+    def plant_crop(self, gx, gy, seed_id):
+        """Plants a crop seed on farmland."""
+        cur = self.get_tile(gx, gy)
+        below = self.get_tile(gx, gy + 1)
+        if cur == TILE_AIR and below in (TILE_FARMLAND, TILE_FARMLAND_WET):
+            seed_to_crop = {
+                "rice_seeds": "rice",
+                "garlic_seeds": "garlic",
+                "onion_seeds": "onion",
+                "ginger_seeds": "ginger",
+                "eggplant_seeds": "eggplant",
+                "string_beans_seeds": "string_beans",
+                "tamarind_seeds": "tamarind",
+                "calamansi_seeds": "calamansi",
+            }
+            crop_name = seed_to_crop.get(seed_id, "rice")
+            self.set_tile(gx, gy, TILE_CROP)
+            self.player_placed_tiles.add((gx, gy))
+            self.farm_crops[(gx, gy)] = {
+                "crop": crop_name,
+                "stage": 0,
+                "growth_timer": 0.0,
+                "stage_duration": 40.0,
+            }
+            return True
+        return False
+
+    def harvest_crop(self, gx, gy):
+        """Harvests mature crop or wild plant, returning drops list [(item, count), ...]."""
+        cur = self.get_tile(gx, gy)
+        if cur == TILE_CROP:
+            crop_info = self.farm_crops.pop((gx, gy), None)
+            c_name = crop_info.get("crop", "rice") if crop_info else "rice"
+            c_stage = crop_info.get("stage", 0) if crop_info else 0
+            self.set_tile(gx, gy, TILE_AIR)
+            self.player_placed_tiles.discard((gx, gy))
+            if c_stage >= 3:
+                yield_cnt = random.randint(2, 4) if c_name in ("rice", "garlic", "calamansi") else random.randint(1, 2)
+                seed_cnt = random.randint(1, 2)
+                return [(c_name, yield_cnt), (f"{c_name}_seeds", seed_cnt)]
+            else:
+                seed_cnt = 1 if random.random() < 0.65 else 0
+                return [(f"{c_name}_seeds", seed_cnt)] if seed_cnt > 0 else []
+        elif cur == TILE_WILD_PLANT:
+            self.set_tile(gx, gy, TILE_AIR)
+            self.player_placed_tiles.discard((gx, gy))
+            pinoy_crops = ["rice", "garlic", "onion", "ginger", "eggplant", "string_beans", "tamarind", "calamansi"]
+            c_name = random.choice(pinoy_crops)
+            return [(c_name, 1), (f"{c_name}_seeds", random.randint(1, 2))]
+        return []
+
+    def get_crop_sprite(self, crop_name, stage=0):
+        """Returns pre-scaled 32x32 sprite surface for given crop and growth stage (0-3)."""
+        stage = max(0, min(3, int(stage)))
+        c_key = (str(crop_name).lower(), stage)
+        if c_key not in self.scaled_crop_sprites:
+            raw = self.asset_factory.get_crop_sprite(crop_name, stage)
+            if raw:
+                self.scaled_crop_sprites[c_key] = pygame.transform.scale(raw, (self.scaled_tile, self.scaled_tile))
+            else:
+                self.scaled_crop_sprites[c_key] = self.scaled_tiles.get(TILE_CROP)
+        return self.scaled_crop_sprites.get(c_key, self.scaled_tiles.get(TILE_CROP))
+
+    def update_crops(self, dt):
+        """Updates crop growth stages, farmland hydration, and wild crop population."""
+        # 1. Update crops
+        for (gx, gy), data in list(self.farm_crops.items()):
+            if self.get_tile(gx, gy) != TILE_CROP:
+                self.farm_crops.pop((gx, gy), None)
+                continue
+            below_tid = self.get_tile(gx, gy + 1)
+            if below_tid not in (TILE_FARMLAND, TILE_FARMLAND_WET):
+                # Supporting farmland broke
+                self.set_tile(gx, gy, TILE_AIR)
+                self.farm_crops.pop((gx, gy), None)
+                continue
+
+            # Hydration check
+            near_water = self.is_farmland_near_water(gx, gy + 1)
+            if near_water and below_tid == TILE_FARMLAND:
+                self.set_tile(gx, gy + 1, TILE_FARMLAND_WET)
+                below_tid = TILE_FARMLAND_WET
+            is_hydrated = (below_tid == TILE_FARMLAND_WET) or near_water
+
+            # Light check (can grow with sun or torchlight)
+            if not self.has_crop_light(gx, gy):
+                continue
+
+            growth_rate = 1.0 if is_hydrated else 0.35
+            data["growth_timer"] += dt * growth_rate
+            if data["growth_timer"] >= data.get("stage_duration", 40.0):
+                data["growth_timer"] = 0.0
+                if data["stage"] < 3:
+                    data["stage"] += 1
+
+        # 2. Update soil water timers
+        for (gx, gy) in list(self.soil_water_timers.keys()):
+            if self.get_tile(gx, gy) != TILE_FARMLAND_WET:
+                self.soil_water_timers.pop((gx, gy), None)
+                continue
+            if self.is_farmland_near_water(gx, gy):
+                # Permanently wet near water
+                continue
+            self.soil_water_timers[(gx, gy)] -= dt
+            if self.soil_water_timers[(gx, gy)] <= 0:
+                self.soil_water_timers.pop((gx, gy), None)
+                self.set_tile(gx, gy, TILE_FARMLAND)
+
+        # 3. Wild crop spawning
+        self.wild_crop_timer += dt
+        if self.wild_crop_timer >= 60.0:
+            self.wild_crop_timer = 0.0
+            rx = random.randint(-60, 60)
+            ry = self.get_surface_height(rx)
+            if ry is not None and self.get_tile(rx, ry) == TILE_GRASS and self.get_tile(rx, ry - 1) == TILE_AIR:
+                self.set_tile(rx, ry - 1, TILE_WILD_PLANT)
+
+    def water_open_farmland(self):
+        """Rain/Weather Hook: automatically hydrates all outdoor farmland exposed to sky."""
+        for (gx, gy) in list(self.player_placed_tiles):
+            if self.get_tile(gx, gy) == TILE_FARMLAND:
+                if self.has_crop_light(gx, gy - 1):
+                    self.set_tile(gx, gy, TILE_FARMLAND_WET)
+                    self.soil_water_timers[(gx, gy)] = 300.0
+
+    # =========================================================================
+    # Furnace & Campfire Cooking Engine (Duration based on rarity, 1 food/station)
+    # =========================================================================
+
+    def is_furnace_busy(self, gx, gy):
+        """Returns True if the furnace at (gx, gy) is actively cooking."""
+        job = self.active_furnaces.get((gx, gy))
+        return job is not None and not job.get("finished", False)
+
+    def get_cooking_duration(self, item_id):
+        """Returns cooking duration in seconds based on food rarity tier."""
+        from src.ui.inventory import ITEM_REGISTRY
+        rarity = str(ITEM_REGISTRY.get(item_id, {}).get("rarity", "common")).lower()
+        dur_table = {
+            "common": 4.0,
+            "uncommon": 6.0,
+            "rare": 9.0,
+            "epic": 13.0,
+            "mythic": 16.0,
+            "legendary": 20.0,
+            "ancient": 24.0,
+        }
+        return dur_table.get(rarity, 5.0)
+
+    def start_furnace_cooking(self, gx, gy, item_id, count=1, station_type="furnace"):
+        """Starts a timed cooking job on a furnace or fireplace."""
+        if self.is_furnace_busy(gx, gy):
+            return False
+        base_dur = self.get_cooking_duration(item_id) * count
+        self.active_furnaces[(gx, gy)] = {
+            "item": item_id,
+            "count": count,
+            "duration": base_dur,
+            "time_left": base_dur,
+            "station_type": station_type,
+            "finished": False,
+        }
+        return True
+
+    def update_furnaces(self, dt, particle_system=None):
+        """Updates active cooking jobs across all furnaces and hearths."""
+        for (gx, gy), job in list(self.active_furnaces.items()):
+            tid = self.get_tile(gx, gy)
+            if tid not in (TILE_FURNACE, TILE_FIREPLACE):
+                self.active_furnaces.pop((gx, gy), None)
+                continue
+
+            if not job.get("finished", False):
+                job["time_left"] -= dt
+                if particle_system and random.random() < 0.25:
+                    wx = gx * self.scaled_tile + 16
+                    wy = gy * self.scaled_tile + 4
+                    p_col = (255, 140, 40) if random.random() < 0.6 else (170, 170, 170)
+                    particle_system.spawn_debris(wx, wy, p_col, count=1)
+
+                if job["time_left"] <= 0:
+                    job["time_left"] = 0.0
+                    job["finished"] = True
+
+    def collect_furnace_food(self, gx, gy, inventory=None):
+        """Collects cooked food if ready, or returns remaining cooking time."""
+        if (gx, gy) in self.active_furnaces:
+            job = self.active_furnaces[(gx, gy)]
+            if job.get("finished", False):
+                item = job["item"]
+                count = job["count"]
+                self.active_furnaces.pop((gx, gy), None)
+                if inventory:
+                    inventory.add_item(item, count)
+                return (item, count)
+            else:
+                return (None, job.get("time_left", 0.0))
+        return (None, None)
 
     def check_house_validity(self, tx, ty, visited_cache=None):
         """Validates if (tx, ty) belongs to a fully sheltered, furnished, and illuminated
@@ -1605,6 +1928,45 @@ class World:
                     s_tex = self.scaled_tiles.get(t_id)
                     if s_tex:
                         target_surf.blit(s_tex, (spx, spy))
+            elif t_id == TILE_CROP:
+                gx = cx * CHUNK_WIDTH + (lpx // self.scaled_tile)
+                gy = sy * SECTION_HEIGHT + (lpy // self.scaled_tile)
+                crop_data = self.farm_crops.get((gx, gy))
+                c_name = crop_data.get("crop", "rice") if crop_data else "rice"
+                c_stage = crop_data.get("stage", 0) if crop_data else 3
+                crop_tex = self.get_crop_sprite(c_name, c_stage)
+                if crop_tex:
+                    target_surf.blit(crop_tex, (spx, spy))
+            elif t_id == TILE_WILD_PLANT:
+                w_tex = self.scaled_tiles.get(TILE_WILD_PLANT)
+                if w_tex:
+                    target_surf.blit(w_tex, (spx, spy))
+
+        # Dynamic overlay: Furnace & Hearth Cooking Indicators
+        if self.active_furnaces:
+            for (fx, fy), job in self.active_furnaces.items():
+                fsx = fx * self.scaled_tile - cam_x
+                fsy = fy * self.scaled_tile - cam_y
+                if -self.scaled_tile <= fsx <= sw and -self.scaled_tile <= fsy <= sh:
+                    if job.get("finished", False):
+                        # Floating bouncing ready notification
+                        bounce = int(math.sin(pygame.time.get_ticks() * 0.008) * 3)
+                        ready_rect = pygame.Rect(fsx + 4, fsy - 12 + bounce, 24, 10)
+                        pygame.draw.rect(target_surf, (20, 25, 35), ready_rect, border_radius=2)
+                        pygame.draw.rect(target_surf, (255, 215, 60), ready_rect, 1, border_radius=2)
+                        pygame.draw.circle(target_surf, (100, 240, 120), (fsx + 16, fsy - 7 + bounce), 3)
+                    else:
+                        # Cooking progress bar
+                        dur = max(0.1, job.get("duration", 5.0))
+                        rem = max(0.0, job.get("time_left", 0.0))
+                        pct = max(0.0, min(1.0, 1.0 - (rem / dur)))
+                        bar_w = 26
+                        bar_rect = pygame.Rect(fsx + 3, fsy - 8, bar_w, 5)
+                        pygame.draw.rect(target_surf, (15, 20, 30), bar_rect, border_radius=1)
+                        pygame.draw.rect(target_surf, (60, 70, 90), bar_rect, 1, border_radius=1)
+                        fill_w = int(pct * (bar_w - 2))
+                        if fill_w > 0:
+                            pygame.draw.rect(target_surf, (255, 140, 40), (fsx + 4, fsy - 7, fill_w, 3))
 
         # Dynamic overlay: shimmering animated plant and tree growth
         if hasattr(self, "growth_animations") and self.growth_animations:

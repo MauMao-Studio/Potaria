@@ -118,6 +118,12 @@ TILE_SAPLING_PALM = 62         # Tropical coastal palm sapling (arching fan fron
 TILE_SAPLING_PINE = 63         # Alpine evergreen conifer pine sapling (conical tiered needles)
 TILE_SAPLING_BLIGHT = 64       # Corrupted abyssal violet blight sapling (eerie spore pulse)
 
+# Farming & Philippine Agriculture System Tiles
+TILE_FARMLAND = 74          # Tilled dry farmland soil
+TILE_FARMLAND_WET = 75      # Hydrated tilled farmland soil (near water or watered)
+TILE_CROP = 76              # Agricultural planted crops (stages 0-3)
+TILE_WILD_PLANT = 77        # Naturally spawning wild crops on grass
+
 # Tree-Specific Wood & Leaves Tiles
 TILE_OAK_WOOD = 4
 TILE_OAK_LEAVES = 5
@@ -341,6 +347,11 @@ TILE_PROPS = {
     TILE_BLIGHT_WOOD: {"name": "Blight Wood", "hardness": 20, "drop": "blight_wood", "solid": True, "platform": False, "light_emit": 1, "absorb": 3, "opaque": True},
     TILE_BLIGHT_LEAVES: {"name": "Blight Leaves", "hardness": 5, "drop": "blight_leaves", "solid": False, "platform": False, "light_emit": 1, "absorb": 1, "opaque": False},
     TILE_BLIGHT_TRUNK: {"name": "Blight Wood Trunk", "hardness": 20, "drop": "blight_wood", "solid": False, "platform": False, "light_emit": 1, "absorb": 2, "opaque": False},
+
+    TILE_FARMLAND: {"name": "Farmland", "hardness": 15, "drop": "dirt_clod", "solid": True, "platform": False, "light_emit": 0, "absorb": 3, "opaque": True},
+    TILE_FARMLAND_WET: {"name": "Hydrated Farmland", "hardness": 15, "drop": "dirt_clod", "solid": True, "platform": False, "light_emit": 0, "absorb": 3, "opaque": True},
+    TILE_CROP: {"name": "Crops", "hardness": 1, "drop": None, "solid": False, "platform": False, "light_emit": 0, "absorb": 0, "opaque": False},
+    TILE_WILD_PLANT: {"name": "Wild Plant", "hardness": 1, "drop": None, "solid": False, "platform": False, "light_emit": 0, "absorb": 0, "opaque": False},
 }
 
 # Item Rarity Tiers (7 Tiers)

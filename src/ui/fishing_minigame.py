@@ -51,7 +51,7 @@ class FishingBattleMiniGame:
 
         # UI Positioning (centered modal)
         self.width = 420
-        self.height = 205
+        self.height = 210
         self.x = (SCREEN_WIDTH - self.width) // 2
         self.y = (SCREEN_HEIGHT - self.height) // 2 - 20
 
@@ -99,8 +99,23 @@ class FishingBattleMiniGame:
         self.tension = 25.0
         self.is_thrashing = False
         self.thrash_timer = random.uniform(1.2, 2.5)
-        self.time_limit = 16.0
+
+        # Dynamic time duration based on rarity / tier
+        rarity_limits = {
+            "common": 8.5,
+            "uncommon": 10.0,
+            "rare": 11.5,
+            "epic": 13.0,
+            "mythic": 14.5,
+            "legendary": 15.0,
+            "ancient": 16.0,
+        }
+        self.time_limit = rarity_limits.get(self.rarity, 10.0)
+        if getattr(self, "catch_category", "") == "junk":
+            self.time_limit = 7.5
         self.time_remaining = self.time_limit
+        self.max_time = self.time_limit
+        self.perfect_timing_flash = 0.0
         self.result = None
         self.is_active = True
         self.ui_scale_pulse = 0.25
@@ -138,8 +153,15 @@ class FishingBattleMiniGame:
                 self.sound_manager.play("hit_block")
         else:
             # Reeling during calm water makes steady progress with mild tension
+            # Sweet spot zone: 30% to 70% line tension rewards optimal timing with +35% reel progress
+            if 30.0 <= self.tension <= 70.0:
+                timing_mult = 1.35
+                self.perfect_timing_flash = 0.35
+            else:
+                timing_mult = 1.0
+
             self.tension = min(95.0, self.tension + 3.5)
-            self.reeling_progress += progress_per_click
+            self.reeling_progress += progress_per_click * timing_mult
             self.clicks_done += 1
             if self.sound_manager:
                 self.sound_manager.play("craft")
@@ -172,6 +194,8 @@ class FishingBattleMiniGame:
 
         if self.ui_scale_pulse > 0:
             self.ui_scale_pulse = max(0.0, self.ui_scale_pulse - dt * 2.0)
+        if self.perfect_timing_flash > 0:
+            self.perfect_timing_flash = max(0.0, self.perfect_timing_flash - dt)
 
         # Thrash state switching
         self.thrash_timer -= dt
@@ -298,9 +322,18 @@ class FishingBattleMiniGame:
         surface.blit(rendered_prog, (bar_x + 8, p_y + 3))
 
         # 2. Line Tension Meter
-        t_y = self.y + 110
+        t_y = self.y + 104
         pygame.draw.rect(surface, (12, 16, 26), (bar_x, t_y, bar_w, 20), border_radius=4)
         pygame.draw.rect(surface, (60, 80, 115), (bar_x, t_y, bar_w, 20), 1, border_radius=4)
+
+        # Sweet Spot Zone Indicator (30% to 70% line tension)
+        sweet_start = bar_x + 2 + int(0.30 * (bar_w - 4))
+        sweet_width = int(0.40 * (bar_w - 4))
+        sweet_surf = pygame.Surface((sweet_width, 16), pygame.SRCALPHA)
+        sweet_surf.fill((45, 210, 110, 50))
+        surface.blit(sweet_surf, (sweet_start, t_y + 2))
+        pygame.draw.rect(surface, (80, 230, 130), (sweet_start, t_y + 2, sweet_width, 16), 1)
+
         ten_fill_w = int((self.tension / 100.0) * (bar_w - 4))
         if ten_fill_w > 0:
             if self.tension < 50:
@@ -314,12 +347,27 @@ class FishingBattleMiniGame:
         rendered_ten = self.font_sm.render(ten_txt, True, (255, 255, 255))
         surface.blit(rendered_ten, (bar_x + 8, t_y + 3))
 
+        # Sweet spot bonus flash indicator
+        if getattr(self, "perfect_timing_flash", 0.0) > 0:
+            flash_txt = self.font_sm.render("SWEET SPOT! (+35% PROGRESS)", True, (110, 255, 160))
+            surface.blit(flash_txt, (bar_x + bar_w - flash_txt.get_width() - 4, t_y - 14))
+
+        # 3. Dynamic Countdown Timer Bar
+        tb_y = self.y + 138
+        pygame.draw.rect(surface, (12, 16, 26), (bar_x, tb_y, bar_w, 12), border_radius=3)
+        pygame.draw.rect(surface, (60, 80, 115), (bar_x, tb_y, bar_w, 12), 1, border_radius=3)
+        time_ratio = max(0.0, min(1.0, self.time_remaining / max(0.1, getattr(self, "max_time", self.time_limit))))
+        time_bar_w = int(time_ratio * (bar_w - 4))
+        if time_bar_w > 0:
+            tb_col = (80, 220, 110) if time_ratio > 0.45 else ((255, 210, 50) if time_ratio > 0.2 else (255, 65, 65))
+            pygame.draw.rect(surface, tb_col, (bar_x + 2, tb_y + 2, time_bar_w, 8), border_radius=2)
+
         # Timer & Controls Instruction Footer
         timer_col = (255, 225, 90) if self.time_remaining > 4.0 else (255, 80, 80)
         time_txt = f"Time Remaining: {self.time_remaining:.1f}s"
         rendered_time = self.font_sm.render(time_txt, True, timer_col)
-        surface.blit(rendered_time, (self.x + 18, self.y + 148))
+        surface.blit(rendered_time, (self.x + 18, self.y + 158))
 
-        ctrl_txt = "[TAP RIGHT-CLICK TO REEL IN] • Taking enemy damage cancels battle!"
+        ctrl_txt = "[TAP RIGHT-CLICK TO REEL IN] - Taking enemy damage cancels battle!"
         rendered_ctrl = self.font_sm.render(ctrl_txt, True, (175, 195, 225))
-        surface.blit(rendered_ctrl, (self.x + 18, self.y + 172))
+        surface.blit(rendered_ctrl, (self.x + 18, self.y + 180))

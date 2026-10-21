@@ -416,6 +416,36 @@ class SurfaceRenderer(BaseRenderer):
             "particle_density": self.particle_density,
         }
 
+    def window_to_virtual_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
+        """Translates physical window/touchscreen coordinates to virtual canvas (1280x720)."""
+        try:
+            win_w, win_h = pygame.display.get_window_size()
+        except Exception:
+            return pos
+
+        if win_w <= 0 or win_h <= 0:
+            return pos
+
+        if win_w == self.width and win_h == self.height:
+            return pos
+
+        scale_x = float(win_w) / float(self.width)
+        scale_y = float(win_h) / float(self.height)
+        scale = min(scale_x, scale_y)
+
+        viewport_w = int(self.width * scale)
+        viewport_h = int(self.height * scale)
+        offset_x = (win_w - viewport_w) // 2
+        offset_y = (win_h - viewport_h) // 2
+
+        mx, my = pos
+        rel_x = (mx - offset_x) / float(max(1, viewport_w))
+        rel_y = (my - offset_y) / float(max(1, viewport_h))
+
+        vx = int(round(rel_x * self.width))
+        vy = int(round(rel_y * self.height))
+        return max(0, min(self.width - 1, vx)), max(0, min(self.height - 1, vy))
+
     def cleanup(self):
         """Releases renderer resources."""
         self.surface = None

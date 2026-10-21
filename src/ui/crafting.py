@@ -8,7 +8,7 @@ Developer: Kurados | Pure Python 3.13 & pygame-ce
 import math
 import pygame
 from src.constants import (
-    SCALED_TILE, TILE_WORK_BENCH, TILE_FURNACE,
+    SCALED_TILE, TILE_WORK_BENCH, TILE_FURNACE, TILE_FIREPLACE,
     RARITY_COLORS, RARITY_COMMON,
     CRAFT_CAT_ALL, CRAFT_CAT_BUILDING, CRAFT_CAT_EQUIPMENT,
     CRAFT_CAT_SURVIVAL, CRAFT_CAT_FURNITURE,
@@ -100,6 +100,50 @@ RECIPES = [
     {
         "result": "carved_tuber_lantern", "count": 1, "station": None, "category": CRAFT_CAT_FURNITURE,
         "ingredients": [("raw_potato", 3), ("torch", 1)]
+    },
+    {
+        "result": "bamboo_hoe", "count": 1, "station": None, "category": CRAFT_CAT_EQUIPMENT,
+        "ingredients": [("wood", 4), ("spud_sap", 1)]
+    },
+    {
+        "result": "iron_hoe", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
+        "ingredients": [("iron_bar", 3), ("wood", 2)]
+    },
+    {
+        "result": "watering_can", "count": 1, "station": "work_bench", "category": CRAFT_CAT_EQUIPMENT,
+        "ingredients": [("iron_bar", 2), ("wood", 2)]
+    },
+    {
+        "result": "rice_seeds", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("rice", 1)]
+    },
+    {
+        "result": "garlic_seeds", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("garlic", 1)]
+    },
+    {
+        "result": "onion_seeds", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("onion", 1)]
+    },
+    {
+        "result": "ginger_seeds", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("ginger", 1)]
+    },
+    {
+        "result": "eggplant_seeds", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("eggplant", 1)]
+    },
+    {
+        "result": "string_beans_seeds", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("string_beans", 1)]
+    },
+    {
+        "result": "tamarind_seeds", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("tamarind", 1)]
+    },
+    {
+        "result": "calamansi_seeds", "count": 2, "station": None, "category": CRAFT_CAT_SURVIVAL,
+        "ingredients": [("calamansi", 1)]
     },
 
     # =========================================================================
@@ -852,9 +896,28 @@ class CraftingSystem:
             return self.available_recipes
         return [r for r in self.available_recipes if r.get("category") == cat]
 
+    def get_nearest_cooking_station(self, world, player):
+        """Returns (gx, gy) of closest furnace or fireplace within cooking range."""
+        if player is None or world is None:
+            return None
+        ptx = int(player.center_x // SCALED_TILE)
+        pty = int(player.center_y // SCALED_TILE)
+        nearest = None
+        min_dist = 999.0
+        for dx in range(-4, 5):
+            for dy in range(-4, 5):
+                dist = math.hypot(dx, dy)
+                if dist <= 2.5:
+                    t_id = world.get_tile(ptx + dx, pty + dy)
+                    if t_id in (TILE_FURNACE, TILE_FIREPLACE):
+                        if dist < min_dist:
+                            min_dist = dist
+                            nearest = (ptx + dx, pty + dy)
+        return nearest
+
     def check_nearby_stations(self, world, player):
-        """Checks if Spud is within physical range (within 2.5 tiles) of a placed Work Bench or Furnace."""
-        if player is None:
+        """Checks if Spud is within physical range (within 2.5 tiles) of a placed Work Bench or Furnace/Fireplace."""
+        if player is None or world is None:
             self.near_workbench = False
             self.near_furnace = False
             return False, False
@@ -870,7 +933,7 @@ class CraftingSystem:
                 t_id = world.get_tile(ptx + dx, pty + dy)
                 if t_id == TILE_WORK_BENCH and dist <= 2.5:
                     has_workbench = True
-                elif t_id == TILE_FURNACE and dist <= 2.5:
+                elif t_id in (TILE_FURNACE, TILE_FIREPLACE) and dist <= 2.5:
                     has_furnace = True
 
         self.near_workbench = has_workbench
@@ -891,6 +954,8 @@ class CraftingSystem:
 
     def update_recipes(self, inventory, world, player):
         self.last_inventory = inventory
+        self.world = world
+        self.player = player
         has_wb, has_furn = self.check_nearby_stations(world, player)
 
         station_recipes = []
@@ -931,7 +996,7 @@ class CraftingSystem:
         max_scroll = max(0, max_rows - self.visible_rows)
         self.scroll_row = max(0, min(max_scroll, self.scroll_row))
 
-    def craft(self, recipe, inventory):
+    def craft(self, recipe, inventory, world=None, player=None):
         for item_id, count in recipe["ingredients"]:
             if item_id in WOOD_VARIANTS_SET:
                 owned = inventory.count_wood() if hasattr(inventory, "count_wood") else inventory.count_item(item_id)
@@ -940,11 +1005,46 @@ class CraftingSystem:
             if owned < count:
                 return False
 
+        # Live gameplay cooking logic: enforce duration & 1 food per furnace/campfire
+        from src.constants import CAT_CONSUMABLE
+        res_info = ITEM_REGISTRY.get(recipe["result"], {})
+        is_food = (res_info.get("cat") == CAT_CONSUMABLE)
+        is_furnace_recipe = (recipe.get("station") == "furnace")
+
+        if is_food and is_furnace_recipe and world is not None and player is not None:
+            station_pos = self.get_nearest_cooking_station(world, player)
+            if station_pos is None:
+                if hasattr(inventory, "notify"):
+                    inventory.notify("No furnace or campfire nearby to cook!")
+                return False
+
+            fx, fy = station_pos
+            if world.is_furnace_busy(fx, fy):
+                if hasattr(inventory, "notify"):
+                    inventory.notify("Furnace is busy cooking! One food per furnace only.")
+                if self.sound_manager:
+                    self.sound_manager.play("hit")
+                return False
+
+            for item_id, count in recipe["ingredients"]:
+                inventory.remove_item(item_id, count)
+
+            world.start_furnace_cooking(fx, fy, recipe["result"], recipe["count"])
+            dur = world.get_cooking_duration(recipe["result"]) * recipe["count"]
+            food_name = res_info.get("name", recipe["result"].replace("_", " ").title())
+            if hasattr(inventory, "notify"):
+                inventory.notify(f"Started cooking {food_name}! ({dur:.1f}s)")
+            if self.sound_manager:
+                self.sound_manager.play("craft")
+            return True
+
+        # Standard or headless instant crafting
         for item_id, count in recipe["ingredients"]:
             inventory.remove_item(item_id, count)
 
         inventory.add_item(recipe["result"], recipe["count"])
-        self.sound_manager.play("craft")
+        if self.sound_manager:
+            self.sound_manager.play("craft")
         return True
 
     def handle_click(self, mouse_x, mouse_y, inventory):
@@ -990,7 +1090,7 @@ class CraftingSystem:
 
             if rect.collidepoint(mouse_x, mouse_y):
                 if recipe.get("can_craft", True):
-                    if self.craft(recipe, inventory):
+                    if self.craft(recipe, inventory, world=getattr(self, "world", None), player=getattr(self, "player", None)):
                         self.last_crafted_item = recipe.get("result")
                 else:
                     self.sound_manager.play("hit")

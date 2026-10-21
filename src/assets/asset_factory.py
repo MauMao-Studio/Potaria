@@ -31,6 +31,7 @@ from src.constants import (
     TILE_TAPESTRY, TILE_BATHTUB, TILE_SINK, TILE_PAINTING, TILE_WOOD_SHELF,
     TILE_CARVED_TUBER_LANTERN, TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN,
     TILE_SAPLING, TILE_SAPLING_OAK, TILE_SAPLING_PALM, TILE_SAPLING_PINE, TILE_SAPLING_BLIGHT, SAPLING_TILES,
+    TILE_FARMLAND, TILE_FARMLAND_WET, TILE_CROP, TILE_WILD_PLANT,
     TILE_IRON_CHEST, TILE_ROPE_RUNGS,
     TILE_DUNGEON_MAGMA, TILE_DUNGEON_ICE, TILE_DUNGEON_BONE, TILE_DUNGEON_GATE,
     WALL_DIRT, WALL_STONE, WALL_WOOD, WALL_STONE_BRICK, WALL_DUNGEON,
@@ -236,6 +237,7 @@ class AssetFactory:
         self.projectiles = ProjectileRegistry()
         self.animated_effects = {}
         self.skill_icons = {}
+        self.crop_stage_sprites = {}
 
         self.generate_all()
 
@@ -608,8 +610,109 @@ class AssetFactory:
             pygame.draw.ellipse(surf, (215, 145, 65), (4, 9, 14, 7))
             pygame.draw.polygon(surf, (185, 115, 40), [(17, 12), (22, 8), (20, 12), (22, 16)])
             pygame.draw.line(surf, (95, 45, 20), (8, 10), (14, 10), 1)
+            for gx in (8, 11, 14):
+                pygame.draw.line(surf, (50, 22, 10), (gx, 9), (gx, 14), 1)
             pygame.draw.circle(surf, (65, 165, 50), (16, 14), 2)
             surf.set_at((16, 14), (230, 245, 120))
+
+    def _draw_hoe_sprite(self, surf, item_id, h):
+        """Draws authentic farming hoes (Kawayan Bamboo Hoe or Forged Iron Hoe)."""
+        if "bamboo" in item_id or item_id == "hoe":
+            # Bamboo shaft angled from bottom-left (5, 19) to top-right (15, 7)
+            pygame.draw.line(surf, (150, 120, 60), (4, 20), (16, 6), 3)
+            pygame.draw.line(surf, (195, 175, 95), (5, 19), (15, 7), 2)
+            # Bamboo nodes/rings
+            for bx, by in [(7, 17), (11, 12), (14, 8)]:
+                surf.set_at((bx, by), (95, 140, 55))
+                surf.set_at((bx + 1, by), (65, 105, 35))
+            # Bamboo/wood curved blade head pointing down-right
+            pygame.draw.polygon(surf, (115, 80, 45), [(15, 5), (20, 7), (19, 14), (16, 12)])
+            pygame.draw.polygon(surf, (165, 130, 80), [(16, 6), (19, 7), (18, 13), (16, 11)])
+            # Cord binding at blade junction
+            pygame.draw.rect(surf, (85, 55, 30), (14, 6, 3, 2))
+        else:
+            # Sturdy ash/mahogany wooden handle
+            pygame.draw.line(surf, (90, 50, 25), (4, 20), (15, 7), 3)
+            pygame.draw.line(surf, (140, 85, 45), (5, 19), (14, 8), 2)
+            # Metal ferrule socket
+            pygame.draw.rect(surf, (100, 105, 115), (14, 6, 3, 3))
+            # Forged iron curved tilling blade
+            pygame.draw.polygon(surf, (140, 145, 155), [(15, 5), (21, 7), (20, 15), (17, 13)])
+            pygame.draw.polygon(surf, (200, 210, 220), [(16, 6), (20, 7), (19, 14), (17, 12)])
+            # Polished blade cutting edge glint
+            pygame.draw.line(surf, (255, 255, 255), (19, 9), (18, 14), 1)
+
+    def _draw_watering_can_sprite(self, surf, item_id, h):
+        """Draws traditional Philippine tin/metal watering can (Regadera)."""
+        body_col = (140, 160, 175)
+        rim_col = (180, 200, 215)
+        shadow_col = (90, 105, 120)
+        # Main reservoir body
+        pygame.draw.rect(surf, shadow_col, (6, 10, 10, 9), border_radius=2)
+        pygame.draw.rect(surf, body_col, (7, 11, 8, 7), border_radius=1)
+        # Top opening rim with water shimmer
+        pygame.draw.ellipse(surf, shadow_col, (7, 9, 8, 4))
+        pygame.draw.ellipse(surf, rim_col, (8, 9, 6, 3))
+        surf.set_at((10, 10), (70, 170, 240))
+        surf.set_at((11, 10), (140, 220, 255))
+        # Arched overhead carrying handle
+        pygame.draw.arc(surf, shadow_col, (4, 4, 14, 12), 0.5, 2.7, 2)
+        pygame.draw.arc(surf, rim_col, (5, 5, 12, 10), 0.6, 2.6, 1)
+        # Angled forward spout
+        pygame.draw.line(surf, shadow_col, (15, 14), (20, 7), 2)
+        pygame.draw.line(surf, rim_col, (15, 13), (19, 7), 1)
+        # Rose sprinkler head with water drops
+        pygame.draw.circle(surf, (200, 170, 60), (20, 7), 2)
+        surf.set_at((21, 6), (240, 215, 100))
+        # Water droplets spraying
+        surf.set_at((22, 6), (90, 190, 255))
+        surf.set_at((21, 4), (130, 220, 255))
+
+    def _draw_seed_packet_sprite(self, surf, item_id, h):
+        """Draws rustic burlap/abaca seed pouch with native crop emblem."""
+        # Woven seed pouch sack
+        pygame.draw.polygon(surf, (120, 95, 60), [(6, 19), (18, 19), (19, 10), (5, 10)])
+        pygame.draw.polygon(surf, (185, 155, 105), [(7, 18), (17, 18), (18, 11), (6, 11)])
+        # Pouch texture weave lines
+        pygame.draw.line(surf, (150, 120, 80), (8, 14), (16, 14), 1)
+        # Tied neck with twine cord
+        pygame.draw.rect(surf, (80, 55, 30), (8, 8, 8, 3), border_radius=1)
+        pygame.draw.rect(surf, (220, 190, 130), (8, 9, 8, 1))
+        # Flared bag mouth opening
+        pygame.draw.polygon(surf, (160, 130, 85), [(7, 8), (17, 8), (18, 6), (6, 6)])
+        # Crop Emblem on pouch face
+        if "rice" in item_id:
+            for rx, ry in [(10, 13), (12, 12), (14, 14), (11, 16), (13, 15)]:
+                surf.set_at((rx, ry), (245, 215, 60))
+                surf.set_at((rx, ry - 1), (255, 240, 120))
+        elif "garlic" in item_id:
+            pygame.draw.circle(surf, (230, 230, 220), (12, 14), 3)
+            surf.set_at((12, 12), (255, 255, 250))
+            surf.set_at((12, 11), (110, 190, 70))
+        elif "onion" in item_id:
+            pygame.draw.circle(surf, (165, 45, 90), (12, 14), 3)
+            surf.set_at((12, 13), (210, 85, 135))
+            surf.set_at((12, 11), (75, 175, 65))
+        elif "ginger" in item_id:
+            pygame.draw.rect(surf, (195, 155, 80), (10, 13, 5, 3), border_radius=1)
+            surf.set_at((11, 12), (230, 190, 110))
+            surf.set_at((14, 12), (210, 170, 95))
+        elif "eggplant" in item_id:
+            pygame.draw.ellipse(surf, (90, 25, 120), (10, 12, 4, 6))
+            surf.set_at((11, 13), (155, 65, 190))
+            surf.set_at((11, 11), (65, 165, 55))
+        elif "string_beans" in item_id:
+            pygame.draw.line(surf, (45, 150, 45), (10, 16), (14, 12), 2)
+            surf.set_at((12, 13), (95, 215, 85))
+        elif "tamarind" in item_id:
+            pygame.draw.line(surf, (115, 65, 30), (10, 13), (14, 15), 2)
+            surf.set_at((12, 14), (160, 95, 45))
+        elif "calamansi" in item_id:
+            pygame.draw.circle(surf, (120, 175, 35), (12, 14), 3)
+            surf.set_at((12, 13), (185, 230, 75))
+            surf.set_at((12, 11), (45, 125, 35))
+        else:
+            pygame.draw.circle(surf, (220, 185, 75), (12, 14), 2)
 
     def _is_pinoy_food_or_ingredient(self, id_lower):
         return id_lower in (
@@ -1330,6 +1433,15 @@ class AssetFactory:
             return surf
         elif "sapling" in id_lower:
             self._draw_sapling_sprite(surf, item_id, h)
+            return surf
+        elif id_lower == "hoe" or id_lower.endswith("_hoe") or "_hoe_" in id_lower:
+            self._draw_hoe_sprite(surf, id_lower, h)
+            return surf
+        elif id_lower == "watering_can" or "watering" in id_lower or "regadera" in id_lower:
+            self._draw_watering_can_sprite(surf, id_lower, h)
+            return surf
+        elif "seed" in id_lower:
+            self._draw_seed_packet_sprite(surf, id_lower, h)
             return surf
 
         # 1. Bespoke Real-World & Iconic Item Renderers (Priority 1)
@@ -5401,6 +5513,191 @@ class AssetFactory:
                 pygame.draw.rect(rope, (205, 160, 90), (knot_x, step_y - 1, 3, 4), 1)
                 rope.set_at((knot_x + 1, step_y), (230, 190, 120))
         self.tiles[TILE_ROPE_RUNGS] = rope
+
+        # ----------------------------------------------------------------------
+        # Philippine Agriculture & Farming System Tiles & Multi-Stage Crops
+        # ----------------------------------------------------------------------
+        # 1. Tilled Farmland Soil (16x16 - Dry furrowed loam)
+        farmland = pygame.Surface((16, 16))
+        farmland.fill((105, 70, 38))
+        # Carved horizontal furrow trenches
+        for fy in (3, 7, 11, 15):
+            pygame.draw.line(farmland, (72, 45, 22), (0, fy), (15, fy), 1)
+            pygame.draw.line(farmland, (135, 95, 55), (0, max(0, fy - 1)), (15, max(0, fy - 1)), 1)
+        # Random loam crumbles
+        for fx, fy in [(2, 1), (8, 5), (13, 9), (5, 13)]:
+            farmland.set_at((fx, fy), (58, 36, 18))
+        self.tiles[TILE_FARMLAND] = farmland
+
+        # 2. Hydrated Farmland Soil (16x16 - Dark moisture-rich loam near water)
+        farmland_wet = pygame.Surface((16, 16))
+        farmland_wet.fill((52, 34, 18))
+        for fy in (3, 7, 11, 15):
+            pygame.draw.line(farmland_wet, (32, 18, 10), (0, fy), (15, fy), 1)
+            pygame.draw.line(farmland_wet, (78, 56, 38), (0, max(0, fy - 1)), (15, max(0, fy - 1)), 1)
+        # Wet moisture sheen and subtle water droplet glints
+        for wx, wy in [(3, 2), (9, 6), (14, 10), (6, 14), (11, 2)]:
+            farmland_wet.set_at((wx, wy), (95, 120, 135))
+            farmland_wet.set_at((wx + 1, wy), (65, 85, 100))
+        self.tiles[TILE_FARMLAND_WET] = farmland_wet
+
+        # 3. Naturally Spawning Wild Plant (16x16 - Wild Philippine crop on grass)
+        wild_plant = pygame.Surface((16, 16), pygame.SRCALPHA)
+        pygame.draw.line(wild_plant, (45, 125, 40), (8, 15), (8, 7), 2)
+        pygame.draw.line(wild_plant, (65, 165, 55), (8, 11), (4, 8), 1)
+        pygame.draw.line(wild_plant, (65, 165, 55), (8, 9), (12, 7), 1)
+        pygame.draw.circle(wild_plant, (245, 215, 65), (8, 6), 2)
+        wild_plant.set_at((8, 5), (255, 245, 130))
+        self.tiles[TILE_WILD_PLANT] = wild_plant
+
+        # 4. Synthesize 32 Multi-Stage Procedural Crop Sprites (8 Native Crops x 4 Stages)
+        self.crop_stage_sprites = {}
+        crops_list = ("rice", "garlic", "onion", "ginger", "eggplant", "string_beans", "tamarind", "calamansi")
+        for crop_id in crops_list:
+            for stage in (0, 1, 2, 3):
+                csurf = pygame.Surface((16, 16), pygame.SRCALPHA)
+                if stage == 0:
+                    # Stage 0: Universal Seedling Sprout with seed husk
+                    pygame.draw.line(csurf, (85, 175, 50), (8, 15), (8, 12), 2)
+                    csurf.set_at((7, 11), (120, 210, 75))
+                    csurf.set_at((9, 11), (95, 185, 60))
+                    csurf.set_at((8, 14), (115, 80, 45)) # Seed husk
+                elif stage == 1:
+                    # Stage 1: Young vegetative shoots
+                    if crop_id == "rice":
+                        pygame.draw.line(csurf, (55, 155, 45), (8, 15), (6, 9), 1)
+                        pygame.draw.line(csurf, (70, 180, 55), (8, 15), (8, 8), 1)
+                        pygame.draw.line(csurf, (55, 155, 45), (8, 15), (10, 9), 1)
+                    elif crop_id in ("garlic", "onion"):
+                        pygame.draw.line(csurf, (65, 175, 55), (7, 15), (6, 8), 1)
+                        pygame.draw.line(csurf, (85, 195, 75), (8, 15), (8, 7), 1)
+                        pygame.draw.line(csurf, (65, 175, 55), (9, 15), (10, 8), 1)
+                    elif crop_id == "string_beans":
+                        pygame.draw.line(csurf, (135, 105, 65), (8, 15), (8, 6), 1) # Bamboo stake
+                        pygame.draw.ellipse(csurf, (60, 165, 50), (5, 9, 6, 4))
+                    else:
+                        pygame.draw.line(csurf, (55, 145, 45), (8, 15), (8, 9), 2)
+                        pygame.draw.ellipse(csurf, (75, 175, 65), (4, 8, 8, 4))
+                elif stage == 2:
+                    # Stage 2: Flowering / Budding tall stalks
+                    if crop_id == "rice":
+                        pygame.draw.line(csurf, (70, 160, 50), (8, 15), (5, 5), 1)
+                        pygame.draw.line(csurf, (90, 180, 60), (8, 15), (8, 4), 2)
+                        pygame.draw.line(csurf, (70, 160, 50), (8, 15), (11, 5), 1)
+                        for px, py in [(5, 4), (8, 3), (11, 4)]:
+                            csurf.set_at((px, py), (210, 220, 110))
+                    elif crop_id == "garlic":
+                        pygame.draw.line(csurf, (75, 170, 60), (8, 15), (8, 4), 2)
+                        pygame.draw.line(csurf, (60, 150, 50), (8, 11), (4, 6), 1)
+                        pygame.draw.line(csurf, (60, 150, 50), (8, 9), (12, 6), 1)
+                        pygame.draw.circle(csurf, (220, 220, 215), (8, 14), 2)
+                    elif crop_id == "onion":
+                        pygame.draw.line(csurf, (65, 160, 55), (8, 15), (8, 4), 2)
+                        pygame.draw.line(csurf, (55, 145, 45), (8, 10), (4, 6), 1)
+                        pygame.draw.line(csurf, (55, 145, 45), (8, 9), (12, 6), 1)
+                        pygame.draw.circle(csurf, (160, 50, 90), (8, 14), 2)
+                    elif crop_id == "eggplant":
+                        pygame.draw.line(csurf, (55, 140, 45), (8, 15), (8, 6), 2)
+                        pygame.draw.ellipse(csurf, (65, 155, 55), (3, 6, 10, 5))
+                        csurf.set_at((6, 7), (165, 95, 215)) # Purple flower
+                        csurf.set_at((10, 7), (165, 95, 215))
+                    elif crop_id == "string_beans":
+                        pygame.draw.line(csurf, (135, 105, 65), (8, 15), (8, 3), 1)
+                        pygame.draw.ellipse(csurf, (55, 160, 45), (4, 5, 8, 8))
+                        csurf.set_at((6, 6), (245, 245, 220)) # Flower
+                        csurf.set_at((10, 8), (245, 245, 220))
+                    elif crop_id == "calamansi":
+                        pygame.draw.line(csurf, (70, 50, 30), (8, 15), (8, 8), 2)
+                        pygame.draw.circle(csurf, (45, 140, 40), (8, 6), 5)
+                        csurf.set_at((6, 5), (255, 255, 255)) # White flower
+                        csurf.set_at((10, 6), (255, 255, 255))
+                    else: # ginger, tamarind
+                        pygame.draw.line(csurf, (55, 145, 45), (8, 15), (8, 5), 2)
+                        pygame.draw.ellipse(csurf, (65, 165, 55), (3, 5, 10, 6))
+                else:
+                    # Stage 3: Fully Mature Harvestable Crop!
+                    if crop_id == "rice":
+                        # Lush bending golden rice stalks with full panicles
+                        pygame.draw.line(csurf, (140, 165, 50), (8, 15), (6, 7), 2)
+                        pygame.draw.line(csurf, (180, 185, 55), (8, 15), (9, 6), 2)
+                        # Heavy golden grains arching down
+                        for gx, gy in [(4, 5), (5, 4), (6, 5), (7, 4), (8, 3), (9, 4), (10, 5), (11, 4), (12, 6)]:
+                            csurf.set_at((gx, gy), (245, 215, 60))
+                            csurf.set_at((gx, gy + 1), (210, 175, 40))
+                        csurf.set_at((6, 3), (255, 245, 130))
+                        csurf.set_at((9, 3), (255, 245, 130))
+                    elif crop_id == "garlic":
+                        # Tall greens with large white bulb emerging at soil
+                        pygame.draw.line(csurf, (65, 155, 55), (8, 13), (8, 2), 2)
+                        pygame.draw.line(csurf, (55, 140, 45), (8, 8), (3, 5), 1)
+                        pygame.draw.line(csurf, (55, 140, 45), (8, 7), (13, 4), 1)
+                        pygame.draw.ellipse(csurf, (240, 240, 235), (5, 11, 6, 5))
+                        pygame.draw.ellipse(csurf, (205, 205, 195), (5, 11, 6, 5), 1)
+                        csurf.set_at((7, 12), (255, 255, 255))
+                    elif crop_id == "onion":
+                        # Tall tubular greens with large purple bulb at soil
+                        pygame.draw.line(csurf, (60, 150, 50), (8, 13), (8, 2), 2)
+                        pygame.draw.line(csurf, (50, 135, 40), (8, 8), (4, 4), 1)
+                        pygame.draw.line(csurf, (50, 135, 40), (8, 7), (12, 5), 1)
+                        pygame.draw.circle(csurf, (170, 45, 90), (8, 13), 3)
+                        csurf.set_at((8, 12), (220, 85, 135))
+                        pygame.draw.circle(csurf, (240, 240, 240), (8, 2), 1) # Flower head
+                    elif crop_id == "ginger":
+                        # Tropical ginger plant with knobby golden rhizome base
+                        pygame.draw.line(csurf, (50, 145, 45), (8, 13), (8, 3), 2)
+                        pygame.draw.ellipse(csurf, (60, 160, 50), (3, 4, 10, 6))
+                        pygame.draw.rect(csurf, (205, 165, 85), (5, 12, 6, 4), border_radius=1)
+                        csurf.set_at((6, 13), (240, 200, 115))
+                        csurf.set_at((9, 13), (230, 185, 95))
+                    elif crop_id == "eggplant":
+                        # Large bush hanging with 2 glossy purple Talong fruits
+                        pygame.draw.line(csurf, (55, 135, 45), (8, 15), (8, 5), 2)
+                        pygame.draw.circle(csurf, (50, 140, 40), (8, 6), 6)
+                        # Left hanging eggplant
+                        pygame.draw.ellipse(csurf, (90, 25, 125), (3, 8, 4, 6))
+                        csurf.set_at((4, 9), (160, 65, 195))
+                        csurf.set_at((4, 7), (55, 155, 45)) # Green cap
+                        # Right hanging eggplant
+                        pygame.draw.ellipse(csurf, (90, 25, 125), (9, 9, 4, 6))
+                        csurf.set_at((10, 10), (160, 65, 195))
+                        csurf.set_at((10, 8), (55, 155, 45))
+                    elif crop_id == "string_beans":
+                        # Tall bamboo trellis with long hanging green Sitaw pods
+                        pygame.draw.line(csurf, (140, 110, 70), (8, 15), (8, 1), 1)
+                        pygame.draw.circle(csurf, (50, 145, 45), (8, 5), 5)
+                        # 2 long hanging green beans
+                        pygame.draw.line(csurf, (40, 155, 40), (6, 5), (4, 14), 2)
+                        pygame.draw.line(csurf, (40, 155, 40), (10, 6), (12, 13), 2)
+                        csurf.set_at((5, 9), (85, 215, 80))
+                        csurf.set_at((11, 9), (85, 215, 80))
+                    elif crop_id == "tamarind":
+                        # Woody shrub with hanging brown pods
+                        pygame.draw.line(csurf, (80, 55, 30), (8, 15), (8, 6), 2)
+                        pygame.draw.circle(csurf, (45, 135, 40), (8, 6), 6)
+                        pygame.draw.line(csurf, (125, 70, 30), (4, 7), (3, 12), 2)
+                        pygame.draw.line(csurf, (125, 70, 30), (11, 7), (13, 11), 2)
+                        csurf.set_at((4, 9), (170, 105, 50))
+                    elif crop_id == "calamansi":
+                        # Full bush covered in shiny round yellow-green citrus
+                        pygame.draw.line(csurf, (70, 50, 30), (8, 15), (8, 8), 2)
+                        pygame.draw.circle(csurf, (45, 135, 40), (8, 6), 6)
+                        for cx, cy in [(5, 5), (11, 5), (8, 9), (6, 8)]:
+                            pygame.draw.circle(csurf, (125, 185, 35), (cx, cy), 2)
+                            csurf.set_at((cx, cy), (210, 245, 80))
+                self.crop_stage_sprites[(crop_id, stage)] = csurf
+
+        self.tiles[TILE_CROP] = self.crop_stage_sprites[("rice", 3)]
+
+    def get_crop_sprite(self, crop_name, stage=0):
+        """Returns 16x16 sprite surface for specified crop and growth stage (0-3)."""
+        stage = max(0, min(3, int(stage)))
+        c_key = str(crop_name).lower()
+        if (c_key, stage) in self.crop_stage_sprites:
+            return self.crop_stage_sprites[(c_key, stage)]
+        for k in self.crop_stage_sprites:
+            if k[0] in c_key and k[1] == stage:
+                return self.crop_stage_sprites[k]
+        return self.crop_stage_sprites.get(("rice", stage), self.tiles.get(TILE_CROP))
 
     # ==========================================================================
     # 3. WALLS
