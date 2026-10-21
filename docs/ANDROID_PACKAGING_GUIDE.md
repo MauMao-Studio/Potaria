@@ -53,7 +53,14 @@ Potaria includes a native on-screen touch controller (`src/ui/touch_controller.p
 
 ## 4. Building the Android APK
 
-### Prerequisites
+### One-Click Automated Build Command (Ubuntu / VirtualBox)
+On a fresh Ubuntu terminal inside VirtualBox, run this single compound command to install git and all dependencies, clone the repository, configure the environment, and compile the APK:
+
+```bash
+sudo apt update && sudo apt install -y git curl && ([ -d Potaria ] || git clone https://github.com/MauMao-Studio/Potaria.git) && cd Potaria && git pull && chmod +x scripts/build_apk_ubuntu.sh && ./scripts/build_apk_ubuntu.sh
+```
+
+### Manual Prerequisites
 - Python 3.10+ or Python 3.11
 - OpenJDK 17
 - Android SDK (API 30 through 34) and Android NDK (r25b or r26b)
