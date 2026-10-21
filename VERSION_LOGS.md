@@ -10,7 +10,8 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v0.2.8a** | October 2026 | *Skills, Boss Signature Attacks & Timed Projectile Reflection Integration (Current Active Build)* | Full integration of Potaria Skills and Bosses Design Spec: Ancient skill `celestial_reversal` (evolves to Celestial Mirror) with dynamic projectile reflection, reflection budget (12-24), 0.40s-0.52s active timing window, 1.5x damage amplification, and celestial gold/cyan shimmer; 19 new active combat skills with 32x32 icons in `assets/skills/`; 4 dungeon mini-boss signature attacks (`blight_apocalypse`, `caldera_catastrophe`, `absolute_zero`, `kingdom_of_the_unburied`) with animated 8-frame telegraph VFX; projectile preview contact sheet at `assets/projectiles/preview_contact_sheet.png` and `docs/projectiles_preview.png`; updated `UNIQUE_ASSETS_TRACKER.md` (2,445 verified unique assets with 0 collisions); and 736 tests passing across 46 suites (100% Green). |
+| **v0.2.9a** | October 2026 | *Philippine Farming System, Tiered Cooking Durations, Fishing Escape Timer & Android APK Architecture (Current Active Build)* | Authentic Philippine farming system with 8 native crops (Rice/Palay, Garlic, Onion, Ginger, Eggplant, String Beans, Tamarind, Calamansi) with 4-stage visual growth, bamboo/iron hoes, infinite watering can, 4-block horizontal water hydration radius, cave torchlight illumination farming, wild plant spawning and seed harvesting; tiered food cooking duration (2.5s-20.0s) with single-food-per-furnace active cooking queues and direct raw fish grilling into Inihaw na [Fish]; 12.0s fishing countdown timer with sweet-spot bonus and escape penalty; responsive multi-aspect Android touch viewport (16:9 to 20:9) with buildozer.spec targeting API 30-34 (Android 11-15); robust save/load persistence for crops, active furnaces, and soil hydration timers; and 770 tests passing across 47 suites (100% Green). |
+| **v0.2.8a** | October 2026 | *Skills, Boss Signature Attacks & Timed Projectile Reflection Integration* | Full integration of Potaria Skills and Bosses Design Spec: Ancient skill `celestial_reversal` (evolves to Celestial Mirror) with dynamic projectile reflection, reflection budget (12-24), 0.40s-0.52s active timing window, 1.5x damage amplification, and celestial gold/cyan shimmer; 19 new active combat skills with 32x32 icons in `assets/skills/`; 4 dungeon mini-boss signature attacks (`blight_apocalypse`, `caldera_catastrophe`, `absolute_zero`, `kingdom_of_the_unburied`) with animated 8-frame telegraph VFX; projectile preview contact sheet at `assets/projectiles/preview_contact_sheet.png` and `docs/projectiles_preview.png`; updated `UNIQUE_ASSETS_TRACKER.md` (2,445 verified unique assets with 0 collisions); and 736 tests passing across 46 suites (100% Green). |
 | **v0.2.7a** | October 2026 | *Potaria Projectile Asset Library Procedural Synthesis & Asset Registry Integration* | Procedural high-art synthesis of all 40 projectile specifications (P01 to P40) from Potaria Projectile Asset Library (crisp 32x32 pixel art, transparent backgrounds, strict palette and silhouette adherence, clean dark outlines, 0 stray pixels), dedicated `ProjectileRegistry` in `src/assets/projectile_factory.py` with multi-alias lookups (`canonical`, `snake_case`, `ID`, `id_lower`, `.png`, path stems), full dict protocol support (`copy`, `pop`, `setdefault`, `del`), public builder functions, automatic disk export to `assets/projectiles/` (58 unique projectile assets, zero collisions), updated `UNIQUE_ASSETS_TRACKER.md` (2,370 verified unique assets), and 714 tests passing across 45 suites (100% Green). |
 | **v0.2.6a** | October 2026 | *Weapon Skill Ordering & Streamlined Circular Affix Sockets UI* | Tooltip structure overhaul placing innate weapon skills/perks before affix slots, clean single-line circular socket indicators (`(○)` empty and `(●)` filled) adhering to item rarity socket limits (Epic: 1, Legendary: 1, Mythic: 2, Ancient: 2, Common/Uncommon/Rare: 0), total elimination of confusing 3-line status clutter (`AFFIX SLOTS`, `CARVED AFFIX SLOTS`, `[AVAILABLE TO CARVE]`), active affix deduplication in weapon skills, non-gear item socket exclusion, unified across HUD, Inventory, Chests, Character Panel, and NPC Dialogue windows, and 697 tests passing across 44 suites (100% Green). |
 | **v0.2.5a** | October 2026 | *Whole-Game Balance Overhaul, 5-Active-Meal Categorized Architecture & Equipment Tuning* | Full implementation of Potaria Game Balance Plan: 5-active-meal-buff category framework (Offense, Defense, Mobility, Resource, Utility) with strict 1-buff-per-category replacement and no additive stacking, food stat contribution caps (max +12% DMG, +10% ATK SPD, +6% Crit, +6% DR, +2 HP/s regen, +15% Move SPD), standardized meal durations (2/3/4/5 min), dish-effect assignment across Filipino, fish, and potato cuisine with Kinilaw na Tanigue conflict resolution, ranged projectile meal buff damage scaling, non-combat meal buffs (fishing reeling speed, block mining power, mob drop luck), strict affix slot limits (Rare 0, Epic 1, Legendary 1, Mythic 2, Ancient 2), Risk Register suspect item tuning, dedicated pre-balance backup branch (`pre-game-balance-backup`) pushed to origin, and 684 tests passing across 43 suites (100% Green). |
@@ -43,7 +44,43 @@
 
 ## Detailed Version Logs
 
-### [v0.2.8a] — Skills, Boss Signature Attacks & Timed Projectile Reflection Integration (Current Release)
+### [v0.2.9a] — Philippine Farming System, Tiered Cooking Durations, Fishing Escape Timer & Android APK Architecture (Current Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Authentic Philippine Farming System**:
+  - Implemented comprehensive farming mechanics inspired by Stardew Valley, Core Keeper, and Minecraft in src/world/world.py.
+  - Added 8 native Philippine crops with authentic culinary connections: Rice / Palay (
+ice), Garlic (garlic), Onion (onion), Ginger (ginger), Eggplant (eggplant), String Beans (string_beans), Tamarind (	amarind), and Calamansi (calamansi).
+  - Implemented 4-stage visual growth progression (SEED -> SPROUT -> GROWING -> MATURE) with procedural pixel art tile sprites and items in src/assets/asset_factory.py.
+  - Added specialized farming tools: Bamboo Hoe and Iron Hoe for tilling dirt/grass into farmland, and Watering Can for hydrating soil without depleting water sources.
+  - Soil Hydration Dynamics: Farmland within 4 horizontal blocks of a water tile remains permanently hydrated (watered: True) without manual watering; manually watered soil sustains moisture for 180s.
+  - Subterranean & Cave Farming: Plants thrive under open daylight or subterranean artificial lighting (torches within 5 blocks supply sufficient growth light).
+  - Wild Plant Generation: Wild harvestable plants spawn naturally on surface grass; breaking them yields harvested crops and random seed drops.
+- **Tier-Based Cooking Durations & Furnace Grilling**:
+  - Replaced instantaneous crafting with timed cooking queues based on item rarity: Common (2.5s), Uncommon (4.0s), Rare (6.5s), Epic (10.0s), Legendary (15.0s), and Mythic/Ancient (20.0s).
+  - Enforced single-food active cooking per furnace or campfire station (ctive_furnaces).
+  - Added direct fish grilling: raw caught fish can be placed directly onto furnaces or campfires to cook into Inihaw na [Fish] (e.g. Inihaw na Bangus, Inihaw na Tilapia, Inihaw na Galunggong, Inihaw na Lapu-Lapu, Inihaw na Maya-Maya, Inihaw na Tanigue, Inihaw na Tambakol, Inihaw na Hito, Inihaw na Dilis, Inihaw na Dalagang Bukid).
+  - Generated authentic pixel art assets for all 10 Inihaw fish variants in src/assets/asset_factory.py.
+- **Fishing Escape Timer & Reeling Sweet Spot**:
+  - Added 12.0s urgency countdown timer to the fishing minigame (src/ui/fishing_minigame.py).
+  - Visual urgency indicators: countdown timer bar dynamically shifts from green to amber to pulsing red as time runs low; fish escapes if timer expires before 100% reel progress.
+  - Moving sweet-spot zone bonus: reeling while the fish marker intersects the golden sweet-spot yields 1.5x reel progress.
+  - Retained strict PC input separation (left-click rejected, right-click reels) while seamlessly supporting mobile touch tap reeling.
+- **Android APK Compatibility & Multi-Resolution Touch Architecture**:
+  - Configured uildozer.spec targeting Android 11 through 15 (min API 30, target API 34) with arm64-v8a architecture.
+  - Streamlined dependencies to pure python3,pygame-ce utilizing the robust SurfaceRenderer headless fallback.
+  - Fixed touch coordinate normalization (window_to_virtual_pos) on PotariaGame for responsive scaling across arbitrary phone display ratios (16:9, 18:9, 19.5:9, 20:9) with zero letterbox distortion or coordinate drift.
+  - Added direct world touch interactions for furnaces, campfires, crops, wild plants, hoes, watering cans, and seeds.
+  - Authored comprehensive packaging and deployment guide in docs/ANDROID_PACKAGING_GUIDE.md.
+- **Save/Load Persistence & Automated Verification**:
+  - Extended extract_save_payload and load_world in src/world/save_manager.py to serialize and restore arm_crops, ctive_furnaces, and soil_water_timers.
+  - Added dedicated test suite 	ests/test_fishing_cooking_farming.py (34/34 passed).
+  - Full repository test suite passing 100% green: 770 passed across 47 suites.
+
+---
+
+### [v0.2.8a] — Skills, Boss Signature Attacks & Timed Projectile Reflection Integration
 *Release Date: October 2026*
 
 #### Added & Improved
