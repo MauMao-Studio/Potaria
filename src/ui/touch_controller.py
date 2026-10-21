@@ -654,9 +654,16 @@ class TouchController:
                     game.paused = not game.paused
                 return True
 
+        # 1. Fishing Battle Mini-Game takes top touch priority
+        if hasattr(game, "fishing_minigame") and game.fishing_minigame and game.fishing_minigame.is_active:
+            game.fishing_minigame.handle_click(is_right_click=True, player=game.player)
+            self.add_ripple(px, py, color=(80, 220, 255))
+            return True
+
         # If a modal panel is open, do not handle gameplay touch buttons
         panels_open = (game.inventory.is_open or game.character_panel.is_open or
                        (hasattr(game, "npc_dialogue") and game.npc_dialogue.is_open) or
+                       (hasattr(game, "fishing_minigame") and game.fishing_minigame and game.fishing_minigame.is_active) or
                        game.paused)
         if panels_open:
             return False
@@ -850,21 +857,28 @@ class TouchController:
         if reach <= SCALED_TILE * 5.5:
             from src.constants import (
                 TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_CHEST,
-                TILE_DUNGEON_ALTAR, TILE_BED, TILE_GRANDFATHER_CLOCK
+                TILE_DUNGEON_ALTAR, TILE_BED, TILE_GRANDFATHER_CLOCK,
+                TILE_FURNACE, TILE_FIREPLACE, TILE_CROP, TILE_WILD_PLANT
             )
             t_id = game.world.get_tile(tx, ty)
-            if t_id in (TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_CHEST, TILE_DUNGEON_ALTAR, TILE_BED, TILE_GRANDFATHER_CLOCK):
+            if t_id in (TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_CHEST, TILE_DUNGEON_ALTAR, TILE_BED, TILE_GRANDFATHER_CLOCK,
+                        TILE_FURNACE, TILE_FIREPLACE, TILE_CROP, TILE_WILD_PLANT):
                 game.handle_right_click(px, py)
                 return
 
-        # 3. Check block / wall placement if active item is block/wall
+        # 3. Check farming tools & seeds (hoe, watering can, seeds)
         active = game.inventory.get_active_item()
+        if active and ("hoe" in active.item_id or "watering_can" in active.item_id or active.item_id.endswith("_seeds") or (hasattr(active, "data") and active.data.get("tile") == TILE_CROP)):
+            if game.handle_primary_action(px, py):
+                return
+
+        # 4. Check block / wall placement if active item is block/wall
         cat = active.data.get("cat") if active and hasattr(active, "data") else None
         if active and (cat in (CAT_BLOCK, CAT_WALL) or active.data.get("tile") is not None or active.data.get("wall") is not None):
             game.handle_block_placement(px, py, active=active)
             return
 
-        # 4. Check consumable item (eating food / drinking potion / reading skillbook)
+        # 5. Check consumable item (eating food / drinking potion / reading skillbook)
         if active and (cat == CAT_CONSUMABLE or cat == "skillbook"):
             game.handle_right_click(px, py)
             return

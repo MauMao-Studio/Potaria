@@ -564,6 +564,135 @@ class TestFishingCookingFarming(unittest.TestCase):
         self.assertEqual(orig_tid, TILE_GRASS)
         self.assertEqual(self.world.get_tile(gx, gy), TILE_AIR)
 
+    def test_touch_coordinate_translation_with_aspect_ratio(self):
+        """Verifies normalized touch coordinates correctly map across physical 20:9 display."""
+        renderer = SurfaceRenderer()
+        # 20:9 phone resolution: 2400x1080. Virtual resolution is 1280x720.
+        # Height 1080 fits 1.5x scale (720 * 1.5 = 1080).
+        # Active width: 1280 * 1.5 = 1920.
+        # Pillarbox offset_x: (2400 - 1920) // 2 = 240 pixels.
+        with patch("pygame.display.get_window_size", return_value=(2400, 1080)):
+            # Simulating normalized touch tap at center of screen (event.x = 0.5, event.y = 0.5)
+            phys_x = int(round(0.5 * 2400))  # 1200
+            phys_y = int(round(0.5 * 1080))  # 540
+            vx, vy = renderer.window_to_virtual_pos((phys_x, phys_y))
+            self.assertEqual((vx, vy), (640, 360))
+
+            # Left active edge (phys_x = 240) maps to virtual 0
+            vx_left, vy_left = renderer.window_to_virtual_pos((240, 540))
+            self.assertEqual((vx_left, vy_left), (0, 360))
+
+    def test_fishing_battle_left_click_and_touch_reeling(self):
+        """Verifies fishing minigame rejects left-click and reels on right-click / touch tap."""
+        self.fishing.start(fish_id="raw_bangus")
+        self.fishing.is_thrashing = False
+        initial_progress = self.fishing.reeling_progress
+
+        # Left-click (is_right_click=False) must NOT reel
+        handled = self.fishing.handle_click(is_right_click=False)
+        self.assertFalse(handled)
+        self.assertEqual(self.fishing.reeling_progress, initial_progress)
+
+        # Right-click / mobile touch tap (is_right_click=True) reels
+        handled_rc = self.fishing.handle_click(is_right_click=True)
+        self.assertTrue(handled_rc)
+        self.assertGreater(self.fishing.reeling_progress, initial_progress)
+
+    def test_direct_raw_fish_grilling_on_furnace(self):
+        """Verifies right-clicking raw fish on idle furnace initiates Inihaw grilling."""
+        fx, fy = 250, 10
+        self.world.set_tile(fx, fy, TILE_FURNACE)
+        self.assertFalse(self.world.is_furnace_busy(fx, fy))
+
+        # Start furnace cooking directly with raw bangus -> cooked_bangus (Inihaw na Bangus)
+        from main import RAW_FISH_TO_INIHAW
+        self.assertIn("raw_bangus", RAW_FISH_TO_INIHAW)
+        inihaw_id = RAW_FISH_TO_INIHAW["raw_bangus"]
+        self.assertEqual(inihaw_id, "cooked_bangus")
+
+        dur = self.world.get_cooking_duration(inihaw_id)
+        started = self.world.start_furnace_cooking(fx, fy, inihaw_id, 1, station_type="furnace")
+        self.assertTrue(started)
+        self.assertTrue(self.world.is_furnace_busy(fx, fy))
+        self.assertEqual(self.world.active_furnaces[(fx, fy)]["item"], "cooked_bangus")
+
+        # Fast forward time to finish grilling
+        self.world.update_furnaces(dur + 0.1)
+        self.assertTrue(self.world.active_furnaces[(fx, fy)]["finished"])
+
+        # Collect grilled fish
+        cooked_item, count = self.world.collect_furnace_food(fx, fy, self.inv)
+        self.assertEqual(cooked_item, "cooked_bangus")
+        self.assertEqual(count, 1)
+        self.assertNotIn((fx, fy), self.world.active_furnaces)
+
+    def test_save_and_load_persistence_farm_crops_and_furnaces(self):
+        """Verifies farm_crops, soil_water_timers, and active_furnaces persist across save/load."""
+        from src.world.save_manager import extract_save_payload
+
+        mock_game = MagicMock()
+        mock_game.world = self.world
+        mock_game.player = self.player
+        mock_game.block_deltas = {}
+        mock_game.wall_deltas = {}
+        mock_game.playtime = 120.0
+        mock_game.asset_factory = self.factory
+        mock_game.sound_manager = self.sound
+
+        # Place farmland and crop
+        cx, cy = 300, 15
+        self.world.set_tile(cx, cy + 1, TILE_FARMLAND_WET)
+        self.world.plant_crop(cx, cy, "rice_seeds")
+        self.world.soil_water_timers[(cx, cy + 1)] = 250.0
+
+        # Start furnace cooking
+        fx, fy = 305, 15
+        self.world.set_tile(fx, fy, TILE_FURNACE)
+        self.world.start_furnace_cooking(fx, fy, "cooked_bangus", 1, station_type="furnace")
+
+        # Extract save payload
+        payload, chunk_payloads = extract_save_payload("test_save_world", mock_game)
+        self.assertIn("farm_crops", payload)
+        self.assertIn("active_furnaces", payload)
+        self.assertIn("soil_water_timers", payload)
+
+        crop_matches = [c for c in payload["farm_crops"] if c["gx"] == cx and c["gy"] == cy]
+        self.assertEqual(len(crop_matches), 1)
+        self.assertEqual(crop_matches[0]["crop"], "rice")
+
+        furnace_matches = [f for f in payload["active_furnaces"] if f["gx"] == fx and f["gy"] == fy]
+        self.assertEqual(len(furnace_matches), 1)
+        self.assertEqual(furnace_matches[0]["item"], "cooked_bangus")
+
+        soil_matches = [s for s in payload["soil_water_timers"] if s["gx"] == cx and s["gy"] == cy + 1]
+        self.assertEqual(len(soil_matches), 1)
+        self.assertAlmostEqual(soil_matches[0]["time_left"], 250.0)
+
+    def test_touch_controller_world_interaction_furnace_and_crops(self):
+        """Verifies touch on furnace, campfire, or crops calls handle_right_click instead of mining."""
+        from src.ui.touch_controller import TouchController
+        tc = TouchController(self.factory)
+
+        mock_game = MagicMock()
+        mock_game.world = self.world
+        mock_game.player = self.player
+        mock_game.inventory = self.inv
+        mock_game.camera.screen_to_tile = MagicMock(return_value=(100, 100))
+        mock_game.camera.screen_to_world = MagicMock(return_value=(100 * SCALED_TILE, 100 * SCALED_TILE))
+        self.player.x = 100 * SCALED_TILE
+        self.player.y = 100 * SCALED_TILE
+
+        # Set tile to furnace
+        self.world.set_tile(100, 100, TILE_FURNACE)
+        tc._execute_direct_world_touch(400, 300, mock_game)
+        mock_game.handle_right_click.assert_called_with(400, 300)
+
+        # Set tile to crop
+        mock_game.handle_right_click.reset_mock()
+        self.world.set_tile(100, 100, TILE_CROP)
+        tc._execute_direct_world_touch(400, 300, mock_game)
+        mock_game.handle_right_click.assert_called_with(400, 300)
+
 
 if __name__ == "__main__":
     unittest.main()

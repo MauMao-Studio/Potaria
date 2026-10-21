@@ -130,12 +130,10 @@ class FishingBattleMiniGame:
             self.result = "cancelled"
 
     def handle_click(self, is_right_click=True, player=None):
-        """Processes player click input during the battle."""
+        """Processes player click input during the battle (right-click on PC, tap on mobile)."""
         if not self.is_active or self.result is not None:
             return False
-
         if not is_right_click:
-            # Reeling specifically responds to right-clicking
             return False
 
         self.ui_scale_pulse = 0.15

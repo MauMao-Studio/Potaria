@@ -1198,23 +1198,23 @@ class World:
 
     def has_crop_light(self, gx, gy):
         """Returns True if crop has sufficient light: natural sky light OR artificial torchlight."""
+        from src.constants import TILE_PROPS
         # 1. Artificial light nearby (within 5 tiles)
         for dx in range(-5, 6):
             for dy in range(-5, 6):
                 tid = self.get_tile(gx + dx, gy + dy)
                 if tid in (TILE_TORCH, TILE_FIREPLACE, TILE_FURNACE, TILE_CARVED_TUBER_LANTERN,
-                           TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, TILE_CANDELABRA, TILE_CHANDELIER):
+                           TILE_BRASS_LANTERN, TILE_SPECTRAL_LANTERN, TILE_CANDELABRA, TILE_CHANDELIER) or TILE_PROPS.get(tid, {}).get("light_emit", 0) > 0:
                     return True
 
-        # 2. Natural sky light (no solid tiles above to sky)
-        if gy <= SURFACE_LEVEL + 5:
-            solid_above = False
-            for uy in range(max(SKY_MIN_Y, gy - 30), gy):
-                if self.is_tile_solid(gx, uy):
-                    solid_above = True
-                    break
-            if not solid_above:
-                return True
+        # 2. Natural sky light (no solid tiles directly above to sky)
+        solid_above = False
+        for uy in range(max(SKY_MIN_Y, gy - 40), gy):
+            if self.is_tile_solid(gx, uy):
+                solid_above = True
+                break
+        if not solid_above:
+            return True
 
         return False
 
@@ -1317,6 +1317,8 @@ class World:
                 # Supporting farmland broke
                 self.set_tile(gx, gy, TILE_AIR)
                 self.farm_crops.pop((gx, gy), None)
+                if hasattr(self, "game") and self.game:
+                    self.game.block_deltas[(gx, gy)] = TILE_AIR
                 continue
 
             # Hydration check
@@ -1324,6 +1326,8 @@ class World:
             if near_water and below_tid == TILE_FARMLAND:
                 self.set_tile(gx, gy + 1, TILE_FARMLAND_WET)
                 below_tid = TILE_FARMLAND_WET
+                if hasattr(self, "game") and self.game:
+                    self.game.block_deltas[(gx, gy + 1)] = TILE_FARMLAND_WET
             is_hydrated = (below_tid == TILE_FARMLAND_WET) or near_water
 
             # Light check (can grow with sun or torchlight)
@@ -1349,6 +1353,8 @@ class World:
             if self.soil_water_timers[(gx, gy)] <= 0:
                 self.soil_water_timers.pop((gx, gy), None)
                 self.set_tile(gx, gy, TILE_FARMLAND)
+                if hasattr(self, "game") and self.game:
+                    self.game.block_deltas[(gx, gy)] = TILE_FARMLAND
 
         # 3. Wild crop spawning
         self.wild_crop_timer += dt
@@ -1366,6 +1372,8 @@ class World:
                 if self.has_crop_light(gx, gy - 1):
                     self.set_tile(gx, gy, TILE_FARMLAND_WET)
                     self.soil_water_timers[(gx, gy)] = 300.0
+                    if hasattr(self, "game") and self.game:
+                        self.game.block_deltas[(gx, gy)] = TILE_FARMLAND_WET
 
     # =========================================================================
     # Furnace & Campfire Cooking Engine (Duration based on rarity, 1 food/station)

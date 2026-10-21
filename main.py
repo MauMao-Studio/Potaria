@@ -105,6 +105,19 @@ from src.rendering import (
     get_renderer_manager,
 )
 
+RAW_FISH_TO_INIHAW = {
+    "raw_bangus": "cooked_bangus",
+    "raw_tilapia": "cooked_tilapia",
+    "raw_galunggong": "cooked_galunggong",
+    "raw_maya_maya": "cooked_maya_maya",
+    "raw_tanigue": "cooked_tanigue",
+    "raw_tambakol": "cooked_tambakol",
+    "raw_lapu_lapu": "cooked_lapu_lapu",
+    "raw_hito": "cooked_hito",
+    "raw_dilis": "cooked_dilis",
+    "raw_dalagang_bukid": "cooked_dalagang_bukid",
+}
+
 class PotariaGame:
     def __init__(self):
         pygame.init()
@@ -730,6 +743,12 @@ class PotariaGame:
             return self.renderer_manager.window_to_virtual_pos(raw_pos)
         return raw_pos
 
+    def window_to_virtual_pos(self, pos: tuple[int, int]) -> tuple[int, int]:
+        """Translates physical window pixel coordinates to virtual screen coordinates (1280x720)."""
+        if hasattr(self, "renderer_manager"):
+            return self.renderer_manager.window_to_virtual_pos(pos)
+        return pos
+
     def toggle_fullscreen(self):
         """Toggles borderless fullscreen display mode across all game states (prevents screenshot / Win+Shift+S blackout)."""
         self.set_fullscreen_mode(not self.fullscreen)
@@ -1293,8 +1312,13 @@ class PotariaGame:
                             pass
 
             elif event.type in (pygame.FINGERDOWN, pygame.FINGERMOTION, pygame.FINGERUP):
-                px = int(round(event.x * SCREEN_WIDTH))
-                py = int(round(event.y * SCREEN_HEIGHT))
+                try:
+                    win_w, win_h = pygame.display.get_window_size()
+                except Exception:
+                    win_w, win_h = SCREEN_WIDTH, SCREEN_HEIGHT
+                phys_x = int(round(event.x * win_w))
+                phys_y = int(round(event.y * win_h))
+                px, py = self.window_to_virtual_pos((phys_x, phys_y))
 
                 if hasattr(self, "touch_controller"):
                     self.touch_controller.has_touch_input = True
@@ -1302,6 +1326,11 @@ class PotariaGame:
                 if event.type == pygame.FINGERDOWN:
                     if hasattr(self, "touch_controller"):
                         self.touch_controller.add_ripple(px, py)
+
+                    # 0. Fishing Battle Mini-Game takes top modal touch priority
+                    if hasattr(self, "fishing_minigame") and self.fishing_minigame and self.fishing_minigame.is_active:
+                        self.fishing_minigame.handle_click(is_right_click=True, player=self.player)
+                        continue
 
                     # 1. In-Menu Touch Interaction (Main Menu, Worlds, Settings, Achievements, etc.)
                     if self.menu.state != STATE_PLAYING:
@@ -1858,6 +1887,7 @@ class PotariaGame:
 
             # 0b_furnace. Furnace or Campfire Cooking Interaction
             if t_id in (TILE_FURNACE, TILE_FIREPLACE):
+                station_label = "furnace" if t_id == TILE_FURNACE else "campfire"
                 if hasattr(self.world, "active_furnaces") and (tx, ty) in self.world.active_furnaces:
                     job = self.world.active_furnaces[(tx, ty)]
                     if job.get("finished", False):
@@ -1865,7 +1895,7 @@ class PotariaGame:
                         if item:
                             from src.ui.inventory import ITEM_REGISTRY
                             food_name = ITEM_REGISTRY.get(item, {}).get("name", item.replace("_", " ").title())
-                            self.inventory.notify(f"Collected {food_name} x{count} from furnace!")
+                            self.inventory.notify(f"Collected {food_name} x{count} from {station_label}!")
                             self.sound_manager.play("pickup")
                             self.particle_system.spawn_sparks(tile_world_x + 16, tile_world_y + 16, (255, 215, 60), count=15)
                             return
@@ -1876,12 +1906,31 @@ class PotariaGame:
                         self.inventory.notify(f"Cooking {food_name}... ({time_left:.1f}s remaining)")
                         self.sound_manager.play("craft")
                         return
+                else:
+                    # Direct grilling of raw fish into Inihaw na [Fish]
+                    if active and active.item_id in RAW_FISH_TO_INIHAW:
+                        cooked_id = RAW_FISH_TO_INIHAW[active.item_id]
+                        st_type = "furnace" if t_id == TILE_FURNACE else "campfire"
+                        if self.world.start_furnace_cooking(tx, ty, cooked_id, 1, station_type=st_type):
+                            active.count -= 1
+                            if active.count <= 0:
+                                self.inventory.slots[self.inventory.selected_slot] = None
+                            dur = self.world.get_cooking_duration(cooked_id)
+                            from src.ui.inventory import ITEM_REGISTRY
+                            cooked_name = ITEM_REGISTRY.get(cooked_id, {}).get("name", "Inihaw na Isda")
+                            self.inventory.notify(f"Grilling {cooked_name} over the coals! ({dur:.1f}s)")
+                            self.sound_manager.play("craft")
+                            self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 8, (255, 140, 40), count=10)
+                            return
 
             # 0b_crop. Harvest mature crop or wild plant
             if t_id == TILE_CROP:
                 crop_info = getattr(self.world, "farm_crops", {}).get((tx, ty))
                 if crop_info and crop_info.get("stage", 0) >= 3:
                     drops = self.world.harvest_crop(tx, ty)
+                    self.block_deltas[(tx, ty)] = TILE_AIR
+                    if self.client and self.client.connected:
+                        self.client.send_block_delta(tx, ty, TILE_AIR)
                     for item_id, count in drops:
                         self.inventory.add_item(item_id, count)
                         from src.ui.inventory import ITEM_REGISTRY
@@ -1890,8 +1939,19 @@ class PotariaGame:
                     self.sound_manager.play("pickup")
                     self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (100, 220, 100), count=10)
                     return
+                elif crop_info:
+                    st = crop_info.get("stage", 0)
+                    c_name = crop_info.get("crop", "crop").replace("_", " ").title()
+                    stage_names = ["Seedling", "Vegetative", "Flowering", "Mature"]
+                    s_label = stage_names[st] if st < len(stage_names) else f"Stage {st}"
+                    self.inventory.notify(f"{c_name} is growing ({s_label}). Not ready for harvest yet.")
+                    self.sound_manager.play("craft")
+                    return
             elif t_id == TILE_WILD_PLANT:
                 drops = self.world.harvest_crop(tx, ty)
+                self.block_deltas[(tx, ty)] = TILE_AIR
+                if self.client and self.client.connected:
+                    self.client.send_block_delta(tx, ty, TILE_AIR)
                 for item_id, count in drops:
                     self.inventory.add_item(item_id, count)
                     from src.ui.inventory import ITEM_REGISTRY
@@ -1994,6 +2054,10 @@ class PotariaGame:
         if active and ("hoe" in active.item_id or getattr(active, "special", "") == "Farming Tool (Hoe)"):
             if reach <= SCALED_TILE * 5.5:
                 if self.world.till_soil(tx, ty):
+                    t_tid = self.world.get_tile(tx, ty)
+                    self.block_deltas[(tx, ty)] = t_tid
+                    if self.client and self.client.connected:
+                        self.client.send_block_delta(tx, ty, t_tid)
                     self.sound_manager.play("dig_dirt")
                     self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (140, 95, 60), count=12)
                     self.inventory.notify("Tilled farmland soil.")
@@ -2008,6 +2072,9 @@ class PotariaGame:
                     self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (80, 160, 240), count=10)
                     return
                 elif self.world.water_soil(tx, ty):
+                    self.block_deltas[(tx, ty)] = TILE_FARMLAND_WET
+                    if self.client and self.client.connected:
+                        self.client.send_block_delta(tx, ty, TILE_FARMLAND_WET)
                     self.sound_manager.play("craft")
                     self.particle_system.spawn_debris(tile_world_x + 16, tile_world_y + 16, (60, 150, 235), count=10)
                     self.inventory.notify("Watered farmland.")
@@ -2020,6 +2087,9 @@ class PotariaGame:
                 if self.world.get_tile(plant_tx, plant_ty) != TILE_AIR and self.world.get_tile(plant_tx, plant_ty - 1) == TILE_AIR:
                     plant_ty = plant_ty - 1
                 if self.world.plant_crop(plant_tx, plant_ty, active.item_id):
+                    self.block_deltas[(plant_tx, plant_ty)] = TILE_CROP
+                    if self.client and self.client.connected:
+                        self.client.send_block_delta(plant_tx, plant_ty, TILE_CROP)
                     self.sound_manager.play("place")
                     self.particle_system.spawn_debris(plant_tx * SCALED_TILE + 16, plant_ty * SCALED_TILE + 16, (100, 210, 80), count=6)
                     active.count -= 1
@@ -2374,7 +2444,7 @@ class PotariaGame:
     def handle_primary_action(self, mouse_x, mouse_y):
         active = self.inventory.get_active_item()
         FISHING_ROD_IDS = ("fishing_rod", "spud_angler_rod", "reinforced_angler_rod", "gilded_master_rod", "astral_leviathan_rod", "neptune_tide_rod")
-        if active and (active.item_id in FISHING_ROD_IDS or getattr(active, "special", "") == "Fishing Tool" or "angler_rod" in active.item_id):
+        if (active and (active.item_id in FISHING_ROD_IDS or getattr(active, "special", "") == "Fishing Tool" or "angler_rod" in active.item_id)) or getattr(self, "fishing_bobber", None) is not None:
             return self.handle_fishing_action(mouse_x, mouse_y)
 
         # Farming Tools & Seeds action on primary click
@@ -2382,6 +2452,10 @@ class PotariaGame:
             tx, ty = self.camera.screen_to_tile(mouse_x, mouse_y)
             reach = math.hypot(self.player.center_x - (tx * SCALED_TILE + 16), self.player.center_y - (ty * SCALED_TILE + 16))
             if reach <= SCALED_TILE * 5.5 and self.world.till_soil(tx, ty):
+                t_tid = self.world.get_tile(tx, ty)
+                self.block_deltas[(tx, ty)] = t_tid
+                if self.client and self.client.connected:
+                    self.client.send_block_delta(tx, ty, t_tid)
                 self.sound_manager.play("dig_dirt")
                 self.particle_system.spawn_debris(tx * SCALED_TILE + 16, ty * SCALED_TILE + 16, (140, 95, 60), count=12)
                 return True
@@ -2395,6 +2469,9 @@ class PotariaGame:
                     self.particle_system.spawn_debris(tx * SCALED_TILE + 16, ty * SCALED_TILE + 16, (80, 160, 240), count=10)
                     return True
                 elif self.world.water_soil(tx, ty):
+                    self.block_deltas[(tx, ty)] = TILE_FARMLAND_WET
+                    if self.client and self.client.connected:
+                        self.client.send_block_delta(tx, ty, TILE_FARMLAND_WET)
                     self.sound_manager.play("craft")
                     self.particle_system.spawn_debris(tx * SCALED_TILE + 16, ty * SCALED_TILE + 16, (60, 150, 235), count=10)
                     return True
@@ -2406,6 +2483,9 @@ class PotariaGame:
                 if self.world.get_tile(plant_tx, plant_ty) != TILE_AIR and self.world.get_tile(plant_tx, plant_ty - 1) == TILE_AIR:
                     plant_ty = plant_ty - 1
                 if self.world.plant_crop(plant_tx, plant_ty, active.item_id):
+                    self.block_deltas[(plant_tx, plant_ty)] = TILE_CROP
+                    if self.client and self.client.connected:
+                        self.client.send_block_delta(plant_tx, plant_ty, TILE_CROP)
                     self.sound_manager.play("place")
                     self.particle_system.spawn_debris(plant_tx * SCALED_TILE + 16, plant_ty * SCALED_TILE + 16, (100, 210, 80), count=6)
                     active.count -= 1

@@ -439,6 +439,42 @@ def extract_save_payload(world_name, game):
                 "sapling_type": str(sdata.get("sapling_type", "oak_sapling"))
             })
 
+    # Philippine Crops, Active Furnaces, and Soil Hydration
+    farm_crops_data = []
+    if hasattr(game, "world") and hasattr(game.world, "farm_crops"):
+        for (gx, gy), cinfo in game.world.farm_crops.items():
+            farm_crops_data.append({
+                "gx": int(gx),
+                "gy": int(gy),
+                "crop": str(cinfo.get("crop", "rice")),
+                "stage": int(cinfo.get("stage", 0)),
+                "growth_timer": float(cinfo.get("growth_timer", 0.0)),
+                "stage_duration": float(cinfo.get("stage_duration", 40.0)),
+            })
+
+    active_furnaces_data = []
+    if hasattr(game, "world") and hasattr(game.world, "active_furnaces"):
+        for (gx, gy), finfo in game.world.active_furnaces.items():
+            active_furnaces_data.append({
+                "gx": int(gx),
+                "gy": int(gy),
+                "item": str(finfo.get("item", "")),
+                "count": int(finfo.get("count", 1)),
+                "duration": float(finfo.get("duration", 5.0)),
+                "time_left": float(finfo.get("time_left", 0.0)),
+                "station_type": str(finfo.get("station_type", "furnace")),
+                "finished": bool(finfo.get("finished", False)),
+            })
+
+    soil_water_timers_data = []
+    if hasattr(game, "world") and hasattr(game.world, "soil_water_timers"):
+        for (gx, gy), w_timer in game.world.soil_water_timers.items():
+            soil_water_timers_data.append({
+                "gx": int(gx),
+                "gy": int(gy),
+                "time_left": float(w_timer),
+            })
+
     w_type = getattr(game, "world_type", getattr(game.world, "world_type", WORLD_TYPE_INFINITE))
     if hasattr(game, "world") and hasattr(game.world, "world_type") and hasattr(game, "world_type"):
         game.world.world_type = game.world_type
@@ -478,6 +514,9 @@ def extract_save_payload(world_name, game):
         "chests": chests_data,
         "decaying_blocks": decaying_blocks_data,
         "planted_saplings": planted_saplings_data,
+        "farm_crops": farm_crops_data,
+        "active_furnaces": active_furnaces_data,
+        "soil_water_timers": soil_water_timers_data,
     }
 
     try:
@@ -973,6 +1012,37 @@ def load_world(world_name, game):
                     game.world.set_tile(tx, ty, upgraded_tid)
                     if hasattr(game, "block_deltas") and (tx, ty) in game.block_deltas:
                         game.block_deltas[(tx, ty)] = upgraded_tid
+
+        # Restore Philippine Crops, Active Furnaces, and Soil Water Timers
+        if "farm_crops" in data and hasattr(game.world, "farm_crops"):
+            game.world.farm_crops.clear()
+            for c in data["farm_crops"]:
+                gx, gy = int(c["gx"]), int(c["gy"])
+                game.world.farm_crops[(gx, gy)] = {
+                    "crop": str(c.get("crop", "rice")),
+                    "stage": int(c.get("stage", 0)),
+                    "growth_timer": float(c.get("growth_timer", 0.0)),
+                    "stage_duration": float(c.get("stage_duration", 40.0)),
+                }
+
+        if "active_furnaces" in data and hasattr(game.world, "active_furnaces"):
+            game.world.active_furnaces.clear()
+            for f in data["active_furnaces"]:
+                gx, gy = int(f["gx"]), int(f["gy"])
+                game.world.active_furnaces[(gx, gy)] = {
+                    "item": str(f.get("item", "")),
+                    "count": int(f.get("count", 1)),
+                    "duration": float(f.get("duration", 5.0)),
+                    "time_left": float(f.get("time_left", 0.0)),
+                    "station_type": str(f.get("station_type", "furnace")),
+                    "finished": bool(f.get("finished", False)),
+                }
+
+        if "soil_water_timers" in data and hasattr(game.world, "soil_water_timers"):
+            game.world.soil_water_timers.clear()
+            for w in data["soil_water_timers"]:
+                gx, gy = int(w["gx"]), int(w["gy"])
+                game.world.soil_water_timers[(gx, gy)] = float(w.get("time_left", 0.0))
 
     # Restore Playtime
     game.playtime = float(data.get("playtime", 0.0))
