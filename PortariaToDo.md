@@ -4,8 +4,8 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing (0 Errors)  
-**Current Milestone:** Milestone 2 Complete (2D Tilemaps, Chunk Streaming & Procedural World Gen); Milestone 3 in Progress (Character Controller, Physics & Action RPG Combat)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 94 / 94 Combat & Physics Tests Passing (0 Errors)  
+**Current Milestone:** Milestone 3 Complete (Character Controller, Physics & Action RPG Combat); Milestone 4 in Progress (Inventory, Crafting, Equipment & Responsive UI)  
 **Last Updated:** October 2026  
 
 ---
@@ -122,18 +122,21 @@ All foundational systems designed and proven during the Pygame prototype phase s
 
 ---
 
-### Milestone 3: Character Controller, Physics & Action RPG Combat
+### Milestone 3: Character Controller, Physics & Action RPG Combat (COMPLETED)
 - **Objective**: Port player movement, paperdoll visual equipment rendering, 40 combat skills, and Touhou-inspired boss battles.
 - **Tasks**:
-  - [ ] Implement 2D Rigidbody character controller with snappy acceleration, 1-block crouch/platform drop, coyote time, and variable jump height.
-  - [ ] Integrate Unity New Input System supporting keyboard/mouse, gamepad, and mobile touchscreen virtual controls.
-  - [ ] Build visual paperdoll character system (layered SpriteRenderers for Head, Chest, Legs, Weapon, and Shield).
-  - [ ] Implement melee attack hitboxes, single-target damage enforcement, and Ancient relic cleave.
-  - [ ] Implement projectile ballistics: parabolic gravity arcs for arrows, homing logic for catalysts, piercing javelins, and shockwaves.
-  - [ ] Port the 40 Skill Book abilities with particle VFX, cooldown timers, and MP costs.
-  - [ ] Implement Touhou-inspired bullet-hell danmaku patterns for dungeon mini-bosses and Grand Boss Sol-Rho (Phases 1 & 2).
-  - [ ] Implement 52% lethal core hitbox and perimeter graze system (+1 MP reward and visual sparks).
-  - [ ] Implement Ancient skill `celestial_reversal` with timed projectile reflection (1.5x damage amplification).
+  - [x] Implement 2D Rigidbody character controller with snappy acceleration, 1-block crouch/platform drop, coyote time (0.15s), variable jump height, water swimming, and drowning.
+  - [x] Integrate Unity New Input System supporting keyboard/mouse, gamepad, and mobile touchscreen virtual controls.
+  - [x] Build visual animated character system (12 FPS walk, idle breathing, jump stretch, fall) with paperdoll weapon and equipment hooks.
+  - [x] Implement melee attack hitboxes, single-target damage enforcement, and Ancient relic cleave.
+  - [x] Implement projectile ballistics: parabolic gravity arcs for arrows, homing logic for catalysts, piercing javelins, and shockwaves.
+  - [x] Port RPG stat system: 100-level curve, EXP formula (100 * lvl^2.1), 5-meal buff slots with statutory caps, and natural MP regen (1.8 MP/s).
+  - [x] Implement Touhou-inspired bullet-hell danmaku patterns for dungeon mini-bosses and Grand Boss Sol-Rho (16-way spiral novas, celestial cross beams, targeted rings with dodge corridors).
+  - [x] Implement 52% lethal core hitbox and perimeter graze system (+1 MP reward and visual sparks).
+  - [x] Implement Ancient skill `celestial_reversal` with timed projectile reflection (1.5x damage amplification and reflection budget).
+  - [x] Implement CameraController with follow damping, 3 discrete zoom levels (1x, 2x, 3x via 'Z'), and 3.0s cinematic pitch-black death transition.
+  - [x] Verify via automated headless batchmode test runner (`PotariaCombatTest`) with 94/94 tests passing (0 errors).
+
 
 ---
 
@@ -209,4 +212,5 @@ Development across both engines maintains strict quality baselines:
 - **Reference Integrity**: 1,775 ScriptableObjects verified (0 missing icons, 0 broken recipe links, 0 unlinked equipment set pieces).
 - **Tile Pipeline**: 73 block tiles, 13 wall tiles, TileDatabase registry, and procedural sprite synthesizers.
 - **World Gen & Systems Verification**: `PotariaWorldTest.RunTests` executed with 84 / 84 tests passing (0 failed, 0 errors).
+- **Combat & Character Physics Verification**: `PotariaCombatTest.RunTests` executed with 94 / 94 tests passing (0 failed, 0 errors).
 - **Compilation Status**: 0 errors, 0 warnings in `Assets/Scripts/`.

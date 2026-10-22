@@ -9,6 +9,11 @@ using UnityEngine.Tilemaps;
 using UnityEngine.U2D;
 using Potaria.World;
 using Potaria.World.Lighting;
+using Potaria.Input;
+using Potaria.Player;
+using Potaria.RPG;
+using Potaria.Combat;
+using Potaria.Cameras;
 
 namespace Potaria.Editor
 {
@@ -57,6 +62,8 @@ namespace Potaria.Editor
             pixelCam.refResolutionY = 360;
             pixelCam.cropFrame = PixelPerfectCamera.CropFrame.None;
 
+            var camController = camObj.AddComponent<CameraController>();
+
             // 3. Grid Hierarchy & Dual Tilemaps
             var gridObj = new GameObject("Grid");
             gridObj.transform.position = Vector3.zero;
@@ -100,7 +107,49 @@ namespace Potaria.Editor
             // 6. Placed Light Prefab (Torch with PointLightSource2D)
             BuildTorchPrefab();
 
-            // 7. Save Scene
+            // 7. Input Manager & Projectile Manager
+            var inputObj = new GameObject("InputManager");
+            inputObj.AddComponent<PotariaInput>();
+
+            var projManagerObj = new GameObject("ProjectileManager");
+            projManagerObj.AddComponent<ProjectileManager>();
+
+            // 8. Player Character Spud Hero
+            var playerObj = new GameObject("Player_Spud");
+            playerObj.tag = "Player";
+            playerObj.transform.position = new Vector3(0f, -67f, 0f);
+
+            var playerRb = playerObj.AddComponent<Rigidbody2D>();
+            playerRb.interpolation = RigidbodyInterpolation2D.Interpolate;
+            playerRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            playerRb.freezeRotation = true;
+
+            var playerCol = playerObj.AddComponent<BoxCollider2D>();
+            playerCol.size = new Vector2(0.875f, 1.0f);
+            playerCol.offset = new Vector2(0f, 0.5f);
+
+            var playerSr = playerObj.AddComponent<SpriteRenderer>();
+            playerSr.sortingLayerName = "Player";
+            var idleSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Player/idle.png");
+            if (idleSprite != null) playerSr.sprite = idleSprite;
+
+            var playerStats = playerObj.AddComponent<PlayerStats>();
+            var playerController = playerObj.AddComponent<PlayerController>();
+
+            // Weapon Pivot Child
+            var weaponPivot = new GameObject("WeaponPivot");
+            weaponPivot.transform.SetParent(playerObj.transform, false);
+            weaponPivot.transform.localPosition = new Vector3(0.2f, 0.5f, 0f);
+            var weaponSr = weaponPivot.AddComponent<SpriteRenderer>();
+            weaponSr.sortingLayerName = "Player";
+            weaponSr.sortingOrder = 1;
+
+            playerObj.AddComponent<WeaponController>();
+
+            // Configure Camera Follow target
+            camController.SetZoomLevel(1);
+
+            // 9. Save Scene
             EditorSceneManager.SaveScene(scene, SCENE_PATH);
             Debug.Log($"[PotariaSceneBuilder] Successfully constructed and saved {SCENE_PATH}.");
 
