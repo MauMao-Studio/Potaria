@@ -244,6 +244,9 @@ namespace Potaria.World
             AddDefaultTile(WorldConstants.TileFarmlandWet, "Hydrated Farmland", 15, ToolType.Shovel, "dirt_clod", true, false, 0, 3, true);
             AddDefaultTile(WorldConstants.TileCrop, "Crops", 1, ToolType.None, null, false, false, 0, 0, false);
             AddDefaultTile(WorldConstants.TileWildPlant, "Wild Plant", 1, ToolType.None, null, false, false, 0, 0, false);
+            AddDefaultTile(WorldConstants.TileCoalOre, "Coal Ore", 30, ToolType.Pickaxe, "coal", true, false, 0, 4, true);
+            AddDefaultTile(WorldConstants.TileDiamondOre, "Diamond Ore", 65, ToolType.Pickaxe, "diamond", true, false, 2, 4, true, 3, new Color(0.2f, 0.85f, 1f));
+            AddDefaultTile(WorldConstants.TileNetheriteOre, "Netherite Ore", 85, ToolType.Pickaxe, "netherite", true, false, 1, 5, true, 2, new Color(0.8f, 0.35f, 0.15f));
 
             // Populate all canonical walls
             AddDefaultWall(WorldConstants.WallAir, "Air Wall", 0, ToolType.None, null, 0);

@@ -105,7 +105,7 @@ MonoBehaviour:
     requiredTool: 2
     isIndestructible: 0
     dropItemId: leaves
-    minedDrop: {fileID: 0}
+    minedDrop: {fileID: 11400000, guid: 90d5849e33d30fa4ab871ebb9d01ee39, type: 2}
     isSolid: 0
     isPlatform: 0
     isLiquid: 0
@@ -947,7 +947,7 @@ MonoBehaviour:
     lightAbsorption: 0
     isOpaque: 0
     emissionColor: {r: 1, g: 0.85, b: 0.45, a: 1}
-    unityTile: {fileID: 0}
+    unityTile: {fileID: 11400000, guid: 75c3db5176faa4541b6423263de45fdb, type: 2}
   - tileId: 54
     tileName: Oak Sapling
     isWall: 0
@@ -981,7 +981,7 @@ MonoBehaviour:
     lightAbsorption: 0
     isOpaque: 0
     emissionColor: {r: 1, g: 1, b: 1, a: 1}
-    unityTile: {fileID: 0}
+    unityTile: {fileID: 11400000, guid: ef288c29bfc1ff34095b85467778056e, type: 2}
   - tileId: 63
     tileName: Pine Sapling
     isWall: 0
@@ -998,7 +998,7 @@ MonoBehaviour:
     lightAbsorption: 0
     isOpaque: 0
     emissionColor: {r: 1, g: 1, b: 1, a: 1}
-    unityTile: {fileID: 0}
+    unityTile: {fileID: 11400000, guid: d13764fe6f933054f9a2059718018a06, type: 2}
   - tileId: 64
     tileName: Blight Sapling
     isWall: 0
@@ -1015,7 +1015,7 @@ MonoBehaviour:
     lightAbsorption: 0
     isOpaque: 0
     emissionColor: {r: 0.6, g: 0.2, b: 0.9, a: 1}
-    unityTile: {fileID: 0}
+    unityTile: {fileID: 11400000, guid: 167fd016cfc32d34fbbb8bb717d3efd3, type: 2}
   - tileId: 55
     tileName: Iron Storage Chest
     isWall: 0
@@ -1278,7 +1278,7 @@ MonoBehaviour:
     requiredTool: 3
     isIndestructible: 0
     dropItemId: dirt_clod
-    minedDrop: {fileID: 0}
+    minedDrop: {fileID: 11400000, guid: a5314cbd556268b49b67c64ad07edd05, type: 2}
     isSolid: 1
     isPlatform: 0
     isLiquid: 0
@@ -1295,7 +1295,7 @@ MonoBehaviour:
     requiredTool: 3
     isIndestructible: 0
     dropItemId: dirt_clod
-    minedDrop: {fileID: 0}
+    minedDrop: {fileID: 11400000, guid: a5314cbd556268b49b67c64ad07edd05, type: 2}
     isSolid: 1
     isPlatform: 0
     isLiquid: 0
@@ -1338,6 +1338,57 @@ MonoBehaviour:
     lightAbsorption: 0
     isOpaque: 0
     emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 78
+    tileName: Coal Ore
+    isWall: 0
+    hardness: 30
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: coal
+    minedDrop: {fileID: 11400000, guid: e245ad6549c64514abb70a95f633803d, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 79
+    tileName: Diamond Ore
+    isWall: 0
+    hardness: 65
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: diamond
+    minedDrop: {fileID: 11400000, guid: 3e7d23e47b76adc4892bca2a645eaec3, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 2
+    lightRadius: 3
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 0.2, g: 0.85, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 80
+    tileName: Netherite Ore
+    isWall: 0
+    hardness: 85
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: netherite
+    minedDrop: {fileID: 11400000, guid: d902959c03c5d6e41b762adb28b87c93, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 2
+    lightAbsorption: 5
+    isOpaque: 1
+    emissionColor: {r: 0.8, g: 0.35, b: 0.15, a: 1}
     unityTile: {fileID: 0}
   wallDefinitions:
   - tileId: 0

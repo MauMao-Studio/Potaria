@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
 using Potaria.World;
@@ -44,10 +45,15 @@ namespace Potaria.Editor
                 TestPerlinNoise();
                 TestTileDatabase();
                 TestWorldGenerator();
+                TestOreSeedingAndDistribution();
+                TestDungeonCaveProtection();
                 TestDualTilemapsAndCompositeCollider();
                 TestChunkManagerStreamingAndMining();
                 TestFarmlandHydration();
+                TestPointLight2DSpawningAndPooling();
+                TestTilemapLitMaterialsAndWaterTrigger();
                 TestLightingAndDepthDarkness();
+                TestRenderPipelineConfiguration();
                 TestMainWorldSceneBuilding();
             }
             catch (Exception ex)
@@ -390,6 +396,187 @@ namespace Potaria.Editor
             {
                 GameObject.DestroyImmediate(lightObj);
             }
+        }
+
+        private static void TestOreSeedingAndDistribution()
+        {
+            var db = TileDatabase.Instance;
+
+            // 1. Validate Database definitions for all 6 ores
+            int[] oreIds = new int[]
+            {
+                WorldConstants.TileCoalOre,
+                WorldConstants.TileCopperOre,
+                WorldConstants.TileIronOre,
+                WorldConstants.TileGoldOre,
+                WorldConstants.TileDiamondOre,
+                WorldConstants.TileNetheriteOre
+            };
+
+            foreach (int oid in oreIds)
+            {
+                var def = db.GetTile(oid);
+                AssertTrue(def != null, $"OreDefinition.Exists_{oid}", $"Ore tile ID {oid} must be registered in TileDatabase");
+                AssertTrue(def != null && def.IsSolid && def.RequiredTool == ToolType.Pickaxe && def.Hardness >= 25,
+                    $"OreDefinition.Properties_{oid}", $"Ore {oid} must be solid, require Pickaxe, and have hardness >= 25");
+            }
+
+            // 2. Validate Procedural Seeding across chunks
+            var gen = new WorldGenerator(12345);
+            var oreCounts = new Dictionary<int, int>();
+            foreach (int oid in oreIds) oreCounts[oid] = 0;
+
+            for (int cx = -15; cx <= 15; cx++)
+            {
+                var chunk = gen.GenerateChunk(cx);
+                for (int lx = 0; lx < ChunkData.Width; lx++)
+                {
+                    for (int y = 0; y < ChunkData.Height; y++)
+                    {
+                        int tid = chunk.GetTile(lx, y);
+                        if (oreCounts.ContainsKey(tid))
+                        {
+                            oreCounts[tid]++;
+                        }
+                    }
+                }
+            }
+
+            AssertTrue(oreCounts[WorldConstants.TileCoalOre] > 0, "WorldGenerator.Ores.CoalSeeded",
+                $"Coal Ore must be seeded (found {oreCounts[WorldConstants.TileCoalOre]})");
+            AssertTrue(oreCounts[WorldConstants.TileCopperOre] > 0, "WorldGenerator.Ores.CopperSeeded",
+                $"Copper Ore must be seeded (found {oreCounts[WorldConstants.TileCopperOre]})");
+            AssertTrue(oreCounts[WorldConstants.TileIronOre] > 0, "WorldGenerator.Ores.IronSeeded",
+                $"Iron Ore must be seeded (found {oreCounts[WorldConstants.TileIronOre]})");
+            AssertTrue(oreCounts[WorldConstants.TileGoldOre] > 0, "WorldGenerator.Ores.GoldSeeded",
+                $"Gold Ore must be seeded (found {oreCounts[WorldConstants.TileGoldOre]})");
+            AssertTrue(oreCounts[WorldConstants.TileDiamondOre] > 0, "WorldGenerator.Ores.DiamondSeeded",
+                $"Diamond Ore must be seeded (found {oreCounts[WorldConstants.TileDiamondOre]})");
+            AssertTrue(oreCounts[WorldConstants.TileNetheriteOre] > 0, "WorldGenerator.Ores.NetheriteSeeded",
+                $"Netherite Ore must be seeded (found {oreCounts[WorldConstants.TileNetheriteOre]})");
+        }
+
+        private static void TestDungeonCaveProtection()
+        {
+            var gen = new WorldGenerator(88888);
+
+            // Test chunks covering all 4 subterranean dungeons
+            // Nether Dungeon: chunks -2..2
+            // Glacial Crypt: chunks -7..-3
+            // Magma Dungeon: chunks 3..7
+            // Catacombs: chunks 7..11
+            int[] testChunks = new int[] { 0, -5, 5, 9 };
+
+            foreach (int cx in testChunks)
+            {
+                var chunk = gen.GenerateChunk(cx);
+                int dungeonTileCount = 0;
+                for (int lx = 0; lx < ChunkData.Width; lx++)
+                {
+                    for (int y = 162; y <= 218; y++)
+                    {
+                        int tid = chunk.GetTile(lx, y);
+                        if (tid == WorldConstants.TileDungeonBrick || tid == WorldConstants.TileDungeonMagma ||
+                            tid == WorldConstants.TileDungeonIce || tid == WorldConstants.TileDungeonBone ||
+                            tid == WorldConstants.TileDungeonAltar || tid == WorldConstants.TileDungeonGate)
+                        {
+                            dungeonTileCount++;
+                        }
+                    }
+                }
+
+                AssertTrue(dungeonTileCount > 0, $"WorldGenerator.DungeonProtected_Chunk_{cx}",
+                    $"Dungeon at chunk {cx} must retain structural bricks without being hollowed out by cave worms (found {dungeonTileCount} bricks)");
+            }
+        }
+
+        private static void TestPointLight2DSpawningAndPooling()
+        {
+            var go = new GameObject("Test_LightGrid");
+            try
+            {
+                go.AddComponent<Grid>();
+                var worldTilemaps = go.AddComponent<WorldTilemaps>();
+                worldTilemaps.ValidateOrBuildLayers();
+
+                var db = TileDatabase.Instance;
+                var torchDef = db.GetTile(WorldConstants.TileTorch);
+                AssertTrue(torchDef != null, "TileDatabase.TorchDefNotNull", "Torch definition must not be null");
+
+                // Spawn a torch light at global (5, 80)
+                worldTilemaps.SpawnOrUpdateLight(5, 80, torchDef);
+
+                Transform container = worldTilemaps.LightsContainer;
+                AssertTrue(container != null, "WorldTilemaps.LightsContainerExists", "Lights_Container transform must exist under Grid");
+
+                Transform lightChild = container != null && container.childCount > 0 ? container.GetChild(0) : null;
+                AssertTrue(lightChild != null, "WorldTilemaps.PointLightSpawned", "Point light GameObject must be spawned for placed Torch");
+
+                var light2D = lightChild != null ? lightChild.GetComponent<Light2D>() : null;
+                AssertTrue(light2D != null && light2D.lightType == Light2D.LightType.Point,
+                    "WorldTilemaps.Light2DIsPoint", "Spawned light must have Light2D component of type Point");
+
+                var pointSource = lightChild != null ? lightChild.GetComponent<PointLightSource2D>() : null;
+                AssertTrue(pointSource != null, "WorldTilemaps.PointLightSource2DExists", "Spawned light must have PointLightSource2D component");
+
+                // Remove light
+                worldTilemaps.RemoveLight(5, 80);
+                AssertTrue(container.childCount == 0, "WorldTilemaps.LightRemovedOnClear", "Light GameObject must be destroyed when tile is removed");
+            }
+            finally
+            {
+                GameObject.DestroyImmediate(go);
+            }
+        }
+
+        private static void TestTilemapLitMaterialsAndWaterTrigger()
+        {
+            var go = new GameObject("Test_Tilemaps_Materials");
+            try
+            {
+                go.AddComponent<Grid>();
+                var worldTilemaps = go.AddComponent<WorldTilemaps>();
+                worldTilemaps.ValidateOrBuildLayers();
+
+                var fgRend = worldTilemaps.ForegroundTilemap.GetComponent<TilemapRenderer>();
+                var bgRend = worldTilemaps.BackgroundTilemap.GetComponent<TilemapRenderer>();
+                var platRend = worldTilemaps.PlatformTilemap.GetComponent<TilemapRenderer>();
+                var waterRend = worldTilemaps.WaterTilemap.GetComponent<TilemapRenderer>();
+
+                AssertTrue(fgRend != null && fgRend.sharedMaterial != null, "WorldTilemaps.ForegroundMaterialAssigned",
+                    "Foreground TilemapRenderer must have a sharedMaterial");
+                AssertTrue(bgRend != null && bgRend.sharedMaterial != null, "WorldTilemaps.BackgroundMaterialAssigned",
+                    "Background TilemapRenderer must have a sharedMaterial");
+                AssertTrue(platRend != null && platRend.sharedMaterial != null, "WorldTilemaps.PlatformMaterialAssigned",
+                    "Platform TilemapRenderer must have a sharedMaterial");
+                AssertTrue(waterRend != null && waterRend.sharedMaterial != null, "WorldTilemaps.WaterMaterialAssigned",
+                    "Water TilemapRenderer must have a sharedMaterial");
+
+                // Verify Sprite-Lit-Default shader assignment
+                bool allLit = fgRend.sharedMaterial.shader.name.Contains("Sprite-Lit-Default") &&
+                              bgRend.sharedMaterial.shader.name.Contains("Sprite-Lit-Default");
+                AssertTrue(allLit, "WorldTilemaps.SpriteLitShaderAssigned",
+                    "Tilemaps must use Universal Render Pipeline 2D Sprite-Lit-Default shader");
+
+                // Verify Water Collider Trigger
+                var waterCol = worldTilemaps.WaterTilemap.GetComponent<TilemapCollider2D>();
+                AssertTrue(waterCol != null && waterCol.isTrigger, "WorldTilemaps.WaterColliderIsTrigger",
+                    "Water TilemapCollider2D must have isTrigger = true for player swimming detection");
+            }
+            finally
+            {
+                GameObject.DestroyImmediate(go);
+            }
+        }
+
+        private static void TestRenderPipelineConfiguration()
+        {
+            var urpAsset = PotariaSceneBuilder.EnsureUniversalRenderPipeline2D();
+            AssertTrue(urpAsset != null, "URP2D.PipelineAssetCreated", "UniversalRenderPipelineAsset must be created");
+            AssertTrue(GraphicsSettings.defaultRenderPipeline == urpAsset, "URP2D.GraphicsSettingsAssigned",
+                "GraphicsSettings.defaultRenderPipeline must be assigned to UniversalRenderPipeline2D");
+            AssertTrue(QualitySettings.renderPipeline == urpAsset, "URP2D.QualitySettingsAssigned",
+                "QualitySettings.renderPipeline must be assigned to UniversalRenderPipeline2D");
         }
 
         private static void TestMainWorldSceneBuilding()

@@ -3,6 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
 using UnityEngine.U2D;
@@ -30,6 +31,7 @@ namespace Potaria.Editor
 
             EnsureDirectories();
             SetupSortingLayers();
+            EnsureUniversalRenderPipeline2D();
 
             // 1. Create a fresh scene
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -189,6 +191,53 @@ namespace Potaria.Editor
             if (!Directory.Exists(SCENE_DIR)) Directory.CreateDirectory(SCENE_DIR);
             if (!Directory.Exists(PREFAB_DIR)) Directory.CreateDirectory(PREFAB_DIR);
             AssetDatabase.Refresh();
+        }
+
+        public static UniversalRenderPipelineAsset EnsureUniversalRenderPipeline2D()
+        {
+            EnsureDirectories();
+            string settingsDir = "Assets/Settings";
+            if (!Directory.Exists(settingsDir)) Directory.CreateDirectory(settingsDir);
+
+            string rendererPath = $"{settingsDir}/UniversalRenderPipeline2D_Renderer.asset";
+            string urpAssetPath = $"{settingsDir}/UniversalRenderPipeline2D.asset";
+
+            var urpAsset = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(urpAssetPath);
+            if (urpAsset == null)
+            {
+                var rendererData = AssetDatabase.LoadAssetAtPath<Renderer2DData>(rendererPath);
+                if (rendererData == null)
+                {
+                    rendererData = ScriptableObject.CreateInstance<Renderer2DData>();
+                    AssetDatabase.CreateAsset(rendererData, rendererPath);
+                    ResourceReloader.ReloadAllNullIn(rendererData, "Packages/com.unity.render-pipelines.universal");
+                }
+
+                urpAsset = UniversalRenderPipelineAsset.Create(rendererData);
+                AssetDatabase.CreateAsset(urpAsset, urpAssetPath);
+                ResourceReloader.ReloadAllNullIn(urpAsset, "Packages/com.unity.render-pipelines.universal");
+                AssetDatabase.SaveAssets();
+                Debug.Log($"[PotariaSceneBuilder] Created 2D URP Asset at {urpAssetPath}");
+            }
+
+            if (GraphicsSettings.defaultRenderPipeline != urpAsset)
+            {
+                GraphicsSettings.defaultRenderPipeline = urpAsset;
+                Debug.Log("[PotariaSceneBuilder] Assigned GraphicsSettings.defaultRenderPipeline to UniversalRenderPipeline2D.");
+            }
+            if (QualitySettings.renderPipeline != urpAsset)
+            {
+                QualitySettings.renderPipeline = urpAsset;
+                Debug.Log("[PotariaSceneBuilder] Assigned QualitySettings.renderPipeline to UniversalRenderPipeline2D.");
+            }
+            string[] qualityNames = QualitySettings.names;
+            for (int i = 0; i < qualityNames.Length; i++)
+            {
+                QualitySettings.SetQualityLevel(i, false);
+                QualitySettings.renderPipeline = urpAsset;
+            }
+
+            return urpAsset;
         }
     }
 }

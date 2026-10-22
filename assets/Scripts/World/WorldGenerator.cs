@@ -163,8 +163,14 @@ namespace Potaria.World
 
                 for (int y = surf + 4; y < ChunkData.Height - 25; y++)
                 {
-                    // Dungeon Chamber protection zone at chunk -2..2 deep underground
-                    if (chunkX >= -2 && chunkX <= 2 && y >= WorldConstants.DungeonLevel - 5 && y <= WorldConstants.DungeonLevel + 20)
+                    // Dungeon Chamber protection zones deep underground (y >= 160 && y <= 220)
+                    bool isDungeonZone = (y >= 160 && y <= 220) && (
+                        (chunkX >= -2 && chunkX <= 2) ||   // Nether Dungeon (gx ~0)
+                        (chunkX >= 3 && chunkX <= 7) ||    // Magma Dungeon (gx ~80)
+                        (chunkX >= -7 && chunkX <= -3) ||  // Glacial Crypt (gx ~-80)
+                        (chunkX >= 7 && chunkX <= 11)      // Catacombs (gx ~140)
+                    );
+                    if (isDungeonZone)
                         continue;
 
                     float caveVal = _noiseCaves.Fractal2D(gx * 0.045f, y * 0.045f, 3);
@@ -206,12 +212,12 @@ namespace Potaria.World
                 }
             }
 
-            // 4. Ore Veins (Copper, Iron, Gold)
+            // 4. Ore Veins (Coal, Copper, Iron, Gold, Diamond, Netherite)
             for (int lx = 0; lx < ChunkData.Width; lx++)
             {
                 int gx = chunkX * ChunkData.Width + lx;
                 int surf = chunk.SurfaceHeights[lx];
-                for (int y = surf + 3; y < ChunkData.Height - 30; y++)
+                for (int y = surf + 3; y < ChunkData.Height - 4; y++)
                 {
                     int currentTile = chunk.GetTile(lx, y);
                     if (currentTile == WorldConstants.TileStone || currentTile == WorldConstants.TileDirt ||
@@ -219,12 +225,38 @@ namespace Potaria.World
                         currentTile == WorldConstants.TileIce)
                     {
                         float oreVal = _noiseOres.Fractal2D(gx * 0.12f, y * 0.12f, 2);
-                        if (oreVal > 0.42f && y < WorldConstants.CavernLevel)
-                            chunk.SetTile(lx, y, WorldConstants.TileCopperOre);
-                        else if (oreVal < -0.44f && y > surf + 15 && y < ChunkData.Height - 30)
-                            chunk.SetTile(lx, y, WorldConstants.TileIronOre);
+                        float deepOreVal = _noiseOres.Fractal2D((gx + 500) * 0.15f, (y + 500) * 0.15f, 2);
+
+                        // Netherite: Deepest subterranean strata near Bedrock / Nether dungeon depths
+                        if (deepOreVal < -0.52f && y >= WorldConstants.DungeonLevel - 10)
+                        {
+                            chunk.SetTile(lx, y, WorldConstants.TileNetheriteOre);
+                        }
+                        // Diamond: Rare gem clusters in deep Caverns and lower rock layers
+                        else if (deepOreVal > 0.54f && y >= WorldConstants.CavernLevel)
+                        {
+                            chunk.SetTile(lx, y, WorldConstants.TileDiamondOre);
+                        }
+                        // Gold: Precious metal veins in Caverns
                         else if (oreVal > 0.52f && y > WorldConstants.CavernLevel - 20)
+                        {
                             chunk.SetTile(lx, y, WorldConstants.TileGoldOre);
+                        }
+                        // Copper: Upper to mid underground stratum
+                        else if (oreVal > 0.42f && y < WorldConstants.CavernLevel)
+                        {
+                            chunk.SetTile(lx, y, WorldConstants.TileCopperOre);
+                        }
+                        // Coal: Common combustible ore across surface and upper underground
+                        else if (oreVal > 0.30f && oreVal <= 0.42f && y > surf + 4 && y < WorldConstants.UndergroundLevel + 25)
+                        {
+                            chunk.SetTile(lx, y, WorldConstants.TileCoalOre);
+                        }
+                        // Iron: Sturdy metal veins distributed from mid underground downwards
+                        else if (oreVal < -0.44f && y > surf + 15)
+                        {
+                            chunk.SetTile(lx, y, WorldConstants.TileIronOre);
+                        }
                     }
                 }
             }

@@ -100,6 +100,9 @@ namespace Potaria.World
         public const int TileFarmlandWet = 75;
         public const int TileCrop = 76;
         public const int TileWildPlant = 77;
+        public const int TileCoalOre = 78;
+        public const int TileDiamondOre = 79;
+        public const int TileNetheriteOre = 80;
 
         // Background Wall IDs
         public const int WallAir = 0;

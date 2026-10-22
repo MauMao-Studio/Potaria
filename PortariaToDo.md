@@ -4,7 +4,7 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 47 / 47 World Gen Tests Passing (0 Errors)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing (0 Errors)  
 **Current Milestone:** Milestone 2 Complete (2D Tilemaps, Chunk Streaming & Procedural World Gen); Milestone 3 in Progress (Character Controller, Physics & Action RPG Combat)  
 **Last Updated:** October 2026  
 
@@ -83,7 +83,7 @@ All foundational systems designed and proven during the Pygame prototype phase s
 - **Objective**: Establish the official Unity 6 LTS 2D URP project, migrate all visual/audio assets, and generate 100% typed ScriptableObjects.
 - **Tasks**:
   - [x] Verify standalone duplicate backup on disk (`Potaria_Pygame_Backup`) with 770/770 tests passing.
-  - [x] Detect installed Unity 6 version: **Unity 6000.0.58f1** (`C:\Program Files\Unity\Hub\Editor\6000.0.58f1\Editor\Unity.exe`).
+  - [x] Detect installed Unity 6 version: **Unity 6000.0.58f1** (Unity 6 LTS Editor).
   - [x] Archive complete working Pygame codebase to `pygame-engine` branch and push to GitHub remote `origin`.
   - [x] Synchronize `pre-overhaul-backup` branch with latest Pygame commit (`ae12247`).
   - [x] Initialize Unity 6 project structure on `main` branch with `ProjectVersion.txt` set to `6000.0.58f1`.
@@ -118,7 +118,7 @@ All foundational systems designed and proven during the Pygame prototype phase s
   - [x] Implement 2D URP Dynamic Lighting: Global Light 2D cycling through Day/Night phases (Dawn, Noon, Sunset, Night), Subterranean Darkness depth attenuation, and Point Light 2D components for placed torches and lanterns.
   - [x] Implement 4-block horizontal water hydration simulation for farmland and cave torchlight crop illumination.
   - [x] Construct MainWorld sample scene (`Assets/Scenes/MainWorld.unity`) with Grid, Tilemaps, WorldManager, 2D Lights, and Pixel Perfect Camera (16 PPU).
-  - [x] Verify via automated headless batchmode test runner (`PotariaWorldTest`) with 47/47 tests passing (0 errors).
+  - [x] Verify via automated headless batchmode test runner (`PotariaWorldTest`) with 84/84 tests passing (0 errors).
 
 ---
 
@@ -205,6 +205,8 @@ Development across both engines maintains strict quality baselines:
 - **Result**: 770 passed across 47 suites (100% Green).
 
 ### Unity 6 Verification (Active):
-- **Headless Batchmode Importer**: `PotariaDataImporter.ImportAll` executed with exit code 0.
+- **Headless Batchmode Importers**: `PotariaDataImporter.ImportAll` and `PotariaTileImporter.GenerateAllTileAssets` executed with exit code 0.
 - **Reference Integrity**: 1,775 ScriptableObjects verified (0 missing icons, 0 broken recipe links, 0 unlinked equipment set pieces).
+- **Tile Pipeline**: 73 block tiles, 13 wall tiles, TileDatabase registry, and procedural sprite synthesizers.
+- **World Gen & Systems Verification**: `PotariaWorldTest.RunTests` executed with 84 / 84 tests passing (0 failed, 0 errors).
 - **Compilation Status**: 0 errors, 0 warnings in `Assets/Scripts/`.

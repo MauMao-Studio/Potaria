@@ -58,6 +58,8 @@ namespace Potaria.World
         {
             if (_grid == null) _grid = GetComponent<Grid>();
 
+            Material litMat = GetOrCreateLitMaterial();
+
             // 1. Background Tilemap
             if (backgroundTilemap == null)
             {
@@ -70,10 +72,12 @@ namespace Potaria.World
                 }
                 backgroundTilemap = GetOrAddComponent<Tilemap>(bgObj.gameObject);
             }
-            if (backgroundRenderer == null && backgroundTilemap != null)
+            if (backgroundTilemap != null)
             {
-                backgroundRenderer = GetOrAddComponent<TilemapRenderer>(backgroundTilemap.gameObject);
+                if (backgroundRenderer == null)
+                    backgroundRenderer = GetOrAddComponent<TilemapRenderer>(backgroundTilemap.gameObject);
                 SetSortingLayerSafe(backgroundRenderer, "Background", -10);
+                if (litMat != null) backgroundRenderer.sharedMaterial = litMat;
                 backgroundTilemap.color = new Color(0.6f, 0.6f, 0.65f, 1.0f);
             }
 
@@ -89,10 +93,12 @@ namespace Potaria.World
                 }
                 foregroundTilemap = GetOrAddComponent<Tilemap>(fgObj.gameObject);
             }
-            if (foregroundRenderer == null && foregroundTilemap != null)
+            if (foregroundTilemap != null)
             {
-                foregroundRenderer = GetOrAddComponent<TilemapRenderer>(foregroundTilemap.gameObject);
+                if (foregroundRenderer == null)
+                    foregroundRenderer = GetOrAddComponent<TilemapRenderer>(foregroundTilemap.gameObject);
                 SetSortingLayerSafe(foregroundRenderer, "Foreground", 0);
+                if (litMat != null) foregroundRenderer.sharedMaterial = litMat;
             }
 
             // 3. Configure CompositeCollider2D on Foreground Tilemap
@@ -129,18 +135,22 @@ namespace Potaria.World
                     platObj = newPlat.transform;
                 }
                 platformTilemap = GetOrAddComponent<Tilemap>(platObj.gameObject);
-                var platRenderer = GetOrAddComponent<TilemapRenderer>(platObj.gameObject);
+            }
+            if (platformTilemap != null)
+            {
+                var platRenderer = GetOrAddComponent<TilemapRenderer>(platformTilemap.gameObject);
                 SetSortingLayerSafe(platRenderer, "Foreground", 1);
+                if (litMat != null) platRenderer.sharedMaterial = litMat;
 
-                var platCollider = GetOrAddComponent<TilemapCollider2D>(platObj.gameObject);
+                var platCollider = GetOrAddComponent<TilemapCollider2D>(platformTilemap.gameObject);
                 platCollider.usedByEffector = true;
 
-                var effector = GetOrAddComponent<PlatformEffector2D>(platObj.gameObject);
+                var effector = GetOrAddComponent<PlatformEffector2D>(platformTilemap.gameObject);
                 effector.useOneWay = true;
                 effector.useOneWayGrouping = true;
             }
 
-            // 5. Water Tilemap (Liquid surfaces)
+            // 5. Water Tilemap (Liquid surfaces with trigger collider for swimming)
             if (waterTilemap == null)
             {
                 var waterObj = transform.Find("Water_Tilemap");
@@ -151,10 +161,29 @@ namespace Potaria.World
                     waterObj = newWater.transform;
                 }
                 waterTilemap = GetOrAddComponent<Tilemap>(waterObj.gameObject);
-                var waterRenderer = GetOrAddComponent<TilemapRenderer>(waterObj.gameObject);
-                SetSortingLayerSafe(waterRenderer, "Foreground", 5);
-                waterTilemap.color = new Color(0.3f, 0.6f, 0.95f, 0.75f);
             }
+            if (waterTilemap != null)
+            {
+                var waterRenderer = GetOrAddComponent<TilemapRenderer>(waterTilemap.gameObject);
+                SetSortingLayerSafe(waterRenderer, "Foreground", 5);
+                if (litMat != null) waterRenderer.sharedMaterial = litMat;
+                waterTilemap.color = new Color(0.3f, 0.6f, 0.95f, 0.75f);
+
+                var waterCollider = GetOrAddComponent<TilemapCollider2D>(waterTilemap.gameObject);
+                waterCollider.isTrigger = true;
+            }
+        }
+
+        public Material GetOrCreateLitMaterial()
+        {
+            var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
+            if (shader != null)
+            {
+                var mat = new Material(shader);
+                mat.name = "Tilemap_SpriteLitDefault";
+                return mat;
+            }
+            return null;
         }
 
         private static T GetOrAddComponent<T>(GameObject go) where T : Component
@@ -270,6 +299,12 @@ namespace Potaria.World
                                 fgTiles.Add(tileBase);
                             }
                         }
+
+                        // Point Light 2D for placed torches, lamps, fireplaces, glowing flora
+                        if (tileDef != null && tileDef.LightEmission > 0)
+                        {
+                            SpawnOrUpdateLight(gx, ty, tileDef);
+                        }
                     }
                 }
             }
@@ -294,6 +329,11 @@ namespace Potaria.World
                         fgPositions.Add(cell);
                         fgTiles.Add(tileBase);
                     }
+                }
+
+                if (tileDef != null && tileDef.LightEmission > 0)
+                {
+                    SpawnOrUpdateLight(gx, ty, tileDef);
                 }
             }
 
@@ -320,15 +360,21 @@ namespace Potaria.World
             if (waterTilemap != null && waterPositions.Count > 0)
                 waterTilemap.SetTiles(waterPositions.ToArray(), waterTiles.ToArray());
 
+            if (compositeCollider != null)
+                compositeCollider.GenerateGeometry();
+
             chunk.IsPainted = true;
         }
 
         /// <summary>
-        /// Clears all tiles in a given chunk column from Foreground, Background, and Platform tilemaps.
+        /// Clears all tiles in a given chunk column from Foreground, Background, and Platform tilemaps,
+        /// and recycles all associated 2D point lights.
         /// </summary>
         public void ClearChunk(int chunkX)
         {
             ValidateOrBuildLayers();
+            ClearChunkLights(chunkX);
+
             int width = ChunkData.Width;
             int height = ChunkData.Height;
 
@@ -348,6 +394,9 @@ namespace Potaria.World
 
             ClearBounds(waterTilemap, bounds);
             ClearBounds(waterTilemap, skyBounds);
+
+            if (compositeCollider != null)
+                compositeCollider.GenerateGeometry();
         }
 
         private void ClearBounds(Tilemap tilemap, BoundsInt bounds)
@@ -368,6 +417,8 @@ namespace Potaria.World
             if (platformTilemap != null) platformTilemap.SetTile(cell, null);
             if (waterTilemap != null) waterTilemap.SetTile(cell, null);
 
+            RemoveLight(gx, ty);
+
             if (tileId != WorldConstants.TileAir && tileBase != null)
             {
                 if (tileDef.IsLiquid && waterTilemap != null)
@@ -376,6 +427,110 @@ namespace Potaria.World
                     platformTilemap.SetTile(cell, tileBase);
                 else if (foregroundTilemap != null)
                     foregroundTilemap.SetTile(cell, tileBase);
+
+                if (tileDef.LightEmission > 0)
+                {
+                    SpawnOrUpdateLight(gx, ty, tileDef);
+                }
+            }
+
+            if (compositeCollider != null)
+                compositeCollider.GenerateGeometry();
+        }
+
+        // Point Light 2D Pooling and Lifecycle Management
+        private Transform _lightsContainer;
+        private readonly Dictionary<Vector3Int, GameObject> _activePointLights = new Dictionary<Vector3Int, GameObject>();
+
+        public IReadOnlyDictionary<Vector3Int, GameObject> ActivePointLights => _activePointLights;
+
+        public Transform LightsContainer
+        {
+            get
+            {
+                if (_lightsContainer == null)
+                {
+                    var child = transform.Find("Point_Lights");
+                    if (child == null)
+                    {
+                        var go = new GameObject("Point_Lights");
+                        go.transform.SetParent(transform, false);
+                        child = go.transform;
+                    }
+                    _lightsContainer = child;
+                }
+                return _lightsContainer;
+            }
+        }
+
+        public void SpawnOrUpdateLight(int gx, int ty, TileDefinition def)
+        {
+            if (def == null || def.LightEmission <= 0) return;
+            var cell = GridToCell(gx, ty);
+
+            if (_activePointLights.TryGetValue(cell, out var existing) && existing != null)
+            {
+                return;
+            }
+
+            var cellWorld = CellToWorld(cell) + new Vector3(0.5f, 0.5f, 0f);
+            var lightGo = new GameObject($"PointLight_{gx}_{ty}");
+            lightGo.transform.SetParent(LightsContainer, false);
+            lightGo.transform.position = cellWorld;
+
+            var light2D = lightGo.AddComponent<UnityEngine.Rendering.Universal.Light2D>();
+            light2D.lightType = UnityEngine.Rendering.Universal.Light2D.LightType.Point;
+            light2D.color = def.EmissionColor;
+            light2D.pointLightInnerRadius = 0.5f;
+            light2D.pointLightOuterRadius = def.LightRadius > 0 ? def.LightRadius : 5.0f;
+            light2D.intensity = Mathf.Clamp(def.LightEmission / 12f, 0.5f, 1.3f);
+
+            var pointSrc = lightGo.AddComponent<Lighting.PointLightSource2D>();
+            pointSrc.Configure(def.EmissionColor, light2D.pointLightOuterRadius, light2D.intensity, true);
+
+            _activePointLights[cell] = lightGo;
+        }
+
+        public void RemoveLight(int gx, int ty)
+        {
+            var cell = GridToCell(gx, ty);
+            if (_activePointLights.TryGetValue(cell, out var go))
+            {
+                _activePointLights.Remove(cell);
+                if (go != null)
+                {
+                    if (Application.isPlaying) Destroy(go);
+                    else DestroyImmediate(go);
+                }
+            }
+        }
+
+        public void ClearChunkLights(int chunkX)
+        {
+            int minGx = chunkX * ChunkData.Width;
+            int maxGx = minGx + ChunkData.Width;
+
+            var toRemove = new List<Vector3Int>();
+            foreach (var kvp in _activePointLights)
+            {
+                CellToGrid(kvp.Key, out int gx, out int ty);
+                if (gx >= minGx && gx < maxGx)
+                {
+                    toRemove.Add(kvp.Key);
+                }
+            }
+
+            foreach (var cell in toRemove)
+            {
+                if (_activePointLights.TryGetValue(cell, out var go))
+                {
+                    _activePointLights.Remove(cell);
+                    if (go != null)
+                    {
+                        if (Application.isPlaying) Destroy(go);
+                        else DestroyImmediate(go);
+                    }
+                }
             }
         }
 
