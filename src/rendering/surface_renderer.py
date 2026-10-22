@@ -62,6 +62,9 @@ class SurfaceRenderer(BaseRenderer):
 
     def _sync_window_frame_and_pos(self):
         """Synchronizes SDL2 window borderless frame, size, and position for runtime fullscreen toggling."""
+        import os, sys
+        if "ANDROID_ARGUMENT" in os.environ or "ANDROID_ROOT" in os.environ or hasattr(sys, "getandroidapilevel"):
+            return
         try:
             win_cls = getattr(getattr(pygame, "window", None), "Window", None)
             if win_cls and hasattr(win_cls, "from_display_module"):

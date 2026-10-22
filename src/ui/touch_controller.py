@@ -532,6 +532,8 @@ class TouchController:
             return True
         if os.environ.get("POTARIA_MOBILE") in ("1", "true", "True"):
             return True
+        if "ANDROID_ARGUMENT" in os.environ or "ANDROID_ROOT" in os.environ or hasattr(sys, "getandroidapilevel"):
+            return True
         return False
 
     def add_ripple(self, x, y, color=(255, 255, 255)):

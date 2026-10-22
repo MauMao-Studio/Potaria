@@ -272,8 +272,10 @@ class GLRenderer(BaseRenderer):
         if not pygame.get_init():
             pygame.init()
 
-        if not MODERNGL_AVAILABLE:
-            self._engage_fallback("ModernGL library is not installed in the Python environment")
+        import os, sys
+        is_android = "ANDROID_ARGUMENT" in os.environ or "ANDROID_ROOT" in os.environ or hasattr(sys, "getandroidapilevel")
+        if is_android or not MODERNGL_AVAILABLE:
+            self._engage_fallback("Android platform detected" if is_android else "ModernGL library is not installed in the Python environment")
             return True
 
         if self.title:
@@ -993,6 +995,9 @@ class GLRenderer(BaseRenderer):
 
     def _sync_window_frame_and_pos(self):
         """Synchronizes SDL2 window borderless frame, size, and position for runtime fullscreen toggling."""
+        import os, sys
+        if "ANDROID_ARGUMENT" in os.environ or "ANDROID_ROOT" in os.environ or hasattr(sys, "getandroidapilevel"):
+            return
         try:
             win_cls = getattr(getattr(pygame, "window", None), "Window", None)
             if win_cls and hasattr(win_cls, "from_display_module"):

@@ -6,6 +6,22 @@ Developer: Kurados
 
 import os
 import sys
+
+# Ensure current working directory is anchored to the application root directory (essential on Android/Linux)
+_APP_DIR = os.path.dirname(os.path.abspath(__file__))
+if os.path.isdir(_APP_DIR):
+    try:
+        os.chdir(_APP_DIR)
+    except Exception:
+        pass
+    if _APP_DIR not in sys.path:
+        sys.path.insert(0, _APP_DIR)
+
+# Detect Android mobile environment
+IS_ANDROID = "ANDROID_ARGUMENT" in os.environ or "ANDROID_ROOT" in os.environ or hasattr(sys, "getandroidapilevel")
+if IS_ANDROID:
+    os.environ["POTARIA_MOBILE"] = "1"
+
 import math
 import random
 
@@ -121,13 +137,14 @@ RAW_FISH_TO_INIHAW = {
 class PotariaGame:
     def __init__(self):
         pygame.init()
-        pygame.display.set_caption(f"{TITLE}  |  By {DEVELOPER}")
-        self._pre_load_window_icon()
         # 0. Load persistent user settings FIRST before creating window/renderer
         from src.settings_manager import load_settings, save_settings
         self.settings, self.key_bindings = load_settings()
         self.fullscreen = bool(self.settings.get("fullscreen", False))
-        req_renderer = self.settings.get("renderer", RENDERER_HARDWARE)
+        if IS_ANDROID:
+            req_renderer = RENDERER_SOFTWARE
+        else:
+            req_renderer = self.settings.get("renderer", RENDERER_HARDWARE)
 
         # Initialize Renderer Hardware Abstraction Layer (HAL)
         self.renderer_manager = get_renderer_manager()
@@ -138,6 +155,13 @@ class PotariaGame:
             fullscreen=self.fullscreen,
             requested_type=req_renderer,
         )
+
+        if not IS_ANDROID:
+            try:
+                pygame.display.set_caption(f"{TITLE}  |  By {DEVELOPER}")
+                self._pre_load_window_icon()
+            except Exception:
+                pass
         self.renderer = self.renderer_manager.renderer
         self.screen = self.renderer_manager.surface
         self.ui_screen = self.renderer_manager.ui_surface
@@ -161,10 +185,14 @@ class PotariaGame:
         # 1. Initialize Asset Synthesis Engine
         print(f"[Engine] Synthesizing all procedural Potaria assets (Developer: {DEVELOPER})...")
         self.asset_factory = AssetFactory()
-        self.asset_factory.export_all_assets("assets")
+        try:
+            self.asset_factory.export_all_assets("assets")
+        except Exception as e:
+            print(f"[Engine] Asset verification notice: {e}")
 
         # Set Window Game Icon!
-        self._apply_window_icon()
+        if not IS_ANDROID:
+            self._apply_window_icon()
 
         # 2. Audio Engine (SFX + Procedural Synth BGM)
         self.sound_manager = SoundManager()
@@ -3888,6 +3916,53 @@ class PotariaGame:
             ty = btn.rect.centery - txt_surf.get_height() // 2
             target.blit(txt_surf, (tx, ty))
 
-if __name__ == "__main__":
+def main():
     game = PotariaGame()
     game.run()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        err_msg = traceback.format_exc()
+        print(f"[POTARIA FATAL CRASH]\n{err_msg}", flush=True)
+        try:
+            with open("crash_log.txt", "w", encoding="utf-8") as f:
+                f.write(err_msg)
+        except Exception:
+            pass
+
+        try:
+            if not pygame.get_init():
+                pygame.init()
+            surf = pygame.display.get_surface()
+            if surf is None:
+                surf = pygame.display.set_mode((1280, 720))
+            surf.fill((20, 10, 15))
+            font = pygame.font.SysFont("monospace", 14)
+            lines = [
+                "POTARIA CRASH LOG:",
+                "",
+            ] + err_msg.splitlines() + [
+                "",
+                "Touch screen or press any key to exit...",
+            ]
+            y = 20
+            for line in lines[:38]:
+                txt = font.render(line[:120], True, (255, 120, 120))
+                surf.blit(txt, (20, y))
+                y += 18
+            pygame.display.flip()
+
+            waiting = True
+            clk = pygame.time.Clock()
+            while waiting:
+                clk.tick(15)
+                for ev in pygame.event.get():
+                    if ev.type in (pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN):
+                        waiting = False
+                        break
+        except Exception:
+            pass
+        sys.exit(1)

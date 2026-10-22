@@ -69,8 +69,13 @@ class RendererManager:
         self.height = height
         self.title = title
         self.fullscreen = fullscreen
+        import os, sys
+        is_android = "ANDROID_ARGUMENT" in os.environ or "ANDROID_ROOT" in os.environ or hasattr(sys, "getandroidapilevel")
         req = str(requested_type or "").lower().strip()
-        self.requested_type = RENDERER_SOFTWARE if req == RENDERER_SOFTWARE else RENDERER_HARDWARE
+        if is_android:
+            self.requested_type = RENDERER_SOFTWARE
+        else:
+            self.requested_type = RENDERER_SOFTWARE if req == RENDERER_SOFTWARE else RENDERER_HARDWARE
 
         if self.active_renderer:
             self.active_renderer.cleanup()

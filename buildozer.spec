@@ -28,6 +28,15 @@ version = 1.1.0
 # comma separated e.g. requirements = sqlite3,kivy
 requirements = python3,pygame-ce
 
+# (str) Icon of the application
+icon.filename = %(source.dir)s/assets/branding/game_icon.png
+
+# (str) Presplash of the application
+presplash.filename = %(source.dir)s/assets/branding/presplash_black.png
+
+# (string) Presplash background color (for android toolchain)
+android.presplash_color = #000000
+
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait, sensorPortrait, all)
 orientation = landscape
 
