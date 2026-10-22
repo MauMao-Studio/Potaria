@@ -6,12 +6,13 @@
 **Subgenre:** Survival | Exploration | Crafting | Dungeon Crawler | Character Progression | Bullet-Hell Danmaku | Cooperative Multiplayer  
 **Perspective:** 2D Side-View  
 **Core Inspirations:** Terraria (world sandbox and building), Chroisen (paperdoll equipment and skill trees), Touhou Project (bullet-hell danmaku patterns)  
-**Target Platforms:** PC (Steam / Standalone) and Mobile (Google Play Android)  
-**Engine Architecture:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone, Smart OpenGL HAL)  
+**Target Platforms:** PC (Steam / Steam Deck / Standalone) and Mobile (Google Play Android)  
+**Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP 17.0.3)  
+**Legacy Engine Branch:** Pure Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
-**Player Modes:** Single-Player and 1-5 Player LAN Cooperative Multiplayer  
+**Player Modes:** Single-Player and 1-5 Player Cooperative Multiplayer (FishNet / Steamworks P2P)  
 **World Structure:** Infinite procedurally generated chunk-based open world + Subterranean Dungeon Arenas  
-**Document Version:** v1.7.0  
+**Document Version:** Unity 6 LTS Architecture Edition  
 
 ---
 
@@ -29,7 +30,7 @@ In both profiles, players embody **Spud**, an ordinary potato who sprouted with 
 3. **High-Stakes Combat & Danmaku Precision**: Single-target weapon enforcement paired with Touhou-inspired bullet-hell boss encounters, micro-dodging (52% fair lethal core), and perimeter grazing (+1 MP).
 4. **Vibrant Settlement & Nomadic Trading**: Specialized animated traders that roam the world, retreat into turtle shell defenses when threatened, and offer gear enhancements and 1-Gold repairs.
 5. **Categorized Crafting Depth**: Minecraft-inspired 5-category crafting interface supported by a dedicated asset pipeline isolating craftable gear from droppable items.
-6. **Smart OpenGL Architecture**: Hardware-first OpenGL / ModernGL acceleration for shaders, bloom, and danmaku batching, with automatic safety fallback to Native Pygame-ce Software rendering if OpenGL is unavailable, plus an in-game Video Settings toggle.
+6. **Modern 2D URP Engine Architecture**: Hardware-accelerated 2D Universal Render Pipeline (URP) with 2D Lights, PixelPerfectCamera (16 PPU), ScriptableObject data architecture, and multiplatform export to Steam and Google Play Store, with legacy Pygame-ce engine preserved on `pygame-engine` branch.
 
 ---
 
@@ -261,46 +262,54 @@ Constructing the **Celestial Keystone** at a Work Bench (4 Portal Shards + 4 Gol
 
 ---
 
-# 11. Technical Architecture & Smart OpenGL HAL
+# 11. Technical Architecture & Unity 6 LTS 2D URP Engine
 
-Potaria uses a modular **Smart OpenGL Hardware Abstraction Layer (HAL)** designed for high performance, portability, and zero-compromise cross-platform stability:
+Potaria is architected using **Unity 6 LTS (v6000.0.58f1)** with the **2D Universal Render Pipeline (URP 17.0.3)** for multiplatform deployment across PC (Steam, Steam Deck) and Mobile (Google Play Android):
 
 ```
 +-------------------------------------------------------------+
 |                 Potaria Game Logic & Systems                |
-|       (Combat, World Chunks, Entities, RPG, Networking)     |
+|      (Combat, Inventory, Crafting, Farming, RPG Progression)|
 +------------------------------+------------------------------+
                                |
                +---------------+---------------+
-               |  Renderer Hardware Abstraction|
-               |          Layer (HAL)          |
-               |   (src/rendering/base_renderer) |
+               |   Unity 6 LTS Core Framework  |
+               | (C# Scripts & ScriptableObjects) |
                +-------+---------------+-------+
                        |               |
       +----------------+------+ +------+----------------------+
-      | SurfaceRenderer       | | GLRenderer                  |
-      | (Pygame-ce Software)  | | (ModernGL / OpenGL)         |
-      | 100% Offline Fallback | | Hardware Acceleration       |
-      | Compatibility Mode    | | Shaders, Bloom & Danmaku    |
+      | 2D Universal Render   | | Physics2D & Tilemap Engine  |
+      | Pipeline (URP 17.0.3) | | Dual-Tilemap (Solid/Walls)  |
+      | Pixel Perfect Camera  | | CompositeCollider2D         |
+      | 2D Lights & Post-FX   | | Dynamic Chunk Streaming     |
       +-----------------------+ +-----------------------------+
+                               |
+               +---------------+---------------+
+               | Cross-Platform Input & Network|
+               | Unity Input System / FishNet  |
+               | Steamworks P2P / Mobile Touch |
+               +-------------------------------+
 ```
 
 ### Architectural Principles:
-1. **Host-Authoritative Game State**: Pure Python 3.13 simulation logic completely decoupled from rendering internals.
-2. **Unified BaseRenderer Interface**:
-   - Standardized drawing primitives (`draw_sprite`, `draw_surface`, `draw_rect`, `draw_text`, `draw_line`, `draw_circle`, `clear`, `present`, `get_surface`).
-   - Enables seamless swapping of rendering backends at runtime without altering game logic.
-3. **Smart OpenGL HAL with Graceful Fallback**:
-   - **Hardware-First ModernGL Backend (`GLRenderer`)**: Leverages GPU shaders, bloom post-processing, and hardware batched projectile rendering for ultra-dense bullet-hell encounters.
-   - **Automatic Safety Fallback**: If ModernGL or PyOpenGL is missing, or if GPU context creation fails, the engine safely detects the failure, logs a diagnostic message, and automatically falls back to `SurfaceRenderer` with zero crashes or stalls.
-4. **In-Game Video Settings Toggle**:
-   - Players can toggle between `Renderer: [Hardware (ModernGL) / Compatibility (Software)]` directly in the Settings menu.
-   - Setting choice persists to disk in `saves/settings.json` (`"renderer": "hardware" | "software"`).
-5. **Cross-Platform Delivery Roadmap**:
-   - Stage 1: Renderer Hardware Abstraction Layer (HAL) with BaseRenderer, SurfaceRenderer, GLRenderer fallback, and Settings toggle.
-   - Stage 2: Hardware acceleration, ModernGL batching, GLSL lighting, and dynamic bloom shaders.
-   - Stage 3: Steam PC packaging with Nuitka C-compilation and full controller support.
-   - Stage 4: Google Play Android packaging with virtual touch controls and lifecycle state preservation.
+1. **ScriptableObject Data Layer**:
+   - Centralized, strongly typed data assets for all 1,775 items, recipes, equipment sets, and crops in `Assets/Data/`.
+   - Complete decoupling of gameplay data from runtime instances, enabling data-driven rebalancing without recompilation.
+2. **Dual-Tilemap & Chunk Streaming Architecture**:
+   - Foreground Tilemap (Terrain) with TilemapCollider2D and CompositeCollider2D for smooth, snag-free player locomotion.
+   - Background Tilemap (Walls) for caves, houses, and ambient subterranean depth.
+   - Dynamic chunk streaming manager activating and pooling tilemap chunks around the player camera with zero hitching.
+3. **2D Universal Render Pipeline (URP)**:
+   - Native `UnityEngine.Rendering.Universal.PixelPerfectCamera` configured at 16 Pixels Per Unit ensuring crisp, integer-scaled pixel art across all resolutions.
+   - 2D Lights (Global Light for continuous Day/Night cycles; Point Lights for torches, glowing mushrooms, and celestial spells).
+   - Integrated URP post-processing (bloom for ancient gear auras, danmaku bullets, and celestial boss attacks).
+4. **Cross-Platform Input System**:
+   - New Unity Input System with unified action bindings supporting Keyboard/Mouse, Gamepad (Steam Deck, Xbox, PlayStation), and responsive virtual touch controls for mobile.
+5. **Multiplayer Architecture (FishNet & Steamworks P2P)**:
+   - High-performance, host-authoritative networking supporting 1-5 players.
+   - Seamless Steam lobby matchmaking, friend invites, and direct LAN IP connection.
+6. **Legacy Pygame Engine Archival**:
+   - The verified Pygame-ce prototype (Smart OpenGL HAL, 770 automated regression tests) is permanently preserved on the `pygame-engine` branch for reference and historical parity benchmarking.
 
 ---
 

@@ -1,21 +1,25 @@
 # Potaria Project Deliverables & System Milestones
 
 **Developer:** Kurados  
-**Engine:** Pure Python 3.13 + Pygame-ce 2.5.8 (100% Offline Standalone)  
+**Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP 17.0.3)  
+**Legacy Engine Branch:** Pure Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
-**Rendering Architecture:** Smart OpenGL Hardware Abstraction Layer (HAL) with Safe Fallback  
-**Test Suite Status:** 416 Tests Passing across 38 Test Suites (100% Green)  
-**Current Version:** v0.2.0a (Alpha Prototype)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing (100% Green); 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
+**Current Milestone:** Milestone 1 Complete (Unity 6 Scaffold & Core Data Layer); Milestone 2 in Progress  
+**Current Version:** Unity 6 LTS Milestone 1  
 
 ---
 
 ## 1. Executive Deliverables Summary
 
-Potaria is a production-grade 2D sandbox action RPG combining boundless procedural terrain generation with deep character customization, paperdoll equipment slots, 40 combat skills, bullet-hell boss encounters, animated specialized traders, item enhancement and affixes, and LAN cooperative multiplayer.
+Potaria is an authentic Philippine-themed 2D boundless sandbox action RPG combining boundless procedural terrain generation with deep character customization, paperdoll equipment slots, 40 combat skills, bullet-hell boss encounters, animated specialized traders, item enhancement and affixes, Philippine farming and cooking, and cooperative multiplayer.
 
-The franchise is structured under a unified **One Project Repository** architecture, cleanly separating the boundless sandbox base game ("Potaria") from the narrative campaign flagship ("Potaria: Root Realm"). The graphics pipeline operates via a **Smart OpenGL Hardware Abstraction Layer (HAL)** that defaults to hardware-accelerated ModernGL rendering while providing instant, automatic safety fallback to native Pygame-ce software blitting if OpenGL drivers are missing or uninitialized.
+### Engine Architecture & Commercial Migration:
+To deliver maximum performance, native multiplatform export (Steam PC, Steam Deck, Google Play Store), and seamless peer-to-peer / LAN multiplayer:
+- **Active Development (`main` branch)**: Implemented in **Unity 6 LTS (v6000.0.58f1)** utilizing the 2D Universal Render Pipeline (URP 17.0.3), 2D Tilemap system, C# ScriptableObject data layer, and FishNet / Steamworks P2P networking.
+- **Legacy Foundation (`pygame-engine` branch)**: The complete, working Python 3.13 + Pygame-ce game with Smart OpenGL HAL, 770 automated regression tests, and full gameplay loop is permanently preserved on the `pygame-engine` branch.
 
-All systems are fully verified, regression-tested, and operate completely offline without external network dependencies.
+The franchise operates under a unified **One Project Repository** architecture, cleanly separating the boundless sandbox base game ("Potaria") from the narrative campaign flagship ("Potaria: Root Realm"). All data, sprites, and item logic are synchronized across both engines.
 
 ---
 
@@ -99,6 +103,28 @@ All systems are fully verified, regression-tested, and operate completely offlin
 
 ---
 
+### 2.10 Unity 6 LTS Migration & Core Data Layer (Milestone 1 Deliverables)
+- **Unity 6 LTS Project Scaffold**:
+  - Initialized clean Unity 6000.0.58f1 project with 2D URP 17.0.3, 2D Tilemap, and modern Input System.
+  - Excluded deprecated legacy pixel-perfect package; configured URP's integrated `UnityEngine.Rendering.Universal.PixelPerfectCamera` at 16 Pixels Per Unit.
+- **Sprite & Audio Asset Migration**:
+  - Ingested 2,456 pixel-art PNG sprites into `Assets/Sprites/` with Point (no filter) texture settings, uncompressed format, and 16 PPU.
+  - Generated 36 new crop growth stage sprites in `Assets/Sprites/Crops/` across all 9 native crops (4 growth stages each).
+  - Migrated 34 audio files (sound effects and synth tracks) into `Assets/Audio/`.
+- **C# Data Models**:
+  - Created strongly typed ScriptableObject classes in `Assets/Scripts/Data/`: `ItemData`, `FoodItemData` (with 14 serialized buff parameters), `WeaponItemData`, `EquipmentItemData`, `EquipmentSetData`, `CropData`, and `RecipeData`.
+- **Headless Batchmode Importer**:
+  - Built `PotariaDataImporter.cs` in `Assets/Scripts/Editor/` with CLI entry point `PotariaDataImporter.ImportAll`.
+  - Generated and validated **1,775 ScriptableObject assets**:
+    - 79 Food Items (14 buff parameters serialized)
+    - 9 Crops & 8 Seeds
+    - 136 Materials
+    - 630 Weapons
+    - 705 Equipment Pieces
+    - 27 Equipment Sets (147 piece links)
+    - 181 Crafting Recipes (100% input/output item linkages)
+  - Zero broken references, zero missing icons, and 100% valid GUID linkages.
+
 ## 3. Performance & Optimization Verification
 
 - **Frame Rate Benchmark**: 110+ FPS average under standard gameplay scenes; solid 60+ FPS under heavy stress testing with 50+ active entities.
@@ -108,20 +134,67 @@ All systems are fully verified, regression-tested, and operate completely offlin
 
 ---
 
-## 4. Quality Assurance & Test Coverage
+## 4. Quality Assurance & Multi-Tier Verification
 
-- **Total Test Suites**: 27 distinct suites in `tests/`.
-- **Total Automated Tests**: 357 tests passing with zero errors (100% Green).
+### 1. Unity 6 LTS Verification (Active Production Baseline)
+- **Headless Batchmode Importer**: Executed via `PotariaDataImporter.ImportAll` in headless Unity batchmode (Exit code 0).
+- **ScriptableObject Assets Verified**: **1,775 ScriptableObject assets** validated with zero broken references, zero missing icons, and 100% valid GUID linkages:
+  - 79 Food Items with 14 serialized buff parameters
+  - 9 Philippine Crops & 8 Seeds
+  - 136 Materials
+  - 630 Weapons
+  - 705 Equipment Pieces
+  - 27 Equipment Sets (147 piece links)
+  - 181 Crafting Recipes (100% input/output links)
+- **Compilation Health**: 0 compilation errors, 0 warnings across all C# scripts in `Assets/Scripts/`.
+
+### 2. Pygame-ce Regression Verification (Legacy Foundation Baseline)
+- **Test Runner**: `pytest`
+- **Status**: **770 / 770 automated tests passing with zero errors across 47 test suites (100% Green).**
 - **Headless CI/CD Compatibility**: All tests execute cleanly in dummy video/audio driver environments (`SDL_VIDEODRIVER=dummy`, `SDL_AUDIODRIVER=dummy`).
-- **Regression Protection**: Automated test coverage spans inventory safety, combat calculations, equipment set bonuses, procedural terrain, trader state machines, bullet-hell hitboxes, crafting categories, world persistence, renderer HAL abstraction, GLSL Bloom pipeline, projectile batching, and the Phase 1 Data-Driven Loot & Affix System.
+- **Regression Protection**: Automated test coverage spans inventory safety, combat calculations, equipment set bonuses, procedural terrain, trader state machines, bullet-hell hitboxes, crafting categories, world persistence, renderer HAL abstraction, GLSL Bloom pipeline, projectile batching, and Philippine agriculture/cooking systems.
 
 ---
 
-## 5. Strategic Roadmap Deliverables
+## 5. Strategic Roadmap Deliverables (Unity 6 LTS Implementation)
 
-1. **Stage 1 (Complete)**: Renderer Hardware Abstraction Layer (HAL) decoupling Pygame-ce software blitting from rendering backends, with safe fallback and in-game settings toggle.
-2. **Stage 2 (Complete)**: ModernGL / OpenGL hardware acceleration with GLSL lighting, bloom post-processing shaders, high-density projectile batch rendering, and single-log fallback deduplication.
-3. **Phase 1 Root Realm Expansion (Complete)**: Data-Driven Loot, Rarity & Multi-Affix System (`src/loot/`) and Complete Word/PDF Visual Item Catalogs (`Potaria_Items_Catalog.docx` & `Potaria_Items_Catalog.pdf`).
-4. **Stage 3 (Next)**: Steam PC production packaging via Nuitka C-compilation and gamepad support.
-5. **Stage 4**: Google Play Android packaging with virtual touch controls, Buildozer APK/AAB builds, and lifecycle persistence.
-6. **Flagship Franchise Release**: *Potaria: Root Realm* (Narrative episodic adventure with Heartroot transformations and POTAdex).
+The production roadmap transitions Potaria into a commercial multiplatform release:
+
+1. **Milestone 1: Project Scaffold, Asset Ingestion & Core Data Layer (COMPLETED)**:
+   - Unity 6000.0.58f1 + 2D URP 17.0.3 project setup with clean directory structure and .gitignore.
+   - Preserved working Pygame-ce engine on dedicated `pygame-engine` remote branch.
+   - Ingested 2,456 pixel-art sprites (16 PPU, Point filter) and 34 audio files.
+   - Generated 36 new crop growth stage sprites in `Assets/Sprites/Crops/`.
+   - Created C# data models (`ItemData`, `FoodItemData`, `WeaponItemData`, `EquipmentItemData`, `EquipmentSetData`, `CropData`, `RecipeData`).
+   - Built headless batchmode importer generating 1,775 verified ScriptableObjects (0 broken references).
+2. **Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation (IN PROGRESS)**:
+   - Dual-tilemap architecture: Terrain Tilemap (solid foreground) and Wall Tilemap (ambient background).
+   - Chunk streaming manager handling dynamic generation and culling around camera.
+   - Multi-octave Perlin noise generation for Forest, Desert, Snow, Blight, and Nether Dungeon biomes.
+   - RuleTiles / Terrain Tile palettes for 117+ block types with smooth autotiling.
+   - 2D URP lighting integration (Day/Night global light cycling and subterranean torch point lights).
+3. **Milestone 3: Character Controller, Physics & Action RPG Combat**:
+   - Rigidbody2D + BoxCollider2D player controller with responsive jump physics, coyote time, and jump buffering.
+   - Unity Input System actions supporting Keyboard/Mouse, Gamepad (Steam Deck / Xbox / DualSense), and Touch.
+   - 100-level RPG stat progression curve (HP, MP, ATK, DEF, Crit Rate).
+   - 40 Skill Book abilities with VFX, cooldowns, and bullet-reflection mechanics (`Celestial Reversal`).
+   - Danmaku boss combat system with 52% core lethal hitboxes and perimeter grazing (+1 MP).
+4. **Milestone 4: Inventory, Crafting, Equipment & Responsive UI**:
+   - 40-slot backpack inventory with item stack dragging, splitting, and `[ORGANIZE]` gap compaction.
+   - Dedicated coin purse UI with real-time Copper, Silver, and Gold auto-conversion.
+   - 5-category crafting book with station filtering (Hand, Work Bench, Furnace, Campfire).
+   - Side-by-side equipment comparison tooltip ("katabi") with `[ CURRENTLY EQUIPPED ]` badges.
+   - Visual circular affix socket indicators ((Empty Socket) and (Filled Socket)) adhering to rarity limits.
+   - Bottom-left food buff HUD overlay with hover tooltips and remaining duration meters.
+5. **Milestone 5: Philippine Farming, Tiered Cooking & Fishing Minigame**:
+   - 4-stage visual growth progression for 9 crops with hydration dynamics and subterranean cave lighting.
+   - Timed furnace cooking queues (2.5s-20.0s) with single-food-per-furnace limit and direct fish grilling.
+   - 12.0s tension-based fishing minigame with moving golden sweet spot and escape penalty.
+6. **Milestone 6: Steamworks Integration & P2P / LAN Multiplayer**:
+   - FishNet / Steamworks P2P networking for 1-5 player cooperative multiplayer.
+   - Automatic Steam lobby matchmaking, friend invites, and direct LAN IP fallback.
+   - Client-side prediction and host-authoritative block modification deltas.
+   - Steam Achievements, Cloud Saves, and Steam Deck verification.
+7. **Milestone 7: Multiplatform Commercial Release (Steam & Google Play Store)**:
+   - Production Windows/macOS/Linux Steam builds.
+   - Google Play Store Android AAB export with Scoped Storage, adaptive framerate (60/120 Hz), and touch virtual controls.

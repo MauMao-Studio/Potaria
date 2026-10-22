@@ -1,21 +1,28 @@
 # Potaria - The Spudtastic Adventure
 
 **Developer:** Kurados  
-**Engine:** Pure Python 3.13 + Pygame Community Edition (`pygame-ce` 2.5.8+ with SDL 2.32, 100% Offline Standalone, Zero External Downloads)  
-**Architecture:** Host-Authoritative 2D Sandbox Action RPG (Smart OpenGL HAL with Safe Fallback)  
+**Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP 17.0.3)  
+**Legacy Engine Branch:** Pure Python 3.13 + Pygame Community Edition (`pygame-ce` 2.5.8+ with SDL 2.32, preserved on `pygame-engine` branch)  
+**Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
-**Test Suite Status:** 338 Tests Passing across 26 Test Suites (100% Green)  
-**Version:** v1.7.1  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
+**Current Milestone:** Milestone 1 Complete (Unity 6 Scaffold & Core Data Layer); Milestone 2 in Progress  
+**Version:** Unity 6 LTS Milestone 1  
 
 ---
 
 ## 1. Overview
 
-Potaria is a boundless 2D sandbox action RPG developed by Kurados. You play as Spud, an ordinary potato who sprouted with an extraordinary destiny. Explore an infinite, boundary-free open world populated by diverse biomes, mine valuable ores, discover hidden underground treasure chests, level up your RPG character from Level 1 to 100, equip tiered armor, weapons, and accessories in a classic Chroisen-style paperdoll system, wield ballistic bows, staves, rods, scepters, and celestial blades, master devastating Skill Book spells, trade with nomadic animated merchants, enhance your gear up to +7, carve custom affix slots, dodge intricate bullet-hell danmaku patterns in boss gauntlets, and challenge the two-phase Grand Boss: SOL-RHO THE CELESTIAL TITAN — solo or in LAN Cooperative Multiplayer (1 to 5 Players).
+Potaria is an authentic Philippine-themed boundless 2D sandbox action RPG developed by Kurados. You play as Spud, an ordinary potato who sprouted with an extraordinary destiny. Explore an infinite, boundary-free open world populated by diverse biomes, mine valuable ores, discover hidden underground treasure chests, level up your RPG character from Level 1 to 100, equip tiered armor, weapons, and accessories in a classic Chroisen-style paperdoll system, wield ballistic bows, staves, rods, scepters, and celestial blades, cultivate native Philippine crops, master devastating Skill Book spells, trade with nomadic animated merchants, enhance your gear up to +7, carve custom affix sockets, dodge intricate bullet-hell danmaku patterns in boss gauntlets, and challenge the two-phase Grand Boss: SOL-RHO THE CELESTIAL TITAN - solo or in Cooperative Multiplayer (1 to 5 Players).
 
-The franchise follows a **One Project Repository** architecture:
-- **Potaria (The Base Game)**: Boundless procedural sandbox, mining, building, 129 crafting recipes, casual LAN co-op, and Last Man Standing (LMS) arena combat.
-- **Potaria: Root Realm (The Flagship ARPG)**: Future flagship story campaign featuring narrative chapters, Heartroot world transformation mechanics, the POTAdex journal, and curated puzzle dungeons.
+### Dual-Engine Development Strategy
+To prepare Potaria for commercial release on Steam (PC/Mac/Steam Deck) and the Google Play Store (Android):
+- **Active Development (`main` branch)**: Built on **Unity 6 LTS (v6000.0.58f1)** utilizing the 2D Universal Render Pipeline (URP), 2D Tilemap system, C# ScriptableObject architecture, and FishNet / Steamworks P2P networking.
+- **Legacy Foundation (`pygame-engine` branch)**: The complete, working Python 3.13 + Pygame-ce implementation (with Smart OpenGL HAL, 770 automated unit tests, and full gameplay loop) is permanently preserved on the `pygame-engine` branch.
+
+### Franchise Architecture: One Project Repository
+- **Potaria (The Base Game)**: Boundless procedural sandbox survival, mining, building, 181 crafting recipes, Philippine agriculture, and seamless co-op multiplayer.
+- **Potaria: Root Realm (The Flagship ARPG)**: Narrative episodic story campaign featuring chapter progression, Heartroot world transformation mechanics, the POTAdex journal, and curated subterranean puzzle dungeons.
 
 ---
 
@@ -236,13 +243,23 @@ Potaria features an asynchronous chunk streaming engine (`ChunkManager`). World 
 
 ## 11. Automated Regression & System Verification
 
-Potaria includes an automated regression test suite covering all gameplay mechanics, difficulty modes, world persistence, networking, and rendering:
+Potaria maintains rigorous multi-tier verification across both engine baselines:
 
-```powershell
-python -m unittest discover -s tests
-```
+### 1. Unity 6 LTS Verification (Active Production Baseline)
+- **Headless Batchmode Importer**: Executed via `PotariaDataImporter.ImportAll` in headless Unity batchmode (Exit code 0).
+- **ScriptableObject Assets Verified**: **1,775 ScriptableObject assets** validated with zero broken references, zero missing icons, and 100% valid GUID linkages:
+  - 79 Food Items with 14 serialized buff parameters
+  - 9 Philippine Crops & 8 Seeds
+  - 136 Materials
+  - 630 Weapons
+  - 705 Equipment Pieces
+  - 27 Equipment Sets (147 piece links)
+  - 181 Crafting Recipes (100% input/output links)
+- **Compilation Health**: 0 compilation errors, 0 warnings across all C# scripts in `Assets/Scripts/`.
 
-**Status:** **357 / 357 automated tests passing with zero errors across 27 test suites (100% Green).**
+### 2. Pygame-ce Regression Verification (Legacy Foundation Baseline)
+- **Test Runner**: `pytest`
+- **Status**: **770 / 770 automated tests passing with zero errors across 47 test suites (100% Green).**
 
 ### Key Test Coverage:
 1. Procedural generation & chunk baking (`test_game.py`).
@@ -265,46 +282,104 @@ python -m unittest discover -s tests
 
 ---
 
-## 12. Strategic Technical Roadmap (Smart OpenGL Architecture)
+## 12. Strategic Technical Roadmap (Unity 6 LTS Implementation)
 
-To release Potaria across PC (Steam) and mobile (Google Play Store) with maximum performance:
+The production roadmap transitions Potaria from the verified Pygame foundation into an enterprise-grade Unity 6 LTS multiplatform release:
 
-1. **Stage 1: Renderer Hardware Abstraction Layer (HAL) (Complete)**:
-   - Decoupled game logic from Pygame software blitting via abstract `BaseRenderer` interface.
-   - Wrapped native Pygame-ce software blitting in `SurfaceRenderer` (100% backward compatible).
-   - Implemented `GLRenderer` with safe ModernGL / OpenGL context detection, texture caching, and automatic fallback.
-   - Wired `RendererManager` into `main.py` and persistent settings (`saves/settings.json`).
-   - Integrated Video Settings toggle: `Renderer: [Hardware (ModernGL) / Compatibility (Software)]`.
-2. **Stage 2: Hardware Acceleration & ModernGL Visuals (Complete)**:
-   - High-density projectile batch rendering for hundreds of bullet-hell projectiles at 144+ FPS via `draw_projectiles_batch`.
-   - GLSL bloom post-processing fragment shaders for Ancient weapon/armor radiant visual auras, celestial stars, and boss danmaku projectiles.
-   - Interactive in-game Video Settings toggles: `Renderer: [Hardware (ModernGL) / Compatibility (Software)]` and `Bloom Shaders: [BLOOM SHADERS: ON / OFF]`.
-   - Single-log fallback deduplication eliminating repetitive console warning spam.
-3. **Phase 1 Root Realm Expansion: Data-Driven Loot & Affix System (Complete)**:
-   - Standardized 1,461-item registry (`src/loot/item_registry.py`), 4-layer item model (`src/loot/affix_engine.py`, `src/loot/rarity_engine.py`), 9 canonical affixes (`data/affixes/affixes.json`), 3-path loot acquisition (`src/loot/loot_system.py`), and complete Word/PDF visual catalogs (`Potaria_Items_Catalog.docx`, `Potaria_Items_Catalog.pdf`).
-4. **Stage 3: Steam PC Production Packaging (Next)**:
-   - Package standalone executable via Nuitka C-compilation.
-   - Full Steam Deck and XInput/DirectInput gamepad controller integration.
-5. **Stage 4: Google Play Android Packaging**:
-   - Buildozer / python-for-android pipeline producing ARM64 APK and AAB bundles.
-   - Integrated virtual touch controls with haptic feedback.
-6. **Franchise Expansion**:
-   - Flagship campaign release: *Potaria: Root Realm* (Narrative episodic adventure with Heartroot transformations and POTAdex).
+### Milestone 1: Project Scaffold, Asset Ingestion & Core Data Layer (COMPLETED)
+- Configured Unity 6 LTS (v6000.0.58f1) with 2D URP 17.0.3, 2D Tilemap, and Input System.
+- Created standalone backup and published `pygame-engine` archival branch to origin.
+- Ingested 2,456 pixel-art sprites into `Assets/Sprites/` (16 PPU, Point filter) and 34 audio files into `Assets/Audio/`.
+- Generated 36 new crop growth stage sprites in `Assets/Sprites/Crops/`.
+- Created typed C# data models in `Assets/Scripts/Data/`.
+- Implemented headless batchmode importer generating 1,775 verified ScriptableObjects (0 broken references).
+
+### Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation (IN PROGRESS)
+- Dual-tilemap architecture: Terrain Tilemap (solid foreground) and Wall Tilemap (ambient background).
+- Chunk streaming manager handling dynamic generation and culling around the camera.
+- Multi-octave Perlin noise generation for Forest, Desert, Snow, Blight, and Nether Dungeon biomes.
+- RuleTiles / Terrain Tile palettes for 117+ block types with smooth autotiling.
+- 2D URP lighting integration (Day/Night global light cycling and subterranean torch point lights).
+
+### Milestone 3: Character Controller, Physics & Action RPG Combat
+- Rigidbody2D + BoxCollider2D player controller with responsive jump physics, coyote time, and jump buffering.
+- Unity Input System actions supporting Keyboard/Mouse, Gamepad (Steam Deck / Xbox / DualSense), and Touch.
+- 100-level RPG stat progression curve (HP, MP, ATK, DEF, Crit Rate).
+- 40 Skill Book abilities with VFX, cooldowns, and bullet-reflection mechanics (`Celestial Reversal`).
+- Danmaku boss combat system with 52% core lethal hitboxes and perimeter grazing (+1 MP).
+
+### Milestone 4: Inventory, Crafting, Equipment & Responsive UI
+- 40-slot backpack inventory with item stack dragging, splitting, and `[ORGANIZE]` gap compaction.
+- Dedicated coin purse UI with real-time Copper, Silver, and Gold auto-conversion.
+- 5-category crafting book with station filtering (Hand, Work Bench, Furnace, Campfire).
+- Side-by-side equipment comparison tooltip ("katabi") with `[ CURRENTLY EQUIPPED ]` badges.
+- Visual circular affix socket indicators ((Empty Socket) and (Filled Socket)) adhering to rarity limits.
+- Bottom-left food buff HUD overlay with hover tooltips and remaining duration meters.
+
+### Milestone 5: Philippine Farming, Tiered Cooking & Fishing Minigame
+- 4-stage visual growth progression for 9 crops with hydration dynamics and subterranean cave lighting.
+- Timed furnace cooking queues (2.5s-20.0s) with single-food-per-furnace limit and direct fish grilling.
+- 12.0s tension-based fishing minigame with moving golden sweet spot and escape penalty.
+
+### Milestone 6: Steamworks Integration & P2P / LAN Multiplayer
+- FishNet / Steamworks P2P networking for 1-5 player cooperative multiplayer.
+- Automatic Steam lobby matchmaking, friend invites, and direct LAN IP fallback.
+- Client-side prediction and host-authoritative block modification deltas.
+- Steam Achievements, Cloud Saves, and Steam Deck verification.
+
+### Milestone 7: Multiplatform Commercial Release (Steam & Google Play Store)
+- Production Windows/macOS/Linux Steam builds.
+- Google Play Store Android AAB export with Scoped Storage, adaptive framerate (60/120 Hz), and touch virtual controls.
 
 ---
 
-## 13. How to Run the Game
+## 13. Getting Started & How to Run
 
-### Prerequisites
-- Python 3.10 or higher
-- **Pygame Community Edition (`pygame-ce`)** 2.5 or higher:
-  ```powershell
-  pip install pygame-ce
-  ```
+### Option A: Unity 6 LTS (Active Main Branch)
 
-### Start Potaria
+#### Prerequisites:
+- **Unity Hub** installed.
+- **Unity 6000.0.58f1 (Unity 6 LTS)** installed with:
+  - Windows / Mac / Linux Build Support
+  - Android Build Support (OpenJDK, Android SDK & NDK tools)
+
+#### Opening the Project:
+1. Clone the repository:
+   ```powershell
+   git clone https://github.com/MauMao-Studio/Potaria.git
+   ```
+2. Open Unity Hub, click **Add project from disk**, and select the `Potaria` directory.
+3. Select Editor Version **6000.0.58f1**.
+4. Unity will resolve dependencies via `Packages/manifest.json`.
+5. All ScriptableObjects and assets are pre-imported and ready to inspect in `Assets/Data/` and `Assets/Sprites/`.
+
+#### Re-running the Data Importer (Optional):
+In the Unity Editor menu bar, select:
+`Potaria -> Import All Data from Pygame`
+Or run headlessly via command line:
 ```powershell
+Unity.exe -batchmode -quit -projectPath . -executeMethod PotariaDataImporter.ImportAll -logFile -
+```
+
+---
+
+### Option B: Pygame-CE Legacy Engine (Archival Branch)
+
+The complete Python 3.13 + Pygame-ce game is preserved on the `pygame-engine` branch:
+
+#### Running the Legacy Build:
+```powershell
+git checkout pygame-engine
+python -m venv .potaria_venv
+.potaria_venv\Scripts\activate
+pip install -r requirements.txt
 python main.py
+```
+
+#### Running the Pygame Automated Test Suite:
+```powershell
+pytest
+# Verified: 770 passed across 47 suites (100% Green)
 ```
 
 ---

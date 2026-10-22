@@ -10,7 +10,8 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
-| **v0.2.9a** | October 2026 | *Philippine Farming System, Tiered Cooking Durations, Fishing Escape Timer & Android APK Architecture (Current Active Build)* | Authentic Philippine farming system with 8 native crops (Rice/Palay, Garlic, Onion, Ginger, Eggplant, String Beans, Tamarind, Calamansi) with 4-stage visual growth, bamboo/iron hoes, infinite watering can, 4-block horizontal water hydration radius, cave torchlight illumination farming, wild plant spawning and seed harvesting; tiered food cooking duration (2.5s-20.0s) with single-food-per-furnace active cooking queues and direct raw fish grilling into Inihaw na [Fish]; 12.0s fishing countdown timer with sweet-spot bonus and escape penalty; responsive multi-aspect Android touch viewport (16:9 to 20:9) with buildozer.spec targeting API 30-34 (Android 11-15); robust save/load persistence for crops, active furnaces, and soil hydration timers; and 770 tests passing across 47 suites (100% Green). |
+| **v1.0.0-unity-milestone1** | October 2026 | *Unity 6 LTS Engine Transition, Project Scaffold, Asset Ingestion & Core Data Layer (Milestone 1 Complete)* | Completed Milestone 1 of the Unity 6 LTS migration: transitioned primary engine from Pygame-ce 2.5.8 to Unity 6 LTS (v6000.0.58f1) with 2D Universal Render Pipeline (URP 17.0.3); verified standalone physical backup of legacy Pygame engine (770/770 tests passing, 100% Green); created and published dedicated archival branch pygame-engine on remote origin; established clean Unity 6 directory structure (Assets/, Packages/, ProjectSettings/); configured Packages/manifest.json with 2D URP, 2D Tilemap, 2D Sprite, Input System, and TextMeshPro; migrated and re-imported 2,456 pixel-art sprites to Assets/Sprites/ with Point (no filter) texture settings, uncompressed format, and 16 Pixels Per Unit; generated 36 new crop growth stage sprites in Assets/Sprites/Crops/ (4 stages each for 9 crops); migrated 34 audio files into Assets/Audio/; created typed C# data models in Assets/Scripts/Data/ (ItemData, FoodItemData, WeaponItemData, EquipmentItemData, EquipmentSetData, CropData, RecipeData); developed headless batchmode importer PotariaDataImporter.ImportAll generating and verifying 1,775 ScriptableObject assets (79 food items with 14 serialized buff parameters, 9 crops, 8 seeds, 136 materials, 630 weapons, 705 equipment pieces, 27 equipment sets with 147 piece links, 181 recipes with 100% linked items) with zero broken references, zero missing icons, and 100% valid GUID linkages. |
+| **v0.2.9a** | October 2026 | *Philippine Farming System, Tiered Cooking Durations, Fishing Escape Timer & Android APK Architecture (Legacy Pygame Final)* | Authentic Philippine farming system with 8 native crops (Rice/Palay, Garlic, Onion, Ginger, Eggplant, String Beans, Tamarind, Calamansi) with 4-stage visual growth, bamboo/iron hoes, infinite watering can, 4-block horizontal water hydration radius, cave torchlight illumination farming, wild plant spawning and seed harvesting; tiered food cooking duration (2.5s-20.0s) with single-food-per-furnace active cooking queues and direct raw fish grilling into Inihaw na [Fish]; 12.0s fishing countdown timer with sweet-spot bonus and escape penalty; responsive multi-aspect Android touch viewport (16:9 to 20:9) with buildozer.spec targeting API 30-34 (Android 11-15); robust save/load persistence for crops, active furnaces, and soil hydration timers; and 770 tests passing across 47 suites (100% Green). |
 | **v0.2.8a** | October 2026 | *Skills, Boss Signature Attacks & Timed Projectile Reflection Integration* | Full integration of Potaria Skills and Bosses Design Spec: Ancient skill `celestial_reversal` (evolves to Celestial Mirror) with dynamic projectile reflection, reflection budget (12-24), 0.40s-0.52s active timing window, 1.5x damage amplification, and celestial gold/cyan shimmer; 19 new active combat skills with 32x32 icons in `assets/skills/`; 4 dungeon mini-boss signature attacks (`blight_apocalypse`, `caldera_catastrophe`, `absolute_zero`, `kingdom_of_the_unburied`) with animated 8-frame telegraph VFX; projectile preview contact sheet at `assets/projectiles/preview_contact_sheet.png` and `docs/projectiles_preview.png`; updated `UNIQUE_ASSETS_TRACKER.md` (2,445 verified unique assets with 0 collisions); and 736 tests passing across 46 suites (100% Green). |
 | **v0.2.7a** | October 2026 | *Potaria Projectile Asset Library Procedural Synthesis & Asset Registry Integration* | Procedural high-art synthesis of all 40 projectile specifications (P01 to P40) from Potaria Projectile Asset Library (crisp 32x32 pixel art, transparent backgrounds, strict palette and silhouette adherence, clean dark outlines, 0 stray pixels), dedicated `ProjectileRegistry` in `src/assets/projectile_factory.py` with multi-alias lookups (`canonical`, `snake_case`, `ID`, `id_lower`, `.png`, path stems), full dict protocol support (`copy`, `pop`, `setdefault`, `del`), public builder functions, automatic disk export to `assets/projectiles/` (58 unique projectile assets, zero collisions), updated `UNIQUE_ASSETS_TRACKER.md` (2,370 verified unique assets), and 714 tests passing across 45 suites (100% Green). |
 | **v0.2.6a** | October 2026 | *Weapon Skill Ordering & Streamlined Circular Affix Sockets UI* | Tooltip structure overhaul placing innate weapon skills/perks before affix slots, clean single-line circular socket indicators (`(○)` empty and `(●)` filled) adhering to item rarity socket limits (Epic: 1, Legendary: 1, Mythic: 2, Ancient: 2, Common/Uncommon/Rare: 0), total elimination of confusing 3-line status clutter (`AFFIX SLOTS`, `CARVED AFFIX SLOTS`, `[AVAILABLE TO CARVE]`), active affix deduplication in weapon skills, non-gear item socket exclusion, unified across HUD, Inventory, Chests, Character Panel, and NPC Dialogue windows, and 697 tests passing across 44 suites (100% Green). |
@@ -44,7 +45,46 @@
 
 ## Detailed Version Logs
 
-### [v0.2.9a] — Philippine Farming System, Tiered Cooking Durations, Fishing Escape Timer & Android APK Architecture (Current Release)
+### [v1.0.0-unity-milestone1] - Unity 6 LTS Engine Transition, Project Scaffold, Asset Ingestion & Core Data Layer (Current Active Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Unity 6 LTS (v6000.0.58f1) + 2D URP Project Scaffold**:
+  - Successfully migrated primary development environment from Pygame-ce to Unity 6 LTS (6000.0.58f1) with 2D Universal Render Pipeline (URP 17.0.3).
+  - Configured project package manifest (Packages/manifest.json) targeting 2D URP, 2D Tilemap, 2D Sprite, Input System, and TextMeshPro packages.
+  - Excluded deprecated legacy com.unity.2d.pixel-perfect package in favor of URP's native integrated UnityEngine.Rendering.Universal.PixelPerfectCamera.
+  - Added industry-standard Unity .gitignore to keep working trees clean and exclude transient build artifacts (Library/, Temp/, Obj/, Build/, Logs/, UserSettings/).
+- **Complete Physical Backup & Dedicated Engine Branching**:
+  - Created standalone physical backup of legacy Pygame engine codebase (verified 770/770 tests passing, 100% Green).
+  - Created and published pygame-engine branch to remote origin (https://github.com/MauMao-Studio/Potaria.git), preserving the complete 100% offline standalone Pygame codebase for historical reference and benchmarking.
+  - Active main branch transitioned to Unity 6 LTS production.
+- **Pixel Art & Audio Asset Migration**:
+  - Migrated 2,456 pixel-art PNG sprites into Assets/Sprites/ organized by category (backgrounds, boss, craftable_items, cutscene, effects, items, mobs, npc, player, projectiles, skills, story, tiles, ui, walls).
+  - Standardized texture import settings: Texture Type Sprite (2D and UI), Sprite Mode Single, Pixels Per Unit 16, Filter Mode Point (no filter), Compression None (RGBA 32-bit crisp pixel art).
+  - Generated 36 new crop growth stage sprites in Assets/Sprites/Crops/ across all 9 native crops (Rice, Garlic, Onion, Ginger, Eggplant, String Beans, Tamarind, Calamansi, and Potato), providing 4 visual growth stages per crop.
+  - Migrated 34 audio files (WAV sound effects and synth soundtracks) into Assets/Audio/.
+- **C# Data Models & ScriptableObject Architecture**:
+  - Implemented typed, serialized C# data classes in Assets/Scripts/Data/:
+    - ItemData.cs: Base class with itemId, itemName, description, category, rarity, value, maxStack, and sprite reference.
+    - FoodItemData.cs: Subclass of ItemData with healAmount, mealCategory (Offense, Defense, Mobility, Resource, Utility), duration, and 14 serialized stat buff modifiers.
+    - WeaponItemData.cs: Subclass of ItemData with baseDamage, attackSpeed, critChance, critMultiplier, armorPenetration, knockback, and weaponSkill.
+    - EquipmentItemData.cs: Subclass of ItemData with slotType (Head, Chest, Legs, Accessory, Shield), defense, magicResist, maxAffixSlots, and setId.
+    - EquipmentSetData.cs: ScriptableObject defining set bonuses with piece requirements and linked piece references.
+    - CropData.cs: ScriptableObject defining growth stages, days to mature, hydration requirements, seed item link, harvest item link, and harvest yield ranges.
+    - RecipeData.cs: ScriptableObject defining crafting station, category, ingredients (ItemData + quantity), result item, result quantity, and crafting time.
+- **Automated Batchmode Importer & Asset Generation**:
+  - Built PotariaDataImporter.cs in Assets/Scripts/Editor/ with headless CLI execution capability (-executeMethod PotariaDataImporter.ImportAll).
+  - Generated and validated 1,775 ScriptableObject assets on disk:
+    - 79 food items with 14 serialized buff attributes.
+    - 9 crops and 8 seeds.
+    - 136 materials.
+    - 630 weapons.
+    - 705 equipment pieces.
+    - 27 equipment sets linking 147 armor pieces.
+    - 181 crafting recipes with 100% linked input and output items.
+  - Automated reference integrity validation: 0 broken recipe links, 0 unlinked equipment set pieces, 0 missing icons, and 100% valid GUID linkages.
+
+### [v0.2.9a] - Philippine Farming System, Tiered Cooking Durations, Fishing Escape Timer & Android APK Architecture (Legacy Pygame Final)
 *Release Date: October 2026*
 
 #### Added & Improved

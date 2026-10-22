@@ -11,6 +11,17 @@
 - **Synthesis Pipeline Mode**: Procedural High-Art Pixel Engine + Gemini API Ready
 - **Resume Protocol**: If execution stops due to token or quota limits, inspect `Last Processed Asset` above or `assets/asset_generation_checkpoint.json` to resume from the exact next index.
 
+
+
+## 1.1 Unity 6 LTS Asset Ingestion & Migration Status
+
+- **Unity 6 Sprite Directory**: `Assets/Sprites/`
+- **Total Sprites Ingested**: 2,456 PNG assets across 17 category folders
+- **Crop Growth Stage Sprites Added**: 36 PNG assets in `Assets/Sprites/Crops/` (4 growth stages for each of the 9 crops: Rice, Garlic, Onion, Ginger, Eggplant, String Beans, Tamarind, Calamansi, Potato)
+- **Audio Assets Migrated**: 34 sound effects and soundtrack files in `Assets/Audio/`
+- **Import Configuration**: Sprite (2D and UI), 16 Pixels Per Unit, Point (no filter), Compression None (RGBA 32-bit crisp pixel art)
+- **ScriptableObject Asset Linkage**: All 1,775 generated ScriptableObjects in `Assets/Data/` verified with 100% valid Sprite GUID linkages (0 missing icons or broken sprite references)
+
 ## 2. Asset Folder Breakdown
 
 | Asset Directory | Total PNG Files | Verification Status |

@@ -13,6 +13,8 @@ Press any of the following keys during gameplay:
 
 Type your command and press **`Enter`** to execute. Press **`Escape`** to dismiss the console.
 
+*(Note: In Unity 6 LTS, these developer console commands and item IDs are mapped to the Unity Input System and query the centralized ScriptableObject database in `Assets/Data/Items/`).*
+
 ---
 
 ## 2. Command Reference

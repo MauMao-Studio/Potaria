@@ -95,3 +95,33 @@ Or run directly with logcat monitoring:
 ```bash
 buildozer android deploy run logcat
 ```
+
+---
+
+## 5. Unity 6 LTS Android Build Pipeline (Current Active Engine)
+
+With the engine transition to **Unity 6 LTS (v6000.0.58f1)**, Android packaging is streamlined into Unity's enterprise-grade native compilation pipeline:
+
+### Advantages of the Unity 6 Android Pipeline:
+- **IL2CPP Compilation**: Converts C# into native C++ code compiled ahead-of-time (AOT) by the Android NDK, delivering console-grade CPU performance and high framerates (60 to 120 FPS).
+- **Google Play App Bundle (.aab)**: Generates optimized `.aab` packages ready for the Google Play Console with dynamic feature delivery and asset packs.
+- **Native Touch & Input System**: Touch events are processed with hardware sub-frame accuracy, eliminating touch input lag.
+- **Universal Render Pipeline (URP 2D)**: Hardware-accelerated rendering utilizing Vulkan or OpenGL ES 3.2 with dynamic resolution scaling.
+- **Zero Recipe / C-Extension Mismatches**: Completely eliminates Python C-extension build issues (`python-for-android`, `sdl2`, `cython` build mismatches).
+
+### How to Build APK or AAB in Unity 6:
+1. Open the project in **Unity 6000.0.58f1**.
+2. Go to **File -> Build Settings** (`Ctrl + Shift + B`).
+3. Select **Android** in the platform list and click **Switch Platform**.
+4. Click **Player Settings...**:
+   - **Company Name**: `MauMao Studio`
+   - **Product Name**: `Potaria`
+   - **Package Name**: `com.maumao.potaria`
+   - **Minimum API Level**: `Android 11.0 (API Level 30)`
+   - **Target API Level**: `Android 14.0 / 15.0 (API Level 34 / 35)`
+   - **Scripting Backend**: `IL2CPP`
+   - **Target Architectures**: Check `ARMv7` and `ARM64`
+5. To generate an APK for direct testing, click **Build** and choose an output path (e.g. `Builds/Android/Potaria.apk`).
+6. To generate a Google Play Store submission package, check **Build App Bundle (Google Play)** and click **Build**.
+
+*(Note: The Buildozer and python-for-android instructions in Section 4 are preserved for building the legacy Pygame engine on the `pygame-engine` branch).*
