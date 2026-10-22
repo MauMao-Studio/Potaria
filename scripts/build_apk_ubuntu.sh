@@ -33,6 +33,9 @@ sudo apt-get install -y --no-install-recommends \
     autoconf \
     automake \
     libtool \
+    libltdl-dev \
+    autopoint \
+    gettext \
     python3 \
     python3-dev \
     python3-pip \
@@ -91,6 +94,12 @@ if [ ! -f "buildozer.spec" ]; then
     exit 1
 fi
 echo "Verified workspace root: $PROJECT_ROOT"
+
+# Clean any previous failed build state to ensure clean configure pass
+if [ -d ".buildozer/android/platform/build-arm64-v8a" ]; then
+    echo "Cleaning previous build cache to ensure autoconf/libtool recompiles cleanly..."
+    buildozer android clean || rm -rf .buildozer/android/platform/build-*
+fi
 
 # Step 5: Execute Buildozer build
 echo ""

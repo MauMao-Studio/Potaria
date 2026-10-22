@@ -63,6 +63,7 @@ sudo apt update && sudo apt install -y git curl && ([ -d Potaria ] || git clone 
 ### Manual Prerequisites
 - Python 3.10+ or Python 3.11
 - OpenJDK 17
+- Build tools: `autoconf`, `automake`, `libtool`, `libltdl-dev`, `autopoint`, `gettext`, `pkg-config`, `cmake`, `ccache`
 - Android SDK (API 30 through 34) and Android NDK (r25b or r26b)
 - Buildozer (`pip install buildozer`) or python-for-android (`p4a`)
 
