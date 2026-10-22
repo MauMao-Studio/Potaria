@@ -1,0 +1,1580 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd0831df710fc141a99550b3e9cd63a, type: 3}
+  m_Name: TileDatabase
+  m_EditorClassIdentifier: 
+  tileDefinitions:
+  - tileId: 0
+    tileName: Air
+    isWall: 0
+    hardness: 0
+    requiredTool: 0
+    isIndestructible: 0
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 1
+    tileName: Dirt
+    isWall: 0
+    hardness: 15
+    requiredTool: 3
+    isIndestructible: 0
+    dropItemId: dirt_block
+    minedDrop: {fileID: 11400000, guid: d421700ff4711b24cbc099cab00e9abf, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: d04c4ef48552a9947afc9763f78bb4b3, type: 2}
+  - tileId: 2
+    tileName: Grass
+    isWall: 0
+    hardness: 18
+    requiredTool: 3
+    isIndestructible: 0
+    dropItemId: dirt_block
+    minedDrop: {fileID: 11400000, guid: d421700ff4711b24cbc099cab00e9abf, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 774765711ccde3b4999a276a4d4a8f3e, type: 2}
+  - tileId: 3
+    tileName: Stone
+    isWall: 0
+    hardness: 35
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: stone_block
+    minedDrop: {fileID: 11400000, guid: 28fa40ec5a4dfd541bb6193e9b7bc500, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: f6dd1b60dc089544ea70652b4bcdbbd0, type: 2}
+  - tileId: 4
+    tileName: Wood
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wood
+    minedDrop: {fileID: 11400000, guid: 8f9e2650d0bccf24094137a9bec1a2ee, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: bc8bff49d2030d944af1773d55c8207d, type: 2}
+  - tileId: 5
+    tileName: Leaves
+    isWall: 0
+    hardness: 5
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: leaves
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 1
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: f0c7ec4bde14d5c48a8ad536678fd5db, type: 2}
+  - tileId: 6
+    tileName: Wood Trunk
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wood
+    minedDrop: {fileID: 11400000, guid: 8f9e2650d0bccf24094137a9bec1a2ee, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 1775acad8a163044f9de196c5007232e, type: 2}
+  - tileId: 7
+    tileName: Copper Ore
+    isWall: 0
+    hardness: 40
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: copper_ore
+    minedDrop: {fileID: 11400000, guid: 466feb969453eb54b9ccdc479a277271, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 7d49f68c1af823e44816195f233b4108, type: 2}
+  - tileId: 8
+    tileName: Iron Ore
+    isWall: 0
+    hardness: 45
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: iron_ore
+    minedDrop: {fileID: 11400000, guid: c56c2ccf548cd864cbbbdf70a68dfd43, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: c285dea6edff9a34c860d45d65056dea, type: 2}
+  - tileId: 9
+    tileName: Gold Ore
+    isWall: 0
+    hardness: 55
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: gold_ore
+    minedDrop: {fileID: 11400000, guid: 9e9d1ff5c8d412d4080702f4eab473a1, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 1
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 2229b87431abe3d468c7a4f5697da893, type: 2}
+  - tileId: 10
+    tileName: Wood Platform
+    isWall: 0
+    hardness: 10
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wood_platform
+    minedDrop: {fileID: 11400000, guid: a068f3b67a036854883353577950b654, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: c8fc6ecf4db0bba46ab0d8fe23f47b0b, type: 2}
+  - tileId: 11
+    tileName: Work Bench
+    isWall: 0
+    hardness: 25
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: work_bench
+    minedDrop: {fileID: 11400000, guid: c0e0c73b6d6758a4e84a70d2c54e7343, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: a75a9a9f739d2ae4ba5aabd5b3eb54d8, type: 2}
+  - tileId: 12
+    tileName: Furnace
+    isWall: 0
+    hardness: 40
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: furnace
+    minedDrop: {fileID: 11400000, guid: dcdc1b3d56e83d642a0bc0597e037611, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 8
+    lightRadius: 8
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 7bd336ef582c2bf429ab7d08dec8be07, type: 2}
+  - tileId: 13
+    tileName: Torch
+    isWall: 0
+    hardness: 5
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: torch
+    minedDrop: {fileID: 11400000, guid: d531f9084035d1a41a3f173f1720b7cb, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 10
+    lightRadius: 6
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 0.85, b: 0.4, a: 1}
+    unityTile: {fileID: 11400000, guid: a63decdc81827e44da6d65c2a381cbb3, type: 2}
+  - tileId: 14
+    tileName: Stone Brick
+    isWall: 0
+    hardness: 38
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: stone_brick
+    minedDrop: {fileID: 11400000, guid: e6c60507606c91449891a0d5717dd20f, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 29eb1d700fdf7d940a7198ef70ab2f8a, type: 2}
+  - tileId: 15
+    tileName: Bedrock
+    isWall: 0
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 15
+    isOpaque: 1
+    emissionColor: {r: 0, g: 0, b: 0, a: 1}
+    unityTile: {fileID: 11400000, guid: 847c8e13454907a429d509f94b8e23c3, type: 2}
+  - tileId: 16
+    tileName: Dungeon Brick
+    isWall: 0
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 2
+    lightAbsorption: 15
+    isOpaque: 1
+    emissionColor: {r: 0, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: e3a1840f3bc4bd84d91149832cf97620, type: 2}
+  - tileId: 17
+    tileName: Dungeon Altar
+    isWall: 0
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 6
+    lightRadius: 4
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 0, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: a2e09cafc6531904ea09bca0b24bf99a, type: 2}
+  - tileId: 18
+    tileName: Sand
+    isWall: 0
+    hardness: 12
+    requiredTool: 3
+    isIndestructible: 0
+    dropItemId: sand_block
+    minedDrop: {fileID: 11400000, guid: 07bf60f5e5fdcad4586a3c971cbfef07, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: b7360bb43ad573a44b32bb698024966c, type: 2}
+  - tileId: 19
+    tileName: Sandstone
+    isWall: 0
+    hardness: 30
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: sandstone_block
+    minedDrop: {fileID: 11400000, guid: 563310790ffbe0744820784dc9335cd4, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 4f054da4d4ac35b409255ac514a38721, type: 2}
+  - tileId: 20
+    tileName: Cactus
+    isWall: 0
+    hardness: 15
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: cactus
+    minedDrop: {fileID: 11400000, guid: 1cdc941e7e85e3749837c7562c72114b, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 1
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 9c23aa2af1a68394ea875a309bbef1b7, type: 2}
+  - tileId: 21
+    tileName: Snow
+    isWall: 0
+    hardness: 10
+    requiredTool: 3
+    isIndestructible: 0
+    dropItemId: snow_block
+    minedDrop: {fileID: 11400000, guid: bf169defdf657694c941d8b335b8f430, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: af425b3c03775cb4194744fc8aedb6f0, type: 2}
+  - tileId: 22
+    tileName: Ice
+    isWall: 0
+    hardness: 22
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: ice_block
+    minedDrop: {fileID: 11400000, guid: ee8d26f5bea324b49a03d270fd626e4d, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 4a7ce554338834940b839919ba123d69, type: 2}
+  - tileId: 23
+    tileName: Blight Grass
+    isWall: 0
+    hardness: 25
+    requiredTool: 3
+    isIndestructible: 0
+    dropItemId: dirt_block
+    minedDrop: {fileID: 11400000, guid: d421700ff4711b24cbc099cab00e9abf, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 1
+    lightAbsorption: 4
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 592a27dc6709e194ca0084e73c00c73a, type: 2}
+  - tileId: 24
+    tileName: Blightstone
+    isWall: 0
+    hardness: 50
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: blightstone_block
+    minedDrop: {fileID: 11400000, guid: a5f5492bbf9f5884e9d41624099d74d0, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 5
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 1a7e28a3178917142a5f9d6ce6f58eb1, type: 2}
+  - tileId: 25
+    tileName: Glowing Mushroom Grass
+    isWall: 0
+    hardness: 20
+    requiredTool: 3
+    isIndestructible: 0
+    dropItemId: glowing_mushroom
+    minedDrop: {fileID: 11400000, guid: 6dcbacf2a5d723441aeb40b2694bb5c6, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 6
+    lightRadius: 5
+    lightAbsorption: 2
+    isOpaque: 1
+    emissionColor: {r: 0.2, g: 0.6, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: a0fefc3092ea4d64da370d0a828c3e6d, type: 2}
+  - tileId: 26
+    tileName: Mushroom Stem
+    isWall: 0
+    hardness: 15
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wood
+    minedDrop: {fileID: 11400000, guid: 8f9e2650d0bccf24094137a9bec1a2ee, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 2
+    lightRadius: 2
+    lightAbsorption: 1
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 5fe557460018615488520194a104a024, type: 2}
+  - tileId: 27
+    tileName: Glowing Mushroom Cap
+    isWall: 0
+    hardness: 12
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: glowing_mushroom
+    minedDrop: {fileID: 11400000, guid: 6dcbacf2a5d723441aeb40b2694bb5c6, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 9
+    lightRadius: 6
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 0.1, g: 0.5, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: b0cb372c1da867e42966f4e16b18b8da, type: 2}
+  - tileId: 28
+    tileName: Treasure Chest
+    isWall: 0
+    hardness: 30
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: chest
+    minedDrop: {fileID: 11400000, guid: fd81ff4ffd3a62a4082caf2ca5a49b75, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 3
+    lightRadius: 3
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: ed41f5879c28c0446a9a281e6021dc28, type: 2}
+  - tileId: 29
+    tileName: Roof Tiles
+    isWall: 0
+    hardness: 25
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: roof_tiles
+    minedDrop: {fileID: 11400000, guid: 7eb6118b01de53f409ded9881ab8b6c3, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 972e8b0c6ad94b04c8874983ebb90f2d, type: 2}
+  - tileId: 30
+    tileName: Wood Planks
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wood_planks
+    minedDrop: {fileID: 11400000, guid: 1546b683064c051488d89c647e867656, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: df64dc448732fec42ba48f42527ca9c2, type: 2}
+  - tileId: 31
+    tileName: Glass Window
+    isWall: 0
+    hardness: 10
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: glass_window
+    minedDrop: {fileID: 11400000, guid: 330e48f435bedf641a347c76db7bf68a, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: c1b2a1c00bdce954f8ab954b2e1094c1, type: 2}
+  - tileId: 32
+    tileName: Wooden Door
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wooden_door
+    minedDrop: {fileID: 11400000, guid: 3466ba914fe9a84498c33d73e6f48d77, type: 2}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 1
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 8db81f7ffc5f6fc40939265263d3a690, type: 2}
+  - tileId: 33
+    tileName: Open Wooden Door
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wooden_door
+    minedDrop: {fileID: 11400000, guid: 3466ba914fe9a84498c33d73e6f48d77, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 877e6f18ca472544892e23c815e8332b, type: 2}
+  - tileId: 34
+    tileName: Wooden Table
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wooden_table
+    minedDrop: {fileID: 11400000, guid: 24a693e17f792cc4e9427407a63baa50, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: def5c465f2d246942856f437dfd225a6, type: 2}
+  - tileId: 35
+    tileName: Wooden Chair
+    isWall: 0
+    hardness: 15
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wooden_chair
+    minedDrop: {fileID: 11400000, guid: a60f8333f72513646bdc8046d867e971, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 8b6bed22d6156cb4b82654dc74836210, type: 2}
+  - tileId: 36
+    tileName: Magical Barrier
+    isWall: 0
+    hardness: 30
+    requiredTool: 0
+    isIndestructible: 0
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 10
+    lightRadius: 10
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 796a3ea28190056458334ef8f38ebca6, type: 2}
+  - tileId: 37
+    tileName: Water
+    isWall: 0
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 1
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 0
+    emissionColor: {r: 0, g: 0, b: 0, a: 0}
+    unityTile: {fileID: 11400000, guid: ddec48bb6b93c6d4f9b8e064640fbac3, type: 2}
+  - tileId: 38
+    tileName: Wooden Bed
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wooden_bed
+    minedDrop: {fileID: 11400000, guid: e9e1848527f180d4895cae034114e463, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: f3b354a48f6d6e04e80602443f8ad590, type: 2}
+  - tileId: 39
+    tileName: Bookshelf
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: bookshelf
+    minedDrop: {fileID: 11400000, guid: cc974734e06b2814ebd625e18a5b7162, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 7d3194f669283e14ab12dd039bb56433, type: 2}
+  - tileId: 40
+    tileName: Grandfather Clock
+    isWall: 0
+    hardness: 25
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: grandfather_clock
+    minedDrop: {fileID: 11400000, guid: 3cf3440caaf54fd4f855c6a7daa90b14, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 1
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 19e9b35a5aeff024e818556a501059b0, type: 2}
+  - tileId: 41
+    tileName: Stone Fireplace
+    isWall: 0
+    hardness: 35
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: stone_fireplace
+    minedDrop: {fileID: 11400000, guid: 65aa2e19842218f429f9e7a40b16be15, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 13
+    lightRadius: 11
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 0.6, b: 0.2, a: 1}
+    unityTile: {fileID: 11400000, guid: 7871110eb0511ce438be18e1485a7ed7, type: 2}
+  - tileId: 42
+    tileName: Candelabra
+    isWall: 0
+    hardness: 10
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: candelabra
+    minedDrop: {fileID: 11400000, guid: dabfc3879f6741043941d80f72436356, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 12
+    lightRadius: 10
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 0.8, b: 0.3, a: 1}
+    unityTile: {fileID: 11400000, guid: d30bd914c6c5185469d43a909b62dc9c, type: 2}
+  - tileId: 43
+    tileName: Chandelier
+    isWall: 0
+    hardness: 12
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: chandelier
+    minedDrop: {fileID: 11400000, guid: 86b646075049d55429ed0ffc8ea980ac, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 14
+    lightRadius: 14
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 0.85, b: 0.4, a: 1}
+    unityTile: {fileID: 11400000, guid: 7b013150213b13144b63081d6f4a15d6, type: 2}
+  - tileId: 44
+    tileName: Potted Spud Plant
+    isWall: 0
+    hardness: 10
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: potted_plant
+    minedDrop: {fileID: 11400000, guid: 958696d65be45394eb6d79b03ee7a875, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 2
+    lightRadius: 2
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: a41ab739db44e7a4ebbb8ae3269b6904, type: 2}
+  - tileId: 45
+    tileName: Wooden Dresser
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wooden_dresser
+    minedDrop: {fileID: 11400000, guid: dd2116e9d22b6a94d84fb717d3a1f244, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 6f248b48247ac63469130b95dfc197ba, type: 2}
+  - tileId: 46
+    tileName: Wall Tapestry
+    isWall: 0
+    hardness: 8
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wall_tapestry
+    minedDrop: {fileID: 11400000, guid: 6c408a9600a359046942f47642d6a125, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 7ff678054968ed946aa293b5075eafce, type: 2}
+  - tileId: 47
+    tileName: Bathtub
+    isWall: 0
+    hardness: 25
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: bathtub
+    minedDrop: {fileID: 11400000, guid: 6b54ce8245f89a14b96f3a2b7830934e, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 6bb2e508281294b4f80df7f31fec2498, type: 2}
+  - tileId: 48
+    tileName: Sink
+    isWall: 0
+    hardness: 20
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: sink
+    minedDrop: {fileID: 11400000, guid: 34e18f1eb8be553489c0fb60118f2c61, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 46b797d8161d3014091caec159a74573, type: 2}
+  - tileId: 49
+    tileName: Painting
+    isWall: 0
+    hardness: 8
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: painting
+    minedDrop: {fileID: 11400000, guid: 8339ff9c5c3a34f4fb99fdfd9383c692, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 1
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: e4d6284e1d25bb944b3a3a7d598036fd, type: 2}
+  - tileId: 50
+    tileName: Wood Shelf
+    isWall: 0
+    hardness: 10
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: wood_shelf
+    minedDrop: {fileID: 11400000, guid: c3a1e3450e80d54448c89b721bd1bd88, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 5622e38fe755445459cf1177ff13dd79, type: 2}
+  - tileId: 51
+    tileName: Carved Tuber Lantern
+    isWall: 0
+    hardness: 8
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: carved_tuber_lantern
+    minedDrop: {fileID: 11400000, guid: 02916c623d933ac40a8af869dc3978eb, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 14
+    lightRadius: 8
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 0.7, b: 0.2, a: 1}
+    unityTile: {fileID: 11400000, guid: 861c01fc34d6de14887ff32b8e7232d8, type: 2}
+  - tileId: 52
+    tileName: Brass Lantern
+    isWall: 0
+    hardness: 10
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: brass_lantern
+    minedDrop: {fileID: 11400000, guid: 4777b92b9cce7ee4d907c0bc410810df, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 14
+    lightRadius: 8
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 0.8, b: 0.4, a: 1}
+    unityTile: {fileID: 11400000, guid: 3ae9184e45abbb840a7bc8625d82c272, type: 2}
+  - tileId: 53
+    tileName: Spectral Lantern
+    isWall: 0
+    hardness: 10
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: spectral_lantern
+    minedDrop: {fileID: 11400000, guid: ea81d332088895e4d9e264044131b197, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 14
+    lightRadius: 8
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 0.2, g: 0.8, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 332152257461b4f4ca4bb042e2143c6a, type: 2}
+  - tileId: 61
+    tileName: Brass Lamp
+    isWall: 0
+    hardness: 10
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: brass_lamp
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 14
+    lightRadius: 9
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 0.85, b: 0.45, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 54
+    tileName: Oak Sapling
+    isWall: 0
+    hardness: 5
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: oak_sapling
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 798856fad9ca87e4ca36f166f66681ff, type: 2}
+  - tileId: 62
+    tileName: Palm Sapling
+    isWall: 0
+    hardness: 5
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: palm_sapling
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 63
+    tileName: Pine Sapling
+    isWall: 0
+    hardness: 5
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: pine_sapling
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 64
+    tileName: Blight Sapling
+    isWall: 0
+    hardness: 5
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: blight_sapling
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 2
+    lightRadius: 3
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 0.6, g: 0.2, b: 0.9, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 55
+    tileName: Iron Storage Chest
+    isWall: 0
+    hardness: 35
+    requiredTool: 1
+    isIndestructible: 0
+    dropItemId: iron_chest
+    minedDrop: {fileID: 11400000, guid: 9a7a42fb6713107428152c41d20dbb63, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 9dc5cb545ddae7a4790609ddcc6142dc, type: 2}
+  - tileId: 56
+    tileName: Rope Rungs
+    isWall: 0
+    hardness: 10
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: rope_rungs
+    minedDrop: {fileID: 11400000, guid: 32b31ccb1f8d63a4eaede2d91ff970e4, type: 2}
+    isSolid: 0
+    isPlatform: 1
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: ae2b69d7502e1c7499126a91895afc86, type: 2}
+  - tileId: 57
+    tileName: Nether Magma Dungeon Brick
+    isWall: 0
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 2
+    lightRadius: 3
+    lightAbsorption: 15
+    isOpaque: 1
+    emissionColor: {r: 1, g: 0, b: 0, a: 1}
+    unityTile: {fileID: 11400000, guid: 1c8155e0a20a8b24c9dfd246532ef377, type: 2}
+  - tileId: 58
+    tileName: Permafrost Crypt Dungeon Brick
+    isWall: 0
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 2
+    lightAbsorption: 15
+    isOpaque: 1
+    emissionColor: {r: 0, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 77c81cf7f36aea744b0f04f6ee9d9f25, type: 2}
+  - tileId: 59
+    tileName: Catacomb Bone Brick
+    isWall: 0
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 2
+    lightAbsorption: 15
+    isOpaque: 1
+    emissionColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    unityTile: {fileID: 11400000, guid: 21128162787c084498158f1a9e63b4a6, type: 2}
+  - tileId: 60
+    tileName: Dungeon Gate Portcullis
+    isWall: 0
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 2
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    unityTile: {fileID: 11400000, guid: 1fad02b6fc091634eaa24a65c2559d1e, type: 2}
+  - tileId: 65
+    tileName: Pine Wood
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: pine_wood
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: a968e850b7f35a949b9027ea72c66135, type: 2}
+  - tileId: 66
+    tileName: Pine Leaves
+    isWall: 0
+    hardness: 5
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: pine_leaves
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 1
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 1f1527c7adc470046bc11478472fe037, type: 2}
+  - tileId: 67
+    tileName: Pine Wood Trunk
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: pine_wood
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 766808b3082f8fa47a0e23d0f5ac40ff, type: 2}
+  - tileId: 68
+    tileName: Palm Wood
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: palm_wood
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: e4914e48ee3fa074ca480f5a765d1915, type: 2}
+  - tileId: 69
+    tileName: Palm Leaves
+    isWall: 0
+    hardness: 5
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: palm_leaves
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 1
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 26dd3f7f7f920af4aa3563179e7c0dd5, type: 2}
+  - tileId: 70
+    tileName: Palm Wood Trunk
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: palm_wood
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 18e3cc5ba07ae0b45b98b2ce90079826, type: 2}
+  - tileId: 71
+    tileName: Blight Wood
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: blight_wood
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 1
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: c46eaa96a855b6b45bcff04f14367dbc, type: 2}
+  - tileId: 72
+    tileName: Blight Leaves
+    isWall: 0
+    hardness: 5
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: blight_leaves
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 1
+    lightAbsorption: 1
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 2ea8f0ee2d351c44b9eafa57905b57a8, type: 2}
+  - tileId: 73
+    tileName: Blight Wood Trunk
+    isWall: 0
+    hardness: 20
+    requiredTool: 2
+    isIndestructible: 0
+    dropItemId: blight_wood
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 1
+    lightRadius: 1
+    lightAbsorption: 2
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 9b990415f43ce0e4ab4c809b1ca2d197, type: 2}
+  - tileId: 74
+    tileName: Farmland
+    isWall: 0
+    hardness: 15
+    requiredTool: 3
+    isIndestructible: 0
+    dropItemId: dirt_clod
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 75
+    tileName: Hydrated Farmland
+    isWall: 0
+    hardness: 15
+    requiredTool: 3
+    isIndestructible: 0
+    dropItemId: dirt_clod
+    minedDrop: {fileID: 0}
+    isSolid: 1
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 76
+    tileName: Crops
+    isWall: 0
+    hardness: 1
+    requiredTool: 0
+    isIndestructible: 0
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 77
+    tileName: Wild Plant
+    isWall: 0
+    hardness: 1
+    requiredTool: 0
+    isIndestructible: 0
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  wallDefinitions:
+  - tileId: 0
+    tileName: Air Wall
+    isWall: 1
+    hardness: 0
+    requiredTool: 0
+    isIndestructible: 0
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 0}
+  - tileId: 1
+    tileName: Dirt Wall
+    isWall: 1
+    hardness: 15
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: dirt_wall
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 84730efacec43e54c83321742938a22d, type: 2}
+  - tileId: 2
+    tileName: Stone Wall
+    isWall: 1
+    hardness: 30
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: stone_wall
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 36d4d4395e3feee42828304404f5b75c, type: 2}
+  - tileId: 3
+    tileName: Wood Wall
+    isWall: 1
+    hardness: 20
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: wood_wall
+    minedDrop: {fileID: 11400000, guid: db90c9cfe9c985e4b8ea52a656a15b5c, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 3
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: cb5fd6f13f564c742871d78b2dc55318, type: 2}
+  - tileId: 4
+    tileName: Stone Brick Wall
+    isWall: 1
+    hardness: 35
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: stone_brick_wall
+    minedDrop: {fileID: 11400000, guid: 1b3f25d617ccfa2429ac9e370dc48a34, type: 2}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 440b6933e2c76114b816c1c3ad7722b2, type: 2}
+  - tileId: 5
+    tileName: Dungeon Wall
+    isWall: 1
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 15
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: dbb0a984efa2ceb47bf522867375c30b, type: 2}
+  - tileId: 6
+    tileName: Sandstone Wall
+    isWall: 1
+    hardness: 25
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: sandstone_wall
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 4
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 4804c687dfb00bc408f2818ecfc7017e, type: 2}
+  - tileId: 7
+    tileName: Ice Wall
+    isWall: 1
+    hardness: 20
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: ice_wall
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 991ed9816a094fc4eb9d6cf00b1cd521, type: 2}
+  - tileId: 8
+    tileName: Blightstone Wall
+    isWall: 1
+    hardness: 45
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: blightstone_wall
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 5
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: d322a59e9575e154594c542c2a61b5e4, type: 2}
+  - tileId: 9
+    tileName: Mushroom Wall
+    isWall: 1
+    hardness: 18
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: mushroom_wall
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 2
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 0667cf59d7f442048a2336289fd3142b, type: 2}
+  - tileId: 10
+    tileName: Glass Wall
+    isWall: 1
+    hardness: 10
+    requiredTool: 4
+    isIndestructible: 0
+    dropItemId: glass_wall
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 0
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: 93bb52bd4b089aa44bfe4c29d196ab1e, type: 2}
+  - tileId: 11
+    tileName: Dungeon Magma Wall
+    isWall: 1
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 15
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: b36707313ae8821438fd4c221ffad4b4, type: 2}
+  - tileId: 12
+    tileName: Dungeon Ice Wall
+    isWall: 1
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 15
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: f3b2ac6e4a361de419c29c28c970664f, type: 2}
+  - tileId: 13
+    tileName: Dungeon Bone Wall
+    isWall: 1
+    hardness: 9999
+    requiredTool: 0
+    isIndestructible: 1
+    dropItemId: 
+    minedDrop: {fileID: 0}
+    isSolid: 0
+    isPlatform: 0
+    isLiquid: 0
+    lightEmission: 0
+    lightRadius: 0
+    lightAbsorption: 15
+    isOpaque: 0
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    unityTile: {fileID: 11400000, guid: f45e5504db5863f43b709ee8e8289cd3, type: 2}

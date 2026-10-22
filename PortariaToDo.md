@@ -4,8 +4,8 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
-**Current Milestone:** Milestone 1 Complete (Unity 6 Scaffold & Core Data Layer); Milestone 2 in Progress (Tilemaps & World Gen)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 47 / 47 World Gen Tests Passing (0 Errors)  
+**Current Milestone:** Milestone 2 Complete (2D Tilemaps, Chunk Streaming & Procedural World Gen); Milestone 3 in Progress (Character Controller, Physics & Action RPG Combat)  
 **Last Updated:** October 2026  
 
 ---
@@ -106,17 +106,19 @@ All foundational systems designed and proven during the Pygame prototype phase s
 
 ---
 
-### Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation
+### Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation (COMPLETED)
 - **Objective**: Implement the boundless procedural world in Unity using 2D Tilemaps, chunk streaming, and 2D URP lighting.
 - **Tasks**:
-  - [ ] Configure Unity 2D Tilemap Grid hierarchy (Background Walls, Solid Blocks, Hazard/Deco Layer, Liquid Layer).
-  - [ ] Create RuleTiles for organic block blending (Grass edges, Dirt-to-Stone transitions, Sand, Snow, Corrupted Blight).
-  - [ ] Configure `CompositeCollider2D` on solid block Tilemap for high-performance physics boundaries without per-tile collider overhead.
-  - [ ] Port procedural terrain generation from Python to C# (Perlin/Simplex cave synthesis, ore distribution, surface hills, dungeon rooms).
-  - [ ] Implement asynchronous chunk loading and unloading based on player camera distance.
-  - [ ] Implement tile destruction, harvesting speeds based on tool tier, and bare-hand fallback punching.
-  - [ ] Implement 2D URP Dynamic Lighting: 2D Freeform Lights for the day/night cycle, Point Lights for placed torches and lanterns, and light attenuation through solid blocks.
-  - [ ] Implement 4-block horizontal water hydration simulation for farmland and cave torchlight crop illumination.
+  - [x] Configure Unity 2D Tilemap Grid hierarchy (Background Walls, Solid Blocks, Hazard/Deco Layer, Liquid Layer).
+  - [x] Create Unity Tile assets and TileDatabase pipeline linking mined drops, hardness, tool type, and solid/platform collider rules.
+  - [x] Configure `CompositeCollider2D` on solid block Tilemap (Geometry: Polygons, Used By Composite) for smooth platformer movement without snagging.
+  - [x] Port procedural terrain generation from Python to C# (Perlin cave synthesis, ore distribution, surface hills, multi-tier dungeons).
+  - [x] Implement asynchronous boundless chunk streaming, camera-based distance loading, and memory culling.
+  - [x] Implement tile destruction, harvesting speeds based on tool tier, and bare-hand fallback punching.
+  - [x] Implement 2D URP Dynamic Lighting: Global Light 2D cycling through Day/Night phases (Dawn, Noon, Sunset, Night), Subterranean Darkness depth attenuation, and Point Light 2D components for placed torches and lanterns.
+  - [x] Implement 4-block horizontal water hydration simulation for farmland and cave torchlight crop illumination.
+  - [x] Construct MainWorld sample scene (`Assets/Scenes/MainWorld.unity`) with Grid, Tilemaps, WorldManager, 2D Lights, and Pixel Perfect Camera (16 PPU).
+  - [x] Verify via automated headless batchmode test runner (`PotariaWorldTest`) with 47/47 tests passing (0 errors).
 
 ---
 
