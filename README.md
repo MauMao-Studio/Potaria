@@ -6,8 +6,8 @@
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
 **Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
-**Current Milestone:** Milestone 2 Complete (2D Tilemaps, Chunk Streaming & Procedural World Gen); Milestone 3 in Progress  
-**Version:** Unity 6 LTS Milestone 2  
+**Current Milestone:** Milestone 3 Complete (Character Controller, Physics & Action RPG Combat); Milestone 4 in Progress  
+**Version:** Unity 6 LTS Milestone 3  
 
 ---
 
@@ -246,6 +246,9 @@ Potaria features an asynchronous chunk streaming engine (`ChunkManager`). World 
 Potaria maintains rigorous multi-tier verification across both engine baselines:
 
 ### 1. Unity 6 LTS Verification (Active Production Baseline)
+- **Automated Batchmode Test Suites**: **200 / 200 automated tests passing with zero errors (100% Green)**:
+  - `PotariaCombatTest`: 116 tests passing (Player locomotion, coyote time, jump buffering, 100-level EXP curve, damage mitigation, single-target rules, projectile reflection, 52% core hitboxes, graze rewards, boss phases, camera zoom).
+  - `PotariaWorldTest`: 84 tests passing (Perlin noise determinism, tile lookups, boundless chunk streaming, mining formulas, 4-block water hydration, 2D URP lighting curves, 6-ore vein clustering, dungeon protection, point light pooling).
 - **Headless Batchmode Importer**: Executed via `PotariaDataImporter.ImportAll` in headless Unity batchmode (Exit code 0).
 - **ScriptableObject Assets Verified**: **1,775 ScriptableObject assets** validated with zero broken references, zero missing icons, and 100% valid GUID linkages:
   - 79 Food Items with 14 serialized buff parameters
@@ -301,14 +304,14 @@ The production roadmap transitions Potaria from the verified Pygame foundation i
 - RuleTiles / Terrain Tile palettes for 117+ block types with smooth autotiling.
 - 2D URP lighting integration (Day/Night global light cycling and subterranean torch point lights).
 
-### Milestone 3: Character Controller, Physics & Action RPG Combat (IN PROGRESS)
+### Milestone 3: Character Controller, Physics & Action RPG Combat (COMPLETED)
 - Rigidbody2D + BoxCollider2D player controller with responsive jump physics, coyote time, and jump buffering.
 - Unity Input System actions supporting Keyboard/Mouse, Gamepad (Steam Deck / Xbox / DualSense), and Touch.
 - 100-level RPG stat progression curve (HP, MP, ATK, DEF, Crit Rate).
 - 40 Skill Book abilities with VFX, cooldowns, and bullet-reflection mechanics (`Celestial Reversal`).
 - Danmaku boss combat system with 52% core lethal hitboxes and perimeter grazing (+1 MP).
 
-### Milestone 4: Inventory, Crafting, Equipment & Responsive UI
+### Milestone 4: Inventory, Crafting, Equipment & Responsive UI (IN PROGRESS)
 - 40-slot backpack inventory with item stack dragging, splitting, and `[ORGANIZE]` gap compaction.
 - Dedicated coin purse UI with real-time Copper, Silver, and Gold auto-conversion.
 - 5-category crafting book with station filtering (Hand, Work Bench, Furnace, Campfire).

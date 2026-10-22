@@ -5,8 +5,8 @@
 **Legacy Engine Branch:** Pure Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
 **Verification Baseline:** 770 / 770 Pygame Tests Passing (100% Green); 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
-**Current Milestone:** Milestone 2 Complete (2D Tilemaps, Chunk Streaming & Procedural World Gen); Milestone 3 in Progress  
-**Current Version:** Unity 6 LTS Milestone 2  
+**Current Milestone:** Milestone 3 Complete (Character Controller, Physics & Action RPG Combat); Milestone 4 in Progress  
+**Current Version:** Unity 6 LTS Milestone 3  
 
 ---
 
@@ -151,6 +151,33 @@ The franchise operates under a unified **One Project Repository** architecture, 
   - Sample scene `Assets/Scenes/MainWorld.unity` with Grid, Tilemaps, WorldManager, 2D Lights, and Pixel Perfect Camera (16 PPU).
   - `PotariaWorldTest.cs` batchmode runner with 84 automated tests passing (0 errors, 100% Green).
 
+### 2.12 Character Controller, Physics, RPG Progression & Action RPG Combat (Milestone 3 Deliverables)
+- **Player Controller & 2D Platformer Locomotion**:
+  - `PlayerController.cs` with interpolated `Rigidbody2D` and `BoxCollider2D`.
+  - Snappy acceleration/deceleration, variable jump height, coyote time (0.15s), jump buffering (0.12s), and platform drop-through (`S`).
+  - Liquid swimming buoyancy, oxygen meter, underwater drag, and drowning damage.
+  - Head-blocked jump audio raycast check.
+  - Animated sprite rendering (walk cycle, idle breathing, jump stretch, and fall frames).
+- **Cross-Platform Input System**:
+  - `PotariaInput.cs` supporting Keyboard/Mouse, Gamepad (Steam Deck/Xbox), and mobile virtual touch controls.
+- **RPG Progression & 5-Meal Buff System**:
+  - 100-level curve (`EXP = 100 * lvl^2.1`), stat progression, and defense mitigation `max(1, ATK - DEF)`.
+  - Natural MP regeneration (1.8 MP/s) + bullet grazing reward (+1 MP).
+  - Single-target combat enforcement for melee and ranged attacks (Ancient cleave exceptions).
+  - 5-active-meal buff slots (Offense, Defense, Mobility, Resource, Utility) with statutory stat caps and replacement rules.
+- **Weapons, Ballistics & Celestial Reversal Skill**:
+  - `WeaponController.cs` with rotational melee swing arcs.
+  - `Projectile.cs` & `ProjectileManager.cs` supporting parabolic arrow gravity, homing magic, and javelins.
+  - Ancient skill `Celestial Reversal` timed projectile reflection (0.40s-0.52s window, 1.5x damage amplification, reflection budget).
+- **Danmaku Bullet-Hell & Sol-Rho Boss Combat**:
+  - `DanmakuEmitter.cs` & `BossController.cs` for two-phase Sol-Rho encounter.
+  - Geometric bullet patterns: 16-way spiral novas, celestial cross beams, and targeted rings.
+  - 52% fair lethal core hitbox and 175% perimeter graze (+1 MP reward and sparks).
+- **Camera Follow, Zoom & Death Transitions**:
+  - `CameraController.cs` smooth follow damping, 3 discrete zoom levels (1x, 2x, 3x via Z), and 3.0s cinematic pitch-black death transition with spawn point snapping.
+- **Automated Verification**:
+  - `PotariaCombatTest.cs` batchmode runner with 116 automated tests passing with 0 errors (combined total: 200 Unity 6 tests passing, 100% Green).
+
 ## 3. Performance & Optimization Verification
 
 - **Frame Rate Benchmark**: 110+ FPS average under standard gameplay scenes; solid 60+ FPS under heavy stress testing with 50+ active entities.
@@ -163,6 +190,9 @@ The franchise operates under a unified **One Project Repository** architecture, 
 ## 4. Quality Assurance & Multi-Tier Verification
 
 ### 1. Unity 6 LTS Verification (Active Production Baseline)
+- **Automated Batchmode Test Suites**: **200 / 200 automated tests passing with zero errors (100% Green)**:
+  - `PotariaCombatTest`: 116 tests passing (Player locomotion, coyote time, jump buffering, 100-level EXP curve, damage mitigation, single-target rules, projectile reflection, 52% core hitboxes, graze rewards, boss phases, camera zoom).
+  - `PotariaWorldTest`: 84 tests passing (Perlin noise determinism, tile lookups, boundless chunk streaming, mining formulas, 4-block water hydration, 2D URP lighting curves, 6-ore vein clustering, dungeon protection, point light pooling).
 - **Headless Batchmode Importer**: Executed via `PotariaDataImporter.ImportAll` in headless Unity batchmode (Exit code 0).
 - **ScriptableObject Assets Verified**: **1,775 ScriptableObject assets** validated with zero broken references, zero missing icons, and 100% valid GUID linkages:
   - 79 Food Items with 14 serialized buff parameters
@@ -199,13 +229,13 @@ The production roadmap transitions Potaria into a commercial multiplatform relea
    - Multi-octave Perlin noise generation for Forest, Desert, Snow, Blight, and Nether Dungeon biomes.
    - RuleTiles / Terrain Tile palettes for 117+ block types with smooth autotiling.
    - 2D URP lighting integration (Day/Night global light cycling and subterranean torch point lights).
-3. **Milestone 3: Character Controller, Physics & Action RPG Combat (IN PROGRESS)**:
+3. **Milestone 3: Character Controller, Physics & Action RPG Combat (COMPLETED)**:
    - Rigidbody2D + BoxCollider2D player controller with responsive jump physics, coyote time, and jump buffering.
    - Unity Input System actions supporting Keyboard/Mouse, Gamepad (Steam Deck / Xbox / DualSense), and Touch.
    - 100-level RPG stat progression curve (HP, MP, ATK, DEF, Crit Rate).
    - 40 Skill Book abilities with VFX, cooldowns, and bullet-reflection mechanics (`Celestial Reversal`).
    - Danmaku boss combat system with 52% core lethal hitboxes and perimeter grazing (+1 MP).
-4. **Milestone 4: Inventory, Crafting, Equipment & Responsive UI**:
+4. **Milestone 4: Inventory, Crafting, Equipment & Responsive UI (IN PROGRESS)**:
    - 40-slot backpack inventory with item stack dragging, splitting, and `[ORGANIZE]` gap compaction.
    - Dedicated coin purse UI with real-time Copper, Silver, and Gold auto-conversion.
    - 5-category crafting book with station filtering (Hand, Work Bench, Furnace, Campfire).

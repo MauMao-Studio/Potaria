@@ -135,7 +135,7 @@ All foundational systems designed and proven during the Pygame prototype phase s
   - [x] Implement 52% lethal core hitbox and perimeter graze system (+1 MP reward and visual sparks).
   - [x] Implement Ancient skill `celestial_reversal` with timed projectile reflection (1.5x damage amplification and reflection budget).
   - [x] Implement CameraController with follow damping, 3 discrete zoom levels (1x, 2x, 3x via 'Z'), and 3.0s cinematic pitch-black death transition.
-  - [x] Verify via automated headless batchmode test runner (`PotariaCombatTest`) with 94/94 tests passing (0 errors).
+  - [x] Verify via automated headless batchmode test runner (`PotariaCombatTest`) with 116/116 tests passing (0 errors).
 
 
 ---

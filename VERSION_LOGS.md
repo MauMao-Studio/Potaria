@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.0.0-unity-milestone3** | October 2026 | *Unity 6 LTS Player Controller, 2D Rigidbody Physics, RPG Stats & Danmaku Combat (Milestone 3 Complete)* | Completed Milestone 3 of the Unity 6 LTS implementation: responsive 2D Rigidbody character controller (PlayerController.cs) with coyote time (0.15s), jump buffering (0.12s), variable jump height, 1-block platform drop-through, water swimming buoyancy, oxygen meter, drowning damage, and head-blocked jump sound check; animated character rendering with 8-frame walk cycle, idle breathing, jump stretch, and fall frames; input system (PotariaInput.cs) supporting Keyboard/Mouse, Gamepad (Steam Deck/Xbox), and mobile virtual controls; RPG progression (CharacterStats.cs, PlayerStats.cs, MealBuffManager.cs) with 100-level curve, defense formula max(1, ATK - DEF), MP natural regeneration (1.8 MP/s), and 5-active-meal buff slots (Offense, Defense, Mobility, Resource, Utility) with statutory caps and replacement rules; weapon controller (WeaponController.cs) with rotational melee arcs, single-target combat enforcement, and Ancient cleave; projectile ballistics (Projectile.cs, ProjectileManager.cs) with parabolic arrow gravity, homing magic, and Celestial Reversal timed projectile reflection (0.40s-0.52s window, 1.5x damage amplification, reflection budget); Touhou-inspired danmaku boss system (BossController.cs, DanmakuEmitter.cs) featuring Sol-Rho two-phase boss encounter with 16-way spiral novas, celestial cross beams, 52% fair lethal core hitboxes, and 175% perimeter graze (+1 MP reward and sparks); camera system (CameraController.cs) with smooth follow damping, 3 discrete zoom levels (1x, 2x, 3x via Z), and 3.0s cinematic pitch-black death transition with spawn point snapping; and verified 116 / 116 automated tests passing via headless batchmode PotariaCombatTest runner (200 total Unity 6 tests passing across combat and world suites, 100% Green). |
 | **v1.0.0-unity-milestone2** | October 2026 | *Unity 6 LTS Procedural World Generation, 2D Tilemaps, Chunk Streaming & 2D URP Lighting (Milestone 2 Complete)* | Completed Milestone 2 of the Unity 6 LTS implementation: built dual-tilemap architecture on Grid (Terrain Tilemap with CompositeCollider2D polygons for snag-free movement, Wall Tilemap, Platforms, and Water with trigger colliders); implemented TileDatabase linking 117+ blocks and walls to item drops, tool types, and hardness; generated Tile assets and procedural 16x16 pixel sprites; ported boundless procedural generation (Perlin surface heightmaps across Forest, Desert, Snow, Blight, and Nether Dungeon biomes, subterranean cave worms, and geological vein clustering for Coal, Copper, Iron, Gold, Diamond, and Netherite ores); implemented ChunkManager streaming 16x240 tile chunks dynamically around the camera; configured active 2D Universal Render Pipeline (URP) assets and Sprite-Lit-Default materials; implemented 2D URP dynamic lighting (DayNightCycle2D global cycle, SubterraneanDarkness2D depth attenuation, and PointLightSource2D with point light pooling for torches and lamps); constructed Assets/Scenes/MainWorld.unity with 16 PPU Pixel Perfect Camera; and verified 84 / 84 automated tests passing via headless batchmode PotariaWorldTest runner (100% Green). |
 | **v1.0.0-unity-milestone1** | October 2026 | *Unity 6 LTS Engine Transition, Project Scaffold, Asset Ingestion & Core Data Layer (Milestone 1 Complete)* | Completed Milestone 1 of the Unity 6 LTS migration: transitioned primary engine from Pygame-ce 2.5.8 to Unity 6 LTS (v6000.0.58f1) with 2D Universal Render Pipeline (URP 17.0.3); verified standalone physical backup of legacy Pygame engine (770/770 tests passing, 100% Green); created and published dedicated archival branch pygame-engine on remote origin; established clean Unity 6 directory structure (Assets/, Packages/, ProjectSettings/); configured Packages/manifest.json with 2D URP, 2D Tilemap, 2D Sprite, Input System, and TextMeshPro; migrated and re-imported 2,456 pixel-art sprites to Assets/Sprites/ with Point (no filter) texture settings, uncompressed format, and 16 Pixels Per Unit; generated 36 new crop growth stage sprites in Assets/Sprites/Crops/ (4 stages each for 9 crops); migrated 34 audio files into Assets/Audio/; created typed C# data models in Assets/Scripts/Data/ (ItemData, FoodItemData, WeaponItemData, EquipmentItemData, EquipmentSetData, CropData, RecipeData); developed headless batchmode importer PotariaDataImporter.ImportAll generating and verifying 1,775 ScriptableObject assets (79 food items with 14 serialized buff parameters, 9 crops, 8 seeds, 136 materials, 630 weapons, 705 equipment pieces, 27 equipment sets with 147 piece links, 181 recipes with 100% linked items) with zero broken references, zero missing icons, and 100% valid GUID linkages. |
 | **v0.2.9a** | October 2026 | *Philippine Farming System, Tiered Cooking Durations, Fishing Escape Timer & Android APK Architecture (Legacy Pygame Final)* | Authentic Philippine farming system with 8 native crops (Rice/Palay, Garlic, Onion, Ginger, Eggplant, String Beans, Tamarind, Calamansi) with 4-stage visual growth, bamboo/iron hoes, infinite watering can, 4-block horizontal water hydration radius, cave torchlight illumination farming, wild plant spawning and seed harvesting; tiered food cooking duration (2.5s-20.0s) with single-food-per-furnace active cooking queues and direct raw fish grilling into Inihaw na [Fish]; 12.0s fishing countdown timer with sweet-spot bonus and escape penalty; responsive multi-aspect Android touch viewport (16:9 to 20:9) with buildozer.spec targeting API 30-34 (Android 11-15); robust save/load persistence for crops, active furnaces, and soil hydration timers; and 770 tests passing across 47 suites (100% Green). |
@@ -45,6 +46,43 @@
 ---
 
 ## Detailed Version Logs
+
+### [v1.0.0-unity-milestone3] - Unity 6 LTS Player Controller, 2D Rigidbody Physics, RPG Stats & Danmaku Combat (Current Active Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Player Controller & 2D Rigidbody Locomotion**:
+  - Implemented `PlayerController.cs` utilizing interpolated `Rigidbody2D` and `BoxCollider2D` running in FixedUpdate for responsive platformer physics.
+  - Locomotion tuning: snappy horizontal acceleration/deceleration, variable jump height with jump cut velocity on early release, coyote time (0.15s), jump buffering (0.12s), and platform drop-through (`S` or down arrow) for one-way platforms.
+  - Liquid physics: water swimming movement, buoyant upward float, water drag, oxygen depletion (20s capacity), and drowning damage (1 heart/s at 0% oxygen, ignoring combat i-frames).
+  - Jump audio check: raycasts immediately above character's head to suppress jump audio playback if solid blocks obstruct headroom.
+  - Animated sprite rendering: 8-frame walk cycle, idle breathing, jump stretch, and fall aerodynamic frames mapped to sprites in `Assets/Sprites/Player/`.
+- **Unity Input System Integration**:
+  - Implemented `PotariaInput.cs` handling cross-platform inputs across Keyboard & Mouse (WASD, Space, Left-Click attack/mine, Right-Click interact/reel, Q/F/V/R skill hotkeys, C character panel, E inventory, 1-9/0 hotbar slots, Z zoom toggle), Gamepads (Steam Deck / Xbox), and mobile touchscreen virtual controls.
+  - Included simulated input hooks for headless automation and unit testing.
+- **Character RPG Stats & 5-Active-Meal Buff System**:
+  - Implemented `CharacterStats.cs`, `PlayerStats.cs`, and `MealBuffManager.cs`.
+  - 100-level progression curve siphoning EXP from monster takedowns (`EXP = 100 * lvl^2.1`).
+  - Core statistics: HP, MP, Base ATK, Base DEF, Crit Rate (base 5%), Crit Multiplier (180%), and Movement Speed.
+  - Natural MP regeneration (1.8 MP/s) + bullet grazing reward (+1 MP).
+  - Combat damage formula: `Damage Taken = max(1, Enemy ATK - Player DEF)`.
+  - Single-target combat enforcement: melee and standard ranged attacks damage at most 1 enemy per swing, with Ancient/Mythic weapons granted cleave exceptions.
+  - 5-active-meal buff slots: Offense, Defense, Mobility, Resource, and Utility categories with strict 1-buff-per-category replacement and statutory stat caps (Damage max +12%, Attack Speed max +10%, Crit max +6%, Flat DEF max +6, Move Speed max +15%, etc.).
+- **Weapons, Ballistics & Celestial Reversal Skill**:
+  - `WeaponController.cs`: Rotational melee swing arcs directed toward cursor, single-target vs. Ancient cleave routing, and weapon cooldowns.
+  - `Projectile.cs` & `ProjectileManager.cs`: Ballistic projectile simulation with parabolic gravity arcs for arrows, homing logic for catalysts, and piercing javelins.
+  - Ancient skill `Celestial Reversal` / `Celestial Mirror`: Timed dynamic projectile reflection (0.40s - 0.52s active window) with 1.5x damage amplification, reflection budget, and celestial gold/cyan visual feedback.
+- **Danmaku Bullet-Hell & Sol-Rho Boss Combat**:
+  - `DanmakuEmitter.cs` & `BossController.cs`: Multi-phase boss architecture for Sol-Rho (Phase 1 Solar Titan, Phase 2 Awakened Void Incarnate).
+  - Geometric bullet patterns: 16-way expanding spiral novas, rotating celestial cross beams, and targeted rings with dodge gaps.
+  - Fair lethal core hitbox: Projectile collision concentrated in the inner 52% of visual sprite radius.
+  - Perimeter graze system: Skimming close to lethal enemy projectiles (within 100% to 175% of radius) triggers graze sparks, audio chimes, and awards +1 MP.
+- **Camera Follow, Zoom & Death Transitions**:
+  - `CameraController.cs`: Smooth target follow with lerp damping.
+  - 3 discrete zoom levels (1x, 2x, 3x) toggled via `Z` key.
+  - Cinematic pitch-black death transition: smooth fade to black over 1.2s, instant player/camera repositioning to spawn point, and smooth fade in over 1.8s.
+- **Automated Verification**:
+  - `PotariaCombatTest.cs` batchmode runner with 116 automated unit and integration tests passing with 0 errors (combined with `PotariaWorldTest` 84 tests = 200 total Unity 6 tests passing, 100% Green).
 
 ### [v1.0.0-unity-milestone2] - Unity 6 LTS Procedural World Generation, 2D Tilemaps, Chunk Streaming & 2D URP Lighting (Current Active Release)
 *Release Date: October 2026*
