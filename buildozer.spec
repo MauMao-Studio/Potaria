@@ -26,7 +26,7 @@ version = 1.1.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,pygame-ce,cython
+requirements = python3,pygame-ce
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait, sensorPortrait, all)
 orientation = landscape
@@ -43,11 +43,14 @@ android.api = 34
 # (int) Minimum Android API level (30 = Android 11, covering Android 11, 12, 13, 14, 15)
 android.minapi = 30
 
+# (str) Android NDK version to use
+android.ndk = 25b
+
 # (int) Android NDK API level
 android.ndk_api = 21
 
 # (list) Android architectures to build for
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
 
 # (list) Permissions
 android.permissions = INTERNET,VIBRATE,WAKE_LOCK

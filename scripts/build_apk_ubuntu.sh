@@ -96,9 +96,10 @@ fi
 echo "Verified workspace root: $PROJECT_ROOT"
 
 # Clean any previous failed build state to ensure clean configure pass
-if [ -d ".buildozer/android/platform/build-arm64-v8a" ]; then
-    echo "Cleaning previous build cache to ensure autoconf/libtool recompiles cleanly..."
-    buildozer android clean || rm -rf .buildozer/android/platform/build-*
+echo "Cleaning any previous build caches and toolchains..."
+rm -rf .buildozer/android/platform/build-*
+if command -v buildozer &> /dev/null; then
+    buildozer android clean 2>/dev/null || true
 fi
 
 # Step 5: Execute Buildozer build
