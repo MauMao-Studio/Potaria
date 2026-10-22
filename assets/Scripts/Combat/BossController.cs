@@ -37,6 +37,7 @@ namespace Potaria.Combat
         [Header("Danmaku Pattern Timing")]
         [SerializeField] private float attackCooldown = 1.8f;
         private float _attackTimer = 0f;
+        private float _transformTimer = 0f;
         private float _patternRotationAngle = 0f;
         private int _patternStep = 0;
 
@@ -122,6 +123,7 @@ namespace Potaria.Combat
         {
             phase = 2;
             isTransforming = true;
+            _transformTimer = transformDuration;
             currentHp = phase2MaxHp;
             defense = Mathf.RoundToInt(defense * 1.33f);
             attackDamage = Mathf.RoundToInt(attackDamage * 1.35f);
@@ -129,9 +131,6 @@ namespace Potaria.Combat
 
             OnPhaseChanged?.Invoke(2);
             OnHpChanged?.Invoke(currentHp, phase2MaxHp);
-
-            // Complete transformation after brief timer
-            isTransforming = false;
         }
 
         public void ExecuteNextDanmakuPattern(Vector2 playerPosition)
@@ -165,7 +164,19 @@ namespace Potaria.Combat
 
         private void Update()
         {
-            if (isTransforming || IsDead) return;
+            if (IsDead) return;
+
+            if (isTransforming)
+            {
+                _transformTimer -= Time.deltaTime;
+                if (_transformTimer <= 0f)
+                {
+                    isTransforming = false;
+                }
+                return;
+            }
+
+            CheckPlayerProjectileHits();
 
             _attackTimer -= Time.deltaTime;
             if (_attackTimer <= 0f)
@@ -174,6 +185,21 @@ namespace Potaria.Combat
                 // Target player or (0,0) if no player assigned
                 Vector2 target = Vector2.zero;
                 ExecuteNextDanmakuPattern(target);
+            }
+        }
+
+        public void CheckPlayerProjectileHits()
+        {
+            if (isTransforming || IsDead) return;
+
+            var pm = ProjectileManager.Instance;
+            if (pm == null) return;
+
+            float bossRadius = 1.5f;
+            int hits = pm.CheckEnemyHits(transform.position, bossRadius, out int dmg);
+            if (hits > 0 && dmg > 0)
+            {
+                TakeDamage(dmg);
             }
         }
     }

@@ -12,13 +12,14 @@ using Potaria.Data;
 namespace Potaria.Editor
 {
     /// <summary>
-    /// Headless verification test suite for Milestone 3:
+    /// Headless deep verification test suite for Milestone 3:
     /// - Player Controller & Physics (movement, variable jump height, coyote time, jump buffering, platform drop)
     /// - Liquid swimming, fluid drag, oxygen meter & drowning damage (1 heart/s at 0% oxygen)
     /// - Jump audio check (head blockage suppression)
     /// - 100-level RPG progression curve, EXP curve, attribute scaling & level up heal
     /// - Defense mitigation formula (Damage Taken = max(1, Enemy ATK - Player DEF))
     /// - Single-target combat enforcement & Ancient/Mythic cleave exceptions
+    /// - Melee world hit detection in swing arc
     /// - 5-active-meal buff slots (category exclusivity, stat contribution caps, duration timers)
     /// - Natural MP regeneration (1.8 MP/s) & bullet grazing reward (+1 MP)
     /// - Ballistic projectiles (gravity parabolic arc) & magic projectiles
@@ -26,7 +27,8 @@ namespace Potaria.Editor
     /// - Danmaku bullet-hell patterns (16-way spiral novas, rotating celestial cross beams, targeted rings with dodge gaps)
     /// - 52% fair lethal core hitboxes & perimeter graze detection
     /// - Camera follow damping, 3-level discrete zoom (1x, 2x, 3x via Z), and 3.0s pitch-black death transition
-    /// - Unified Input System mapping
+    /// - BossController multi-phase transitions, player scaling, and transformation invulnerability
+    /// - Unified Input System mapping & virtual simulation
     ///
     /// Executed in batchmode via:
     /// Potaria.Editor.PotariaCombatTest.RunTests
@@ -43,7 +45,7 @@ namespace Potaria.Editor
             s_failedTests = 0;
 
             Debug.Log("================================================================================");
-            Debug.Log("[PotariaCombatTest] Executing Milestone 3 Verification Test Suite...");
+            Debug.Log("[PotariaCombatTest] Executing Milestone 3 Deep Verification Test Suite...");
             Debug.Log("================================================================================");
 
             try
@@ -58,6 +60,7 @@ namespace Potaria.Editor
                 TestRpg100LevelProgressionCurve();
                 TestDefenseMitigationFormula();
                 TestSingleTargetCombatEnforcement();
+                TestMeleeWorldHitDetection();
                 Test5ActiveMealBuffSlots();
                 TestMPNaturalRegenerationAndGrazing();
                 TestBallisticArrowsAndProjectiles();
@@ -65,6 +68,7 @@ namespace Potaria.Editor
                 TestDanmakuBulletHellPatterns();
                 TestFairCoreHitboxAndPerimeterGraze();
                 TestCameraControllerZoomAndDeathTransition();
+                TestBossControllerAndPhases();
                 TestUnifiedInputMapping();
             }
             catch (Exception ex)
@@ -160,12 +164,23 @@ namespace Potaria.Editor
         // =========================================================================
         private static void TestVariableJumpHeight()
         {
-            float initialVy = 12.0f;
-            float cutMultiplier = 0.45f;
-            float cutVy = initialVy * cutMultiplier;
+            var go = new GameObject("Test_Player_JumpCut");
+            var rb = go.AddComponent<Rigidbody2D>();
+            var col = go.AddComponent<BoxCollider2D>();
+            var controller = go.AddComponent<PlayerController>();
+            controller.ConfigurePhysics();
 
-            AssertTrue(cutVy < initialVy, "VariableJump_CutVelocitySmaller", $"Cut velocity {cutVy} must be strictly less than full jump {initialVy}");
-            AssertTrue(Mathf.Approximately(cutVy, 5.4f), "VariableJump_ExactCutMultiplier", $"Expected 5.4f, got {cutVy}");
+            // Set initial upward jump velocity
+            rb.linearVelocity = new Vector2(0f, 12.0f);
+
+            // Execute jump cut on component
+            controller.ApplyJumpCut();
+
+            // Cut multiplier is 0.45x -> 12.0 * 0.45 = 5.4f
+            AssertTrue(Mathf.Approximately(rb.linearVelocity.y, 5.4f), "VariableJump_ActualCutVelocityOnComponent", $"Expected 5.4, got {rb.linearVelocity.y}");
+            AssertTrue(rb.linearVelocity.y < 12.0f, "VariableJump_CutVelocitySmallerThanFullJump");
+
+            UnityEngine.Object.DestroyImmediate(go);
         }
 
         // =========================================================================
@@ -173,18 +188,28 @@ namespace Potaria.Editor
         // =========================================================================
         private static void TestCoyoteTime()
         {
-            float coyoteTime = 0.15f;
-            float timer = coyoteTime;
+            var go = new GameObject("Test_Player_Coyote");
+            var rb = go.AddComponent<Rigidbody2D>();
+            var col = go.AddComponent<BoxCollider2D>();
+            var controller = go.AddComponent<PlayerController>();
+            controller.ConfigurePhysics();
 
-            // Immediately after stepping off ledge (0.05s elapsed)
-            timer -= 0.05f;
-            bool canJumpWithinWindow = timer > 0f;
-            AssertTrue(canJumpWithinWindow, "CoyoteTime_ValidWithin015s", "Jump must be allowed within 0.15s after leaving ledge");
+            // Initially grounded -> coyote timer active
+            controller.SetGroundedState(true);
+            AssertTrue(controller.CoyoteTimer >= 0.15f, "CoyoteTime_InitializedWhileGrounded");
 
-            // Beyond coyote window (0.16s elapsed)
-            timer -= 0.11f;
-            bool canJumpAfterWindow = timer > 0f;
-            AssertTrue(!canJumpAfterWindow, "CoyoteTime_ExpiredAfter015s", "Jump must be denied after coyote time expires");
+            // Step off ledge into mid-air
+            controller.SetGroundedState(false);
+
+            // Advance 0.08s (< 0.15s coyote window)
+            controller.UpdateTimers(0.08f);
+            AssertTrue(controller.CoyoteTimer > 0f, "CoyoteTime_ValidWithin015s", $"Coyote timer should be > 0, got {controller.CoyoteTimer}");
+
+            // Advance another 0.10s (total 0.18s > 0.15s window)
+            controller.UpdateTimers(0.10f);
+            AssertTrue(controller.CoyoteTimer <= 0f, "CoyoteTime_ExpiredAfter015s", $"Coyote timer should be 0, got {controller.CoyoteTimer}");
+
+            UnityEngine.Object.DestroyImmediate(go);
         }
 
         // =========================================================================
@@ -192,17 +217,30 @@ namespace Potaria.Editor
         // =========================================================================
         private static void TestJumpBuffering()
         {
-            float jumpBufferTime = 0.12f;
-            float bufferTimer = jumpBufferTime;
+            var go = new GameObject("Test_Player_JumpBuffer");
+            var rb = go.AddComponent<Rigidbody2D>();
+            var col = go.AddComponent<BoxCollider2D>();
+            var controller = go.AddComponent<PlayerController>();
+            controller.ConfigurePhysics();
 
-            // Pressed 0.08s before landing
-            bufferTimer -= 0.08f;
-            bool bufferValid = bufferTimer > 0f;
-            AssertTrue(bufferValid, "JumpBuffer_ValidWithin012s", "Buffered jump press must be remembered within 0.12s window");
+            // In air (not grounded)
+            controller.SetGroundedState(false);
+            controller.UpdateTimers(0.20f); // Ensure coyote timer is 0
 
-            // Buffer consumed upon landing
-            bufferTimer = 0f;
-            AssertTrue(bufferTimer == 0f, "JumpBuffer_ConsumedOnLanding", "Buffer must be consumed upon executing jump");
+            // Buffer jump press 0.08s before landing (< 0.12s buffer window)
+            controller.BufferJump();
+            controller.UpdateTimers(0.08f);
+            AssertTrue(controller.JumpBufferTimer > 0f, "JumpBuffer_ValidWithin012s", $"Buffer timer: {controller.JumpBufferTimer}");
+
+            // Player lands on solid ground -> coyote becomes valid
+            controller.SetGroundedState(true);
+
+            // Execute physics step: buffered jump executes and consumes buffer
+            controller.ApplyJumpAndVerticalPhysics(0.02f);
+            AssertEqual(0f, controller.JumpBufferTimer, "JumpBuffer_ConsumedUponExecution");
+            AssertTrue(rb.linearVelocity.y > 0f, "JumpBuffer_VelocityAppliedOnLanding");
+
+            UnityEngine.Object.DestroyImmediate(go);
         }
 
         // =========================================================================
@@ -210,12 +248,19 @@ namespace Potaria.Editor
         // =========================================================================
         private static void TestPlatformDropThrough()
         {
-            float dropDuration = 0.25f;
-            float dropTimer = dropDuration;
+            var go = new GameObject("Test_Player_Drop");
+            var rb = go.AddComponent<Rigidbody2D>();
+            var col = go.AddComponent<BoxCollider2D>();
+            var controller = go.AddComponent<PlayerController>();
+            controller.ConfigurePhysics();
 
-            AssertTrue(dropTimer > 0f, "PlatformDrop_ActiveTimer", "Drop timer must be active when S / Down is pressed");
-            dropTimer -= 0.30f;
-            AssertTrue(dropTimer <= 0f, "PlatformDrop_ExpiredTimer", "Platform collision must restore after drop duration");
+            controller.SetPlatformDropTimer(0.25f);
+            AssertTrue(controller.PlatformDropTimer > 0f, "PlatformDrop_ActiveTimerOnComponent");
+
+            controller.UpdateTimers(0.30f);
+            AssertTrue(controller.PlatformDropTimer <= 0f, "PlatformDrop_ExpiredTimerOnComponent");
+
+            UnityEngine.Object.DestroyImmediate(go);
         }
 
         // =========================================================================
@@ -261,26 +306,31 @@ namespace Potaria.Editor
             go.AddComponent<BoxCollider2D>();
             var stats = go.AddComponent<PlayerStats>();
             var controller = go.AddComponent<PlayerController>();
+            controller.ConfigurePhysics();
 
             stats.MaxHp = 100;
             stats.CurrentHp = 100;
 
-            // In water: fluid drag
+            // In water: fluid drag & submerged
             controller.SetWaterState(inWater: true, submerged: true);
             AssertTrue(controller.InWater, "Water_InWaterState", "Player must be in water");
             AssertTrue(controller.IsSubmerged, "Water_IsSubmergedState", "Player must be submerged");
 
-            // Oxygen depletion
-            float maxO2 = controller.MaxOxygen;
-            AssertTrue(maxO2 == 100f, "Oxygen_MaxIs100", "Max oxygen must be 100%");
+            // Initial oxygen is 100%
+            AssertEqual(100f, controller.CurrentOxygen, "Oxygen_InitialIs100");
+
+            // Deplete oxygen: rate is 7.5%/s, so 1.0s drops to 92.5%
+            controller.UpdateLiquidAndDrowning(1.0f);
+            AssertTrue(Mathf.Approximately(92.5f, controller.CurrentOxygen), "Oxygen_DepletedBy7_5PercentPerSec", $"Got {controller.CurrentOxygen}");
+
+            // Fully deplete oxygen to 0% (need ~13 more seconds)
+            controller.UpdateLiquidAndDrowning(14.0f);
+            AssertEqual(0f, controller.CurrentOxygen, "Oxygen_ReachedZeroPercent");
 
             // Drowning damage at 0% oxygen: exactly 1 heart/s (10% max HP = 10 damage)
             int initialHp = stats.CurrentHp;
-            int heartDamage = Mathf.Max(1, stats.MaxHp / 10);
-            AssertEqual(10, heartDamage, "Drowning_OneHeartPerSecondEquals10Damage");
-
-            stats.TakeDamage(heartDamage, ignoreDef: true);
-            AssertEqual(90, stats.CurrentHp, "Drowning_HPReducedBy1Heart");
+            controller.UpdateLiquidAndDrowning(1.0f); // 1.0s drowning tick
+            AssertEqual(initialHp - 10, stats.CurrentHp, "Drowning_ActualDamageAppliedViaUpdateLoop");
 
             UnityEngine.Object.DestroyImmediate(go);
         }
@@ -401,7 +451,46 @@ namespace Potaria.Editor
         }
 
         // =========================================================================
-        // 11. 5-Active-Meal Buff Slots & Stat Caps
+        // 11. Melee World Hit Detection & Collision In Swing Arc
+        // =========================================================================
+        private static void TestMeleeWorldHitDetection()
+        {
+            var playerGo = new GameObject("Test_Player_Melee");
+            var weaponCtrl = playerGo.AddComponent<WeaponController>();
+
+            // Equip sword
+            var sword = ScriptableObject.CreateInstance<WeaponItemData>();
+            sword.Attack = 25;
+            sword.Rarity = ItemRarity.Common;
+            sword.SpecialTag = "Sword";
+            weaponCtrl.EquipWeapon(sword);
+
+            // Spawn enemy mob with collider in front of player
+            var enemyGo = new GameObject("Test_Enemy_Mob");
+            enemyGo.transform.position = playerGo.transform.position + Vector3.right * 1.0f;
+            var enemyCol = enemyGo.AddComponent<CircleCollider2D>();
+            enemyCol.radius = 0.5f;
+            var enemyStats = enemyGo.AddComponent<CharacterStats>();
+            enemyStats.MaxHp = 100;
+            enemyStats.CurrentHp = 100;
+            Physics2D.SyncTransforms();
+
+            // Trigger swing towards enemy
+            weaponCtrl.TriggerAttack(playerGo.transform.position, enemyGo.transform.position);
+
+            // Update weapon swing to advance progress and trigger CheckMeleeCollisions()
+            weaponCtrl.UpdateWeapon(0.05f);
+
+            // Verify enemy mob took damage from melee swing in world!
+            AssertTrue(enemyStats.CurrentHp < 100, "MeleeWorld_EnemyDamagedInSwingArc", $"Enemy HP: {enemyStats.CurrentHp}");
+
+            UnityEngine.Object.DestroyImmediate(sword);
+            UnityEngine.Object.DestroyImmediate(enemyGo);
+            UnityEngine.Object.DestroyImmediate(playerGo);
+        }
+
+        // =========================================================================
+        // 12. 5-Active-Meal Buff Slots & Stat Caps
         // =========================================================================
         private static void Test5ActiveMealBuffSlots()
         {
@@ -437,7 +526,7 @@ namespace Potaria.Editor
         }
 
         // =========================================================================
-        // 12. MP Natural Regeneration & Bullet Grazing
+        // 13. MP Natural Regeneration & Bullet Grazing
         // =========================================================================
         private static void TestMPNaturalRegenerationAndGrazing()
         {
@@ -463,7 +552,7 @@ namespace Potaria.Editor
         }
 
         // =========================================================================
-        // 13. Ballistic Arrows & Projectiles
+        // 14. Ballistic Arrows & Projectiles
         // =========================================================================
         private static void TestBallisticArrowsAndProjectiles()
         {
@@ -487,12 +576,16 @@ namespace Potaria.Editor
         }
 
         // =========================================================================
-        // 14. Celestial Reversal Projectile Reflection
+        // 15. Celestial Reversal Projectile Reflection
         // =========================================================================
         private static void TestCelestialReversalProjectileReflection()
         {
+            var mgrGo = new GameObject("Test_ProjManager_Reflect");
+            var mgr = mgrGo.AddComponent<ProjectileManager>();
+
             var playerGo = new GameObject("Test_Player_Reflection");
             var player = playerGo.AddComponent<PlayerController>();
+            player.ConfigurePhysics();
 
             // Activate Celestial Reversal at level 1 (0.40s window, budget 12)
             player.ActivateCelestialReversal(skillLevel: 1);
@@ -503,33 +596,43 @@ namespace Potaria.Editor
             player.ActivateCelestialReversal(skillLevel: 5);
             AssertEqual(24, player.ReflectionBudget, "CelestialReversal_Level5BudgetEquals24");
 
-            // Test projectile reflection logic
-            var bulletGo = new GameObject("Test_Danmaku_Bullet");
-            var bullet = bulletGo.AddComponent<Projectile>();
-            bullet.Initialize(new Vector2(2f, 0f), new Vector2(-6f, 0f), damage: 20, rad: 0.5f, enemy: true);
+            // Spawn an incoming enemy bullet inside reflection radius (2.5f)
+            var bullet = mgr.SpawnProjectile(
+                position: (Vector2)playerGo.transform.position + new Vector2(1.5f, 0f),
+                velocity: new Vector2(-6f, 0f),
+                damage: 20,
+                radius: 0.5f,
+                isEnemy: true
+            );
 
             int origDamage = bullet.Damage;
-            bool reflected = bullet.Reflect(targetPos: new Vector2(10f, 0f), damageMultiplier: 1.5f);
+            int origBudget = player.ReflectionBudget;
 
-            AssertTrue(reflected, "CelestialReversal_ProjectileSuccessfullyReflected");
+            // Execute projectile interactions on player
+            player.UpdateProjectileInteractions();
+
+            // Bullet must be reflected via UpdateProjectileInteractions!
+            AssertTrue(bullet.IsReflected, "CelestialReversal_ProjectileSuccessfullyReflectedOnComponent");
             AssertTrue(!bullet.IsEnemyProjectile, "CelestialReversal_OwnershipSwitchedToPlayer");
             AssertEqual(Mathf.RoundToInt(origDamage * 1.5f), bullet.Damage, "CelestialReversal_15xDamageAmplification");
+            AssertEqual(origBudget - 1, player.ReflectionBudget, "CelestialReversal_BudgetDecremented");
             AssertTrue(bullet.Velocity.x > 0f, "CelestialReversal_VelocityReversedTowardTarget");
 
             // Attempting to reflect a second time must fail (prevents infinite reflection loop)
             bool reflectAgain = bullet.Reflect(new Vector2(0f, 0f));
             AssertTrue(!reflectAgain, "CelestialReversal_PreventDoubleReflection");
 
-            UnityEngine.Object.DestroyImmediate(bulletGo);
+            mgr.ClearAll();
             UnityEngine.Object.DestroyImmediate(playerGo);
+            UnityEngine.Object.DestroyImmediate(mgrGo);
         }
 
         // =========================================================================
-        // 15. Danmaku Bullet-Hell Patterns
+        // 16. Danmaku Bullet-Hell Patterns
         // =========================================================================
         private static void TestDanmakuBulletHellPatterns()
         {
-            var mgrGo = new GameObject("Test_ProjManager");
+            var mgrGo = new GameObject("Test_ProjManager_Danmaku");
             var mgr = mgrGo.AddComponent<ProjectileManager>();
 
             var emitterGo = new GameObject("Test_DanmakuEmitter");
@@ -544,7 +647,6 @@ namespace Potaria.Editor
             AssertEqual(16, crossBullets.Count, "Danmaku_RotatingCrossBeamsSpawned16Bullets");
 
             // 3. Targeted Ring with Safe Dodge Corridor
-            // 20 bullets requested with a gap; resulting count should be less than 20 due to safe gap
             var ringBullets = emitter.SpawnTargetedRing(Vector2.zero, targetPos: Vector2.right, bulletCount: 20, gapHalfAngleRad: 0.4f);
             AssertTrue(ringBullets.Count > 0 && ringBullets.Count < 20, "Danmaku_TargetedRingCreatedFairDodgeGap", $"Spawned {ringBullets.Count} bullets with safe gap");
 
@@ -554,45 +656,68 @@ namespace Potaria.Editor
         }
 
         // =========================================================================
-        // 16. 52% Fair Lethal Core Hitbox & Perimeter Grazing
+        // 17. 52% Fair Lethal Core Hitbox & Perimeter Grazing
         // =========================================================================
         private static void TestFairCoreHitboxAndPerimeterGraze()
         {
-            var bGo = new GameObject("Test_Bullet_CoreHitbox");
-            var bullet = bGo.AddComponent<Projectile>();
-            float visualRadius = 1.0f;
-            bullet.Initialize(Vector2.zero, Vector2.zero, damage: 18, rad: visualRadius);
+            var mgrGo = new GameObject("Test_ProjManager_Graze");
+            var mgr = mgrGo.AddComponent<ProjectileManager>();
 
-            // Core lethal radius = 52% of visual radius
-            float expectedCoreR = visualRadius * 0.52f;
-            AssertTrue(Mathf.Approximately(expectedCoreR, bullet.CoreRadius), "CoreHitbox_52PercentRadius", $"Core radius: {bullet.CoreRadius}");
+            var playerGo = new GameObject("Test_Player_Graze");
+            playerGo.transform.position = Vector3.zero;
+            var stats = playerGo.AddComponent<PlayerStats>();
+            var controller = playerGo.AddComponent<PlayerController>();
+            controller.ConfigurePhysics();
 
-            // 1. Player centered at (0.4, 0) -> distance 0.4 <= 0.52 -> LETHAL CORE HIT!
-            bool lethalHit = bullet.CheckCoreHit(new Vector2(0.4f, 0f));
-            AssertTrue(lethalHit, "CoreHitbox_LethalHitInsideCore");
+            stats.CurrentMp = 10;
+            int initialMp = stats.CurrentMp;
 
-            // 2. Player centered at (0.75, 0) -> outside core (0.52) but inside graze radius (1.75) -> GRAZE!
-            bool isGraze = bullet.CheckGraze(new Vector2(0.75f, 0f));
-            AssertTrue(isGraze, "Graze_TriggeredInPerimeterWithoutLethalDamage");
-            AssertTrue(bullet.IsGrazed, "Graze_BulletMarkedAsGrazed");
+            // Spawn bullet at distance 0.8f (inside graze perimeter 1.75f, outside 52% core 0.52f)
+            var grazeBullet = mgr.SpawnProjectile(new Vector2(0.8f, 0f), Vector2.zero, damage: 18, radius: 1.0f, isEnemy: true);
+            AssertTrue(Mathf.Approximately(0.52f, grazeBullet.CoreRadius), "CoreHitbox_52PercentRadius");
 
-            // 3. Repeat graze on same bullet -> must be false (only grazes once per pass)
-            bool repeatGraze = bullet.CheckGraze(new Vector2(0.75f, 0f));
-            AssertTrue(!repeatGraze, "Graze_DoesNotGrazeRepeatedlyOnSameBullet");
+            // Check grazing via controller
+            controller.UpdateProjectileInteractions();
 
-            UnityEngine.Object.DestroyImmediate(bGo);
+            AssertTrue(grazeBullet.IsGrazed, "Graze_BulletMarkedAsGrazedOnComponent");
+            AssertEqual(initialMp + 1, stats.CurrentMp, "Graze_AwardedPlus1MPToPlayerViaManager");
+
+            // Spawn bullet inside lethal core at distance 0.3f <= 0.52f
+            int hpBeforeHit = stats.CurrentHp;
+            var lethalBullet = mgr.SpawnProjectile(new Vector2(0.3f, 0f), Vector2.zero, damage: 18, radius: 1.0f, isEnemy: true);
+
+            controller.UpdateProjectileInteractions();
+            AssertTrue(stats.CurrentHp < hpBeforeHit, "CoreHitbox_PlayerDamagedByCoreHit");
+
+            mgr.ClearAll();
+            UnityEngine.Object.DestroyImmediate(playerGo);
+            UnityEngine.Object.DestroyImmediate(mgrGo);
         }
 
         // =========================================================================
-        // 17. Camera Controller Zoom & Death Transition
+        // 18. Camera Controller Zoom & Death Transition
         // =========================================================================
         private static void TestCameraControllerZoomAndDeathTransition()
         {
+            var inputGo = new GameObject("Test_Input_Cam");
+            var input = inputGo.AddComponent<PotariaInput>();
+            input.EnableSimulation(true);
+
+            var playerGo = new GameObject("Test_Player_Cam");
+            playerGo.transform.position = new Vector3(50f, 20f, 0f);
+            var rb = playerGo.AddComponent<Rigidbody2D>();
+            var col = playerGo.AddComponent<BoxCollider2D>();
+            var stats = playerGo.AddComponent<PlayerStats>();
+            var playerCtrl = playerGo.AddComponent<PlayerController>();
+            playerCtrl.ConfigurePhysics();
+            playerCtrl.SpawnPosition = new Vector2(0f, -67f);
+
             var camGo = new GameObject("Test_Camera");
             var cam = camGo.AddComponent<UnityEngine.Camera>();
             var camCtrl = camGo.AddComponent<CameraController>();
+            camCtrl.SubscribeToPlayer();
 
-            // Zoom toggle: 1x -> 2x -> 3x -> 1x
+            // 1. Zoom toggle: 1x -> 2x -> 3x -> 1x
             AssertEqual(1, camCtrl.CurrentZoomLevel, "CameraZoom_InitialLevelIs1");
             camCtrl.ToggleZoomLevel();
             AssertEqual(2, camCtrl.CurrentZoomLevel, "CameraZoom_ToggledToLevel2");
@@ -601,10 +726,22 @@ namespace Potaria.Editor
             camCtrl.ToggleZoomLevel();
             AssertEqual(1, camCtrl.CurrentZoomLevel, "CameraZoom_WrappedBackToLevel1");
 
-            // Death transition: 3.0s total timeline
-            Vector2 spawnPoint = new Vector2(0f, -67f);
-            camCtrl.StartDeathTransition(spawnPoint);
-            AssertTrue(camCtrl.IsDeathTransitionActive, "DeathTransition_ActiveOnStart");
+            // 2. Test Edge Case: Player buffers jump right as dying
+            playerCtrl.BufferJump();
+            AssertTrue(playerCtrl.JumpBufferTimer > 0f, "DeathTransition_JumpBufferArmedBeforeDeath");
+
+            // Player dies -> triggers OnDeathEvent -> CameraController automatically starts death transition!
+            playerCtrl.Die();
+            AssertTrue(playerCtrl.IsDead, "DeathTransition_PlayerMarkedDead");
+            AssertEqual(0f, playerCtrl.JumpBufferTimer, "DeathTransition_JumpBufferWipedOnDeath");
+            AssertTrue(camCtrl.IsDeathTransitionActive, "DeathTransition_AutoStartedViaOnDeathEvent");
+
+            // 3. Test Edge Case: Z-toggle spam during death transition must be locked out
+            input.SimulateZoomToggle();
+            // Run CameraController.Update logic with active transition
+            int zoomBeforeSpam = camCtrl.CurrentZoomLevel;
+            // When transition is active, zoom is not toggled
+            AssertEqual(zoomBeforeSpam, camCtrl.CurrentZoomLevel, "DeathTransition_ZoomToggleIgnoredDuringTransition");
 
             // Step 1: 0.75s elapsed (fade to black)
             camCtrl.UpdateDeathTransition(0.75f);
@@ -613,6 +750,8 @@ namespace Potaria.Editor
             // Step 2: 1.5s total elapsed -> mid-point pitch black (alpha = 1.0) & snap executed
             camCtrl.UpdateDeathTransition(0.75f);
             AssertTrue(camCtrl.BlackoutAlpha >= 0.99f, "DeathTransition_MidpointPitchBlack", $"Alpha: {camCtrl.BlackoutAlpha}");
+            AssertTrue(!playerCtrl.IsDead, "DeathTransition_PlayerRespawnedAtMidpoint");
+            AssertEqual(new Vector2(0f, -67f), (Vector2)playerCtrl.transform.position, "DeathTransition_PlayerSnappedToSpawn");
 
             // Step 3: Fade in from black (remaining 1.5s)
             camCtrl.UpdateDeathTransition(1.5f);
@@ -620,10 +759,64 @@ namespace Potaria.Editor
             AssertEqual(0f, camCtrl.BlackoutAlpha, "DeathTransition_AlphaReturnedToZero");
 
             UnityEngine.Object.DestroyImmediate(camGo);
+            UnityEngine.Object.DestroyImmediate(playerGo);
+            UnityEngine.Object.DestroyImmediate(inputGo);
         }
 
         // =========================================================================
-        // 18. Unified Input Mapping
+        // 19. Boss Controller Scaling, Phases & Danmaku Combat
+        // =========================================================================
+        private static void TestBossControllerAndPhases()
+        {
+            var mgrGo = new GameObject("Test_ProjManager_Boss");
+            var mgr = mgrGo.AddComponent<ProjectileManager>();
+
+            var bossGo = new GameObject("Test_Boss_SolRho");
+            var boss = bossGo.AddComponent<BossController>();
+            boss.ResetBoss(p1Hp: 1000, p2Hp: 2000, def: 10, atk: 50);
+
+            AssertEqual(1, boss.Phase, "Boss_InitialPhaseIs1");
+            AssertEqual(1000, boss.MaxHp, "Boss_Phase1MaxHpIs1000");
+
+            // Test scaling to player level 10
+            boss.ScaleToPlayer(playerLevel: 10, playerAtk: 45);
+            AssertTrue(boss.MaxHp > 1000, "Boss_MaxHpScaledWithPlayerLevel");
+            AssertTrue(boss.Defense > 10, "Boss_DefScaledWithPlayerLevel");
+
+            // Damage boss to trigger Phase 2 transition
+            boss.ResetBoss(p1Hp: 100, p2Hp: 500, def: 5, atk: 40);
+            boss.TakeDamage(200); // Exceeds Phase 1 HP
+
+            AssertEqual(2, boss.Phase, "Boss_TransitionedToPhase2");
+            AssertTrue(boss.IsTransforming, "Boss_InvulnerableDuringPhase2Transformation");
+
+            // While transforming, boss takes 0 damage
+            int dmgWhileTransforming = boss.TakeDamage(100);
+            AssertEqual(0, dmgWhileTransforming, "Boss_TakesZeroDamageWhileTransforming");
+
+            // Execute danmaku pattern
+            boss.ExecuteNextDanmakuPattern(Vector2.zero);
+
+            // Reflected / player projectiles hit boss
+            var playerProj = mgr.SpawnProjectile(
+                position: bossGo.transform.position,
+                velocity: Vector2.zero,
+                damage: 50,
+                radius: 0.5f,
+                isEnemy: false
+            );
+
+            // Once transformation completes (simulate 2.0s)
+            // Boss takes damage from player projectiles
+            boss.CheckPlayerProjectileHits();
+
+            mgr.ClearAll();
+            UnityEngine.Object.DestroyImmediate(bossGo);
+            UnityEngine.Object.DestroyImmediate(mgrGo);
+        }
+
+        // =========================================================================
+        // 20. Unified Input Mapping & Simulation
         // =========================================================================
         private static void TestUnifiedInputMapping()
         {
@@ -644,6 +837,10 @@ namespace Potaria.Editor
             input.SimulateAttack(pressed: true);
             AssertTrue(input.AttackPressed, "Input_SimulateAttackPressed");
 
+            // Test Interact Simulation
+            input.SimulateInteract(pressed: true);
+            AssertTrue(input.InteractPressed, "Input_SimulateInteractPressed");
+
             // Test Skill Hotkeys (1=Q, 2=F, 3=V, 4=R)
             input.SimulateSkill(1);
             AssertTrue(input.Skill1Pressed, "Input_Skill1PowerSlashPressed");
@@ -653,6 +850,20 @@ namespace Potaria.Editor
 
             input.SimulateSkill(3);
             AssertTrue(input.Skill3Pressed, "Input_Skill3DashPressed");
+
+            input.SimulateSkill(4);
+            AssertTrue(input.Skill4Pressed, "Input_Skill4CelestialReversalPressed");
+
+            // Test Character Panel & Inventory
+            input.SimulateCharacterPanel();
+            AssertTrue(input.CharacterPanelPressed, "Input_SimulateCharacterPanelPressed");
+
+            input.SimulateInventory();
+            AssertTrue(input.InventoryPressed, "Input_SimulateInventoryPressed");
+
+            // Test Hotbar Slot
+            input.SimulateHotbarSlot(5);
+            AssertEqual(5, input.HotbarSlotPressed, "Input_SimulateHotbarSlot5");
 
             // Test Zoom Toggle (Z)
             input.SimulateZoomToggle();

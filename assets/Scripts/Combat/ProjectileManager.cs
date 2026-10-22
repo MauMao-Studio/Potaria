@@ -103,15 +103,15 @@ namespace Potaria.Combat
         /// Scans active enemy projectiles for Touhou-style grazing:
         /// Returns the count of projectiles that grazed player perimeter without hitting lethal core.
         /// </summary>
-        public int CheckGrazing(Vector2 playerCenter, float playerHitboxRadius = 0.4f)
+        public int CheckGrazing(Vector2 playerCenter, float playerHitboxRadius = 0.0f)
         {
             int grazedCount = 0;
             CleanupNulls();
 
-            for (int i = 0; i < _activeProjectiles.Count; i++)
+            for (int i = _activeProjectiles.Count - 1; i >= 0; i--)
             {
                 var p = _activeProjectiles[i];
-                if (p == null || !p.IsEnemyProjectile || p.IsGrazed) continue;
+                if (p == null || !p.IsEnemyProjectile || p.IsGrazed || p.IsReflected) continue;
 
                 if (p.CheckGraze(playerCenter, playerHitboxRadius))
                 {
@@ -121,6 +121,59 @@ namespace Potaria.Combat
             }
 
             return grazedCount;
+        }
+
+        /// <summary>
+        /// Scans active enemy projectiles for lethal core hits against the player.
+        /// Returns count of hits and total accumulated damage.
+        /// </summary>
+        public int CheckPlayerHits(Vector2 playerCenter, float playerHitboxRadius, out int totalDamage)
+        {
+            totalDamage = 0;
+            int hitCount = 0;
+            CleanupNulls();
+
+            for (int i = _activeProjectiles.Count - 1; i >= 0; i--)
+            {
+                var p = _activeProjectiles[i];
+                if (p == null || !p.IsEnemyProjectile || p.IsReflected) continue;
+
+                if (p.CheckCoreHit(playerCenter, playerHitboxRadius))
+                {
+                    totalDamage += p.Damage;
+                    hitCount++;
+                    p.RecordHit();
+                }
+            }
+
+            return hitCount;
+        }
+
+        /// <summary>
+        /// Scans active player projectiles (arrows, spells, and reflected enemy bullets)
+        /// for lethal core hits against an enemy or boss.
+        /// Returns count of hits and total accumulated damage.
+        /// </summary>
+        public int CheckEnemyHits(Vector2 enemyCenter, float enemyRadius, out int totalDamage)
+        {
+            totalDamage = 0;
+            int hitCount = 0;
+            CleanupNulls();
+
+            for (int i = _activeProjectiles.Count - 1; i >= 0; i--)
+            {
+                var p = _activeProjectiles[i];
+                if (p == null || (p.IsEnemyProjectile && !p.IsReflected)) continue;
+
+                if (p.CheckCoreHit(enemyCenter, enemyRadius))
+                {
+                    totalDamage += p.Damage;
+                    hitCount++;
+                    p.RecordHit();
+                }
+            }
+
+            return hitCount;
         }
 
         /// <summary>
@@ -135,7 +188,7 @@ namespace Potaria.Combat
 
             float radSqr = reflectRadius * reflectRadius;
 
-            for (int i = 0; i < _activeProjectiles.Count; i++)
+            for (int i = _activeProjectiles.Count - 1; i >= 0; i--)
             {
                 var p = _activeProjectiles[i];
                 if (p == null || !p.IsEnemyProjectile || !p.Reflectable || p.IsReflected) continue;

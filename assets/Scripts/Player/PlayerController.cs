@@ -30,6 +30,7 @@ namespace Potaria.Player
         [SerializeField] private float coyoteTime = 0.15f;
         [SerializeField] private float jumpBufferTime = 0.12f;
         [SerializeField] private float platformDropDuration = 0.25f;
+        [SerializeField] private Vector2 spawnPosition = new Vector2(0f, -67f);
 
         [Header("Liquid Swimming & Oxygen")]
         [SerializeField] private float waterDragHorizontal = 0.88f;
@@ -109,6 +110,34 @@ namespace Potaria.Player
         public float ReflectionRadius => reflectionRadius;
         public bool FacingRight => _facingRight;
         public bool IsDead => _isDead;
+        public Vector2 SpawnPosition { get => spawnPosition; set => spawnPosition = value; }
+        public float CoyoteTimer => _coyoteTimer;
+        public float JumpBufferTimer => _jumpBufferTimer;
+        public float PlatformDropTimer => _platformDropTimer;
+
+        public void SetGroundedState(bool grounded)
+        {
+            _isGrounded = grounded;
+            if (grounded) _coyoteTimer = coyoteTime;
+        }
+
+        public void BufferJump()
+        {
+            _jumpBufferTimer = jumpBufferTime;
+        }
+
+        public void SetPlatformDropTimer(float duration)
+        {
+            _platformDropTimer = duration;
+        }
+
+        public void ApplyJumpCut()
+        {
+            if (Rigidbody != null && Rigidbody.linearVelocity.y > 0.5f)
+            {
+                Rigidbody.linearVelocity = new Vector2(Rigidbody.linearVelocity.x, Rigidbody.linearVelocity.y * variableJumpCutMultiplier);
+            }
+        }
 
         public event Action OnJumpSound;
         public event Action OnGrazeSparks;
@@ -201,6 +230,7 @@ namespace Potaria.Player
             UpdateTimers(Time.deltaTime);
             UpdateLiquidAndDrowning(Time.deltaTime);
             UpdateCombatSkills();
+            UpdateProjectileInteractions();
             UpdateAnimation(Time.deltaTime);
         }
 
@@ -238,7 +268,7 @@ namespace Potaria.Player
             }
         }
 
-        private void UpdateTimers(float dt)
+        public void UpdateTimers(float dt)
         {
             // Coyote Timer
             if (_isGrounded)
@@ -284,16 +314,19 @@ namespace Potaria.Player
             if (_iFrameTimer > 0f) _iFrameTimer = Mathf.Max(0f, _iFrameTimer - dt);
         }
 
-        private void CheckGroundStatus()
+        public void CheckGroundStatus()
         {
             _wasGrounded = _isGrounded;
+
+            if (_collider == null) _collider = GetComponent<BoxCollider2D>();
+            if (_collider == null) return;
 
             // Ground detection: BoxCast below the collider
             Vector2 boxCenter = (Vector2)transform.position + _collider.offset + (Vector2.down * 0.05f);
             Vector2 boxSize = new Vector2(_collider.size.x * 0.9f, 0.1f);
 
             RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.down, 0.05f, groundLayerMask);
-            _isGrounded = hit.collider != null && hit.collider != _collider;
+            _isGrounded = hit.collider != null && hit.collider != _collider && !hit.collider.isTrigger && !hit.collider.transform.IsChildOf(transform);
         }
 
         private void ApplyHorizontalMovement(float dt)
@@ -319,7 +352,7 @@ namespace Potaria.Player
             }
         }
 
-        private void ApplyJumpAndVerticalPhysics(float dt)
+        public void ApplyJumpAndVerticalPhysics(float dt)
         {
             // 1. Execute Jump if buffered and coyote valid
             if (_jumpBufferTimer > 0f && (_coyoteTimer > 0f || _inWater))
@@ -333,14 +366,11 @@ namespace Potaria.Player
             if (_jumpReleasedThisFrame)
             {
                 _jumpReleasedThisFrame = false;
-                if (_rb.linearVelocity.y > 0.5f)
-                {
-                    _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.y * variableJumpCutMultiplier);
-                }
+                ApplyJumpCut();
             }
         }
 
-        private void ExecuteJump()
+        public void ExecuteJump()
         {
             float effectiveJumpForce = jumpForce;
             if (stats != null)
@@ -379,7 +409,7 @@ namespace Potaria.Player
             Vector2 boxSize = new Vector2(_collider.size.x * 0.8f, 0.15f);
 
             var overlap = Physics2D.OverlapBox(headCenter, boxSize, 0f, solidCeilingMask);
-            if (overlap != null && overlap != _collider && !overlap.isTrigger)
+            if (overlap != null && overlap != _collider && !overlap.isTrigger && !overlap.transform.IsChildOf(transform))
             {
                 if (overlap.GetComponent<PlatformEffector2D>() == null)
                 {
@@ -388,7 +418,7 @@ namespace Potaria.Player
             }
 
             RaycastHit2D hit = Physics2D.BoxCast(headCenter, boxSize, 0f, Vector2.up, 0.2f, solidCeilingMask);
-            if (hit.collider != null && hit.collider != _collider && !hit.collider.isTrigger)
+            if (hit.collider != null && hit.collider != _collider && !hit.collider.isTrigger && !hit.collider.transform.IsChildOf(transform))
             {
                 // Check that it is not a one-way platform
                 var effector = hit.collider.GetComponent<PlatformEffector2D>();
@@ -431,7 +461,7 @@ namespace Potaria.Player
             return 0;
         }
 
-        private void UpdateLiquidAndDrowning(float dt)
+        public void UpdateLiquidAndDrowning(float dt)
         {
             if (_isSubmerged)
             {
@@ -444,7 +474,7 @@ namespace Potaria.Player
                         _drownTimer -= drownTickInterval;
                         // Drowning damage: exactly 1 heart per second (10% max HP or max(1, maxHp / 10))
                         int heartDamage = (stats != null) ? Mathf.Max(1, stats.MaxHp / 10) : 10;
-                        TakeDamage(heartDamage, ignoreDef: true);
+                        TakeDamage(heartDamage, ignoreDef: true, ignoreIFrames: true);
                     }
                 }
             }
@@ -477,10 +507,46 @@ namespace Potaria.Player
                 CastDash();
             }
 
-            // Celestial Reversal (Z / R)
-            if (input.Skill4Pressed || input.ZoomTogglePressed)
+            // Skill 4 (R): Celestial Reversal
+            if (input.Skill4Pressed)
             {
-                // Skill 4 is Fireball / Celestial Reversal
+                ActivateCelestialReversal();
+            }
+        }
+
+        public void UpdateProjectileInteractions()
+        {
+            if (_isDead) return;
+
+            Vector2 playerPos = (Vector2)transform.position + (_collider != null ? _collider.offset : Vector2.zero);
+            float hitboxRadius = 0f; // Touhou/Gungeon point hitbox for fair 52% bullet core & 175% graze boundary
+
+            var pm = ProjectileManager.Instance;
+            if (pm == null) return;
+
+            // 1. If Celestial Reversal is active, reflect incoming enemy projectiles
+            if (IsReflecting)
+            {
+                Vector2 targetPos = (input != null) ? input.MouseWorldPosition : (playerPos + (_facingRight ? Vector2.right : Vector2.left) * 10f);
+                int reflected = pm.ReflectProjectilesInRadius(playerPos, reflectionRadius, targetPos, ref reflectionBudget);
+                if (reflected > 0)
+                {
+                    OnGrazeSparks?.Invoke();
+                }
+            }
+
+            // 2. Check grazing on unreflected enemy projectiles
+            int grazedCount = pm.CheckGrazing(playerPos, hitboxRadius);
+            for (int g = 0; g < grazedCount; g++)
+            {
+                TriggerGrazeReward();
+            }
+
+            // 3. Check core lethal hits on player
+            int hits = pm.CheckPlayerHits(playerPos, hitboxRadius, out int damageDealt);
+            if (hits > 0 && damageDealt > 0)
+            {
+                TakeDamage(damageDealt);
             }
         }
 
@@ -519,12 +585,16 @@ namespace Potaria.Player
             _iFrameTimer = reflectionWindow + 0.15f;
         }
 
-        public int TakeDamage(int damageAmount, bool ignoreDef = false)
+        public int TakeDamage(int damageAmount, bool ignoreDef = false, bool ignoreIFrames = false)
         {
-            if (_iFrameTimer > 0f || _isDead) return 0;
+            if (!ignoreIFrames && _iFrameTimer > 0f) return 0;
+            if (_isDead) return 0;
 
             int actualDamage = (stats != null) ? stats.TakeDamage(damageAmount, ignoreDef) : damageAmount;
-            _iFrameTimer = 0.8f;
+            if (!ignoreIFrames)
+            {
+                _iFrameTimer = 0.8f;
+            }
 
             if (stats != null && stats.CurrentHp <= 0)
             {
@@ -537,15 +607,37 @@ namespace Potaria.Player
         public void Die()
         {
             _isDead = true;
-            _rb.linearVelocity = Vector2.zero;
+            if (_rb != null) _rb.linearVelocity = Vector2.zero;
+            _jumpBufferTimer = 0f;
+            _jumpPressedThisFrame = false;
+            _jumpHeld = false;
+            _jumpReleasedThisFrame = false;
+            _currentMoveInput = Vector2.zero;
+            _dashTimer = 0f;
+            _platformDropTimer = 0f;
+            _coyoteTimer = 0f;
+            _reflectionTimer = 0f;
+            _drownTimer = 0f;
+            currentOxygen = maxOxygen;
             OnDeathEvent?.Invoke();
         }
 
         public void Respawn(Vector2 spawnPosition)
         {
+            this.spawnPosition = spawnPosition;
             transform.position = spawnPosition;
-            _rb.linearVelocity = Vector2.zero;
+            if (_rb != null) _rb.linearVelocity = Vector2.zero;
             _isDead = false;
+            _jumpBufferTimer = 0f;
+            _jumpPressedThisFrame = false;
+            _jumpHeld = false;
+            _jumpReleasedThisFrame = false;
+            _currentMoveInput = Vector2.zero;
+            _dashTimer = 0f;
+            _platformDropTimer = 0f;
+            _coyoteTimer = 0f;
+            _reflectionTimer = 0f;
+            _drownTimer = 0f;
             currentOxygen = maxOxygen;
             if (stats != null)
             {

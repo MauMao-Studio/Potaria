@@ -142,12 +142,51 @@ namespace Potaria.Combat
                     weaponPivot.rotation = Quaternion.Euler(0f, 0f, finalDeg);
                 }
 
+                // Check for enemy collisions during active swing arc
+                CheckMeleeCollisions();
+
                 if (_swingProgress >= 1.0f)
                 {
                     _isSwinging = false;
                     _swingProgress = 0f;
                     _hitTargetsInCurrentSwing.Clear();
                     OnSwingCompleted?.Invoke();
+                }
+            }
+        }
+
+        public void CheckMeleeCollisions()
+        {
+            Vector2 origin = weaponPivot != null ? (Vector2)weaponPivot.position : (Vector2)transform.position;
+            float reach = 1.6f;
+            Vector2 dir = new Vector2(Mathf.Cos(_aimAngleRad), Mathf.Sin(_aimAngleRad));
+            Vector2 hitCenter = origin + dir * (reach * 0.5f);
+
+            var colliders = Physics2D.OverlapCircleAll(hitCenter, reach * 0.7f);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                var col = colliders[i];
+                if (col == null || col.transform == transform || col.transform.IsChildOf(transform)) continue;
+
+                // Check for BossController
+                var boss = col.GetComponentInParent<BossController>();
+                if (boss != null)
+                {
+                    if (TryHitTarget(boss.GetInstanceID(), out int dmg, out bool _))
+                    {
+                        boss.TakeDamage(dmg);
+                    }
+                    continue;
+                }
+
+                // Check for other CharacterStats (e.g. Mobs)
+                var charStats = col.GetComponentInParent<CharacterStats>();
+                if (charStats != null && charStats != playerStats)
+                {
+                    if (TryHitTarget(charStats.GetInstanceID(), out int dmg, out bool _))
+                    {
+                        charStats.TakeDamage(dmg);
+                    }
                 }
             }
         }

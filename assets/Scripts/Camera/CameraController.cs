@@ -63,6 +63,36 @@ namespace Potaria.Cameras
             if (player == null) player = FindAnyObjectByType<PlayerController>();
 
             CreateBlackoutTexture();
+            SubscribeToPlayer();
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeFromPlayer();
+        }
+
+        public void SubscribeToPlayer()
+        {
+            if (player == null) player = FindAnyObjectByType<PlayerController>();
+            if (player != null)
+            {
+                player.OnDeathEvent -= HandlePlayerDeath;
+                player.OnDeathEvent += HandlePlayerDeath;
+            }
+        }
+
+        public void UnsubscribeFromPlayer()
+        {
+            if (player != null)
+            {
+                player.OnDeathEvent -= HandlePlayerDeath;
+            }
+        }
+
+        private void HandlePlayerDeath()
+        {
+            Vector2 respawnPos = (player != null) ? player.SpawnPosition : new Vector2(0f, -67f);
+            StartDeathTransition(respawnPos);
         }
 
         private void Start()
@@ -76,6 +106,8 @@ namespace Potaria.Cameras
             {
                 _cam.orthographicSize = GetTargetOrthoSize();
             }
+
+            SubscribeToPlayer();
         }
 
         private void CreateBlackoutTexture()
@@ -92,8 +124,8 @@ namespace Potaria.Cameras
         {
             if (input == null) input = PotariaInput.Instance;
 
-            // 1. Zoom toggle via 'Z' key
-            if (input != null && input.ZoomTogglePressed)
+            // 1. Zoom toggle via 'Z' key (locked during death transition)
+            if (input != null && input.ZoomTogglePressed && !_isDeathTransitionActive)
             {
                 ToggleZoomLevel();
             }

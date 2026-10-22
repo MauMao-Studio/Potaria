@@ -77,6 +77,7 @@ namespace Potaria.Input
         private bool _simAttackPressed;
         private bool _simAttackHeld;
         private bool _simInteractPressed;
+        private bool _simInteractHeld;
         private bool _simDropPressed;
         private bool _simDropHeld;
         private bool _simSkill1;
@@ -247,6 +248,7 @@ namespace Potaria.Input
             AttackHeld = _simAttackHeld;
 
             InteractPressed = _simInteractPressed;
+            InteractHeld = _simInteractHeld;
             DropPlatformPressed = _simDropPressed;
             DropPlatformHeld = _simDropHeld;
 
@@ -341,6 +343,35 @@ namespace Potaria.Input
         {
             _simZoomToggle = true;
             if (useSimulatedInput) ZoomTogglePressed = true;
+        }
+
+        public void SimulateInteract(bool pressed, bool held = false)
+        {
+            _simInteractPressed = pressed;
+            _simInteractHeld = held;
+            if (useSimulatedInput)
+            {
+                InteractPressed = pressed;
+                InteractHeld = held;
+            }
+        }
+
+        public void SimulateCharacterPanel()
+        {
+            _simCharPanel = true;
+            if (useSimulatedInput) CharacterPanelPressed = true;
+        }
+
+        public void SimulateInventory()
+        {
+            _simInventory = true;
+            if (useSimulatedInput) InventoryPressed = true;
+        }
+
+        public void SimulateHotbarSlot(int slotIndex)
+        {
+            _simHotbarSlot = Mathf.Clamp(slotIndex, 0, 9);
+            if (useSimulatedInput) HotbarSlotPressed = _simHotbarSlot;
         }
 
         public void SimulateAim(Vector2 worldPos, Vector2 aimDirection)
