@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6d734a4620398549bd9f67839431756, type: 3}
+  m_Name: eggplant
+  m_EditorClassIdentifier: 
+  cropId: eggplant
+  cropName: Eggplant
+  seedItemId: eggplant_seeds
+  harvestItemId: eggplant
+  seedItem: {fileID: 11400000, guid: 71b5985fa0b6ebf4ea4fdacd1a43695a, type: 2}
+  harvestItem: {fileID: 11400000, guid: a606da3d62ad86547a103a29f3761dca, type: 2}
+  growthStagesCount: 4
+  stageDurationSeconds: 40
+  stageSprites:
+  - {fileID: 21300000, guid: c952861094ac8d747a685f0d563da4a1, type: 3}
+  - {fileID: 21300000, guid: b76057213d6dca94cb6f4d0d8e78d872, type: 3}
+  - {fileID: 21300000, guid: 6c87991e0dbea3441b5f3322fab539ea, type: 3}
+  - {fileID: 21300000, guid: 60bc135a36e202f4bba8b7ece7db1b27, type: 3}
+  minLightRequirement: 0.35
+  requiresHydratedFarmland: 1
+  moistureGrowthMultiplier: 1
+  dryGrowthMultiplier: 0.35
+  minHarvestYield: 1
+  maxHarvestYield: 2
+  minSeedYield: 1
+  maxSeedYield: 2

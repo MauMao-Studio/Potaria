@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: virtue_kindness
+  m_EditorClassIdentifier: 
+  setId: virtue_kindness
+  setName: 'Kindness: The Verdant Guardian'
+  setTag: SHV
+  description: 
+  pieceItemIds:
+  - kindness_wreath
+  - kindness_cuirass
+  - kindness_striders
+  - kindness_bow
+  - kindness_seed
+  pieceItems:
+  - {fileID: 11400000, guid: 5b66f908ba4370740ab5cac1fce94352, type: 2}
+  - {fileID: 11400000, guid: 79824fdeea1c63f488767b27dfded25a, type: 2}
+  - {fileID: 11400000, guid: d13ede2ab28a35248bb6ff436268aa1a, type: 2}
+  - {fileID: 11400000, guid: b5f929aea14ad84469b9b10b03388698, type: 2}
+  - {fileID: 11400000, guid: d85d99c467fc7774684a56b79286887f, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Gentle Bloom (+3 HP/s Regen, +20 Max HP, +10 Reflected
+      Thorns)'
+    atkMultiplier: 0
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 20
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Gentle Bloom (+3 HP/s Regen, +20 Max HP, +10 Reflected
+      Thorns)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Stand Between (+18% DEF, +40 Max HP, +20 Reflected Thorns)'
+    atkMultiplier: 0
+    defMultiplier: 0.18
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 40
+    bonusMpRegen: 1.8
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Stand Between (+18% DEF, +40 Max HP, +20 Reflected
+      Thorns)'
+  fivePieceBonus:
+    requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring
+      40% HP, Emerald Sprout Aura)'
+    atkMultiplier: 0
+    defMultiplier: 0.2
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 50
+    bonusMpRegen: 2
+    bonusAtkSpeed: 0
+    auraEffect: verdant
+    specialPassive: 'Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring
+      40% HP, Emerald Sprout Aura)'
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Gentle Bloom (+3 HP/s Regen, +20 Max HP, +10 Reflected
+      Thorns)'
+    atkMultiplier: 0
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 20
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Gentle Bloom (+3 HP/s Regen, +20 Max HP, +10 Reflected
+      Thorns)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Stand Between (+18% DEF, +40 Max HP, +20 Reflected Thorns)'
+    atkMultiplier: 0
+    defMultiplier: 0.18
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 40
+    bonusMpRegen: 1.8
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Stand Between (+18% DEF, +40 Max HP, +20 Reflected
+      Thorns)'
+  - requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring
+      40% HP, Emerald Sprout Aura)'
+    atkMultiplier: 0
+    defMultiplier: 0.2
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 50
+    bonusMpRegen: 2
+    bonusAtkSpeed: 0
+    auraEffect: verdant
+    specialPassive: 'Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring
+      40% HP, Emerald Sprout Aura)'

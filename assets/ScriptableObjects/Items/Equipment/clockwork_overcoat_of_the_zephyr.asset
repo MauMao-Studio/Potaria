@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: clockwork_overcoat_of_the_zephyr
+  m_EditorClassIdentifier: 
+  itemId: clockwork_overcoat_of_the_zephyr
+  itemName: Clockwork Overcoat of the Zephyr
+  category: 10
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 5766fab0efb317a4a8f9f46062e831fd, type: 3}
+  description: 'Sturdy Ancient chest armor fitted with reinforced plating. Provides
+    vital torso protection against monstrous blows. Grants Ancient Awakening: Evasion
+    Step.'
+  lore: '''Harvested beneath the scorching sun of the Arid Waste by ancient tomb
+    wardens.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 61
+  attack: 33
+  critChance: 19.7
+  speed: 0.4
+  bonusHp: 256
+  bonusMp: 160
+  mpRegen: 3.8
+  affixSlots: 0

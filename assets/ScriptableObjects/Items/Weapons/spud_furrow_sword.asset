@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: spud_furrow_sword
+  m_EditorClassIdentifier: 
+  itemId: spud_furrow_sword
+  itemName: Spud Furrow Sword
+  category: 1
+  rarity: 2
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: bf8db63651249384a8d65943338551b4, type: 3}
+  description: A formidable Rare blade tempered for heroic combat. Forged in Potaria
+    to conquer the subterranean depths. Infused with the earthy resilience of Potaria.
+  lore: 
+  specialEffect: 
+  attack: 37
+  defense: 0
+  critChance: 9.2
+  speed: 0.14
+  bonusHp: 18
+  bonusMp: 31
+  mpRegen: 0.7
+  specialTag: 
+  affixSlots: 0

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: gold_ore
+  m_EditorClassIdentifier: 
+  itemId: gold_ore
+  itemName: Gold Ore
+  category: 4
+  rarity: 2
+  maxStack: 999
+  goldValue: 1
+  icon: {fileID: 21300000, guid: c512280f69ec38c499df5452d0e08810, type: 3}
+  description: Gleaming golden veins buried in deep caverns. Smelt at a furnace.
+  lore: '''A precious vein untouched by sunlight.'''
+  specialEffect: Smelting Ore

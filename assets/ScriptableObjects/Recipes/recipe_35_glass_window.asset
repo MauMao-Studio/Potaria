@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_35_glass_window
+  m_EditorClassIdentifier: 
+  recipeId: recipe_35_glass_window
+  category: Building
+  resultItemId: glass_window
+  resultItemData: {fileID: 11400000, guid: 330e48f435bedf641a347c76db7bf68a, type: 2}
+  resultCount: 2
+  craftingStation: 1
+  ingredients:
+  - itemId: sand_block
+    itemData: {fileID: 11400000, guid: 07bf60f5e5fdcad4586a3c971cbfef07, type: 2}
+    count: 2

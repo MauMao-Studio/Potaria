@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_36_stone_fireplace
+  m_EditorClassIdentifier: 
+  recipeId: recipe_36_stone_fireplace
+  category: Furniture
+  resultItemId: stone_fireplace
+  resultItemData: {fileID: 11400000, guid: 65aa2e19842218f429f9e7a40b16be15, type: 2}
+  resultCount: 1
+  craftingStation: 3
+  ingredients:
+  - itemId: stone_block
+    itemData: {fileID: 11400000, guid: 28fa40ec5a4dfd541bb6193e9b7bc500, type: 2}
+    count: 12
+  - itemId: wood
+    itemData: {fileID: 11400000, guid: 8f9e2650d0bccf24094137a9bec1a2ee, type: 2}
+    count: 4
+  - itemId: torch
+    itemData: {fileID: 11400000, guid: d531f9084035d1a41a3f173f1720b7cb, type: 2}
+    count: 2

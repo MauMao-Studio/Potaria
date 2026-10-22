@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: bramble_longbow_of_the_blight
+  m_EditorClassIdentifier: 
+  itemId: bramble_longbow_of_the_blight
+  itemName: Bramble Longbow of the Blight
+  category: 1
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: a6b32bdb206398d4989e4470a28053c3, type: 3}
+  description: An agile Ancient bow crafted for high-velocity volleys. Pierces monstrous
+    targets from safe range. Pulses with eerie dark energies. Bestows Primordial
+    Genesis.
+  lore: '''Drink deep of the celestial dew and fear no shadow in this world or the
+    next.'''
+  specialEffect: 
+  attack: 111
+  defense: 0
+  critChance: 30.4
+  speed: 0.55
+  bonusHp: 147
+  bonusMp: 167
+  mpRegen: 5.4
+  specialTag: 
+  affixSlots: 0

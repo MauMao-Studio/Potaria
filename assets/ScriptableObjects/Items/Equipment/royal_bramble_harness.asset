@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: royal_bramble_harness
+  m_EditorClassIdentifier: 
+  itemId: royal_bramble_harness
+  itemName: Royal Bramble Harness
+  category: 10
+  rarity: 1
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 0d58c1907c0033e4d9ce5a5d390f9165, type: 3}
+  description: Sturdy Uncommon chest armor fitted with reinforced plating. Provides
+    vital torso protection against monstrous blows.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 10
+  attack: 1
+  critChance: 1
+  speed: 0
+  bonusHp: 31
+  bonusMp: 15
+  mpRegen: 0.2
+  affixSlots: 0

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: scorpion_relic_of_fortitude
+  m_EditorClassIdentifier: 
+  itemId: scorpion_relic_of_fortitude
+  itemName: Scorpion Relic of Fortitude
+  category: 10
+  rarity: 2
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 20729e0f4a9226541ae30ec606408076, type: 3}
+  description: An enchanted Rare talisman humming with magical resonance. Bestows
+    passive combat buffs and fortitude.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 7
+  attack: 7
+  critChance: 6.4
+  speed: 0.15
+  bonusHp: 47
+  bonusMp: 37
+  mpRegen: 0.9
+  affixSlots: 0

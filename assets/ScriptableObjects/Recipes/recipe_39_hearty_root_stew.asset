@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_39_hearty_root_stew
+  m_EditorClassIdentifier: 
+  recipeId: recipe_39_hearty_root_stew
+  category: Survival
+  resultItemId: hearty_root_stew
+  resultItemData: {fileID: 11400000, guid: f202f122d8218b043ae210638a639562, type: 2}
+  resultCount: 1
+  craftingStation: 1
+  ingredients:
+  - itemId: raw_potato
+    itemData: {fileID: 11400000, guid: c094a01dde2a6ae41a38aac6619b924c, type: 2}
+    count: 3
+  - itemId: glowing_mushroom
+    itemData: {fileID: 11400000, guid: 6dcbacf2a5d723441aeb40b2694bb5c6, type: 2}
+    count: 1
+  - itemId: wood
+    itemData: {fileID: 11400000, guid: 8f9e2650d0bccf24094137a9bec1a2ee, type: 2}
+    count: 1

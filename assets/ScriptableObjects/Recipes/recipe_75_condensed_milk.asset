@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_75_condensed_milk
+  m_EditorClassIdentifier: 
+  recipeId: recipe_75_condensed_milk
+  category: Survival
+  resultItemId: condensed_milk
+  resultItemData: {fileID: 11400000, guid: 1bbc5fff773d1754dac3edde17ab7c97, type: 2}
+  resultCount: 1
+  craftingStation: 1
+  ingredients:
+  - itemId: carabao_milk
+    itemData: {fileID: 11400000, guid: 4d4f5cc339f79bc469226ab87c315326, type: 2}
+    count: 1
+  - itemId: spud_sap
+    itemData: {fileID: 11400000, guid: 5b88732a93b76c042900156425747ba3, type: 2}
+    count: 1

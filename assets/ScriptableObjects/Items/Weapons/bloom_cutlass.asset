@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: bloom_cutlass
+  m_EditorClassIdentifier: 
+  itemId: bloom_cutlass
+  itemName: Bloom Cutlass
+  category: 1
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 31534be65eae7104bb3b2e3d09eae3ff, type: 3}
+  description: A swift Mythic blade with flawless balance. Strikes with rapid precision
+    in close-quarters combat. Bestows Light Radiance.
+  lore: '''Etched with runic glyphs that pulse in harmony with the heartbeat of Potaria.'''
+  specialEffect: 
+  attack: 68
+  defense: 0
+  critChance: 15.7
+  speed: 0.34
+  bonusHp: 46
+  bonusMp: 73
+  mpRegen: 2.5
+  specialTag: 
+  affixSlots: 0

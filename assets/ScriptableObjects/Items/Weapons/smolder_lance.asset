@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: smolder_lance
+  m_EditorClassIdentifier: 
+  itemId: smolder_lance
+  itemName: Smolder Lance
+  category: 1
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: e25320b963e5e1e4db7b6cbc8c56c6f4, type: 3}
+  description: An extended Epic polearm forged for tactical reach. Impales adversaries
+    before they can close distance. Bestows Air Cushion Fall Resistance.
+  lore: 
+  specialEffect: 
+  attack: 52
+  defense: 0
+  critChance: 12.7
+  speed: 0.27
+  bonusHp: 44
+  bonusMp: 30
+  mpRegen: 1.6
+  specialTag: 
+  affixSlots: 0

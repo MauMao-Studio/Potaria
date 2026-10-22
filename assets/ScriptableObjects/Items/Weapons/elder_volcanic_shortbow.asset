@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: elder_volcanic_shortbow
+  m_EditorClassIdentifier: 
+  itemId: elder_volcanic_shortbow
+  itemName: Elder Volcanic Shortbow
+  category: 1
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: fa04b398e09b93e4e8b1e85c605a451a, type: 3}
+  description: An agile Epic bow crafted for high-velocity volleys. Pierces monstrous
+    targets from safe range. Bestows +115% Sprint Speed.
+  lore: 
+  specialEffect: 
+  attack: 49
+  defense: 0
+  critChance: 13.4
+  speed: 0.25
+  bonusHp: 32
+  bonusMp: 39
+  mpRegen: 1.3
+  specialTag: 
+  affixSlots: 0

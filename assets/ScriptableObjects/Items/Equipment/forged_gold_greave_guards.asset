@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: forged_gold_greave_guards
+  m_EditorClassIdentifier: 
+  itemId: forged_gold_greave_guards
+  itemName: Forged Gold Greave-Guards
+  category: 10
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 18561f6707cfca14790c9e9f23552daf, type: 3}
+  description: Flexible Legendary leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Grants Celestial Aegis.
+  lore: '''Woven from filaments of morning starlight and unbreakable potato fiber.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 36
+  attack: 10
+  critChance: 12.9
+  speed: 1.41
+  bonusHp: 149
+  bonusMp: 85
+  mpRegen: 2.6
+  affixSlots: 0

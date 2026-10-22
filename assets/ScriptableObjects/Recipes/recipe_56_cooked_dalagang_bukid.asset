@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_56_cooked_dalagang_bukid
+  m_EditorClassIdentifier: 
+  recipeId: recipe_56_cooked_dalagang_bukid
+  category: Survival
+  resultItemId: cooked_dalagang_bukid
+  resultItemData: {fileID: 11400000, guid: 1cdca511251456440945246514ca1c1a, type: 2}
+  resultCount: 1
+  craftingStation: 1
+  ingredients:
+  - itemId: raw_dalagang_bukid
+    itemData: {fileID: 11400000, guid: 59829c8cec9841e4da754273595c9e99, type: 2}
+    count: 1

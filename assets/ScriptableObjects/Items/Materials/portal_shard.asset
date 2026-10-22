@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: portal_shard
+  m_EditorClassIdentifier: 
+  itemId: portal_shard
+  itemName: Celestial Portal Shard
+  category: 7
+  rarity: 2
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: d6b2d090e95b8de4ea824db68f7a7c63, type: 3}
+  description: Dropped by subterranean mini-bosses. Craft 4 into a Celestial Keystone
+    at a Work Bench!
+  lore: '''A crystalline sliver fallen from the celestial gates.'''
+  specialEffect: Boss Summoning Key Component

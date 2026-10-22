@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: temperance_trident
+  m_EditorClassIdentifier: 
+  itemId: temperance_trident
+  itemName: Trident of the Stillwater
+  category: 1
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 0596e58ac89933e41b6b6026b6131822, type: 3}
+  description: A balanced triple-prong trident maintaining steady rhythm and fluid
+    tempo.
+  lore: Forged in crystalline glacial depths to calm boiling maelstroms.
+  specialEffect: 'Tidal Cadence: Landing critical hits reduces all active skill cooldowns
+    by 1.5s, Wave Thrust'
+  attack: 42
+  defense: 0
+  critChance: 13
+  speed: 0.15
+  bonusHp: 20
+  bonusMp: 0
+  mpRegen: 0
+  specialTag: 
+  affixSlots: 0

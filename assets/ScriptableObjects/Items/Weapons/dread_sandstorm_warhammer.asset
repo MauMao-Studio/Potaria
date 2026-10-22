@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: dread_sandstorm_warhammer
+  m_EditorClassIdentifier: 
+  itemId: dread_sandstorm_warhammer
+  itemName: Dread Sandstorm Warhammer
+  category: 1
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: b97d9a4fc09a0684fa9b741cbd2f5d77, type: 3}
+  description: A heavy Legendary weapon with immense striking weight. Cleaves through
+    enemy defenses with crushing momentum. Pulses with eerie dark energies. Bestows
+    Spud Fortitude.
+  lore: '''Etched with runic glyphs that pulse in harmony with the heartbeat of Potaria.'''
+  specialEffect: 
+  attack: 91
+  defense: 0
+  critChance: 22.1
+  speed: 0.48
+  bonusHp: 92
+  bonusMp: 86
+  mpRegen: 3.6
+  specialTag: 
+  affixSlots: 0

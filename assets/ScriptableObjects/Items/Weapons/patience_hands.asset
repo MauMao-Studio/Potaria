@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: patience_hands
+  m_EditorClassIdentifier: 
+  itemId: patience_hands
+  itemName: "Measured Hands \u2014 Handwraps of the Vigil"
+  category: 1
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: d6447149623bf7e40abaa4b3434e897c, type: 3}
+  description: Blessed ceremonial handwraps that channel immense patience into devastating,
+    perfectly-timed counterstrikes.
+  lore: Blessed handwraps inscribed with ancient hymns of disciplined endurance.
+  specialEffect: 'Wait for the Opening: First attack after a pause deals +35% damage,
+    Disciplined Strike'
+  attack: 48
+  defense: 0
+  critChance: 8
+  speed: 0.14
+  bonusHp: 25
+  bonusMp: 0
+  mpRegen: 0
+  specialTag: 
+  affixSlots: 0

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: roof_tiles
+  m_EditorClassIdentifier: 
+  itemId: roof_tiles
+  itemName: Roof Tiles
+  category: 2
+  rarity: 0
+  maxStack: 999
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 50f948ed6c3c1f14d853ffdf87d15d99, type: 3}
+  description: Decorative red clay roofing shingles. Solid blocks that block monsters
+    and rainwater.
+  lore: '''A humble roof crowns every hero''s shelter.'''
+  specialEffect: Impenetrable House Construction

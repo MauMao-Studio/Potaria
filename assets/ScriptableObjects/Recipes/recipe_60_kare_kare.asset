@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_60_kare_kare
+  m_EditorClassIdentifier: 
+  recipeId: recipe_60_kare_kare
+  category: Survival
+  resultItemId: kare_kare
+  resultItemData: {fileID: 11400000, guid: 1a05ed4279714a940af0b0b09e87d290, type: 2}
+  resultCount: 1
+  craftingStation: 1
+  ingredients:
+  - itemId: raw_beef
+    itemData: {fileID: 11400000, guid: c3ce7a984e8cccb448f51232e1f232c3, type: 2}
+    count: 1
+  - itemId: peanut_butter
+    itemData: {fileID: 11400000, guid: 798ff3677e7ea2941b7d7e23e1515fd7, type: 2}
+    count: 1
+  - itemId: eggplant
+    itemData: {fileID: 11400000, guid: a606da3d62ad86547a103a29f3761dca, type: 2}
+    count: 1
+  - itemId: string_beans
+    itemData: {fileID: 11400000, guid: 122bf9b60c45052458627c6cd6ff04ef, type: 2}
+    count: 1

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: royal_nova_focus
+  m_EditorClassIdentifier: 
+  itemId: royal_nova_focus
+  itemName: Royal Nova Focus
+  category: 1
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 4ac849e7b3474bc49aaffc026869e9c1, type: 3}
+  description: A mystical Mythic staff channeling elemental currents. Unleashes searing
+    magical projectiles. Shimmers with cosmic stardust. Bestows Primordial Genesis.
+  lore: '''The echoes of forgotten battles resonate within every inch of this masterwork.'''
+  specialEffect: 
+  attack: 56
+  defense: 0
+  critChance: 20.1
+  speed: 0.35
+  bonusHp: 40
+  bonusMp: 65
+  mpRegen: 2.4
+  specialTag: 
+  affixSlots: 0

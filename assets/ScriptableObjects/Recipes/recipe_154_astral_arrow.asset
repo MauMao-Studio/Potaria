@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_154_astral_arrow
+  m_EditorClassIdentifier: 
+  recipeId: recipe_154_astral_arrow
+  category: Equipment
+  resultItemId: astral_arrow
+  resultItemData: {fileID: 11400000, guid: f5c5f45e03611894095d0d57ab0656eb, type: 2}
+  resultCount: 25
+  craftingStation: 3
+  ingredients:
+  - itemId: wooden_arrow
+    itemData: {fileID: 11400000, guid: c5c1aba34be985248b63a4a53d45bf52, type: 2}
+    count: 25
+  - itemId: fallen_star
+    itemData: {fileID: 11400000, guid: 935609793d8b774409e6238d3024b307, type: 2}
+    count: 1

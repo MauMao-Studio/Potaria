@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: virtue_diligence
+  m_EditorClassIdentifier: 
+  setId: virtue_diligence
+  setName: 'Diligence: The Unyielding Vanguard'
+  setTag: SHV
+  description: 
+  pieceItemIds:
+  - diligence_helm
+  - diligence_plate
+  - diligence_greaves
+  - diligence_warhammer
+  - diligence_anvil_charm
+  pieceItems:
+  - {fileID: 11400000, guid: d60ffd2fbc63eb044a9e66d3f6b019f4, type: 2}
+  - {fileID: 11400000, guid: 49bf02ed1dfeeff428bd5c5ccff3c093, type: 2}
+  - {fileID: 11400000, guid: e5da8c195bc3ea141a3c436fbd6121e1, type: 2}
+  - {fileID: 11400000, guid: c7d1dcc6de69f674a99554543f052ea5, type: 2}
+  - {fileID: 11400000, guid: 938678199e41b3a438e97342dd0179e2, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Tireless Rhythm (+15% ATK, +15% DEF, +10% Atk Speed)'
+    atkMultiplier: 0.15
+    defMultiplier: 0.15
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.1
+    auraEffect: 
+    specialPassive: '2-Piece: Tireless Rhythm (+15% ATK, +15% DEF, +10% Atk Speed)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Workmanlike Rhythm (+25% ATK, +22% DEF, +20% Atk Speed)'
+    atkMultiplier: 0.25
+    defMultiplier: 0.22
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 30
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.2
+    auraEffect: 
+    specialPassive: '4-Piece: Workmanlike Rhythm (+25% ATK, +22% DEF, +20% Atk Speed)'
+  fivePieceBonus:
+    requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk Speed
+      in sustained combat, Steel Spark Aura)'
+    atkMultiplier: 0.3
+    defMultiplier: 0.25
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 40
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.25
+    auraEffect: steel
+    specialPassive: 'Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk
+      Speed in sustained combat, Steel Spark Aura)'
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Tireless Rhythm (+15% ATK, +15% DEF, +10% Atk Speed)'
+    atkMultiplier: 0.15
+    defMultiplier: 0.15
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.1
+    auraEffect: 
+    specialPassive: '2-Piece: Tireless Rhythm (+15% ATK, +15% DEF, +10% Atk Speed)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Workmanlike Rhythm (+25% ATK, +22% DEF, +20% Atk Speed)'
+    atkMultiplier: 0.25
+    defMultiplier: 0.22
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 30
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.2
+    auraEffect: 
+    specialPassive: '4-Piece: Workmanlike Rhythm (+25% ATK, +22% DEF, +20% Atk Speed)'
+  - requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk Speed
+      in sustained combat, Steel Spark Aura)'
+    atkMultiplier: 0.3
+    defMultiplier: 0.25
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 40
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.25
+    auraEffect: steel
+    specialPassive: 'Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk
+      Speed in sustained combat, Steel Spark Aura)'

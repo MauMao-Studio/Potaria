@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: ancient_mythic_cutlass
+  m_EditorClassIdentifier: 
+  itemId: ancient_mythic_cutlass
+  itemName: Ancient Mythic Cutlass
+  category: 1
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 3cbaa8a235ca62041946385d18f51411, type: 3}
+  description: A swift Epic blade with flawless balance. Strikes with rapid precision
+    in close-quarters combat. Echoes with primordial power from the First Age. Bestows
+    Spud Fortitude.
+  lore: 
+  specialEffect: 
+  attack: 46
+  defense: 0
+  critChance: 10.4
+  speed: 0.15
+  bonusHp: 35
+  bonusMp: 42
+  mpRegen: 1.5
+  specialTag: 
+  affixSlots: 0

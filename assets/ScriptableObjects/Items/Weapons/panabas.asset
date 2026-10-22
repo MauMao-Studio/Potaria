@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: panabas
+  m_EditorClassIdentifier: 
+  itemId: panabas
+  itemName: "Panabas \u2014 Breaker of Wards"
+  category: 1
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 8c44b2597c34fb949b434f612d9fcc9d, type: 3}
+  description: A forward-curved chopping weapon capable of crushing heavily fortified
+    enemy defense lines.
+  lore: Forward-curved executioner blade forged to dismantle barricades, shields,
+    and dragon scales.
+  specialEffect: Armor Shatter (Ignores 45% target DEF), Stun Impact on heavy swing
+  attack: 46
+  defense: 0
+  critChance: 4
+  speed: 0
+  bonusHp: 25
+  bonusMp: 0
+  mpRegen: 0
+  specialTag: 
+  affixSlots: 0

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: gilded_tuber_runners
+  m_EditorClassIdentifier: 
+  itemId: gilded_tuber_runners
+  itemName: Gilded Tuber Runners
+  category: 10
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 011e2b1e1a6083f43ac6e02d06abf6cf, type: 3}
+  description: Flexible Epic leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Fortified with pure tuber vitality. Grants Eternal
+    Bloom.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 15
+  attack: 4
+  critChance: 6.9
+  speed: 0.71
+  bonusHp: 55
+  bonusMp: 35
+  mpRegen: 1
+  affixSlots: 0

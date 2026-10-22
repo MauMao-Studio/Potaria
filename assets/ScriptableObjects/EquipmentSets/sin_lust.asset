@@ -1,0 +1,114 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: sin_lust
+  m_EditorClassIdentifier: 
+  setId: sin_lust
+  setName: 'Lust: The Enchanter'
+  setTag: SDS
+  description: 
+  pieceItemIds:
+  - lust_veil
+  - lust_corslet
+  - lust_wraps
+  - lust_rapier
+  - lust_perfume
+  pieceItems:
+  - {fileID: 11400000, guid: b929f3a4dfb15704ebe2f6343776d8a6, type: 2}
+  - {fileID: 11400000, guid: 41e68e710c4ad62489b2b6a248d3dd07, type: 2}
+  - {fileID: 11400000, guid: ddba2f19c383aa8459c532fd13a0031d, type: 2}
+  - {fileID: 11400000, guid: be4208aa0b9bbbf4381599f5ca643d5f, type: 2}
+  - {fileID: 11400000, guid: c795842820b3916489413ffca8375947, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Captivating Allure (+15% Status Duration, +2.0 MP/s)'
+    atkMultiplier: 0
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 8
+    bonusMaxHp: 0
+    bonusMpRegen: 2
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Captivating Allure (+15% Status Duration, +2.0 MP/s)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Open Invitation (+20% ATK, +3.0 MP/s, +0.12 Speed, +10%
+      Crit)'
+    atkMultiplier: 0.2
+    defMultiplier: 0
+    bonusSpeed: 0.12
+    bonusCritChance: 10
+    bonusMaxHp: 0
+    bonusMpRegen: 3
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Open Invitation (+20% ATK, +3.0 MP/s, +0.12 Speed,
+      +10% Crit)'
+  fivePieceBonus:
+    requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Siren''s Enchantment (+25% ATK, +30% Damage vs Debuffed,
+      +3.5 MP/s, Pink Mist Aura)'
+    atkMultiplier: 0.25
+    defMultiplier: 0
+    bonusSpeed: 0.15
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 3.5
+    bonusAtkSpeed: 0
+    auraEffect: charm
+    specialPassive: 'Full Set: Siren''s Enchantment (+25% ATK, +30% Damage vs Debuffed,
+      +3.5 MP/s, Pink Mist Aura)'
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Captivating Allure (+15% Status Duration, +2.0 MP/s)'
+    atkMultiplier: 0
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 8
+    bonusMaxHp: 0
+    bonusMpRegen: 2
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Captivating Allure (+15% Status Duration, +2.0 MP/s)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Open Invitation (+20% ATK, +3.0 MP/s, +0.12 Speed, +10%
+      Crit)'
+    atkMultiplier: 0.2
+    defMultiplier: 0
+    bonusSpeed: 0.12
+    bonusCritChance: 10
+    bonusMaxHp: 0
+    bonusMpRegen: 3
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Open Invitation (+20% ATK, +3.0 MP/s, +0.12 Speed,
+      +10% Crit)'
+  - requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Siren''s Enchantment (+25% ATK, +30% Damage vs Debuffed,
+      +3.5 MP/s, Pink Mist Aura)'
+    atkMultiplier: 0.25
+    defMultiplier: 0
+    bonusSpeed: 0.15
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 3.5
+    bonusAtkSpeed: 0
+    auraEffect: charm
+    specialPassive: 'Full Set: Siren''s Enchantment (+25% ATK, +30% Damage vs Debuffed,
+      +3.5 MP/s, Pink Mist Aura)'

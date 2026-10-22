@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: silver_coin
+  m_EditorClassIdentifier: 
+  itemId: silver_coin
+  itemName: Silver Coin
+  category: 9
+  rarity: 1
+  maxStack: 999
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 2848ab8ff1c26d64cbf313e675e70713, type: 3}
+  description: Valuable silver coin worth 100 Copper Coins.
+  lore: '''Polished silver carrying the crest of the ancient Tuber kingdoms.'''
+  specialEffect: 

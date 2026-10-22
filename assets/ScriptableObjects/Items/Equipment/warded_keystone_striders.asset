@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: warded_keystone_striders
+  m_EditorClassIdentifier: 
+  itemId: warded_keystone_striders
+  itemName: Warded Keystone Striders
+  category: 10
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 4bc8d73fa933dc240a7d0c81e4c97690, type: 3}
+  description: Flexible Legendary leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Grants Deep Roots.
+  lore: '''Infused with pure volcanic heartstone, blazing with an undying subterranean
+    fire.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 32
+  attack: 11
+  critChance: 10.1
+  speed: 1.36
+  bonusHp: 144
+  bonusMp: 85
+  mpRegen: 2.6
+  affixSlots: 0

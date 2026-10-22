@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: diligence_helm
+  m_EditorClassIdentifier: 
+  itemId: diligence_helm
+  itemName: Vanguard Greathelm of Labor
+  category: 10
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 536eeb2c85a884648bee4c4adbb90c97, type: 3}
+  description: Solid steel helm built to withstand cave-ins and siege weapons alike.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 24
+  attack: 8
+  critChance: 3
+  speed: 0.05
+  bonusHp: 65
+  bonusMp: 0
+  mpRegen: 0
+  affixSlots: 0

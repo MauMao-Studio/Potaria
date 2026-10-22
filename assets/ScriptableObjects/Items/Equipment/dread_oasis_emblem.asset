@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: dread_oasis_emblem
+  m_EditorClassIdentifier: 
+  itemId: dread_oasis_emblem
+  itemName: Dread Oasis Emblem
+  category: 10
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: c09b074e822a2a54f8c96ddc4dce10a7, type: 3}
+  description: An enchanted Mythic talisman humming with magical resonance. Bestows
+    passive combat buffs and fortitude. Warded against nether corruption. Grants
+    +25% Total Damage Mitigation.
+  lore: '''Forged in cosmic crucibles when falling meteors first pierced the heavens.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 22
+  attack: 18
+  critChance: 16.5
+  speed: 0.35
+  bonusHp: 92
+  bonusMp: 95
+  mpRegen: 2.8
+  affixSlots: 0

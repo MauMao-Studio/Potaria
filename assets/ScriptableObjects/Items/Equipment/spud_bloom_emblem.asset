@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: spud_bloom_emblem
+  m_EditorClassIdentifier: 
+  itemId: spud_bloom_emblem
+  itemName: Spud Bloom Emblem
+  category: 10
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 456d0f4fb8a7f1b4da238ca4e894d893, type: 3}
+  description: An enchanted Legendary talisman humming with magical resonance. Bestows
+    passive combat buffs and fortitude. Fortified with pure tuber vitality. Grants
+    Evasion Step.
+  lore: '''Before the continents divided and the stars cooled, the primordial seed
+    was planted in the void.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 29
+  attack: 25
+  critChance: 25
+  speed: 0.5
+  bonusHp: 152
+  bonusMp: 100
+  mpRegen: 4
+  affixSlots: 0

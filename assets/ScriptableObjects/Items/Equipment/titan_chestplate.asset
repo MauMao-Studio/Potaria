@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: titan_chestplate
+  m_EditorClassIdentifier: 
+  itemId: titan_chestplate
+  itemName: Celestial Titan Plate
+  category: 10
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: cc008a7f49fa16044a1b765f0851779e, type: 3}
+  description: Indomitable plate mail worn by celestial titans. Mitigates damage
+    and grants immunity to knockback.
+  lore: '''Carried by Grand Boss Sol-Rho before the heavens surrendered to radiant
+    destiny.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 30
+  attack: 16
+  critChance: 8
+  speed: 0.3
+  bonusHp: 90
+  bonusMp: 50
+  mpRegen: 1.5
+  affixSlots: 0

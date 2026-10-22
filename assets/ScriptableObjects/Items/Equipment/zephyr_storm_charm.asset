@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: zephyr_storm_charm
+  m_EditorClassIdentifier: 
+  itemId: zephyr_storm_charm
+  itemName: Zephyr Storm Charm
+  category: 10
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: a495320b1ee9ddf4aad352dcac10dcde, type: 3}
+  description: 'An enchanted Ancient talisman humming with magical resonance. Bestows
+    passive combat buffs and fortitude. Grants Ancient Awakening: Thunderclap Burst.'
+  lore: '''A silent testament to those who dared challenge the infinite heavens and
+    won.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 37
+  attack: 46
+  critChance: 28.7
+  speed: 0.75
+  bonusHp: 188
+  bonusMp: 147
+  mpRegen: 5.5
+  affixSlots: 0

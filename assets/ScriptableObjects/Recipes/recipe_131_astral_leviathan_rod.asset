@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_131_astral_leviathan_rod
+  m_EditorClassIdentifier: 
+  recipeId: recipe_131_astral_leviathan_rod
+  category: Equipment
+  resultItemId: astral_leviathan_rod
+  resultItemData: {fileID: 11400000, guid: 523c40f34df175545b4a9bd2b739179c, type: 2}
+  resultCount: 1
+  craftingStation: 3
+  ingredients:
+  - itemId: gilded_master_rod
+    itemData: {fileID: 11400000, guid: c222289f9e677ac498c2ea8334fbd86f, type: 2}
+    count: 1
+  - itemId: fallen_star
+    itemData: {fileID: 11400000, guid: 935609793d8b774409e6238d3024b307, type: 2}
+    count: 5
+  - itemId: portal_shard
+    itemData: {fileID: 11400000, guid: 2e7eb043cc8cf36478a7b6ad53bdd8a4, type: 2}
+    count: 1

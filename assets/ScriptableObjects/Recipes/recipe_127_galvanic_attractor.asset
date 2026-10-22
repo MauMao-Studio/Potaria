@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_127_galvanic_attractor
+  m_EditorClassIdentifier: 
+  recipeId: recipe_127_galvanic_attractor
+  category: Furniture
+  resultItemId: galvanic_attractor
+  resultItemData: {fileID: 11400000, guid: f824e04fd1cfe0c41a7a1d5be28afd7f, type: 2}
+  resultCount: 1
+  craftingStation: 3
+  ingredients:
+  - itemId: copper_bar
+    itemData: {fileID: 11400000, guid: 30bd3e33526804445b63251db42002bb, type: 2}
+    count: 4

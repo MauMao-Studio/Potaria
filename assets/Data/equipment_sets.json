@@ -1,0 +1,1429 @@
+[
+  {
+    "setId": "ancient",
+    "setName": "Ancient Resonating Set",
+    "setTag": "",
+    "pieces": [
+      "ancient_helmet",
+      "ancient_chestplate",
+      "ancient_greaves",
+      "ancient_sword"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Ancient Gleam (+15% ATK, +15% DEF, +20 HP)",
+        "atkMult": 0.15,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 20,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Ancient Gleam (+15% ATK, +15% DEF, +20 HP)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "3-Piece: Ancient Cosmic Resonance (+35% ATK, +30% DEF, +50 HP, +20% Crit, Radiant Pulsing Aura)",
+        "atkMult": 0.35,
+        "defMult": 0.3,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 20.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "ancient",
+        "specialPassive": "3-Piece: Ancient Cosmic Resonance (+35% ATK, +30% DEF, +50 HP, +20% Crit, Radiant Pulsing Aura)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "Full Set: Sovereign of Antiquity (+45% ATK, +40% DEF, +75 HP, +25% Crit, Radiant Pulsing Aura)",
+        "atkMult": 0.45,
+        "defMult": 0.4,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 25.0,
+        "bonusHp": 75,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "ancient",
+        "specialPassive": "Full Set: Sovereign of Antiquity (+45% ATK, +40% DEF, +75 HP, +25% Crit, Radiant Pulsing Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "titan",
+    "setName": "Celestial Titan Set",
+    "setTag": "",
+    "pieces": [
+      "titan_helmet",
+      "titan_chestplate",
+      "titan_greaves",
+      "celestial_greatsword"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Titan Bulwark (+12% DEF, +15 HP)",
+        "atkMult": 0.0,
+        "defMult": 0.12,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 15,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Titan Bulwark (+12% DEF, +15 HP)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "3-Piece: Celestial Aegis (+25% DEF, +30 HP, +15% ATK, Celestial Ward Aura)",
+        "atkMult": 0.15,
+        "defMult": 0.25,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 5.0,
+        "bonusHp": 30,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "titan",
+        "specialPassive": "3-Piece: Celestial Aegis (+25% DEF, +30 HP, +15% ATK, Celestial Ward Aura)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "Full Set: Colossus Bastion (+35% DEF, +50 HP, +25% ATK, Celestial Ward Aura)",
+        "atkMult": 0.25,
+        "defMult": 0.35,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 10.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "titan",
+        "specialPassive": "Full Set: Colossus Bastion (+35% DEF, +50 HP, +25% ATK, Celestial Ward Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "magma",
+    "setName": "Magma Core Set",
+    "setTag": "",
+    "pieces": [
+      "magma_helmet",
+      "magma_chestplate",
+      "magma_greaves",
+      "magma_greatsword"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Magma Spark (+10% ATK, +5 Fire Thorns)",
+        "atkMult": 0.1,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 4.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Magma Spark (+10% ATK, +5 Fire Thorns)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "3-Piece: Molten Crucible (+20% ATK, +15 Fire Thorns, Magma Aura)",
+        "atkMult": 0.2,
+        "defMult": 0.1,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 8.0,
+        "bonusHp": 25,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "magma",
+        "specialPassive": "3-Piece: Molten Crucible (+20% ATK, +15 Fire Thorns, Magma Aura)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "Full Set: Volcanic Core (+30% ATK, +25 Fire Thorns, +40 HP, Magma Aura)",
+        "atkMult": 0.3,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 12.0,
+        "bonusHp": 40,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "magma",
+        "specialPassive": "Full Set: Volcanic Core (+30% ATK, +25 Fire Thorns, +40 HP, Magma Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "cryo",
+    "setName": "Cryo Carapace Set",
+    "setTag": "",
+    "pieces": [
+      "cryo_helmet",
+      "cryo_chestplate",
+      "cryo_greaves"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Frost Plating (+10% DEF, +1.0 MP/s)",
+        "atkMult": 0.0,
+        "defMult": 0.1,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 1.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Frost Plating (+10% DEF, +1.0 MP/s)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "Full Set: Glacial Bastion (+20% DEF, +2.5 MP/s Regen, Cryo Aura)",
+        "atkMult": 0.05,
+        "defMult": 0.2,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 5.0,
+        "bonusHp": 35,
+        "bonusMpRegen": 2.5,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "cryo",
+        "specialPassive": "Full Set: Glacial Bastion (+20% DEF, +2.5 MP/s Regen, Cryo Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "shadow",
+    "setName": "Umbral Shadow Set",
+    "setTag": "",
+    "pieces": [
+      "shadow_helmet",
+      "shadow_plate",
+      "shadow_greaves",
+      "shadow_cleaver"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Shadow Veil (+10% Crit, +0.10 Speed)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.1,
+        "bonusCrit": 10.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Shadow Veil (+10% Crit, +0.10 Speed)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "3-Piece: Shadow Phantom (+20% Crit, +20% ATK, +0.20 Speed, Void Aura)",
+        "atkMult": 0.2,
+        "defMult": 0.1,
+        "bonusSpeed": 0.2,
+        "bonusCrit": 20.0,
+        "bonusHp": 20,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "shadow",
+        "specialPassive": "3-Piece: Shadow Phantom (+20% Crit, +20% ATK, +0.20 Speed, Void Aura)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "Full Set: Eclipse Nightmare (+30% Crit, +30% ATK, +0.30 Speed, Void Aura)",
+        "atkMult": 0.3,
+        "defMult": 0.15,
+        "bonusSpeed": 0.3,
+        "bonusCrit": 30.0,
+        "bonusHp": 35,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "shadow",
+        "specialPassive": "Full Set: Eclipse Nightmare (+30% Crit, +30% ATK, +0.30 Speed, Void Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "spud",
+    "setName": "Spud Sovereign Set",
+    "setTag": "",
+    "pieces": [
+      "potato_cap",
+      "potato_tunic",
+      "potato_pants"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Potato Vitality (+15 Max HP, +2 HP/s)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 15,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Potato Vitality (+15 Max HP, +2 HP/s)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "Full Set: Spud Lord (+30 Max HP, +5 HP/s Regen, Earth Sprout Aura)",
+        "atkMult": 0.1,
+        "defMult": 0.1,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 5.0,
+        "bonusHp": 30,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "spud",
+        "specialPassive": "Full Set: Spud Lord (+30 Max HP, +5 HP/s Regen, Earth Sprout Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "cactus",
+    "setName": "Cactus Needle Set",
+    "setTag": "",
+    "pieces": [
+      "cactus_helmet",
+      "cactus_chestplate",
+      "cactus_greaves",
+      "cactus_sword"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Prickly Barbs (+5 Thorns, +5% ATK)",
+        "atkMult": 0.05,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Prickly Barbs (+5 Thorns, +5% ATK)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "3-Piece: Thorn Barbs (+15 Reflected Thorns, +10% ATK, Prickly Aura)",
+        "atkMult": 0.1,
+        "defMult": 0.1,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 4.0,
+        "bonusHp": 15,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "cactus",
+        "specialPassive": "3-Piece: Thorn Barbs (+15 Reflected Thorns, +10% ATK, Prickly Aura)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "Full Set: Desert Spine (+30 Reflected Thorns, +20% ATK, +30 HP, Prickly Aura)",
+        "atkMult": 0.2,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 8.0,
+        "bonusHp": 30,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "cactus",
+        "specialPassive": "Full Set: Desert Spine (+30 Reflected Thorns, +20% ATK, +30 HP, Prickly Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "sin_pride",
+    "setName": "Pride: Sovereign of the Sun",
+    "setTag": "SDS",
+    "pieces": [
+      "pride_crown",
+      "pride_robe",
+      "pride_boots",
+      "pride_blade",
+      "pride_ring"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Solar Precision (+15% Crit Chance, +10% ATK)",
+        "atkMult": 0.1,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 15.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Solar Precision (+15% Crit Chance, +10% ATK)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Flawless Bearing (+25% ATK, +18% Crit, +0.10 Speed)",
+        "atkMult": 0.25,
+        "defMult": 0.0,
+        "bonusSpeed": 0.1,
+        "bonusCrit": 18.0,
+        "bonusHp": 35,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Flawless Bearing (+25% ATK, +18% Crit, +0.10 Speed)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage against healthy targets, Solar Aura)",
+        "atkMult": 0.3,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 25.0,
+        "bonusHp": 35,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "solar",
+        "specialPassive": "Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage against healthy targets, Solar Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "sin_greed",
+    "setName": "Greed: The Gilded Devourer",
+    "setTag": "SDS",
+    "pieces": [
+      "greed_mask",
+      "greed_mantle",
+      "greed_striders",
+      "greed_scepter",
+      "greed_amulet"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Coin Scavenger (+20% Gold Drops, +0.10 Speed)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.1,
+        "bonusCrit": 0.0,
+        "bonusHp": 20,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Coin Scavenger (+20% Gold Drops, +0.10 Speed)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Hoarder's Momentum (+20% ATK, +18% DEF, +0.20 Speed, +30% Gold Drops)",
+        "atkMult": 0.2,
+        "defMult": 0.18,
+        "bonusSpeed": 0.2,
+        "bonusCrit": 0.0,
+        "bonusHp": 25,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Hoarder's Momentum (+20% ATK, +18% DEF, +0.20 Speed, +30% Gold Drops)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25 Speed on defeat, Gilded Shimmer Aura)",
+        "atkMult": 0.25,
+        "defMult": 0.2,
+        "bonusSpeed": 0.25,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "gold",
+        "specialPassive": "Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25 Speed on defeat, Gilded Shimmer Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "sin_lust",
+    "setName": "Lust: The Enchanter",
+    "setTag": "SDS",
+    "pieces": [
+      "lust_veil",
+      "lust_corslet",
+      "lust_wraps",
+      "lust_rapier",
+      "lust_perfume"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Captivating Allure (+15% Status Duration, +2.0 MP/s)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 8.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 2.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Captivating Allure (+15% Status Duration, +2.0 MP/s)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Open Invitation (+20% ATK, +3.0 MP/s, +0.12 Speed, +10% Crit)",
+        "atkMult": 0.2,
+        "defMult": 0.0,
+        "bonusSpeed": 0.12,
+        "bonusCrit": 10.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 3.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Open Invitation (+20% ATK, +3.0 MP/s, +0.12 Speed, +10% Crit)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Siren's Enchantment (+25% ATK, +30% Damage vs Debuffed, +3.5 MP/s, Pink Mist Aura)",
+        "atkMult": 0.25,
+        "defMult": 0.0,
+        "bonusSpeed": 0.15,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 3.5,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "charm",
+        "specialPassive": "Full Set: Siren's Enchantment (+25% ATK, +30% Damage vs Debuffed, +3.5 MP/s, Pink Mist Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "sin_envy",
+    "setName": "Envy: The Mirror Stalker",
+    "setTag": "SDS",
+    "pieces": [
+      "envy_cowl",
+      "envy_shroud",
+      "envy_treads",
+      "envy_daggers",
+      "envy_eye"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Phantom Step (+15% Evasion, +12% ATK)",
+        "atkMult": 0.12,
+        "defMult": 0.0,
+        "bonusSpeed": 0.15,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Phantom Step (+15% Evasion, +12% ATK)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Borrowed Opening (+20% ATK, +12% Crit, +0.20 Speed)",
+        "atkMult": 0.2,
+        "defMult": 0.0,
+        "bonusSpeed": 0.2,
+        "bonusCrit": 12.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Borrowed Opening (+20% ATK, +12% Crit, +0.20 Speed)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Mirror Retribution (Reflects 150% damage on dodge/hit, +25% ATK, Mirror Mirage Aura)",
+        "atkMult": 0.25,
+        "defMult": 0.0,
+        "bonusSpeed": 0.25,
+        "bonusCrit": 15.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "mirror",
+        "specialPassive": "Full Set: Mirror Retribution (Reflects 150% damage on dodge/hit, +25% ATK, Mirror Mirage Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "sin_gluttony",
+    "setName": "Gluttony: The Abyssal Maw",
+    "setTag": "SDS",
+    "pieces": [
+      "gluttony_jaw",
+      "gluttony_carapace",
+      "gluttony_tassets",
+      "gluttony_cleaver",
+      "gluttony_stomach"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Insatiable Hunger (+8% Lifesteal, +35 Max HP)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 35,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Insatiable Hunger (+8% Lifesteal, +35 Max HP)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Feast in the Fray (+18% ATK, +12% DEF, +50 Max HP, +3 HP leech)",
+        "atkMult": 0.18,
+        "defMult": 0.12,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Feast in the Fray (+18% ATK, +12% DEF, +50 Max HP, +3 HP leech)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Abyssal Feast (+20% ATK, +60 Max HP, +5 HP leech per strike, Crimson Maw Aura)",
+        "atkMult": 0.2,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 60,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "maw",
+        "specialPassive": "Full Set: Abyssal Feast (+20% ATK, +60 Max HP, +5 HP leech per strike, Crimson Maw Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "sin_wrath",
+    "setName": "Wrath: The Worldbreaker",
+    "setTag": "SDS",
+    "pieces": [
+      "wrath_helm",
+      "wrath_cuirass",
+      "wrath_greaves",
+      "wrath_greatsword",
+      "wrath_brand"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Fury Unleashed (+20% Attack Speed, +15% ATK)",
+        "atkMult": 0.15,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.2,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Fury Unleashed (+20% Attack Speed, +15% ATK)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Retaliatory Ember (+30% ATK, +28% Atk Speed, +10% Crit)",
+        "atkMult": 0.3,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 10.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.28,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Retaliatory Ember (+30% ATK, +28% Atk Speed, +10% Crit)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30% ATK below 50% HP, Crimson Rage Aura)",
+        "atkMult": 0.35,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 12.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.3,
+        "auraEffect": "rage",
+        "specialPassive": "Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30% ATK below 50% HP, Crimson Rage Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "sin_sloth",
+    "setName": "Sloth: The Hollow Dream",
+    "setTag": "SDS",
+    "pieces": [
+      "sloth_nightcap",
+      "sloth_pajamas",
+      "sloth_slippers",
+      "sloth_pillow",
+      "sloth_pendulum"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Restful Slumber (+25% DEF, +3.0 MP/s)",
+        "atkMult": 0.0,
+        "defMult": 0.25,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 3.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Restful Slumber (+25% DEF, +3.0 MP/s)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Rooted Resolve (+35% DEF, +40 Max HP, +4.0 MP/s)",
+        "atkMult": 0.0,
+        "defMult": 0.35,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 40,
+        "bonusMpRegen": 4.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Rooted Resolve (+35% DEF, +40 Max HP, +4.0 MP/s)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Slumber Fortitude (50-HP Dream Shield every 5s undamaged, +80% burst attack, Dream Mist Aura)",
+        "atkMult": 0.0,
+        "defMult": 0.4,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 4.5,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "dream",
+        "specialPassive": "Full Set: Slumber Fortitude (50-HP Dream Shield every 5s undamaged, +80% burst attack, Dream Mist Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "virtue_humility",
+    "setName": "Humility: The Quiet Crown",
+    "setTag": "SHV",
+    "pieces": [
+      "humility_circlet",
+      "humility_vestment",
+      "humility_sandals",
+      "humility_staff",
+      "humility_pendant"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Serene Grounding (+15% DEF, +15% ATK, +25 Max HP)",
+        "atkMult": 0.15,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 25,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Serene Grounding (+15% DEF, +15% ATK, +25 Max HP)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Learn from the Fall (+22% All Stats, +40 Max HP, +8% Crit)",
+        "atkMult": 0.22,
+        "defMult": 0.22,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 8.0,
+        "bonusHp": 40,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Learn from the Fall (+22% All Stats, +40 Max HP, +8% Crit)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity, Serene Pearl Aura)",
+        "atkMult": 0.25,
+        "defMult": 0.25,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 10.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "pearl",
+        "specialPassive": "Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity, Serene Pearl Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "virtue_charity",
+    "setName": "Charity: The Hearthkeeper",
+    "setTag": "SHV",
+    "pieces": [
+      "charity_cowl",
+      "charity_tunic",
+      "charity_trousers",
+      "charity_wand",
+      "charity_chalice"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Hearth Warmth (+4 HP/s Health Regen, +30 Max HP)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 30,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Hearth Warmth (+4 HP/s Health Regen, +30 Max HP)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Give and Receive (+18% DEF, +5.5 HP/s Regen, +50 Max HP)",
+        "atkMult": 0.0,
+        "defMult": 0.18,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 1.8,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Give and Receive (+18% DEF, +5.5 HP/s Regen, +50 Max HP)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Communal Hearth (+6 HP/s Regen, +20% Party Damage Mitigation, Warm Hearth Gold Aura)",
+        "atkMult": 0.0,
+        "defMult": 0.2,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 60,
+        "bonusMpRegen": 2.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "hearth",
+        "specialPassive": "Full Set: Communal Hearth (+6 HP/s Regen, +20% Party Damage Mitigation, Warm Hearth Gold Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "virtue_chastity",
+    "setName": "Chastity: The Pure Aegis",
+    "setTag": "SHV",
+    "pieces": [
+      "chastity_sallet",
+      "chastity_breastplate",
+      "chastity_greaves",
+      "chastity_lance",
+      "chastity_aegis"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Spotless Ward (+25% DEF, 50% Debuff Resistance)",
+        "atkMult": 0.0,
+        "defMult": 0.25,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 25,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Spotless Ward (+25% DEF, 50% Debuff Resistance)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Hold the Line (+35% DEF, +50 Max HP, 80% Debuff Resistance)",
+        "atkMult": 0.0,
+        "defMult": 0.35,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Hold the Line (+35% DEF, +50 Max HP, 80% Debuff Resistance)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Unblemished Ward (Absorbs 60 damage every 10s, Debuff Immunity, Brilliant White Aura)",
+        "atkMult": 0.0,
+        "defMult": 0.4,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 60,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "sanctum",
+        "specialPassive": "Full Set: Unblemished Ward (Absorbs 60 damage every 10s, Debuff Immunity, Brilliant White Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "virtue_gratitude",
+    "setName": "Gratitude: The Everbright",
+    "setTag": "SHV",
+    "pieces": [
+      "gratitude_crown",
+      "gratitude_chasuble",
+      "gratitude_striders",
+      "gratitude_scepter",
+      "gratitude_locket"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Joyful Abundance (-25% MP Skill Cost, +2.5 MP/s)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 2.5,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Joyful Abundance (-25% MP Skill Cost, +2.5 MP/s)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Measured Bounty (+18% ATK, +3.5 MP/s, +12% Crit)",
+        "atkMult": 0.18,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 12.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 3.5,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Measured Bounty (+18% ATK, +3.5 MP/s, +12% Crit)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Radiance of Thanks (30% MP Refund Chance, +50 True Solar Flash, Golden Sunburst Aura)",
+        "atkMult": 0.2,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 15.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 4.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "sunburst",
+        "specialPassive": "Full Set: Radiance of Thanks (30% MP Refund Chance, +50 True Solar Flash, Golden Sunburst Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "virtue_temperance",
+    "setName": "Temperance: The Stillwater",
+    "setTag": "SHV",
+    "pieces": [
+      "temperance_circlet",
+      "temperance_robe",
+      "temperance_leggings",
+      "temperance_trident",
+      "temperance_pearl"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Tidal Pacing (+20% Cooldown Reduction, +15% Atk Speed)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.15,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Tidal Pacing (+20% Cooldown Reduction, +15% Atk Speed)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Balanced Exchange (+12% ATK, +22% Atk Speed, +2.5 MP/s, +0.15 Speed)",
+        "atkMult": 0.12,
+        "defMult": 0.0,
+        "bonusSpeed": 0.15,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 2.5,
+        "bonusAtkSpeed": 0.22,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Balanced Exchange (+12% ATK, +22% Atk Speed, +2.5 MP/s, +0.15 Speed)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Tranquil Flow (Crits/Dodges refund 1s Cooldown & 15 MP, Azure Water Ripple Aura)",
+        "atkMult": 0.15,
+        "defMult": 0.0,
+        "bonusSpeed": 0.2,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 3.0,
+        "bonusAtkSpeed": 0.25,
+        "auraEffect": "tidal",
+        "specialPassive": "Full Set: Tranquil Flow (Crits/Dodges refund 1s Cooldown & 15 MP, Azure Water Ripple Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "virtue_kindness",
+    "setName": "Kindness: The Verdant Guardian",
+    "setTag": "SHV",
+    "pieces": [
+      "kindness_wreath",
+      "kindness_cuirass",
+      "kindness_striders",
+      "kindness_bow",
+      "kindness_seed"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Gentle Bloom (+3 HP/s Regen, +20 Max HP, +10 Reflected Thorns)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 20,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Gentle Bloom (+3 HP/s Regen, +20 Max HP, +10 Reflected Thorns)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Stand Between (+18% DEF, +40 Max HP, +20 Reflected Thorns)",
+        "atkMult": 0.0,
+        "defMult": 0.18,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 40,
+        "bonusMpRegen": 1.8,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Stand Between (+18% DEF, +40 Max HP, +20 Reflected Thorns)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring 40% HP, Emerald Sprout Aura)",
+        "atkMult": 0.0,
+        "defMult": 0.2,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 2.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "verdant",
+        "specialPassive": "Full Set: Verdant Blessing (Defies fatal blow once per 90s restoring 40% HP, Emerald Sprout Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "virtue_diligence",
+    "setName": "Diligence: The Unyielding Vanguard",
+    "setTag": "SHV",
+    "pieces": [
+      "diligence_helm",
+      "diligence_plate",
+      "diligence_greaves",
+      "diligence_warhammer",
+      "diligence_anvil_charm"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Tireless Rhythm (+15% ATK, +15% DEF, +10% Atk Speed)",
+        "atkMult": 0.15,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.1,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Tireless Rhythm (+15% ATK, +15% DEF, +10% Atk Speed)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Workmanlike Rhythm (+25% ATK, +22% DEF, +20% Atk Speed)",
+        "atkMult": 0.25,
+        "defMult": 0.22,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 30,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.2,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Workmanlike Rhythm (+25% ATK, +22% DEF, +20% Atk Speed)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk Speed in sustained combat, Steel Spark Aura)",
+        "atkMult": 0.3,
+        "defMult": 0.25,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 40,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.25,
+        "auraEffect": "steel",
+        "specialPassive": "Full Set: Unyielding Vanguard (+30% ATK, +25% DEF, +25% Atk Speed in sustained combat, Steel Spark Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "virtue_patience",
+    "setName": "Patience: The Long Vigil",
+    "setTag": "SHV",
+    "pieces": [
+      "patience_circlet",
+      "patience_mantle",
+      "patience_greaves",
+      "patience_hands",
+      "patience_bell"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Steady Heart (+20% DEF, +30 Max HP)",
+        "atkMult": 0.0,
+        "defMult": 0.2,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 30,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Steady Heart (+20% DEF, +30 Max HP)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: Wait for the Opening (+30% DEF, +20% ATK, +10% Crit)",
+        "atkMult": 0.2,
+        "defMult": 0.3,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 10.0,
+        "bonusHp": 55,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: Wait for the Opening (+30% DEF, +20% ATK, +10% Crit)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Unbroken Vigil (Absorbs 80 damage every 12s, +35% DEF, Vigilant Starlight Aura)",
+        "atkMult": 0.0,
+        "defMult": 0.35,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 70,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "vigil",
+        "specialPassive": "Full Set: Unbroken Vigil (Absorbs 80 damage every 12s, +35% DEF, Vigilant Starlight Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "katipunero",
+    "setName": "Katipunero: Spirit of Freedom",
+    "setTag": "Katipunero",
+    "pieces": [
+      "katipunero_bolo",
+      "barong_tagalog",
+      "salakot",
+      "bakya",
+      "tabak",
+      "balisong",
+      "kampilan"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Sigaw ng Pugad Lawin (+15% ATK, +15% DEF, +25 Max HP)",
+        "atkMult": 0.15,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 25,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Sigaw ng Pugad Lawin (+15% ATK, +15% DEF, +25 Max HP)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "3-Piece: Sandugo Resolve (+20% ATK, +20% DEF, +0.15 Speed)",
+        "atkMult": 0.2,
+        "defMult": 0.2,
+        "bonusSpeed": 0.15,
+        "bonusCrit": 0.0,
+        "bonusHp": 35,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "3-Piece: Sandugo Resolve (+20% ATK, +20% DEF, +0.15 Speed)"
+      },
+      {
+        "requiredPieces": 4,
+        "title": "4-Piece Bonus",
+        "description": "4-Piece: KKK Brotherhood (+28% ATK, +25% DEF, +0.25 Speed, +15% Crit)",
+        "atkMult": 0.28,
+        "defMult": 0.25,
+        "bonusSpeed": 0.25,
+        "bonusCrit": 15.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "4-Piece: KKK Brotherhood (+28% ATK, +25% DEF, +0.25 Speed, +15% Crit)"
+      },
+      {
+        "requiredPieces": 5,
+        "title": "5-Piece Bonus",
+        "description": "Full Set: Kalayaan Awakening (+35% ATK, +30% DEF, +0.35 Speed, +20% Crit, Tri-Star & Sun Aura)",
+        "atkMult": 0.35,
+        "defMult": 0.3,
+        "bonusSpeed": 0.35,
+        "bonusCrit": 20.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "katipunero",
+        "specialPassive": "Full Set: Kalayaan Awakening (+35% ATK, +30% DEF, +0.35 Speed, +20% Crit, Tri-Star & Sun Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "diwata_bloom",
+    "setName": "Diwata's Bloom Regalia",
+    "setTag": "",
+    "pieces": [
+      "diwata_crown",
+      "diwata_gown",
+      "diwata_sandals"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Makiling Petals (+4 HP/s Regen, +2.0 MP/s, +15% Nature Damage)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 2.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Makiling Petals (+4 HP/s Regen, +2.0 MP/s, +15% Nature Damage)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "Full Set: Bloom of Makiling (+25% Healing, Petal Bursts dealing 30 nature damage, Floral Blossom Aura)",
+        "atkMult": 0.15,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 45,
+        "bonusMpRegen": 3.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "blossom",
+        "specialPassive": "Full Set: Bloom of Makiling (+25% Healing, Petal Bursts dealing 30 nature damage, Floral Blossom Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "bakunawa_eclipse",
+    "setName": "Bakunawa's Eclipse Armor",
+    "setTag": "",
+    "pieces": [
+      "bakunawa_helm",
+      "bakunawa_plate",
+      "bakunawa_greaves"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Lunar Veil (+20% Crit Damage, +15% Elemental ATK)",
+        "atkMult": 0.15,
+        "defMult": 0.0,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 8.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Lunar Veil (+20% Crit Damage, +15% Elemental ATK)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "Full Set: Seven Moons Eclipse (+30% ATK, Lunar Wave dealing 45 area cosmic damage, Midnight Lunar Aura)",
+        "atkMult": 0.3,
+        "defMult": 0.2,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 15.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "eclipse",
+        "specialPassive": "Full Set: Seven Moons Eclipse (+30% ATK, Lunar Wave dealing 45 area cosmic damage, Midnight Lunar Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "sarimanok_regalia",
+    "setName": "Sarimanok Royal Regalia",
+    "setTag": "",
+    "pieces": [
+      "sarimanok_crest",
+      "sarimanok_tunic",
+      "sarimanok_striders"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Radiant Prosperity (+15% All Stats, +25% Coin Drops)",
+        "atkMult": 0.15,
+        "defMult": 0.15,
+        "bonusSpeed": 0.0,
+        "bonusCrit": 0.0,
+        "bonusHp": 25,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Radiant Prosperity (+15% All Stats, +25% Coin Drops)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "Full Set: Prismatic Flight (+25% All Stats, +0.30 Speed, Prismatic Feathers True Damage, Radiant Feathers Aura)",
+        "atkMult": 0.25,
+        "defMult": 0.25,
+        "bonusSpeed": 0.3,
+        "bonusCrit": 0.0,
+        "bonusHp": 50,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "prismatic",
+        "specialPassive": "Full Set: Prismatic Flight (+25% All Stats, +0.30 Speed, Prismatic Feathers True Damage, Radiant Feathers Aura)"
+      }
+    ]
+  },
+  {
+    "setId": "tikbalang_trailblazer",
+    "setName": "Tikbalang Trailblazer Set",
+    "setTag": "",
+    "pieces": [
+      "tikbalang_mask",
+      "tikbalang_vest",
+      "tikbalang_hooves"
+    ],
+    "thresholds": [
+      {
+        "requiredPieces": 2,
+        "title": "2-Piece Bonus",
+        "description": "2-Piece: Trickster Stride (+30% Sprint Speed, +15% Evasion)",
+        "atkMult": 0.0,
+        "defMult": 0.0,
+        "bonusSpeed": 0.3,
+        "bonusCrit": 0.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "",
+        "specialPassive": "2-Piece: Trickster Stride (+30% Sprint Speed, +15% Evasion)"
+      },
+      {
+        "requiredPieces": 3,
+        "title": "3-Piece Bonus",
+        "description": "Full Set: Path of Inversion (+55% Sprint Speed, Dashing inverts enemy tracking paths, Forest Illusion Aura)",
+        "atkMult": 0.15,
+        "defMult": 0.0,
+        "bonusSpeed": 0.55,
+        "bonusCrit": 10.0,
+        "bonusHp": 0,
+        "bonusMpRegen": 0.0,
+        "bonusAtkSpeed": 0.0,
+        "auraEffect": "trickster",
+        "specialPassive": "Full Set: Path of Inversion (+55% Sprint Speed, Dashing inverts enemy tracking paths, Forest Illusion Aura)"
+      }
+    ]
+  }
+]

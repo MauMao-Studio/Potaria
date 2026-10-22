@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: glass_window
+  m_EditorClassIdentifier: 
+  itemId: glass_window
+  itemName: Glass Window
+  category: 2
+  rarity: 0
+  maxStack: 999
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 126cc3e24decd72419a3c4e6e4413c66, type: 3}
+  description: Refined crystal pane. Lets in daylight while stopping intruders.
+  lore: '''Through crystal clarity, we watch the heavens turn.'''
+  specialEffect: Transparent Monster Barrier

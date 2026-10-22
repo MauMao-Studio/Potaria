@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: elder_copper_greave_guards
+  m_EditorClassIdentifier: 
+  itemId: elder_copper_greave_guards
+  itemName: Elder Copper Greave-Guards
+  category: 10
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: e02f3fbb53239ab44a0eb85b07e20cfe, type: 3}
+  description: Flexible Legendary leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Grants Soul Harvest.
+  lore: '''Before the continents divided and the stars cooled, the primordial seed
+    was planted in the void.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 33
+  attack: 10
+  critChance: 13
+  speed: 1.25
+  bonusHp: 132
+  bonusMp: 85
+  mpRegen: 2.6
+  affixSlots: 0

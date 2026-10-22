@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: relic_focus
+  m_EditorClassIdentifier: 
+  itemId: relic_focus
+  itemName: Relic Focus
+  category: 1
+  rarity: 1
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 8868df45844846940a754c4c623a5b43, type: 3}
+  description: A mystical Uncommon staff channeling elemental currents. Unleashes
+    searing magical projectiles.
+  lore: 
+  specialEffect: 
+  attack: 20
+  defense: 0
+  critChance: 3.5
+  speed: 0.01
+  bonusHp: 15
+  bonusMp: 16
+  mpRegen: 0.2
+  specialTag: 
+  affixSlots: 0

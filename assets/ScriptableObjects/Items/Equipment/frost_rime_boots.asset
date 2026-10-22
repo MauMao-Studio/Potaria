@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: frost_rime_boots
+  m_EditorClassIdentifier: 
+  itemId: frost_rime_boots
+  itemName: Frost Rime Boots
+  category: 10
+  rarity: 2
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 4b1017e7693cd5d45b4b58d844452909, type: 3}
+  description: Flexible Rare leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Quenched in glacial mountain ice.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 13
+  attack: 1
+  critChance: 3.7
+  speed: 0.38
+  bonusHp: 40
+  bonusMp: 20
+  mpRegen: 0.6
+  affixSlots: 0

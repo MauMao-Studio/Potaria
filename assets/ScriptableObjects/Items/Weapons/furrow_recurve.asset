@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: furrow_recurve
+  m_EditorClassIdentifier: 
+  itemId: furrow_recurve
+  itemName: Furrow Recurve
+  category: 1
+  rarity: 0
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: d87c191e5b211c9429686b8d387674be, type: 3}
+  description: An agile Common bow crafted for high-velocity volleys. Pierces monstrous
+    targets from safe range.
+  lore: 
+  specialEffect: 
+  attack: 14
+  defense: 0
+  critChance: 3.4
+  speed: 0
+  bonusHp: 4
+  bonusMp: 8
+  mpRegen: 0
+  specialTag: 
+  affixSlots: 0

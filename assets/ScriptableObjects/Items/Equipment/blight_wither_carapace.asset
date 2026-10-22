@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: blight_wither_carapace
+  m_EditorClassIdentifier: 
+  itemId: blight_wither_carapace
+  itemName: Blight Wither Carapace
+  category: 10
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: c2ccb837842930941bdf26fd13cd4272, type: 3}
+  description: Sturdy Legendary chest armor fitted with reinforced plating. Provides
+    vital torso protection against monstrous blows. Warded against nether corruption.
+    Grants Radiant Shield.
+  lore: '''Drink deep of the celestial dew and fear no shadow in this world or the
+    next.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 42
+  attack: 21
+  critChance: 10.9
+  speed: 0.3
+  bonusHp: 151
+  bonusMp: 110
+  mpRegen: 2.6
+  affixSlots: 0

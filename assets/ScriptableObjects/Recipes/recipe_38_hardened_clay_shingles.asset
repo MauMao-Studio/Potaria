@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_38_hardened_clay_shingles
+  m_EditorClassIdentifier: 
+  recipeId: recipe_38_hardened_clay_shingles
+  category: Building
+  resultItemId: hardened_clay_shingles
+  resultItemData: {fileID: 11400000, guid: 75596627db03062479a25fa9d01aa6ac, type: 2}
+  resultCount: 4
+  craftingStation: 1
+  ingredients:
+  - itemId: dirt_block
+    itemData: {fileID: 11400000, guid: d421700ff4711b24cbc099cab00e9abf, type: 2}
+    count: 4
+  - itemId: stone_block
+    itemData: {fileID: 11400000, guid: 28fa40ec5a4dfd541bb6193e9b7bc500, type: 2}
+    count: 2

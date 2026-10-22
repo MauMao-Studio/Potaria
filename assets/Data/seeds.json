@@ -1,0 +1,82 @@
+[
+  {
+    "itemId": "rice_seeds",
+    "itemName": "Palay Rice Seeds",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Seeds of the sacred Palay rice plant. Plant on tilled farmland to cultivate staple rice grains.",
+    "lore": "Butil ng buhay, handog ng masaganang bukid.",
+    "special": "Crop Seed (Grows Palay Rice)"
+  },
+  {
+    "itemId": "garlic_seeds",
+    "itemName": "Bawang Garlic Cloves",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Pungent seed cloves of garlic. Plant on tilled farmland to harvest aromatic Bawang.",
+    "lore": "Wards off pests and malady alike.",
+    "special": "Crop Seed (Grows Bawang Garlic)"
+  },
+  {
+    "itemId": "onion_seeds",
+    "itemName": "Sibuyas Onion Seeds",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Crisp red onion seeds. Plant on tilled farmland to harvest central Luzon red onions.",
+    "lore": "Rich layers cultivated across vast central plains.",
+    "special": "Crop Seed (Grows Sibuyas Red Onion)"
+  },
+  {
+    "itemId": "ginger_seeds",
+    "itemName": "Luya Ginger Rhizome",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Budding rhizome seed of fresh ginger. Plant on tilled farmland to produce spicy Luya roots.",
+    "lore": "Fiery root of morning salabat and comforting Tinola.",
+    "special": "Crop Seed (Grows Luya Fresh Ginger)"
+  },
+  {
+    "itemId": "eggplant_seeds",
+    "itemName": "Talong Eggplant Seeds",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Seeds of native Philippine eggplant. Plant on tilled farmland to grow glossy purple Talong.",
+    "lore": "Hardy vegetable thriving under tropical sun.",
+    "special": "Crop Seed (Grows Talong Eggplant)"
+  },
+  {
+    "itemId": "string_beans_seeds",
+    "itemName": "Sitaw Bean Seeds",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Seeds of yardlong string beans. Plant on tilled farmland to cultivate lush climbing Sitaw vines.",
+    "lore": "Slender green vines that climb high.",
+    "special": "Crop Seed (Grows Sitaw Yardlong Beans)"
+  },
+  {
+    "itemId": "tamarind_seeds",
+    "itemName": "Sampalok Tamarind Seeds",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Smooth brown seeds of the sour tamarind tree. Plant on tilled farmland to produce souring Sampalok pods.",
+    "lore": "The sour soul of every genuine Sinigang.",
+    "special": "Crop Seed (Grows Sampalok Tamarind)"
+  },
+  {
+    "itemId": "calamansi_seeds",
+    "itemName": "Kalamansi Citrus Seeds",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Fragrant seeds of the Philippine lime. Plant on tilled farmland to cultivate golden-green Kalamansi shrubs.",
+    "lore": "A burst of zesty tropical sunshine in every droplet.",
+    "special": "Crop Seed (Grows Kalamansi Citrus)"
+  }
+]

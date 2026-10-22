@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: shadow_cleaver
+  m_EditorClassIdentifier: 
+  itemId: shadow_cleaver
+  itemName: Shadow Cleaver
+  category: 1
+  rarity: 2
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 6ced4f3a6b3001f4a93e047c76a19f99, type: 3}
+  description: Pulsing with dark energy harvested from the Blight.
+  lore: '''The blade hums with the whispers of ancient nightmares.'''
+  specialEffect: Dark Cleave
+  attack: 28
+  defense: 0
+  critChance: 0
+  speed: 0
+  bonusHp: 0
+  bonusMp: 0
+  mpRegen: 0
+  specialTag: 
+  affixSlots: 0

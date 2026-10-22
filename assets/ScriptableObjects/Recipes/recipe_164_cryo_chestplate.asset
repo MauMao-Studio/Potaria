@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_164_cryo_chestplate
+  m_EditorClassIdentifier: 
+  recipeId: recipe_164_cryo_chestplate
+  category: Equipment
+  resultItemId: cryo_chestplate
+  resultItemData: {fileID: 11400000, guid: 4e3fa77e478ccbb49b2517788b96e4fc, type: 2}
+  resultCount: 1
+  craftingStation: 3
+  ingredients:
+  - itemId: frost_core
+    itemData: {fileID: 11400000, guid: e64513b0a84198847a0de8dcd5ffa61d, type: 2}
+    count: 3
+  - itemId: iron_bar
+    itemData: {fileID: 11400000, guid: b9b4ea816a00c014e984220d7b3f81c3, type: 2}
+    count: 10

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_169_speed_potion
+  m_EditorClassIdentifier: 
+  recipeId: recipe_169_speed_potion
+  category: Survival
+  resultItemId: speed_potion
+  resultItemData: {fileID: 11400000, guid: 193986c89cf333d44897d296094da03a, type: 2}
+  resultCount: 1
+  craftingStation: 3
+  ingredients:
+  - itemId: raw_potato
+    itemData: {fileID: 11400000, guid: c094a01dde2a6ae41a38aac6619b924c, type: 2}
+    count: 1
+  - itemId: spud_sap
+    itemData: {fileID: 11400000, guid: 5b88732a93b76c042900156425747ba3, type: 2}
+    count: 2

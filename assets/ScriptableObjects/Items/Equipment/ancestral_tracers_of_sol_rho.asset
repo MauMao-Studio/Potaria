@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: ancestral_tracers_of_sol_rho
+  m_EditorClassIdentifier: 
+  itemId: ancestral_tracers_of_sol_rho
+  itemName: Ancestral Tracers of Sol-Rho
+  category: 10
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: dd1c57af9813051499f60d26eceddffd, type: 3}
+  description: Flexible Epic leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Infused with celestial wards. Grants Thunderclap
+    Burst.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 14
+  attack: 5
+  critChance: 5.6
+  speed: 0.66
+  bonusHp: 66
+  bonusMp: 35
+  mpRegen: 1
+  affixSlots: 0

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: envy_eye
+  m_EditorClassIdentifier: 
+  itemId: envy_eye
+  itemName: The Emerald Eye of Resentment
+  category: 10
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 32e3d2dc7b51fcc4a9e821909c7d45c7, type: 3}
+  description: A preserved jade eye that pulses whenever foes boast greater power.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 0
+  attack: 11
+  critChance: 11
+  speed: 0
+  bonusHp: 20
+  bonusMp: 0
+  mpRegen: 0
+  affixSlots: 0

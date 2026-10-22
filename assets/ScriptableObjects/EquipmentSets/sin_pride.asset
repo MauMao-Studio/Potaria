@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: sin_pride
+  m_EditorClassIdentifier: 
+  setId: sin_pride
+  setName: 'Pride: Sovereign of the Sun'
+  setTag: SDS
+  description: 
+  pieceItemIds:
+  - pride_crown
+  - pride_robe
+  - pride_boots
+  - pride_blade
+  - pride_ring
+  pieceItems:
+  - {fileID: 11400000, guid: 3f95268b46dab024fb871e1fb19d22ae, type: 2}
+  - {fileID: 11400000, guid: f9f5fb2179367b647afac471cbf1f3b3, type: 2}
+  - {fileID: 11400000, guid: 005c48f1681b103478e78b1ab9f00286, type: 2}
+  - {fileID: 11400000, guid: 162622350bb6e0943bd9613c509f5197, type: 2}
+  - {fileID: 11400000, guid: fa11c75c27862a84eb581f5c927ccdb0, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Solar Precision (+15% Crit Chance, +10% ATK)'
+    atkMultiplier: 0.1
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 15
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Solar Precision (+15% Crit Chance, +10% ATK)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Flawless Bearing (+25% ATK, +18% Crit, +0.10 Speed)'
+    atkMultiplier: 0.25
+    defMultiplier: 0
+    bonusSpeed: 0.1
+    bonusCritChance: 18
+    bonusMaxHp: 35
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Flawless Bearing (+25% ATK, +18% Crit, +0.10 Speed)'
+  fivePieceBonus:
+    requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage
+      against healthy targets, Solar Aura)'
+    atkMultiplier: 0.3
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 25
+    bonusMaxHp: 35
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: solar
+    specialPassive: 'Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage
+      against healthy targets, Solar Aura)'
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Solar Precision (+15% Crit Chance, +10% ATK)'
+    atkMultiplier: 0.1
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 15
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Solar Precision (+15% Crit Chance, +10% ATK)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Flawless Bearing (+25% ATK, +18% Crit, +0.10 Speed)'
+    atkMultiplier: 0.25
+    defMultiplier: 0
+    bonusSpeed: 0.1
+    bonusCritChance: 18
+    bonusMaxHp: 35
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Flawless Bearing (+25% ATK, +18% Crit, +0.10 Speed)'
+  - requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage
+      against healthy targets, Solar Aura)'
+    atkMultiplier: 0.3
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 25
+    bonusMaxHp: 35
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: solar
+    specialPassive: 'Full Set: Solar Majesty (+30% ATK, +25% Crit, +35% Crit Damage
+      against healthy targets, Solar Aura)'

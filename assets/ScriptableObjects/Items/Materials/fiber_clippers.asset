@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: fiber_clippers
+  m_EditorClassIdentifier: 
+  itemId: fiber_clippers
+  itemName: Fiber Clippers
+  category: 0
+  rarity: 0
+  maxStack: 1
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 27f98f7d4efe919418ef92d9683d66b4, type: 3}
+  description: Spring-tensioned iron shears for harvesting foliage, vines, and raw
+    plant fibers.
+  lore: '''Snip cleanly, leave the root intact.'''
+  specialEffect: Plant Harvester

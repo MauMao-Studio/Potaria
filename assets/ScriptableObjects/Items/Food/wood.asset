@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f6d29f885a8e14488dd6c17b7946ca, type: 3}
+  m_Name: wood
+  m_EditorClassIdentifier: 
+  itemId: wood
+  itemName: Oak Wood
+  category: 2
+  rarity: 0
+  maxStack: 999
+  goldValue: 1
+  icon: {fileID: 21300000, guid: eecf1a825d2683046b26566af63ce08f, type: 3}
+  description: Classic timber harvested from oak trees. Right-click to place or craft
+    into workbench.
+  lore: '''A carpenter''s fundamental resource.'''
+  specialEffect: Crafting & Building
+  nutrition: 10
+  healthRestore: 0
+  cookingDuration: 0
+  buffCategory: 0
+  buff:
+    category: 0
+    buffName: 
+    durationSeconds: 180
+    damageMultiplier: 0
+    rangedDamageMultiplier: 0
+    attackSpeedMultiplier: 0
+    critChanceBonus: 0
+    critDamageMultiplier: 0
+    damageReduction: 0
+    flatDefense: 0
+    magicResistance: 0
+    knockbackResistance: 0
+    speedMultiplier: 0
+    jumpForceMultiplier: 0
+    healthRegenPerSecond: 0
+    manaRegenPerSecond: 0
+    manaCostReduction: 0
+    effectsDescription: 
+  acquisitionNotes: Chopped from trees using an axe.
+  effects: []

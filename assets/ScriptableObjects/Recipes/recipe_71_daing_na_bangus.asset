@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_71_daing_na_bangus
+  m_EditorClassIdentifier: 
+  recipeId: recipe_71_daing_na_bangus
+  category: Survival
+  resultItemId: daing_na_bangus
+  resultItemData: {fileID: 11400000, guid: 07f02fff7c04be14d9c7e7e190fe6ff5, type: 2}
+  resultCount: 1
+  craftingStation: 1
+  ingredients:
+  - itemId: raw_bangus
+    itemData: {fileID: 11400000, guid: 94f35f456d1c06244a6d3354961e4934, type: 2}
+    count: 1
+  - itemId: garlic
+    itemData: {fileID: 11400000, guid: 35c8e825503fcb649bc58ae1ff9fc6ad, type: 2}
+    count: 1
+  - itemId: vinegar
+    itemData: {fileID: 11400000, guid: aa306946d06b2b342bda7c6e489b554e, type: 2}
+    count: 1

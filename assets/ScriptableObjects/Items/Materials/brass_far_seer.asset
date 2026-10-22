@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: brass_far_seer
+  m_EditorClassIdentifier: 
+  itemId: brass_far_seer
+  itemName: Brass Far-Seer
+  category: 8
+  rarity: 1
+  maxStack: 1
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 701308046f2cce64ba28b8a1cbf3453a, type: 3}
+  description: Extending brass optical cylinder fitted with crystal lenses for surveying
+    distant horizons.
+  lore: '''Spotting dungeon spires long before they breach the horizon.'''
+  specialEffect: Distant Sight

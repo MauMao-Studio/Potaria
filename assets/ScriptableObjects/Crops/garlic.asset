@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6d734a4620398549bd9f67839431756, type: 3}
+  m_Name: garlic
+  m_EditorClassIdentifier: 
+  cropId: garlic
+  cropName: Garlic
+  seedItemId: garlic_seeds
+  harvestItemId: garlic
+  seedItem: {fileID: 11400000, guid: 3255bc6254d34124e9603bc989bebceb, type: 2}
+  harvestItem: {fileID: 11400000, guid: 35c8e825503fcb649bc58ae1ff9fc6ad, type: 2}
+  growthStagesCount: 4
+  stageDurationSeconds: 40
+  stageSprites:
+  - {fileID: 21300000, guid: a777796ebb534c843b62c6220c8e818d, type: 3}
+  - {fileID: 21300000, guid: 58c2c2432dc58a14e8e2d1f6a7e8edd8, type: 3}
+  - {fileID: 21300000, guid: 9e09dfb2087acc94f869f1c66be6d688, type: 3}
+  - {fileID: 21300000, guid: 59e73aaa744e6914593d9f770438d256, type: 3}
+  minLightRequirement: 0.35
+  requiresHydratedFarmland: 1
+  moistureGrowthMultiplier: 1
+  dryGrowthMultiplier: 0.35
+  minHarvestYield: 2
+  maxHarvestYield: 4
+  minSeedYield: 1
+  maxSeedYield: 2

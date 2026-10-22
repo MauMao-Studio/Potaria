@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: cyclone_halberd
+  m_EditorClassIdentifier: 
+  itemId: cyclone_halberd
+  itemName: Cyclone Halberd
+  category: 1
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 0442c588a43b22e43b89d0648657f079, type: 3}
+  description: "An extended Ancient polearm forged for tactical reach. Impales adversaries
+    before they can close distance. Bestows Ancient Awakening: AoE 72px Starburst
+    Explosion \u2022 Build-Defining Synergy."
+  lore: '''Etched with runic glyphs that pulse in harmony with the heartbeat of Potaria.'''
+  specialEffect: 
+  attack: 122
+  defense: 0
+  critChance: 34.3
+  speed: 0.46
+  bonusHp: 150
+  bonusMp: 116
+  mpRegen: 5.7
+  specialTag: 
+  affixSlots: 0

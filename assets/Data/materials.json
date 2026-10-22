@@ -1,0 +1,1362 @@
+[
+  {
+    "itemId": "abyssal_alloy_bar",
+    "itemName": "Abyssal Alloy Bar",
+    "category": "Material",
+    "rarity": "Epic",
+    "maxStack": 99,
+    "description": "Dense iridescent alloy ingot forged from Blightstone, gold, and iron.",
+    "lore": "'Impervious to heat, acid, and crushing weight.'",
+    "special": "Indestructible Temper"
+  },
+  {
+    "itemId": "affix_stone",
+    "itemName": "Affix Stone",
+    "category": "Consumable",
+    "rarity": "Mythic",
+    "maxStack": 99,
+    "description": "A primordial runic stone. Apply to Legendary or Ancient gear with an open affix slot to awaken god-tier affixes!",
+    "lore": "'Pulsating with forgotten cosmic inscriptions that alter the nature of arms.'",
+    "special": "Awakens God-Tier Affixes"
+  },
+  {
+    "itemId": "alchemical_retort",
+    "itemName": "Alchemical Retort",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Brass burner and glassware condenser stand for concocting high-tier alchemical solutions.",
+    "lore": "'Condensing the essence of stars into restorative drops.'",
+    "special": "Distillation"
+  },
+  {
+    "itemId": "arbalest_repeater",
+    "itemName": "Arbalest Repeater",
+    "category": "Weapon",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Lever-action mechanised arbalest delivering high-velocity armor-piercing bolts.",
+    "lore": "'Crank, lock, release\u2014calibrated for merciless distance.'",
+    "special": "Armor Piercing"
+  },
+  {
+    "itemId": "archery_target",
+    "itemName": "Archery Target",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Painted straw bullseye target for measuring marksmanship and projectile distance.",
+    "lore": "",
+    "special": "Marksmanship"
+  },
+  {
+    "itemId": "astral_arrow",
+    "itemName": "Astral Arrow",
+    "category": "Material",
+    "rarity": "Epic",
+    "maxStack": 999,
+    "description": "Arrow imbued with fallen star matter. Flies at high velocity and pierces darkness.",
+    "lore": "'Carries the radiant vengeance of distant constellations.'",
+    "special": "+14 Starlight Damage \u2022 High Velocity"
+  },
+  {
+    "itemId": "astral_leviathan_rod",
+    "itemName": "Astral Leviathan Rod",
+    "category": "Tool",
+    "rarity": "Mythic",
+    "maxStack": 1,
+    "description": "Celestial carbon-weave rod hums with cosmic tides. Capable of catching mythical ocean titans and royal treasure.",
+    "lore": "'The abyss yields its greatest secrets to celestial craft.'",
+    "special": "Fishing Tool"
+  },
+  {
+    "itemId": "bamboo_hoe",
+    "itemName": "Kawayan Bamboo Hoe",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Lightweight bamboo farming hoe crafted for tilling soil into fertile Philippine farmland.",
+    "lore": "'Traditional tool of the industrious Filipino magsasaka.'",
+    "special": "Farming Tool (Tills Dirt & Grass)"
+  },
+  {
+    "itemId": "bamboo_scaffold",
+    "itemName": "Cane Scaffold",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Lightweight modular scaffold lattice designed for rapid construction.",
+    "lore": "",
+    "special": "Temporary Scaffold"
+  },
+  {
+    "itemId": "bathtub",
+    "itemName": "Bathtub",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Porcelain-enameled tub filled with warm, soothing bubble water.",
+    "lore": "'Wash away the dungeon grime and soothe tired potato peelings.'",
+    "special": "Homestead Luxury Furniture"
+  },
+  {
+    "itemId": "blast_kiln",
+    "itemName": "High-Temp Blast Kiln",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Refractory smelting kiln insulated with dense brick for processing ores at intense temperatures.",
+    "lore": "",
+    "special": "High-Heat Smelting"
+  },
+  {
+    "itemId": "blight_ember_hearth",
+    "itemName": "Blight Ember Hearth",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Occult hearth pit glowing with spectral indigo embers, warding off darkness.",
+    "lore": "'Cold purple flames that never consume their fuel.'",
+    "special": "Soul Glow"
+  },
+  {
+    "itemId": "blightstone",
+    "itemName": "Blightstone",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Crafting material or component.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "blightstone_block",
+    "itemName": "Blightstone Block",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 999,
+    "description": "Hardened purple stone from the Blight that requires high-tier pickaxes to mine.",
+    "lore": "'Heavy and cold, soaked in blighted subterranean malice.'",
+    "special": "Resistant Stone"
+  },
+  {
+    "itemId": "bone",
+    "itemName": "Skeletal Bone",
+    "category": "Material",
+    "rarity": "Uncommon",
+    "maxStack": 999,
+    "description": "Remnants of subterranean dungeon skeletons. Used to craft bows and armor.",
+    "lore": "'Hardened by centuries in the dark.'",
+    "special": "Crafting Material"
+  },
+  {
+    "itemId": "bone_bow",
+    "itemName": "Bone Recurve Bow",
+    "category": "Weapon",
+    "rarity": "Rare",
+    "maxStack": 1,
+    "description": "Reinforced skeletal recurve bow with formidable arrow velocity.",
+    "lore": "'Crafted from dungeon remnants that remember the hunt.'",
+    "special": "+15% Arrow Velocity"
+  },
+  {
+    "itemId": "bookshelf",
+    "itemName": "Bookshelf",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Sturdy wooden shelves lined with leather-bound arcane tomes and recipes.",
+    "lore": "'Knowledge is the sweetest fertilizer for growing potatoes.'",
+    "special": "Jump-Through Platform Surface"
+  },
+  {
+    "itemId": "brass_far_seer",
+    "itemName": "Brass Far-Seer",
+    "category": "Accessory",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Extending brass optical cylinder fitted with crystal lenses for surveying distant horizons.",
+    "lore": "'Spotting dungeon spires long before they breach the horizon.'",
+    "special": "Distant Sight"
+  },
+  {
+    "itemId": "brass_lantern",
+    "itemName": "Brass Lantern",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Weatherproof brass oil lantern that burns steadily through heavy storms and downpours.",
+    "lore": "",
+    "special": "Steady Lantern Glow"
+  },
+  {
+    "itemId": "burlap_tether",
+    "itemName": "Burlap Tether",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Braided hemp tether with a sturdy copper clip for securing gear and companion creatures.",
+    "lore": "'Strong enough to hold a bucking wild hog.'",
+    "special": "Leash & Tether"
+  },
+  {
+    "itemId": "cactus",
+    "itemName": "Cactus Block",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Prickly succulent from the desert. Used to craft thorny weapons and armor.",
+    "lore": "'Resilient flora of the dry wastes.'",
+    "special": "Crafting Material & Block"
+  },
+  {
+    "itemId": "candelabra",
+    "itemName": "Candelabra",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Ornate three-pronged brass candelabra. Emits a warm, golden illumination.",
+    "lore": "'Wax, wick, and gold\u2014a beacon in the underground gloom.'",
+    "special": "Luminous Homestead Light"
+  },
+  {
+    "itemId": "cartographer_desk",
+    "itemName": "Cartographer's Desk",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Drafting table equipped with brass calipers and parchment rolls for mapping uncharted lands.",
+    "lore": "",
+    "special": "Chart Table"
+  },
+  {
+    "itemId": "carved_stone_bricks",
+    "itemName": "Carved Stone Bricks",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Precision-hewn stone masonry carved with ancient geometric friezes.",
+    "lore": "'Centuries of weathering could not erase the artisan\\'s chisel.'",
+    "special": "Building Block"
+  },
+  {
+    "itemId": "carved_tuber_lantern",
+    "itemName": "Carved Tuber Lantern",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Whimsically hollowed giant potato grinning merrily with a warm flame burning inside.",
+    "lore": "'A smiling beacon that keeps night phantoms away from the doorstep.'",
+    "special": "Festive Light"
+  },
+  {
+    "itemId": "celestial_axe",
+    "itemName": "Celestial Axe",
+    "category": "Tool",
+    "rarity": "Legendary",
+    "maxStack": 1,
+    "description": "Star-forged battle axe. Instantly annihilates ancient trees and dense timber.",
+    "lore": "'Sundered stars woven into a lumberjack's dream.'",
+    "special": "Godly Woodcutting Speed"
+  },
+  {
+    "itemId": "celestial_essence",
+    "itemName": "Celestial Essence",
+    "category": "Material",
+    "rarity": "Legendary",
+    "maxStack": 999,
+    "description": "Starlight particulate dropped by Celestial Titan Sol-Rho.",
+    "lore": "'The divine dust of stellar creation.'",
+    "special": "God-Tier Material"
+  },
+  {
+    "itemId": "celestial_keystone",
+    "itemName": "Celestial Keystone",
+    "category": "Special",
+    "rarity": "Legendary",
+    "maxStack": 10,
+    "description": "Right-click to summon Grand Boss Sol-Rho - The Celestial Titan!",
+    "lore": "'When held aloft, the sky quivers and the titan descends.'",
+    "special": "Summons 2-Phase Grand Boss Sol-Rho"
+  },
+  {
+    "itemId": "celestial_pickaxe",
+    "itemName": "Celestial Pickaxe",
+    "category": "Tool",
+    "rarity": "Legendary",
+    "maxStack": 1,
+    "description": "Starlight mining pickaxe. Effortlessly shreds subterranean bedrock and gems.",
+    "lore": "'The cosmos parts before its crystalline tip.'",
+    "special": "Subterranean Laser Digging Speed"
+  },
+  {
+    "itemId": "chandelier",
+    "itemName": "Chandelier",
+    "category": "Block",
+    "rarity": "Rare",
+    "maxStack": 99,
+    "description": "Grand hanging ceiling chandelier fitted with four glowing candles.",
+    "lore": "'Cast brilliant banquet light over your majestic earthen hall.'",
+    "special": "Brilliant Ceiling Illumination"
+  },
+  {
+    "itemId": "chest",
+    "itemName": "Treasure Chest",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Lustrous gilded chest with golden reinforcement straps. Found in deep caverns filled with rare subterranean treasures.",
+    "lore": "'Holds the forgotten relics of past adventurers.'",
+    "special": "Treasure Container"
+  },
+  {
+    "itemId": "cobblestone_parapet",
+    "itemName": "Cobblestone Parapet",
+    "category": "Wall",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Low defensive battlement blocks for fortifying homestead ramparts.",
+    "lore": "",
+    "special": "Defensive Wall"
+  },
+  {
+    "itemId": "copper_axe",
+    "itemName": "Copper Axe",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Sturdy forged copper axe head. Efficient woodcutter.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "copper_bar",
+    "itemName": "Copper Bar",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Refined copper ingot smelted from 3 copper ores. Used at a Work Bench.",
+    "lore": "'Cleanly molded metal ingot ready for forging.'",
+    "special": "Crafting Ingot"
+  },
+  {
+    "itemId": "copper_broadsword",
+    "itemName": "Copper Broadsword",
+    "category": "Weapon",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Broad cutting arc capable of keeping creeping slimes at bay.",
+    "lore": "'Balanced weight, reliable steel, and sharp enough for any wanderer.'",
+    "special": "Wide Slashing Arc"
+  },
+  {
+    "itemId": "copper_harvester_sickle",
+    "itemName": "Copper Harvester Sickle",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Curved copper blade for swiftly clearing wild grass and gathering potato yields.",
+    "lore": "",
+    "special": "Reap Harvest"
+  },
+  {
+    "itemId": "copper_ore",
+    "itemName": "Copper Ore",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Raw copper nuggets mined from surface terrain. Smelt at a furnace.",
+    "lore": "'The most common mineral in the crust.'",
+    "special": "Smelting Ore"
+  },
+  {
+    "itemId": "copper_pickaxe",
+    "itemName": "Copper Pickaxe",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Starter mining tool. Digs through dirt, clay, and soft copper veins.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "copper_shortsword",
+    "itemName": "Spud Shortsword",
+    "category": "Weapon",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "A trusty starter copper blade. Pierces close-range foes.",
+    "lore": "'A spud with a blade is never to be underestimated.'",
+    "special": "Thrust Attack"
+  },
+  {
+    "itemId": "cozy_hearth_pit",
+    "itemName": "Cozy Hearth Pit",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "A crackling cobblestone fire pit radiating gentle light and soothing campfire smoke.",
+    "lore": "'Gather round Spud, and let the night cold pass.'",
+    "special": "Warm Embers"
+  },
+  {
+    "itemId": "cryo_rune",
+    "itemName": "Glacial Altar Rune",
+    "category": "Special",
+    "rarity": "Rare",
+    "maxStack": 10,
+    "description": "Right-click to teleport to the Permafrost Arena to summon Cryo-Spud!",
+    "lore": "'Frost clings to the air around this enchanted relic.'",
+    "special": "Warp to Cryo-Spud Arena"
+  },
+  {
+    "itemId": "desert_rune",
+    "itemName": "Sun Altar Rune",
+    "category": "Special",
+    "rarity": "Rare",
+    "maxStack": 10,
+    "description": "Right-click to teleport to the Arid Waste Arena to summon Ignis Colossus!",
+    "lore": "'The heat within this stone burns like the noonday desert sun.'",
+    "special": "Warp to Ignis Colossus Arena"
+  },
+  {
+    "itemId": "dirt_block",
+    "itemName": "Dirt Block",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Rich fertile earth. Right-click to place. Sprouts fresh grass when exposed to sun.",
+    "lore": "'The foundation of all life on Potaria.'",
+    "special": "Basic Terrain Block"
+  },
+  {
+    "itemId": "dried_thatch_bale",
+    "itemName": "Dried Thatch Bale",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Tightly compressed dried grain stalks for rustic roofing and soft landings.",
+    "lore": "",
+    "special": "Cushioning Block"
+  },
+  {
+    "itemId": "dungeon_rune",
+    "itemName": "Dungeon Teleporter Rune",
+    "category": "Special",
+    "rarity": "Epic",
+    "maxStack": 10,
+    "description": "Right-click to teleport directly to the Nether Dungeon Chamber and summon Lord Malus!",
+    "lore": "'Pulsates with purple abyssal arcane power.'",
+    "special": "Warp to Lord Malus Dungeon Arena"
+  },
+  {
+    "itemId": "explorers_satchel",
+    "itemName": "Explorer's Satchel",
+    "category": "Accessory",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Compact oiled satchel that keeps field specimens and minerals neatly organized.",
+    "lore": "'A seasoned explorer travels light, but carries wisdom.'",
+    "special": "Expanded Pouch"
+  },
+  {
+    "itemId": "fallen_star",
+    "itemName": "Fallen Star",
+    "category": "Material",
+    "rarity": "Rare",
+    "maxStack": 99,
+    "description": "A luminous star that fell from the cosmos during nightfall. Used to craft astral ammunition and celestial relics.",
+    "lore": "'A fragment of pure starlight plucked from the night sky.'",
+    "special": "Astral Crafting Catalyst"
+  },
+  {
+    "itemId": "fiber_clippers",
+    "itemName": "Fiber Clippers",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Spring-tensioned iron shears for harvesting foliage, vines, and raw plant fibers.",
+    "lore": "'Snip cleanly, leave the root intact.'",
+    "special": "Plant Harvester"
+  },
+  {
+    "itemId": "fishing_rod",
+    "itemName": "Bamboo Fishing Rod",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "A flexible bamboo pole fitted with strong fiber line. Cast into water to catch Pinoy fish.",
+    "lore": "'Patience brings the ocean's bounty.'",
+    "special": "Fishing Tool"
+  },
+  {
+    "itemId": "flame_arrow",
+    "itemName": "Flame Arrow",
+    "category": "Material",
+    "rarity": "Uncommon",
+    "maxStack": 999,
+    "description": "Ignited arrow tipped with torch flame and sap. Burns targets on hit.",
+    "lore": "'A flickering spark that sets the night ablaze.'",
+    "special": "+6 Fire Damage \u2022 Burns Targets"
+  },
+  {
+    "itemId": "fletcher_bench",
+    "itemName": "Fletcher's Bench",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Specialist work station for notching arrow shafts and tensioning composite bows.",
+    "lore": "",
+    "special": "Fletching"
+  },
+  {
+    "itemId": "forged_iron_chain",
+    "itemName": "Forged Iron Chain",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Interlocked iron chain links for suspending chandeliers and drawbridges.",
+    "lore": "",
+    "special": "Hardware Material"
+  },
+  {
+    "itemId": "frost_core",
+    "itemName": "Frost Core",
+    "category": "Material",
+    "rarity": "Rare",
+    "maxStack": 999,
+    "description": "Pulsing sub-zero core dropped by glacial beasts.",
+    "lore": "'Chilled to absolute zero.'",
+    "special": "Crafting Material"
+  },
+  {
+    "itemId": "frostburn_arrow",
+    "itemName": "Frostburn Arrow",
+    "category": "Material",
+    "rarity": "Uncommon",
+    "maxStack": 999,
+    "description": "Chilled arrow dipped in frost core essence. Deals +8 bonus damage.",
+    "lore": "'Burns colder than the heart of winter.'",
+    "special": "+8 Frost Damage"
+  },
+  {
+    "itemId": "furnace",
+    "itemName": "Furnace",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Place on the ground. Stand near it to smelt raw ores into ingots and cook savory potato meals.",
+    "lore": "'Roaring coals that turn crude ores into lustrous metal.'",
+    "special": "Smelting & Cooking Station"
+  },
+  {
+    "itemId": "galvanic_attractor",
+    "itemName": "Galvanic Attractor",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Pointed copper spire that attracts atmospheric static and redirects lightning strikes.",
+    "lore": "",
+    "special": "Static Grounding"
+  },
+  {
+    "itemId": "gilded_master_rod",
+    "itemName": "Gilded Master Angler Rod",
+    "category": "Tool",
+    "rarity": "Epic",
+    "maxStack": 1,
+    "description": "Masterwork golden fishing rod lined with silk filament. Can reel in exotic catches and epic equipment.",
+    "lore": "'A true angler seeks legends beneath the foam.'",
+    "special": "Fishing Tool"
+  },
+  {
+    "itemId": "glass_flask",
+    "itemName": "Glass Flask",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Blown glass flask for collecting mountain springs, glowing extracts, and sap.",
+    "lore": "",
+    "special": "Alchemy Glassware"
+  },
+  {
+    "itemId": "glass_window",
+    "itemName": "Glass Window",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Refined crystal pane. Lets in daylight while stopping intruders.",
+    "lore": "'Through crystal clarity, we watch the heavens turn.'",
+    "special": "Transparent Monster Barrier"
+  },
+  {
+    "itemId": "glowing_lumen_arrow",
+    "itemName": "Glowing Lumen Arrow",
+    "category": "Weapon",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Bioluminescent tipped arrows that pierce shadows and illuminate hit adversaries.",
+    "lore": "'The subterranean mushroom glow marks the target in absolute pitch.'",
+    "special": "Luminescent Beacon"
+  },
+  {
+    "itemId": "gold_axe",
+    "itemName": "Gold Axe",
+    "category": "Tool",
+    "rarity": "Rare",
+    "maxStack": 1,
+    "description": "Lustrous gold axe with unmatched cutting velocity. Cleaves wood in seconds.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "gold_broadsword",
+    "itemName": "Golden Spud Blade",
+    "category": "Weapon",
+    "rarity": "Rare",
+    "maxStack": 1,
+    "description": "A masterwork golden blade that shines brilliantly underground.",
+    "lore": "'Gleams with the righteous pride of the high tuber courts.'",
+    "special": "+6% Critical Strike Chance"
+  },
+  {
+    "itemId": "gold_ore",
+    "itemName": "Gold Ore",
+    "category": "Material",
+    "rarity": "Rare",
+    "maxStack": 999,
+    "description": "Gleaming golden veins buried in deep caverns. Smelt at a furnace.",
+    "lore": "'A precious vein untouched by sunlight.'",
+    "special": "Smelting Ore"
+  },
+  {
+    "itemId": "gold_pickaxe",
+    "itemName": "Gold Pickaxe",
+    "category": "Tool",
+    "rarity": "Rare",
+    "maxStack": 1,
+    "description": "Lustrous gilded pickaxe boasting exceptional digging speed.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "grandfather_clock",
+    "itemName": "Grandfather Clock",
+    "category": "Block",
+    "rarity": "Rare",
+    "maxStack": 99,
+    "description": "Towering pendulum clock. Right-click to check in-game celestial time.",
+    "lore": "'Tick-tock, the stars dance across the Potarian night.'",
+    "special": "Interactive Celestial Timekeeper"
+  },
+  {
+    "itemId": "greater_healing_potion",
+    "itemName": "Greater Healing Potion",
+    "category": "Consumable",
+    "rarity": "Rare",
+    "maxStack": 30,
+    "description": "Distilled glowing mushroom tonic that rapidly seals deep wounds.",
+    "lore": "'Potent alchemical life-water that seals deep wounds.'",
+    "special": "Restores 120 Health"
+  },
+  {
+    "itemId": "hardened_clay_shingles",
+    "itemName": "Hardened Clay Shingles",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Terracotta architectural shingles for high-angle rooftops.",
+    "lore": "",
+    "special": "Roof Shingle"
+  },
+  {
+    "itemId": "healing_potion",
+    "itemName": "Lesser Healing Potion",
+    "category": "Consumable",
+    "rarity": "Common",
+    "maxStack": 30,
+    "description": "Alchemical brew. Right-click to instantly recover vitality.",
+    "lore": "'Standard issue emergency drought for spelunkers.'",
+    "special": "Restores 50 Health"
+  },
+  {
+    "itemId": "hooped_cask",
+    "itemName": "Hooped Cask",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Stout wooden storage cask sealed with copper banding for keeping cellar preserves.",
+    "lore": "",
+    "special": "Dry Storage"
+  },
+  {
+    "itemId": "ice_block",
+    "itemName": "Ice Block",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Slippery subterranean glacial ice.",
+    "lore": "'Watch your step across the frozen caves.'",
+    "special": "Slippery Surface"
+  },
+  {
+    "itemId": "iron_aegis",
+    "itemName": "Iron Aegis",
+    "category": "Accessory",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Heavy tempered steel kite shield bearing the royal Spud crest.",
+    "lore": "'An unyielding bulwark against subterranean horrors.'",
+    "special": "Heavy Guard"
+  },
+  {
+    "itemId": "iron_axe",
+    "itemName": "Iron Axe",
+    "category": "Tool",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Hardened iron lumber axe. Swiftly fells towering trees and dense trunks.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "iron_bar",
+    "itemName": "Iron Bar",
+    "category": "Material",
+    "rarity": "Uncommon",
+    "maxStack": 999,
+    "description": "Tempered iron ingot smelted from 3 iron ores. Used for sturdy armor and tools.",
+    "lore": "'Dense and resilient.'",
+    "special": "Crafting Ingot"
+  },
+  {
+    "itemId": "iron_cauldron",
+    "itemName": "Iron Cauldron",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Heavy cast kettle for collecting rainwater, washing ore, and boiling root broths.",
+    "lore": "",
+    "special": "Kettle Vessel"
+  },
+  {
+    "itemId": "iron_chest",
+    "itemName": "Iron Storage Chest",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Heavy reinforced chest for storing 20 items safely. Right-click to open or manage items.",
+    "lore": "'Forged from iron bands to preserve keepsakes across expeditions.'",
+    "special": "20-Slot Storage Container"
+  },
+  {
+    "itemId": "iron_hoe",
+    "itemName": "Iron Farming Hoe",
+    "category": "Tool",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Sturdy forged iron hoe that tills soil with effortless precision.",
+    "lore": "'Built to endure generations of paddy cultivation.'",
+    "special": "Farming Tool (Tills Dirt & Grass)"
+  },
+  {
+    "itemId": "iron_ore",
+    "itemName": "Iron Ore",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Durable iron deposits found in underground stone. Smelt at a furnace.",
+    "lore": "'Heavy metal veins threading through cavern rock.'",
+    "special": "Smelting Ore"
+  },
+  {
+    "itemId": "iron_pickaxe",
+    "itemName": "Iron Pickaxe",
+    "category": "Tool",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Tempered iron head that swiftly breaks through dense stone and minerals.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "iron_reinforced_door",
+    "itemName": "Iron-Reinforced Door",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Heavy timber door bolted with forged iron strapping to withstand monstrous dungeon sieges.",
+    "lore": "",
+    "special": "Reinforced Barrier"
+  },
+  {
+    "itemId": "iron_shovel",
+    "itemName": "Iron Shovel",
+    "category": "Tool",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Tempered iron spade for rapid trench excavation and gravel clearing.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "magma_core",
+    "itemName": "Magma Core",
+    "category": "Material",
+    "rarity": "Rare",
+    "maxStack": 999,
+    "description": "Molten subterranean ember dropped by deep cavern monsters.",
+    "lore": "'Never loses its scorching heat.'",
+    "special": "Crafting Material"
+  },
+  {
+    "itemId": "magnetic_lodestone",
+    "itemName": "Magnetic Lodestone",
+    "category": "Accessory",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Floating magnetite compass that attunes to deep underground geological anomalies.",
+    "lore": "'The needle never wavers from the world\\'s magnetic core.'",
+    "special": "True Compass"
+  },
+  {
+    "itemId": "masonry_saw",
+    "itemName": "Masonry Saw",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Rotary iron cutting wheel for cleanly trimming stone blocks into precision architectural trim.",
+    "lore": "",
+    "special": "Stone Cutting"
+  },
+  {
+    "itemId": "mosaic_tiles",
+    "itemName": "Mosaic Tiles",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Fired clay tiles with lustrous mineral glaze for elegant manor flooring.",
+    "lore": "'Vibrant tessellations that shimmer in the warm torchlight.'",
+    "special": "Decorative Tile"
+  },
+  {
+    "itemId": "necro_rune",
+    "itemName": "Blight Altar Rune",
+    "category": "Special",
+    "rarity": "Rare",
+    "maxStack": 10,
+    "description": "Right-click to teleport to the Shadow Crypt to summon Necro-Tuber!",
+    "lore": "'Whispers of the undead echo from its dark surface.'",
+    "special": "Warp to Necro-Tuber Arena"
+  },
+  {
+    "itemId": "neptune_tide_rod",
+    "itemName": "Neptune's Sovereign Rod",
+    "category": "Tool",
+    "rarity": "Legendary",
+    "maxStack": 1,
+    "description": "Legendary sovereign trident-rod commanding the tides. Reqs supreme mastery to reel mythical relics.",
+    "lore": "'Rule the waters, harvest the boundless cosmos.'",
+    "special": "Fishing Tool"
+  },
+  {
+    "itemId": "night_gazer_elixir",
+    "itemName": "Night Gazer Elixir",
+    "category": "Consumable",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Phosphorescent brew infused with starlight and spores, enhancing subterranean clarity.",
+    "lore": "'The dark caves unveil their deepest secrets to eyes unclouded by shadows.'",
+    "special": "Night Sight"
+  },
+  {
+    "itemId": "oak_buckler",
+    "itemName": "Oak Buckler",
+    "category": "Accessory",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Iron-bossed oak roundshield that absorbs stray arrows and monster charges.",
+    "lore": "'Carved from seasoned mountain oak.'",
+    "special": "Shield Block"
+  },
+  {
+    "itemId": "painting",
+    "itemName": "Painting",
+    "category": "Block",
+    "rarity": "Rare",
+    "maxStack": 99,
+    "description": "Gilded framed oil landscape portraying rolling potato hills under a sunset.",
+    "lore": "'A masterpiece brushed with potato starch oil by Master Kurados.'",
+    "special": "Fine Wall Art"
+  },
+  {
+    "itemId": "portal_shard",
+    "itemName": "Celestial Portal Shard",
+    "category": "Special",
+    "rarity": "Rare",
+    "maxStack": 99,
+    "description": "Dropped by subterranean mini-bosses. Craft 4 into a Celestial Keystone at a Work Bench!",
+    "lore": "'A crystalline sliver fallen from the celestial gates.'",
+    "special": "Boss Summoning Key Component"
+  },
+  {
+    "itemId": "potted_plant",
+    "itemName": "Potted Spud Plant",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "A terracotta pot nurturing a lush miniature leafy potato bonsai.",
+    "lore": "'A thriving green sprout that brings life to any homestead.'",
+    "special": "Decorative Botanical Bonsai"
+  },
+  {
+    "itemId": "pyrite_sparker",
+    "itemName": "Pyrite Sparker",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Iron striker paired with mineral pyrite that ignites campfires and scorches brush.",
+    "lore": "'A shower of golden sparks to pierce the gloom.'",
+    "special": "Firestarter"
+  },
+  {
+    "itemId": "reinforced_angler_rod",
+    "itemName": "Reinforced Iron Angler Rod",
+    "category": "Tool",
+    "rarity": "Rare",
+    "maxStack": 1,
+    "description": "Tempered iron casting rod with weighted spool. Catches rare deep-water fish and precious treasures.",
+    "lore": "'Cast deep where the sunken relics rest.'",
+    "special": "Fishing Tool"
+  },
+  {
+    "itemId": "reinforced_slate_slab",
+    "itemName": "Reinforced Slate Slab",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Heavy slate slabs tempered to resist blast concussions.",
+    "lore": "",
+    "special": "Hardened Block"
+  },
+  {
+    "itemId": "roof_tiles",
+    "itemName": "Roof Tiles",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Decorative red clay roofing shingles. Solid blocks that block monsters and rainwater.",
+    "lore": "'A humble roof crowns every hero's shelter.'",
+    "special": "Impenetrable House Construction"
+  },
+  {
+    "itemId": "rope_rungs",
+    "itemName": "Rope Rungs",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Knotted fiber ladder rungs for swiftly ascending vertical cliffs and shafts.",
+    "lore": "",
+    "special": "Climbable Platform"
+  },
+  {
+    "itemId": "sand_block",
+    "itemName": "Sand Block",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Fine golden grains. Smelt in a furnace to craft clear Glass Windows.",
+    "lore": "'Drifts gently across the Arid Waste.'",
+    "special": "Smeltable into Glass"
+  },
+  {
+    "itemId": "sandstone_block",
+    "itemName": "Sandstone Block",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Naturally compressed desert stone.",
+    "lore": "'The hardened core of ancient desert dunes.'",
+    "special": "Building Block"
+  },
+  {
+    "itemId": "silver_coin",
+    "itemName": "Silver Coin",
+    "category": "Currency",
+    "rarity": "Uncommon",
+    "maxStack": 999,
+    "description": "Valuable silver coin worth 100 Copper Coins.",
+    "lore": "'Polished silver carrying the crest of the ancient Tuber kingdoms.'",
+    "special": ""
+  },
+  {
+    "itemId": "sink",
+    "itemName": "Sink",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Brass-faucet washbasin mounted on a carved wooden cabinet.",
+    "lore": "'Fresh flowing water for handwashing and culinary preparation.'",
+    "special": "Homestead Plumbing & Platform"
+  },
+  {
+    "itemId": "smithing_anvil",
+    "itemName": "Smithing Anvil",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Heavy forged iron anvil for shaping blades, tuning armor, and seating socketed gems.",
+    "lore": "'Every legendary weapon began with an anvil\\'s ring.'",
+    "special": "Heavy Forging"
+  },
+  {
+    "itemId": "smokehouse_stove",
+    "itemName": "Smokehouse Stove",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Chimney-vented wooden smoke oven designed for rapidly curing and smoking provisions.",
+    "lore": "",
+    "special": "Food Smoking"
+  },
+  {
+    "itemId": "solar_chronometer",
+    "itemName": "Solar Chronometer",
+    "category": "Accessory",
+    "rarity": "Rare",
+    "maxStack": 1,
+    "description": "Gilded pocket timepiece with celestial planetary gears predicting sunrise and sunset.",
+    "lore": "'Ticks in harmony with the celestial dance of Sol.'",
+    "special": "Celestial Timekeeping"
+  },
+  {
+    "itemId": "spectral_lantern",
+    "itemName": "Spectral Lantern",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Chilled lantern casting an azure glow that illuminates cavern depths.",
+    "lore": "",
+    "special": "Azure Luminescence"
+  },
+  {
+    "itemId": "speed_potion",
+    "itemName": "Swiftness Potion",
+    "category": "Consumable",
+    "rarity": "Uncommon",
+    "maxStack": 30,
+    "description": "Effervescent tonic granting temporary hyper-speed.",
+    "lore": "'Makes your roots move faster than a subterranean river.'",
+    "special": "+30% Sprint Speed Boost"
+  },
+  {
+    "itemId": "spud_angler_rod",
+    "itemName": "Spud Angler Rod",
+    "category": "Tool",
+    "rarity": "Uncommon",
+    "maxStack": 1,
+    "description": "Flexible whittled birch rod rigged with braided fiber for freshwater angling.",
+    "lore": "'Patience and a plump spud will catch any river titan.'",
+    "special": "Fishing Tool"
+  },
+  {
+    "itemId": "spud_quiver",
+    "itemName": "Spud Hunter's Quiver",
+    "category": "Accessory",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Lightweight shoulder quiver that improves archer draw speed and critical precision.",
+    "lore": "'Arrows always at the fingertips.'",
+    "special": "Swift Quiver"
+  },
+  {
+    "itemId": "stone_block",
+    "itemName": "Stone Block",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Common subterranean rock. Right-click to place.",
+    "lore": "'Sturdy, cold, and eternal.'",
+    "special": "Basic Building Block"
+  },
+  {
+    "itemId": "stone_brick",
+    "itemName": "Stone Brick",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Smooth masonry bricks smelted in a furnace. Sturdy block for castles and fortresses.",
+    "lore": "'Hewn and polished to endure centuries of siege.'",
+    "special": "Impenetrable Building Block"
+  },
+  {
+    "itemId": "stone_brick_wall",
+    "itemName": "Stone Brick Wall",
+    "category": "Wall",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Heavy reinforced masonry backdrop for fortresses and castles.",
+    "lore": "'Ancient stone forged to withstand the Nether depths.'",
+    "special": "Background Safe-House Wall"
+  },
+  {
+    "itemId": "stone_fireplace",
+    "itemName": "Stone Fireplace",
+    "category": "Block",
+    "rarity": "Rare",
+    "maxStack": 99,
+    "description": "Rustic stone hearth crackling with warm embers. Emits cozy light and smoke.",
+    "lore": "'Nothing keeps the subterranean chill away like crackling oak logs.'",
+    "special": "Warm Ambient Light & Rising Smoke"
+  },
+  {
+    "itemId": "timber_trapdoor",
+    "itemName": "Timber Trapdoor",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Hinged wooden floor hatch for cellar entrances and mine shaft ladders.",
+    "lore": "",
+    "special": "Floor Hatch"
+  },
+  {
+    "itemId": "titans_ring",
+    "itemName": "Titan's Ring",
+    "category": "Accessory",
+    "rarity": "Epic",
+    "maxStack": 1,
+    "description": "Heavy obsidian band pulsing with titanic fortitude.",
+    "lore": "'Walk like a titan among mortals.'",
+    "special": "+14 Defense \u2022 +10 Attack"
+  },
+  {
+    "itemId": "torch",
+    "itemName": "Torch",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Provides bright illumination. Emits light to deter monsters and light up homes.",
+    "lore": "'Banishes the deepest subterranean darkness.'",
+    "special": "Illumination (Level 14 Light)"
+  },
+  {
+    "itemId": "totem_of_resurgence",
+    "itemName": "Totem of Resurgence",
+    "category": "Accessory",
+    "rarity": "Mythic",
+    "maxStack": 1,
+    "description": "Gilded pocket idol of the Great Spud that channels restorative starlight when life wanes.",
+    "lore": "'Even in the deepest abyss, the seedling reaches upward for the dawn.'",
+    "special": "Miraculous Second Chance"
+  },
+  {
+    "itemId": "wall_tapestry",
+    "itemName": "Wall Tapestry",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Woven decorative banner depicting the Golden Spud of legend.",
+    "lore": "'Woven from silken threads to honor the ancient tuber deities.'",
+    "special": "Decorative Wall Ornament"
+  },
+  {
+    "itemId": "watering_can",
+    "itemName": "Regadera Watering Can",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Traditional tin watering can. Fill at any water source without draining it, and water crops to hydrate farmland.",
+    "lore": "'Nurtures tender seedlings until harvest day.'",
+    "special": "Watering Tool (Hydrates Farmland, Infinite Water Refill)"
+  },
+  {
+    "itemId": "weaver_loom",
+    "itemName": "Weaver's Loom",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Crafting loom with wooden shuttles for weaving tapestries, sails, and explorer cloaks.",
+    "lore": "",
+    "special": "Loom Weaving"
+  },
+  {
+    "itemId": "whetstone_wheel",
+    "itemName": "Whetstone Wheel",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Revolving sandstone wheel mounted on timber trestles for grinding and sharpening tools.",
+    "lore": "",
+    "special": "Honing Wheel"
+  },
+  {
+    "itemId": "wood_axe",
+    "itemName": "Wooden Axe",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "A basic axe carved from raw timber. Chops down trees.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "wood_bow",
+    "itemName": "Wood Bow",
+    "category": "Weapon",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Simple wooden bow. Consumes arrows from your backpack when fired.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "wood_pickaxe",
+    "itemName": "Wooden Pickaxe",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Crude wooden pick. Slowly chips through soft earth and stone.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "wood_planks",
+    "itemName": "Wood Planks",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Sanded polished timber blocks. Ideal for walls, solid floors, and ceilings.",
+    "lore": "'Carved straight from the ancient oaks of Potaria.'",
+    "special": "Impenetrable House Construction"
+  },
+  {
+    "itemId": "wood_platform",
+    "itemName": "Wood Platform",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Semi-solid ledge for vertical climbing. Hold [S] or Down to drop through.",
+    "lore": "'Enables easy travel between multilevel subterranean floors.'",
+    "special": "Drop-Through Platform"
+  },
+  {
+    "itemId": "wood_shelf",
+    "itemName": "Wood Shelf",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Smooth wooden wall shelf. Allows Spud to jump up through and stand upon it.",
+    "lore": "'Sturdy timber bracketed to hold jars, books, and curious spuds.'",
+    "special": "Jump-Through Platform Surface"
+  },
+  {
+    "itemId": "wood_shovel",
+    "itemName": "Wooden Shovel",
+    "category": "Tool",
+    "rarity": "Common",
+    "maxStack": 1,
+    "description": "Wooden scoop tool for swiftly excavating soft dirt and sand.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "wood_wall",
+    "itemName": "Wood Wall",
+    "category": "Wall",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Place in the background to build secure, monster-proof rooms.",
+    "lore": "'Encloses homes so foul beasts cannot spawn within.'",
+    "special": "Background Safe-House Wall"
+  },
+  {
+    "itemId": "wooden_arrow",
+    "itemName": "Wooden Arrow",
+    "category": "Material",
+    "rarity": "Common",
+    "maxStack": 999,
+    "description": "Standard bow ammunition crafted from wood and stone.",
+    "lore": "",
+    "special": ""
+  },
+  {
+    "itemId": "wooden_bed",
+    "itemName": "Wooden Bed",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Comfortable handcrafted bed. Right-click to set spawn point and rest to recover health.",
+    "lore": "'A snug nest of dry straw and woven cotton for weary spuds.'",
+    "special": "Sets Respawn Point & Rest Recovery"
+  },
+  {
+    "itemId": "wooden_chair",
+    "itemName": "Wooden Chair",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Handcrafted spud chair. Essential for comfortable homesteads.",
+    "lore": "'Even the Mightiest Spud must rest their weary roots.'",
+    "special": "Homestead Furniture"
+  },
+  {
+    "itemId": "wooden_door",
+    "itemName": "Wooden Door",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Solid wooden door. Right-click to open or close. Keeps monsters out!",
+    "lore": "'A friendly entryway for spuds, an impassable gate for ghouls.'",
+    "special": "Interactive Monster-Proof Barrier"
+  },
+  {
+    "itemId": "wooden_dresser",
+    "itemName": "Wooden Dresser",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Carved wooden dresser with brass pull handles and polished top shelf.",
+    "lore": "'Keeps clothes, starch aprons, and cloaks folded and fresh.'",
+    "special": "Platform Surface & Wardrobe Decor"
+  },
+  {
+    "itemId": "wooden_table",
+    "itemName": "Wooden Table",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Crafted wooden table for living quarters and house qualification.",
+    "lore": "'Where great adventurers plan tomorrow's grand expeditions.'",
+    "special": "Homestead Furniture"
+  },
+  {
+    "itemId": "work_bench",
+    "itemName": "Work Bench",
+    "category": "Block",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Place on the ground. Stand near it to unlock advanced crafting recipes for tools, furniture, and house blocks.",
+    "lore": "'The craftsman's table where rough materials become grand creations.'",
+    "special": "Crafting Station (Unlocks Advanced Recipes)"
+  },
+  {
+    "itemId": "wrought_iron_palisade",
+    "itemName": "Wrought Iron Palisade",
+    "category": "Block",
+    "rarity": "Common",
+    "maxStack": 99,
+    "description": "Sturdy forged iron security grating that permits sunlight while stopping foes.",
+    "lore": "",
+    "special": "Security Grate"
+  },
+  {
+    "itemId": "zephyr_tonic",
+    "itemName": "Zephyr Tonic",
+    "category": "Consumable",
+    "rarity": "Uncommon",
+    "maxStack": 99,
+    "description": "Sparkling effervescent tonic distilled with airy minerals, quickening footwork.",
+    "lore": "'A draft of pure mountain breeze captured in glass.'",
+    "special": "Zephyr Wind"
+  }
+]

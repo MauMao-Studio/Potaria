@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: sin_wrath
+  m_EditorClassIdentifier: 
+  setId: sin_wrath
+  setName: 'Wrath: The Worldbreaker'
+  setTag: SDS
+  description: 
+  pieceItemIds:
+  - wrath_helm
+  - wrath_cuirass
+  - wrath_greaves
+  - wrath_greatsword
+  - wrath_brand
+  pieceItems:
+  - {fileID: 11400000, guid: fec864292f2feac4a88f12a4bb345b51, type: 2}
+  - {fileID: 11400000, guid: 13d834737298f5a4d82c2995ad83d186, type: 2}
+  - {fileID: 11400000, guid: 480f86540f720364f9102bee814bf1bb, type: 2}
+  - {fileID: 11400000, guid: b0d1100b35052e6408f6cd4937145327, type: 2}
+  - {fileID: 11400000, guid: 3b407d91d84b65b429f730749b1456b3, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Fury Unleashed (+20% Attack Speed, +15% ATK)'
+    atkMultiplier: 0.15
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.2
+    auraEffect: 
+    specialPassive: '2-Piece: Fury Unleashed (+20% Attack Speed, +15% ATK)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Retaliatory Ember (+30% ATK, +28% Atk Speed, +10% Crit)'
+    atkMultiplier: 0.3
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 10
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.28
+    auraEffect: 
+    specialPassive: '4-Piece: Retaliatory Ember (+30% ATK, +28% Atk Speed, +10% Crit)'
+  fivePieceBonus:
+    requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30%
+      ATK below 50% HP, Crimson Rage Aura)'
+    atkMultiplier: 0.35
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 12
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.3
+    auraEffect: rage
+    specialPassive: 'Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30%
+      ATK below 50% HP, Crimson Rage Aura)'
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Fury Unleashed (+20% Attack Speed, +15% ATK)'
+    atkMultiplier: 0.15
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.2
+    auraEffect: 
+    specialPassive: '2-Piece: Fury Unleashed (+20% Attack Speed, +15% ATK)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Retaliatory Ember (+30% ATK, +28% Atk Speed, +10% Crit)'
+    atkMultiplier: 0.3
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 10
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.28
+    auraEffect: 
+    specialPassive: '4-Piece: Retaliatory Ember (+30% ATK, +28% Atk Speed, +10% Crit)'
+  - requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30%
+      ATK below 50% HP, Crimson Rage Aura)'
+    atkMultiplier: 0.35
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 12
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0.3
+    auraEffect: rage
+    specialPassive: 'Full Set: Worldbreaker Berserk (+35% ATK, +30% Atk Speed, +30%
+      ATK below 50% HP, Crimson Rage Aura)'

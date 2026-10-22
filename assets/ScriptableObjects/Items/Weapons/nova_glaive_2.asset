@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: nova_glaive_2
+  m_EditorClassIdentifier: 
+  itemId: nova_glaive_2
+  itemName: Nova Glaive 2
+  category: 1
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 64d520709e5632348963d1973ff03b1f, type: 3}
+  description: An extended Mythic polearm forged for tactical reach. Impales adversaries
+    before they can close distance. Shimmers with cosmic stardust. Bestows Starch
+    Barrier.
+  lore: '''Dredged from molten caverns where liquid rock flows with the fury of creation.'''
+  specialEffect: 
+  attack: 61
+  defense: 0
+  critChance: 16.8
+  speed: 0.36
+  bonusHp: 58
+  bonusMp: 59
+  mpRegen: 2.2
+  specialTag: 
+  affixSlots: 0

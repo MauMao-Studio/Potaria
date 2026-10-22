@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: luminous_bramble_warhammer
+  m_EditorClassIdentifier: 
+  itemId: luminous_bramble_warhammer
+  itemName: Luminous Bramble Warhammer
+  category: 1
+  rarity: 2
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 17a0a85965fd734498c3841f22b1d8f8, type: 3}
+  description: A heavy Rare weapon with immense striking weight. Cleaves through
+    enemy defenses with crushing momentum.
+  lore: 
+  specialEffect: 
+  attack: 34
+  defense: 0
+  critChance: 6.5
+  speed: 0.11
+  bonusHp: 23
+  bonusMp: 21
+  mpRegen: 0.8
+  specialTag: 
+  affixSlots: 0

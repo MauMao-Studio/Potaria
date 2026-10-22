@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: totem_of_resurgence
+  m_EditorClassIdentifier: 
+  itemId: totem_of_resurgence
+  itemName: Totem of Resurgence
+  category: 8
+  rarity: 4
+  maxStack: 1
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 0b7aa6a5a27a43e4cb25bbb1304221d4, type: 3}
+  description: Gilded pocket idol of the Great Spud that channels restorative starlight
+    when life wanes.
+  lore: '''Even in the deepest abyss, the seedling reaches upward for the dawn.'''
+  specialEffect: Miraculous Second Chance

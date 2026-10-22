@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: frost_avalanche_scythe
+  m_EditorClassIdentifier: 
+  itemId: frost_avalanche_scythe
+  itemName: Frost Avalanche Scythe
+  category: 1
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 5908af49b4b420f4fbcf703e6d60e8bc, type: 3}
+  description: A heavy Epic weapon with immense striking weight. Cleaves through
+    enemy defenses with crushing momentum. Emits biting permafrost cold. Bestows
+    Spud Fortitude.
+  lore: 
+  specialEffect: 
+  attack: 44
+  defense: 0
+  critChance: 14
+  speed: 0.27
+  bonusHp: 35
+  bonusMp: 45
+  mpRegen: 1.5
+  specialTag: 
+  affixSlots: 0

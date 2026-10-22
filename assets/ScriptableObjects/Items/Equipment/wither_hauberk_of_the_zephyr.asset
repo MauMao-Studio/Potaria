@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: wither_hauberk_of_the_zephyr
+  m_EditorClassIdentifier: 
+  itemId: wither_hauberk_of_the_zephyr
+  itemName: Wither Hauberk of the Zephyr
+  category: 10
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: fb6d413e5e8c2f2489ff729bc42c296d, type: 3}
+  description: Sturdy Epic chest armor fitted with reinforced plating. Provides vital
+    torso protection against monstrous blows. Grants Evasion Step.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 23
+  attack: 10
+  critChance: 6.1
+  speed: 0.1
+  bonusHp: 76
+  bonusMp: 45
+  mpRegen: 1
+  affixSlots: 0

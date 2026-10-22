@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: magma
+  m_EditorClassIdentifier: 
+  setId: magma
+  setName: Magma Core Set
+  setTag: 
+  description: 
+  pieceItemIds:
+  - magma_helmet
+  - magma_chestplate
+  - magma_greaves
+  - magma_greatsword
+  pieceItems:
+  - {fileID: 11400000, guid: dacd0f677015ffc46bdd1addc3491f38, type: 2}
+  - {fileID: 11400000, guid: e9b7003ad8b0bef4394d17576e6accc8, type: 2}
+  - {fileID: 11400000, guid: 285a1e6433ae5224a9af807025860fde, type: 2}
+  - {fileID: 11400000, guid: b39542903f018c74f97f562cf1d7eb21, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Magma Spark (+10% ATK, +5 Fire Thorns)'
+    atkMultiplier: 0.1
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 4
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Magma Spark (+10% ATK, +5 Fire Thorns)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: 'Full Set: Volcanic Core (+30% ATK, +25 Fire Thorns, +40 HP, Magma
+      Aura)'
+    atkMultiplier: 0.3
+    defMultiplier: 0.15
+    bonusSpeed: 0
+    bonusCritChance: 12
+    bonusMaxHp: 40
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: magma
+    specialPassive: 'Full Set: Volcanic Core (+30% ATK, +25 Fire Thorns, +40 HP,
+      Magma Aura)'
+  fivePieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: 
+    atkMultiplier: 0
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: 
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Magma Spark (+10% ATK, +5 Fire Thorns)'
+    atkMultiplier: 0.1
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 4
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Magma Spark (+10% ATK, +5 Fire Thorns)'
+  - requiredPieces: 3
+    title: 3-Piece Bonus
+    description: '3-Piece: Molten Crucible (+20% ATK, +15 Fire Thorns, Magma Aura)'
+    atkMultiplier: 0.2
+    defMultiplier: 0.1
+    bonusSpeed: 0
+    bonusCritChance: 8
+    bonusMaxHp: 25
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: magma
+    specialPassive: '3-Piece: Molten Crucible (+20% ATK, +15 Fire Thorns, Magma Aura)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: 'Full Set: Volcanic Core (+30% ATK, +25 Fire Thorns, +40 HP, Magma
+      Aura)'
+    atkMultiplier: 0.3
+    defMultiplier: 0.15
+    bonusSpeed: 0
+    bonusCritChance: 12
+    bonusMaxHp: 40
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: magma
+    specialPassive: 'Full Set: Volcanic Core (+30% ATK, +25 Fire Thorns, +40 HP,
+      Magma Aura)'

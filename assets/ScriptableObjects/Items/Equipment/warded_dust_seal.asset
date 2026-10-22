@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: warded_dust_seal
+  m_EditorClassIdentifier: 
+  itemId: warded_dust_seal
+  itemName: Warded Dust Seal
+  category: 10
+  rarity: 2
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 71f15386d8cd5c54ab03d9e94b613ef7, type: 3}
+  description: An enchanted Rare talisman humming with magical resonance. Bestows
+    passive combat buffs and fortitude.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 7
+  attack: 10
+  critChance: 5.2
+  speed: 0.15
+  bonusHp: 50
+  bonusMp: 35
+  mpRegen: 0.9
+  affixSlots: 0

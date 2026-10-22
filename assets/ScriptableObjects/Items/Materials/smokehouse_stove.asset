@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: smokehouse_stove
+  m_EditorClassIdentifier: 
+  itemId: smokehouse_stove
+  itemName: Smokehouse Stove
+  category: 2
+  rarity: 0
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 399c1b6292f83c54e9c7278c0cab20cd, type: 3}
+  description: Chimney-vented wooden smoke oven designed for rapidly curing and smoking
+    provisions.
+  lore: 
+  specialEffect: Food Smoking

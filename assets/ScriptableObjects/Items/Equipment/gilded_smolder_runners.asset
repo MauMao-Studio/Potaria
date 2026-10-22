@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: gilded_smolder_runners
+  m_EditorClassIdentifier: 
+  itemId: gilded_smolder_runners
+  itemName: Gilded Smolder Runners
+  category: 10
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: c301c1a558efe494db09c8fe6af6a29f, type: 3}
+  description: "Flexible Ancient leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Grants Ancient Awakening: AoE 72px Starburst
+    Explosion \u2022 Build-Defining Synergy."
+  lore: '''Carried by Grand Boss Sol-Rho before the heavens surrendered to radiant
+    destiny.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 40
+  attack: 21
+  critChance: 18.3
+  speed: 1.69
+  bonusHp: 189
+  bonusMp: 125
+  mpRegen: 3.8
+  affixSlots: 0

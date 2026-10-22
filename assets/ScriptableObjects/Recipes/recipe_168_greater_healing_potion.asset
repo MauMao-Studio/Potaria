@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_168_greater_healing_potion
+  m_EditorClassIdentifier: 
+  recipeId: recipe_168_greater_healing_potion
+  category: Survival
+  resultItemId: greater_healing_potion
+  resultItemData: {fileID: 11400000, guid: 80dbdf0dad6afde47a1e52dc7d5f11c5, type: 2}
+  resultCount: 1
+  craftingStation: 3
+  ingredients:
+  - itemId: healing_potion
+    itemData: {fileID: 11400000, guid: 802d013e8c1beec4f8037b96a1b2133e, type: 2}
+    count: 2
+  - itemId: glowing_mushroom
+    itemData: {fileID: 11400000, guid: 6dcbacf2a5d723441aeb40b2694bb5c6, type: 2}
+    count: 1

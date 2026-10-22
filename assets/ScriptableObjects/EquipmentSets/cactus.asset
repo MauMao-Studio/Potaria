@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: cactus
+  m_EditorClassIdentifier: 
+  setId: cactus
+  setName: Cactus Needle Set
+  setTag: 
+  description: 
+  pieceItemIds:
+  - cactus_helmet
+  - cactus_chestplate
+  - cactus_greaves
+  - cactus_sword
+  pieceItems:
+  - {fileID: 11400000, guid: 115840f3ea9e6f54889042336f84a962, type: 2}
+  - {fileID: 11400000, guid: 982354d0e1aef8f42ab30108610fca8a, type: 2}
+  - {fileID: 11400000, guid: d3e172113145bc8418f5952103b8a8a3, type: 2}
+  - {fileID: 11400000, guid: e94b4af9fbe13954eb52938c6255fb65, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Prickly Barbs (+5 Thorns, +5% ATK)'
+    atkMultiplier: 0.05
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Prickly Barbs (+5 Thorns, +5% ATK)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: 'Full Set: Desert Spine (+30 Reflected Thorns, +20% ATK, +30 HP,
+      Prickly Aura)'
+    atkMultiplier: 0.2
+    defMultiplier: 0.15
+    bonusSpeed: 0
+    bonusCritChance: 8
+    bonusMaxHp: 30
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: cactus
+    specialPassive: 'Full Set: Desert Spine (+30 Reflected Thorns, +20% ATK, +30
+      HP, Prickly Aura)'
+  fivePieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: 
+    atkMultiplier: 0
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: 
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Prickly Barbs (+5 Thorns, +5% ATK)'
+    atkMultiplier: 0.05
+    defMultiplier: 0
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Prickly Barbs (+5 Thorns, +5% ATK)'
+  - requiredPieces: 3
+    title: 3-Piece Bonus
+    description: '3-Piece: Thorn Barbs (+15 Reflected Thorns, +10% ATK, Prickly Aura)'
+    atkMultiplier: 0.1
+    defMultiplier: 0.1
+    bonusSpeed: 0
+    bonusCritChance: 4
+    bonusMaxHp: 15
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: cactus
+    specialPassive: '3-Piece: Thorn Barbs (+15 Reflected Thorns, +10% ATK, Prickly
+      Aura)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: 'Full Set: Desert Spine (+30 Reflected Thorns, +20% ATK, +30 HP,
+      Prickly Aura)'
+    atkMultiplier: 0.2
+    defMultiplier: 0.15
+    bonusSpeed: 0
+    bonusCritChance: 8
+    bonusMaxHp: 30
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: cactus
+    specialPassive: 'Full Set: Desert Spine (+30 Reflected Thorns, +20% ATK, +30
+      HP, Prickly Aura)'

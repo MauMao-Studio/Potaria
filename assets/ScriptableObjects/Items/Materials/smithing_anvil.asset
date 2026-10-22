@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: smithing_anvil
+  m_EditorClassIdentifier: 
+  itemId: smithing_anvil
+  itemName: Smithing Anvil
+  category: 2
+  rarity: 0
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: d8ece28f19eec6947a27a5c0edef0966, type: 3}
+  description: Heavy forged iron anvil for shaping blades, tuning armor, and seating
+    socketed gems.
+  lore: '''Every legendary weapon began with an anvil\''s ring.'''
+  specialEffect: Heavy Forging

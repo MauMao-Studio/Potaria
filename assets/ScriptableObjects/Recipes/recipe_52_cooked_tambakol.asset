@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_52_cooked_tambakol
+  m_EditorClassIdentifier: 
+  recipeId: recipe_52_cooked_tambakol
+  category: Survival
+  resultItemId: cooked_tambakol
+  resultItemData: {fileID: 11400000, guid: 09c796134b173dd4c9e37d3e696d6fbc, type: 2}
+  resultCount: 1
+  craftingStation: 1
+  ingredients:
+  - itemId: raw_tambakol
+    itemData: {fileID: 11400000, guid: e2cc6b913f97f5a429194d146af7882d, type: 2}
+    count: 1

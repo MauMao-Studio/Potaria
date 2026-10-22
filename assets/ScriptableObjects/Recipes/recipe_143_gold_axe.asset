@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_143_gold_axe
+  m_EditorClassIdentifier: 
+  recipeId: recipe_143_gold_axe
+  category: Equipment
+  resultItemId: gold_axe
+  resultItemData: {fileID: 11400000, guid: 2f451b354a389a4409945c012cba85b1, type: 2}
+  resultCount: 1
+  craftingStation: 3
+  ingredients:
+  - itemId: gold_bar
+    itemData: {fileID: 11400000, guid: 6295776a40cc9d74d9d6d2e859b4276f, type: 2}
+    count: 8
+  - itemId: wood
+    itemData: {fileID: 11400000, guid: 8f9e2650d0bccf24094137a9bec1a2ee, type: 2}
+    count: 3

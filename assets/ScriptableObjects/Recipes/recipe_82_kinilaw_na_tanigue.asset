@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_82_kinilaw_na_tanigue
+  m_EditorClassIdentifier: 
+  recipeId: recipe_82_kinilaw_na_tanigue
+  category: Survival
+  resultItemId: kinilaw_na_tanigue
+  resultItemData: {fileID: 11400000, guid: 218d08a825850ba41b9b640bba5b46d5, type: 2}
+  resultCount: 1
+  craftingStation: 0
+  ingredients:
+  - itemId: raw_tanigue
+    itemData: {fileID: 11400000, guid: 71f3afeb6d6767b4587f82c5150faf6d, type: 2}
+    count: 1
+  - itemId: vinegar
+    itemData: {fileID: 11400000, guid: aa306946d06b2b342bda7c6e489b554e, type: 2}
+    count: 1
+  - itemId: calamansi
+    itemData: {fileID: 11400000, guid: 7bd1b8baa2b59f645a9c43e98e9bf179, type: 2}
+    count: 1
+  - itemId: ginger
+    itemData: {fileID: 11400000, guid: daadc4e5803f1424f9528e7fd7a5d678, type: 2}
+    count: 1

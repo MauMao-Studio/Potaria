@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: obsidian_broadsword
+  m_EditorClassIdentifier: 
+  itemId: obsidian_broadsword
+  itemName: Obsidian Broadsword
+  category: 1
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: fc9e606117bcebf47aa5b2bfe5c59aa4, type: 3}
+  description: A formidable Legendary blade tempered for heroic combat. Forged in
+    Potaria to conquer the subterranean depths. Bestows Armor Penetration.
+  lore: '''The earth groans under its weight, yet in rightful hands it moves like
+    a feather.'''
+  specialEffect: 
+  attack: 95
+  defense: 0
+  critChance: 21.7
+  speed: 0.41
+  bonusHp: 80
+  bonusMp: 105
+  mpRegen: 3.8
+  specialTag: 
+  affixSlots: 0

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: gratitude_scepter
+  m_EditorClassIdentifier: 
+  itemId: gratitude_scepter
+  itemName: Scepter of the Everbright
+  category: 1
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: bd332feadf48ee041bc2c21b390e16f0, type: 3}
+  description: A radiant gold scepter providing continuous mana recovery and spell
+    bursts.
+  lore: Crowned with a prism that converts humble thanks into brilliant sunlight.
+  specialEffect: 'Bounteous Dawn: Skill casts have a 30% chance to cost 0 MP and
+    trigger a radiant light burst, Solar Flare'
+  attack: 44
+  defense: 0
+  critChance: 8
+  speed: 0
+  bonusHp: 20
+  bonusMp: 0
+  mpRegen: 2
+  specialTag: 
+  affixSlots: 0

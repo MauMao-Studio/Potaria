@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f6d29f885a8e14488dd6c17b7946ca, type: 3}
+  m_Name: itlog_na_maalat
+  m_EditorClassIdentifier: 
+  itemId: itlog_na_maalat
+  itemName: Itlog na Maalat
+  category: 5
+  rarity: 0
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 901699d2fa1b53048a2f181beea79f7e, type: 3}
+  description: Brined salted duck egg served with sliced fresh tomatoes.
+  lore: 
+  specialEffect: '[OFFENSE] +3% Critical Chance (2m)'
+  nutrition: 22
+  healthRestore: 45
+  cookingDuration: 8
+  buffCategory: 1
+  buff:
+    category: 1
+    buffName: Cured Yolk Precision
+    durationSeconds: 120
+    damageMultiplier: 0
+    rangedDamageMultiplier: 0
+    attackSpeedMultiplier: 0
+    critChanceBonus: 0.03
+    critDamageMultiplier: 0
+    damageReduction: 0
+    flatDefense: 0
+    magicResistance: 0
+    knockbackResistance: 0
+    speedMultiplier: 0
+    jumpForceMultiplier: 0
+    healthRegenPerSecond: 0
+    manaRegenPerSecond: 0
+    manaCostReduction: 0
+    effectsDescription: '[OFFENSE] +3% Critical Chance (2m)'
+  acquisitionNotes: 
+  effects: []

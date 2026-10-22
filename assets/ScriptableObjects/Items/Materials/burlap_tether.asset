@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: burlap_tether
+  m_EditorClassIdentifier: 
+  itemId: burlap_tether
+  itemName: Burlap Tether
+  category: 0
+  rarity: 0
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 0b069367cfc695645b33be817a3b0fd4, type: 3}
+  description: Braided hemp tether with a sturdy copper clip for securing gear and
+    companion creatures.
+  lore: '''Strong enough to hold a bucking wild hog.'''
+  specialEffect: Leash & Tether

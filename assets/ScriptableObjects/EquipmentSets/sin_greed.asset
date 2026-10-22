@@ -1,0 +1,114 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: sin_greed
+  m_EditorClassIdentifier: 
+  setId: sin_greed
+  setName: 'Greed: The Gilded Devourer'
+  setTag: SDS
+  description: 
+  pieceItemIds:
+  - greed_mask
+  - greed_mantle
+  - greed_striders
+  - greed_scepter
+  - greed_amulet
+  pieceItems:
+  - {fileID: 11400000, guid: 539fba8ff1eac454ab6d24699b7e20ce, type: 2}
+  - {fileID: 11400000, guid: b793b7a2897ecb740ba9953d24690a00, type: 2}
+  - {fileID: 11400000, guid: 83fe74db06256f64394ad474b69ab6ec, type: 2}
+  - {fileID: 11400000, guid: 75ee5c85f78b6d84781583d0e6092251, type: 2}
+  - {fileID: 11400000, guid: 0d2bf5134c1ff514aa2d0829861bcb65, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Coin Scavenger (+20% Gold Drops, +0.10 Speed)'
+    atkMultiplier: 0
+    defMultiplier: 0
+    bonusSpeed: 0.1
+    bonusCritChance: 0
+    bonusMaxHp: 20
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Coin Scavenger (+20% Gold Drops, +0.10 Speed)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Hoarder''s Momentum (+20% ATK, +18% DEF, +0.20 Speed,
+      +30% Gold Drops)'
+    atkMultiplier: 0.2
+    defMultiplier: 0.18
+    bonusSpeed: 0.2
+    bonusCritChance: 0
+    bonusMaxHp: 25
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Hoarder''s Momentum (+20% ATK, +18% DEF, +0.20 Speed,
+      +30% Gold Drops)'
+  fivePieceBonus:
+    requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25 Speed
+      on defeat, Gilded Shimmer Aura)'
+    atkMultiplier: 0.25
+    defMultiplier: 0.2
+    bonusSpeed: 0.25
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: gold
+    specialPassive: 'Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25
+      Speed on defeat, Gilded Shimmer Aura)'
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Coin Scavenger (+20% Gold Drops, +0.10 Speed)'
+    atkMultiplier: 0
+    defMultiplier: 0
+    bonusSpeed: 0.1
+    bonusCritChance: 0
+    bonusMaxHp: 20
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Coin Scavenger (+20% Gold Drops, +0.10 Speed)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Hoarder''s Momentum (+20% ATK, +18% DEF, +0.20 Speed,
+      +30% Gold Drops)'
+    atkMultiplier: 0.2
+    defMultiplier: 0.18
+    bonusSpeed: 0.2
+    bonusCritChance: 0
+    bonusMaxHp: 25
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Hoarder''s Momentum (+20% ATK, +18% DEF, +0.20 Speed,
+      +30% Gold Drops)'
+  - requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25 Speed
+      on defeat, Gilded Shimmer Aura)'
+    atkMultiplier: 0.25
+    defMultiplier: 0.2
+    bonusSpeed: 0.25
+    bonusCritChance: 0
+    bonusMaxHp: 0
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: gold
+    specialPassive: 'Full Set: Golden Hoard Escalation (+25% ATK, +20% DEF, +0.25
+      Speed on defeat, Gilded Shimmer Aura)'

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: sacred_timber_sabatons
+  m_EditorClassIdentifier: 
+  itemId: sacred_timber_sabatons
+  itemName: Sacred Timber Sabatons
+  category: 10
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: c8b685e8d4ce2d4478111802eab272c4, type: 3}
+  description: Flexible Legendary leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Grants Superheated Impact.
+  lore: '''Harvested beneath the scorching sun of the Arid Waste by ancient tomb
+    wardens.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 36
+  attack: 12
+  critChance: 10.3
+  speed: 1.13
+  bonusHp: 141
+  bonusMp: 85
+  mpRegen: 2.6
+  affixSlots: 0

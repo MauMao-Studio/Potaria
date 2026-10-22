@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee4842120f092a4c8c794b281d7931c, type: 3}
+  m_Name: virtue_humility
+  m_EditorClassIdentifier: 
+  setId: virtue_humility
+  setName: 'Humility: The Quiet Crown'
+  setTag: SHV
+  description: 
+  pieceItemIds:
+  - humility_circlet
+  - humility_vestment
+  - humility_sandals
+  - humility_staff
+  - humility_pendant
+  pieceItems:
+  - {fileID: 11400000, guid: a22df4e44a4c5764fb9bbd0fc2d83b0c, type: 2}
+  - {fileID: 11400000, guid: 57edb4b0670d0af44937e03c144af49e, type: 2}
+  - {fileID: 11400000, guid: 1f712401f3b76544c8979655fc50ba39, type: 2}
+  - {fileID: 11400000, guid: 3d7efc7f2333fd34da904fceb359aab8, type: 2}
+  - {fileID: 11400000, guid: 02c7bfb7eb264da49961cc09d7e0d3e4, type: 2}
+  twoPieceBonus:
+    requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Serene Grounding (+15% DEF, +15% ATK, +25 Max HP)'
+    atkMultiplier: 0.15
+    defMultiplier: 0.15
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 25
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Serene Grounding (+15% DEF, +15% ATK, +25 Max HP)'
+  fourPieceBonus:
+    requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Learn from the Fall (+22% All Stats, +40 Max HP, +8% Crit)'
+    atkMultiplier: 0.22
+    defMultiplier: 0.22
+    bonusSpeed: 0
+    bonusCritChance: 8
+    bonusMaxHp: 40
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Learn from the Fall (+22% All Stats, +40 Max HP, +8%
+      Crit)'
+  fivePieceBonus:
+    requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity, Serene
+      Pearl Aura)'
+    atkMultiplier: 0.25
+    defMultiplier: 0.25
+    bonusSpeed: 0
+    bonusCritChance: 10
+    bonusMaxHp: 50
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: pearl
+    specialPassive: 'Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity,
+      Serene Pearl Aura)'
+  allThresholds:
+  - requiredPieces: 2
+    title: 2-Piece Bonus
+    description: '2-Piece: Serene Grounding (+15% DEF, +15% ATK, +25 Max HP)'
+    atkMultiplier: 0.15
+    defMultiplier: 0.15
+    bonusSpeed: 0
+    bonusCritChance: 0
+    bonusMaxHp: 25
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '2-Piece: Serene Grounding (+15% DEF, +15% ATK, +25 Max HP)'
+  - requiredPieces: 4
+    title: 4-Piece Bonus
+    description: '4-Piece: Learn from the Fall (+22% All Stats, +40 Max HP, +8% Crit)'
+    atkMultiplier: 0.22
+    defMultiplier: 0.22
+    bonusSpeed: 0
+    bonusCritChance: 8
+    bonusMaxHp: 40
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: 
+    specialPassive: '4-Piece: Learn from the Fall (+22% All Stats, +40 Max HP, +8%
+      Crit)'
+  - requiredPieces: 5
+    title: 5-Piece Bonus
+    description: 'Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity, Serene
+      Pearl Aura)'
+    atkMultiplier: 0.25
+    defMultiplier: 0.25
+    bonusSpeed: 0
+    bonusCritChance: 10
+    bonusMaxHp: 50
+    bonusMpRegen: 0
+    bonusAtkSpeed: 0
+    auraEffect: pearl
+    specialPassive: 'Full Set: Quiet Harmony (+25% All Stats, Knockback Immunity,
+      Serene Pearl Aura)'

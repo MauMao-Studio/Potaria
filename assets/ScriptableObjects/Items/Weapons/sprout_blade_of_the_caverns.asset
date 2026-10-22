@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: sprout_blade_of_the_caverns
+  m_EditorClassIdentifier: 
+  itemId: sprout_blade_of_the_caverns
+  itemName: Sprout Blade of the Caverns
+  category: 1
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 6ab81478685f1e24faee61ef74263077, type: 3}
+  description: A formidable Mythic blade tempered for heroic combat. Forged in Potaria
+    to conquer the subterranean depths. Bestows Critical Overdrive.
+  lore: '''Woven from filaments of morning starlight and unbreakable potato fiber.'''
+  specialEffect: 
+  attack: 71
+  defense: 0
+  critChance: 18.8
+  speed: 0.32
+  bonusHp: 41
+  bonusMp: 53
+  mpRegen: 2.7
+  specialTag: 
+  affixSlots: 0

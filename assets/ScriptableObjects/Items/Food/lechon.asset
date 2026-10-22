@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f6d29f885a8e14488dd6c17b7946ca, type: 3}
+  m_Name: lechon
+  m_EditorClassIdentifier: 
+  itemId: lechon
+  itemName: Crispy Lechon Kawali
+  category: 5
+  rarity: 2
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 9d86e1035a758ac4e9bb3ca9bce036a4, type: 3}
+  description: Deep-fried pork belly boiled tender then fried until crispy.
+  lore: 
+  specialEffect: '[OFFENSE] +8% Physical Damage (3m)'
+  nutrition: 55
+  healthRestore: 110
+  cookingDuration: 8
+  buffCategory: 1
+  buff:
+    category: 1
+    buffName: Crackling Golden Fury
+    durationSeconds: 180
+    damageMultiplier: 0.08
+    rangedDamageMultiplier: 0
+    attackSpeedMultiplier: 0
+    critChanceBonus: 0
+    critDamageMultiplier: 0
+    damageReduction: 0
+    flatDefense: 0
+    magicResistance: 0
+    knockbackResistance: 0
+    speedMultiplier: 0
+    jumpForceMultiplier: 0
+    healthRegenPerSecond: 0
+    manaRegenPerSecond: 0
+    manaCostReduction: 0
+    effectsDescription: '[OFFENSE] +8% Physical Damage (3m)'
+  acquisitionNotes: 
+  effects: []

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: high_flora_cleaver
+  m_EditorClassIdentifier: 
+  itemId: high_flora_cleaver
+  itemName: High Flora Cleaver
+  category: 1
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 85dff23c7b5e4a14788146ea62e2a94d, type: 3}
+  description: 'A heavy Ancient weapon with immense striking weight. Cleaves through
+    enemy defenses with crushing momentum. Bestows Ancient Awakening: Temporal Shift.'
+  lore: '''Drink deep of the celestial dew and fear no shadow in this world or the
+    next.'''
+  specialEffect: 
+  attack: 113
+  defense: 0
+  critChance: 32.4
+  speed: 0.56
+  bonusHp: 112
+  bonusMp: 150
+  mpRegen: 4.6
+  specialTag: 
+  affixSlots: 0

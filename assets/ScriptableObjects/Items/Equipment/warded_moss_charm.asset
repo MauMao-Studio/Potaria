@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: warded_moss_charm
+  m_EditorClassIdentifier: 
+  itemId: warded_moss_charm
+  itemName: Warded Moss Charm
+  category: 10
+  rarity: 1
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 365cd3f7b61340a408738a959b9c89fb, type: 3}
+  description: An enchanted Uncommon talisman humming with magical resonance. Bestows
+    passive combat buffs and fortitude.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 3
+  attack: 5
+  critChance: 3
+  speed: 0.1
+  bonusHp: 26
+  bonusMp: 20
+  mpRegen: 0.4
+  affixSlots: 0

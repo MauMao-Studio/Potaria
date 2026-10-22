@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: high_grove_glaive
+  m_EditorClassIdentifier: 
+  itemId: high_grove_glaive
+  itemName: High Grove Glaive
+  category: 1
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 300578f3fe1684846bc91df9b2277d0b, type: 3}
+  description: An extended Legendary polearm forged for tactical reach. Impales adversaries
+    before they can close distance. Bestows Primordial Genesis.
+  lore: '''Woven from filaments of morning starlight and unbreakable potato fiber.'''
+  specialEffect: 
+  attack: 85
+  defense: 0
+  critChance: 20.2
+  speed: 0.46
+  bonusHp: 95
+  bonusMp: 89
+  mpRegen: 3.5
+  specialTag: 
+  affixSlots: 0

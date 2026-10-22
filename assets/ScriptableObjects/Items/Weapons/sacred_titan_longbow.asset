@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: sacred_titan_longbow
+  m_EditorClassIdentifier: 
+  itemId: sacred_titan_longbow
+  itemName: Sacred Titan Longbow
+  category: 1
+  rarity: 3
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: bedd76027184fb048b0a5b3343114cfe, type: 3}
+  description: An agile Epic bow crafted for high-velocity volleys. Pierces monstrous
+    targets from safe range. Bestows Deep Roots.
+  lore: 
+  specialEffect: 
+  attack: 49
+  defense: 0
+  critChance: 10.8
+  speed: 0.18
+  bonusHp: 40
+  bonusMp: 30
+  mpRegen: 1.7
+  specialTag: 
+  affixSlots: 0

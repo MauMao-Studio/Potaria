@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: genesis_cutlass_of_the_blight
+  m_EditorClassIdentifier: 
+  itemId: genesis_cutlass_of_the_blight
+  itemName: Genesis Cutlass of the Blight
+  category: 1
+  rarity: 5
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: a125d4f648610934c93db430ddca554f, type: 3}
+  description: A swift Legendary blade with flawless balance. Strikes with rapid
+    precision in close-quarters combat. Pulses with eerie dark energies. Bestows
+    Air Cushion Fall Resistance.
+  lore: '''He who wields this relic carries the unwritten destiny of all tuber kind.'''
+  specialEffect: 
+  attack: 77
+  defense: 0
+  critChance: 25.5
+  speed: 0.42
+  bonusHp: 80
+  bonusMp: 117
+  mpRegen: 2.9
+  specialTag: 
+  affixSlots: 0

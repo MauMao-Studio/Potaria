@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: pride_crown
+  m_EditorClassIdentifier: 
+  itemId: pride_crown
+  itemName: Crown of the Solar Sovereign
+  category: 10
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 4e5957bcf0eaece49817f39dcdcba3f8, type: 3}
+  description: Radiant solar crown adorned with burning sunburst spikes.
+  lore: 
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 22
+  attack: 8
+  critChance: 10
+  speed: 0.05
+  bonusHp: 65
+  bonusMp: 0
+  mpRegen: 0
+  affixSlots: 0

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: arid_pants_of_the_spud
+  m_EditorClassIdentifier: 
+  itemId: arid_pants_of_the_spud
+  itemName: Arid Pants of the Spud
+  category: 10
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 98f429a8006cf1343bd640128c78ef2f, type: 3}
+  description: Flexible Mythic leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Fortified with pure tuber vitality. Grants Starch
+    Barrier.
+  lore: '''Forged in cosmic crucibles when falling meteors first pierced the heavens.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 23
+  attack: 8
+  critChance: 7.5
+  speed: 0.94
+  bonusHp: 100
+  bonusMp: 55
+  mpRegen: 1.8
+  affixSlots: 0

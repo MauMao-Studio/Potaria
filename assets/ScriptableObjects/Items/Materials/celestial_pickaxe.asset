@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d642e2057927c6d4ba8ed308982cd4d4, type: 3}
+  m_Name: celestial_pickaxe
+  m_EditorClassIdentifier: 
+  itemId: celestial_pickaxe
+  itemName: Celestial Pickaxe
+  category: 0
+  rarity: 5
+  maxStack: 1
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 6a9dccb5efa3f7441a72f2e2b475e473, type: 3}
+  description: Starlight mining pickaxe. Effortlessly shreds subterranean bedrock
+    and gems.
+  lore: '''The cosmos parts before its crystalline tip.'''
+  specialEffect: Subterranean Laser Digging Speed

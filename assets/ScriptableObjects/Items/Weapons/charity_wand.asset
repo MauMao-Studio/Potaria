@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: charity_wand
+  m_EditorClassIdentifier: 
+  itemId: charity_wand
+  itemName: Censer of the Hearthkeeper
+  category: 1
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 94fce2b1d6ac0084fb4408e58501f54e, type: 3}
+  description: A blessed focus that comforts the wounded while smiting wicked invaders
+    with gentle fire.
+  lore: A bronze censer carrying coals that have never grown cold since the first
+    winter.
+  specialEffect: 'Healing Censer: Attacks create soothing incense restoring +4 HP
+    to nearby allies, Warm Flame'
+  attack: 36
+  defense: 0
+  critChance: 6
+  speed: 0
+  bonusHp: 35
+  bonusMp: 0
+  mpRegen: 0
+  specialTag: 
+  affixSlots: 0

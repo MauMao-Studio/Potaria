@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: umbral_greaves
+  m_EditorClassIdentifier: 
+  itemId: umbral_greaves
+  itemName: Umbral Greaves
+  category: 10
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 4bad6ddac7747a14c8b510ef53718958, type: 3}
+  description: Flexible Mythic leg armor built for rugged mobility. Enhances movement
+    speed and surefooted traversal. Grants Titan's Resolve.
+  lore: '''Drink deep of the celestial dew and fear no shadow in this world or the
+    next.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 27
+  attack: 10
+  critChance: 7.3
+  speed: 1.04
+  bonusHp: 88
+  bonusMp: 55
+  mpRegen: 1.8
+  affixSlots: 0

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6d734a4620398549bd9f67839431756, type: 3}
+  m_Name: calamansi
+  m_EditorClassIdentifier: 
+  cropId: calamansi
+  cropName: Calamansi
+  seedItemId: calamansi_seeds
+  harvestItemId: calamansi
+  seedItem: {fileID: 11400000, guid: c5b64e3593bac624993b0f4043af8aef, type: 2}
+  harvestItem: {fileID: 11400000, guid: 7bd1b8baa2b59f645a9c43e98e9bf179, type: 2}
+  growthStagesCount: 4
+  stageDurationSeconds: 40
+  stageSprites:
+  - {fileID: 21300000, guid: 35cb4cf09eaa38247bace090deefb9f9, type: 3}
+  - {fileID: 21300000, guid: 211c6c3dc14187b428ed42741baca268, type: 3}
+  - {fileID: 21300000, guid: 480cb9bf3634bf04e98812ba08ee4230, type: 3}
+  - {fileID: 21300000, guid: 0d57884b95eedbb4d9e819b33efd93ac, type: 3}
+  minLightRequirement: 0.35
+  requiresHydratedFarmland: 1
+  moistureGrowthMultiplier: 1
+  dryGrowthMultiplier: 0.35
+  minHarvestYield: 2
+  maxHarvestYield: 4
+  minSeedYield: 1
+  maxSeedYield: 2

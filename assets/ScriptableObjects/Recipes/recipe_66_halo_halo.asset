@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_66_halo_halo
+  m_EditorClassIdentifier: 
+  recipeId: recipe_66_halo_halo
+  category: Survival
+  resultItemId: halo_halo
+  resultItemData: {fileID: 11400000, guid: c722575343f75554abb2f00bd2fd8225, type: 2}
+  resultCount: 1
+  craftingStation: 0
+  ingredients:
+  - itemId: shaved_ice
+    itemData: {fileID: 11400000, guid: d2045c8450dbb0a4b87b12fd47dff752, type: 2}
+    count: 1
+  - itemId: condensed_milk
+    itemData: {fileID: 11400000, guid: 1bbc5fff773d1754dac3edde17ab7c97, type: 2}
+    count: 1
+  - itemId: ube_halaya
+    itemData: {fileID: 11400000, guid: ee8fa6488e9da0044843241903b72a79, type: 2}
+    count: 1

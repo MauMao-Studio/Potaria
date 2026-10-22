@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_64_pancit_bihon
+  m_EditorClassIdentifier: 
+  recipeId: recipe_64_pancit_bihon
+  category: Survival
+  resultItemId: pancit_bihon
+  resultItemData: {fileID: 11400000, guid: d5b4f0b8624b0164c85533d05cc08e33, type: 2}
+  resultCount: 1
+  craftingStation: 1
+  ingredients:
+  - itemId: pancit_noodles
+    itemData: {fileID: 11400000, guid: ced21262e10561343b1d507958e7f92b, type: 2}
+    count: 1
+  - itemId: raw_pork
+    itemData: {fileID: 11400000, guid: 0a3ddcf53f55bab4e8403b220d785fc9, type: 2}
+    count: 1
+  - itemId: garlic
+    itemData: {fileID: 11400000, guid: 35c8e825503fcb649bc58ae1ff9fc6ad, type: 2}
+    count: 1
+  - itemId: onion
+    itemData: {fileID: 11400000, guid: 81f1110bde4d52544b3bc93b8f807053, type: 2}
+    count: 1

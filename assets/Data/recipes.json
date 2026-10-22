@@ -1,0 +1,3091 @@
+[
+  {
+    "recipeId": "recipe_0_work_bench",
+    "resultItemId": "work_bench",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_1_wood_platform",
+    "resultItemId": "wood_platform",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_2_torch",
+    "resultItemId": "torch",
+    "resultCount": 3,
+    "craftingStation": "Hand",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 1
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_3_wood_axe",
+    "resultItemId": "wood_axe",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_4_wooden_sword",
+    "resultItemId": "wooden_sword",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 7
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_5_wood_shovel",
+    "resultItemId": "wood_shovel",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_6_wood_pickaxe",
+    "resultItemId": "wood_pickaxe",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_7_wooden_arrow",
+    "resultItemId": "wooden_arrow",
+    "resultCount": 25,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 1
+      },
+      {
+        "itemId": "stone_block",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_8_rope_rungs",
+    "resultItemId": "rope_rungs",
+    "resultCount": 3,
+    "craftingStation": "Hand",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 2
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_9_bamboo_scaffold",
+    "resultItemId": "bamboo_scaffold",
+    "resultCount": 4,
+    "craftingStation": "Hand",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 3
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_10_dried_thatch_bale",
+    "resultItemId": "dried_thatch_bale",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 3
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_11_pyrite_sparker",
+    "resultItemId": "pyrite_sparker",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 1
+      },
+      {
+        "itemId": "stone_block",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_12_spud_angler_rod",
+    "resultItemId": "spud_angler_rod",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_13_copper_harvester_sickle",
+    "resultItemId": "copper_harvester_sickle",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 4
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_14_herbal_salve",
+    "resultItemId": "herbal_salve",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 1
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_15_burlap_tether",
+    "resultItemId": "burlap_tether",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 2
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_16_cozy_hearth_pit",
+    "resultItemId": "cozy_hearth_pit",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 6
+      },
+      {
+        "itemId": "torch",
+        "count": 2
+      },
+      {
+        "itemId": "stone_block",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_17_carved_tuber_lantern",
+    "resultItemId": "carved_tuber_lantern",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 3
+      },
+      {
+        "itemId": "torch",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_18_bamboo_hoe",
+    "resultItemId": "bamboo_hoe",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_19_iron_hoe",
+    "resultItemId": "iron_hoe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 3
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_20_watering_can",
+    "resultItemId": "watering_can",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_21_rice_seeds",
+    "resultItemId": "rice_seeds",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "rice",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_22_garlic_seeds",
+    "resultItemId": "garlic_seeds",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "garlic",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_23_onion_seeds",
+    "resultItemId": "onion_seeds",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "onion",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_24_ginger_seeds",
+    "resultItemId": "ginger_seeds",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "ginger",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_25_eggplant_seeds",
+    "resultItemId": "eggplant_seeds",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "eggplant",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_26_string_beans_seeds",
+    "resultItemId": "string_beans_seeds",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "string_beans",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_27_tamarind_seeds",
+    "resultItemId": "tamarind_seeds",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "tamarind",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_28_calamansi_seeds",
+    "resultItemId": "calamansi_seeds",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "calamansi",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_29_mashed_potato",
+    "resultItemId": "mashed_potato",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 2
+      },
+      {
+        "itemId": "wood",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_30_golden_fry",
+    "resultItemId": "golden_fry",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 3
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_31_copper_bar",
+    "resultItemId": "copper_bar",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "copper_ore",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_32_iron_bar",
+    "resultItemId": "iron_bar",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "iron_ore",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_33_gold_bar",
+    "resultItemId": "gold_bar",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "gold_ore",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_34_stone_brick",
+    "resultItemId": "stone_brick",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "stone_block",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_35_glass_window",
+    "resultItemId": "glass_window",
+    "resultCount": 2,
+    "craftingStation": "Furnace",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "sand_block",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_36_stone_fireplace",
+    "resultItemId": "stone_fireplace",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "stone_block",
+        "count": 12
+      },
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "torch",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_37_mosaic_tiles",
+    "resultItemId": "mosaic_tiles",
+    "resultCount": 4,
+    "craftingStation": "Furnace",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "dirt_block",
+        "count": 2
+      },
+      {
+        "itemId": "sand_block",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_38_hardened_clay_shingles",
+    "resultItemId": "hardened_clay_shingles",
+    "resultCount": 4,
+    "craftingStation": "Furnace",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "dirt_block",
+        "count": 4
+      },
+      {
+        "itemId": "stone_block",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_39_hearty_root_stew",
+    "resultItemId": "hearty_root_stew",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 3
+      },
+      {
+        "itemId": "glowing_mushroom",
+        "count": 1
+      },
+      {
+        "itemId": "wood",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_40_glazed_golden_tuber",
+    "resultItemId": "glazed_golden_tuber",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 2
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_41_smoked_spud_jerky",
+    "resultItemId": "smoked_spud_jerky",
+    "resultCount": 2,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 2
+      },
+      {
+        "itemId": "wood",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_42_gilded_russet",
+    "resultItemId": "gilded_russet",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 3
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_43_glass_flask",
+    "resultItemId": "glass_flask",
+    "resultCount": 3,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "sand_block",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_44_abyssal_alloy_bar",
+    "resultItemId": "abyssal_alloy_bar",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "blightstone_block",
+        "count": 4
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 2
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_45_potato_bread",
+    "resultItemId": "potato_bread",
+    "resultCount": 2,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 3
+      },
+      {
+        "itemId": "wood",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_46_sweet_tuber_pie",
+    "resultItemId": "sweet_tuber_pie",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 2
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      },
+      {
+        "itemId": "wood",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_47_cooked_bangus",
+    "resultItemId": "cooked_bangus",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_bangus",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_48_cooked_tilapia",
+    "resultItemId": "cooked_tilapia",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_tilapia",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_49_cooked_galunggong",
+    "resultItemId": "cooked_galunggong",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_galunggong",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_50_cooked_maya_maya",
+    "resultItemId": "cooked_maya_maya",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_maya_maya",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_51_cooked_tanigue",
+    "resultItemId": "cooked_tanigue",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_tanigue",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_52_cooked_tambakol",
+    "resultItemId": "cooked_tambakol",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_tambakol",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_53_cooked_lapu_lapu",
+    "resultItemId": "cooked_lapu_lapu",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_lapu_lapu",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_54_cooked_hito",
+    "resultItemId": "cooked_hito",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_hito",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_55_cooked_dilis",
+    "resultItemId": "cooked_dilis",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_dilis",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_56_cooked_dalagang_bukid",
+    "resultItemId": "cooked_dalagang_bukid",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_dalagang_bukid",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_57_chicken_adobo",
+    "resultItemId": "chicken_adobo",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_chicken",
+        "count": 1
+      },
+      {
+        "itemId": "soy_sauce",
+        "count": 1
+      },
+      {
+        "itemId": "vinegar",
+        "count": 1
+      },
+      {
+        "itemId": "garlic",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_58_pork_adobo",
+    "resultItemId": "pork_adobo",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_pork",
+        "count": 1
+      },
+      {
+        "itemId": "soy_sauce",
+        "count": 1
+      },
+      {
+        "itemId": "vinegar",
+        "count": 1
+      },
+      {
+        "itemId": "garlic",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_59_sinigang",
+    "resultItemId": "sinigang",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "pork_belly",
+        "count": 1
+      },
+      {
+        "itemId": "tamarind",
+        "count": 1
+      },
+      {
+        "itemId": "onion",
+        "count": 1
+      },
+      {
+        "itemId": "eggplant",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_60_kare_kare",
+    "resultItemId": "kare_kare",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_beef",
+        "count": 1
+      },
+      {
+        "itemId": "peanut_butter",
+        "count": 1
+      },
+      {
+        "itemId": "eggplant",
+        "count": 1
+      },
+      {
+        "itemId": "string_beans",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_61_bulalo",
+    "resultItemId": "bulalo",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_beef",
+        "count": 1
+      },
+      {
+        "itemId": "onion",
+        "count": 1
+      },
+      {
+        "itemId": "black_pepper",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_62_tinola",
+    "resultItemId": "tinola",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_chicken",
+        "count": 1
+      },
+      {
+        "itemId": "ginger",
+        "count": 1
+      },
+      {
+        "itemId": "onion",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_63_lechon",
+    "resultItemId": "lechon",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "pork_belly",
+        "count": 1
+      },
+      {
+        "itemId": "garlic",
+        "count": 1
+      },
+      {
+        "itemId": "vinegar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_64_pancit_bihon",
+    "resultItemId": "pancit_bihon",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "pancit_noodles",
+        "count": 1
+      },
+      {
+        "itemId": "raw_pork",
+        "count": 1
+      },
+      {
+        "itemId": "garlic",
+        "count": 1
+      },
+      {
+        "itemId": "onion",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_65_arroz_caldo",
+    "resultItemId": "arroz_caldo",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_chicken",
+        "count": 1
+      },
+      {
+        "itemId": "rice",
+        "count": 1
+      },
+      {
+        "itemId": "ginger",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_66_halo_halo",
+    "resultItemId": "halo_halo",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "shaved_ice",
+        "count": 1
+      },
+      {
+        "itemId": "condensed_milk",
+        "count": 1
+      },
+      {
+        "itemId": "ube_halaya",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_67_kaldereta",
+    "resultItemId": "kaldereta",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_goat_meat",
+        "count": 1
+      },
+      {
+        "itemId": "onion",
+        "count": 1
+      },
+      {
+        "itemId": "garlic",
+        "count": 1
+      },
+      {
+        "itemId": "black_pepper",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_68_balut",
+    "resultItemId": "balut",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "duck_egg",
+        "count": 1
+      },
+      {
+        "itemId": "salt",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_69_itlog_na_maalat",
+    "resultItemId": "itlog_na_maalat",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "duck_egg",
+        "count": 1
+      },
+      {
+        "itemId": "salt",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_70_sinangag",
+    "resultItemId": "sinangag",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "rice",
+        "count": 1
+      },
+      {
+        "itemId": "garlic",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_71_daing_na_bangus",
+    "resultItemId": "daing_na_bangus",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_bangus",
+        "count": 1
+      },
+      {
+        "itemId": "garlic",
+        "count": 1
+      },
+      {
+        "itemId": "vinegar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_72_salt",
+    "resultItemId": "salt",
+    "resultCount": 2,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "seaweed",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_73_vinegar",
+    "resultItemId": "vinegar",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_74_shaved_ice",
+    "resultItemId": "shaved_ice",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "snow_block",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_75_condensed_milk",
+    "resultItemId": "condensed_milk",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "carabao_milk",
+        "count": 1
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_76_ube_halaya",
+    "resultItemId": "ube_halaya",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 2
+      },
+      {
+        "itemId": "condensed_milk",
+        "count": 1
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_77_pancit_noodles",
+    "resultItemId": "pancit_noodles",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "rice",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_78_peanut_butter",
+    "resultItemId": "peanut_butter",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 2
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      },
+      {
+        "itemId": "salt",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_79_coconut_milk",
+    "resultItemId": "coconut_milk",
+    "resultCount": 2,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 2
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_80_sinigang_na_bangus",
+    "resultItemId": "sinigang_na_bangus",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_bangus",
+        "count": 1
+      },
+      {
+        "itemId": "tamarind",
+        "count": 1
+      },
+      {
+        "itemId": "onion",
+        "count": 1
+      },
+      {
+        "itemId": "eggplant",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_81_ginataang_tilapia",
+    "resultItemId": "ginataang_tilapia",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_tilapia",
+        "count": 1
+      },
+      {
+        "itemId": "coconut_milk",
+        "count": 1
+      },
+      {
+        "itemId": "ginger",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_82_kinilaw_na_tanigue",
+    "resultItemId": "kinilaw_na_tanigue",
+    "resultCount": 1,
+    "craftingStation": "Hand",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_tanigue",
+        "count": 1
+      },
+      {
+        "itemId": "vinegar",
+        "count": 1
+      },
+      {
+        "itemId": "calamansi",
+        "count": 1
+      },
+      {
+        "itemId": "ginger",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_83_iron_cauldron",
+    "resultItemId": "iron_cauldron",
+    "resultCount": 1,
+    "craftingStation": "Furnace",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 7
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_84_roof_tiles",
+    "resultItemId": "roof_tiles",
+    "resultCount": 4,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "stone_block",
+        "count": 2
+      },
+      {
+        "itemId": "dirt_block",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_85_wood_planks",
+    "resultItemId": "wood_planks",
+    "resultCount": 4,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_86_wooden_door",
+    "resultItemId": "wooden_door",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_87_wooden_table",
+    "resultItemId": "wooden_table",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_88_wooden_chair",
+    "resultItemId": "wooden_chair",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_89_wooden_bed",
+    "resultItemId": "wooden_bed",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 12
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_90_bookshelf",
+    "resultItemId": "bookshelf",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 10
+      },
+      {
+        "itemId": "bone",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_91_grandfather_clock",
+    "resultItemId": "grandfather_clock",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 10
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_92_candelabra",
+    "resultItemId": "candelabra",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 3
+      },
+      {
+        "itemId": "torch",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_93_chandelier",
+    "resultItemId": "chandelier",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "gold_bar",
+        "count": 3
+      },
+      {
+        "itemId": "torch",
+        "count": 4
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_94_potted_plant",
+    "resultItemId": "potted_plant",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "stone_block",
+        "count": 2
+      },
+      {
+        "itemId": "dirt_block",
+        "count": 2
+      },
+      {
+        "itemId": "raw_potato",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_95_wooden_dresser",
+    "resultItemId": "wooden_dresser",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 10
+      },
+      {
+        "itemId": "copper_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_96_wall_tapestry",
+    "resultItemId": "wall_tapestry",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 2
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_97_bathtub",
+    "resultItemId": "bathtub",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 4
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_98_sink",
+    "resultItemId": "sink",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      },
+      {
+        "itemId": "wood",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_99_painting",
+    "resultItemId": "painting",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_100_wood_shelf",
+    "resultItemId": "wood_shelf",
+    "resultCount": 2,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_101_wood_wall",
+    "resultItemId": "wood_wall",
+    "resultCount": 4,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_102_stone_brick_wall",
+    "resultItemId": "stone_brick_wall",
+    "resultCount": 4,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "stone_brick",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_103_carved_stone_bricks",
+    "resultItemId": "carved_stone_bricks",
+    "resultCount": 2,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "stone_brick",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_104_cobblestone_parapet",
+    "resultItemId": "cobblestone_parapet",
+    "resultCount": 4,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "stone_block",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_105_wrought_iron_palisade",
+    "resultItemId": "wrought_iron_palisade",
+    "resultCount": 4,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_106_forged_iron_chain",
+    "resultItemId": "forged_iron_chain",
+    "resultCount": 2,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_107_reinforced_slate_slab",
+    "resultItemId": "reinforced_slate_slab",
+    "resultCount": 4,
+    "craftingStation": "WorkBench",
+    "category": "Building",
+    "ingredients": [
+      {
+        "itemId": "stone_block",
+        "count": 4
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_108_furnace",
+    "resultItemId": "furnace",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "stone_block",
+        "count": 20
+      },
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "torch",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_109_chest",
+    "resultItemId": "chest",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_110_iron_chest",
+    "resultItemId": "iron_chest",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 8
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_111_blight_ember_hearth",
+    "resultItemId": "blight_ember_hearth",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "blightstone_block",
+        "count": 4
+      },
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_112_smithing_anvil",
+    "resultItemId": "smithing_anvil",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_113_whetstone_wheel",
+    "resultItemId": "whetstone_wheel",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "stone_block",
+        "count": 6
+      },
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_114_alchemical_retort",
+    "resultItemId": "alchemical_retort",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 3
+      },
+      {
+        "itemId": "glass_window",
+        "count": 2
+      },
+      {
+        "itemId": "torch",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_115_iron_reinforced_door",
+    "resultItemId": "iron_reinforced_door",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 6
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_116_brass_lantern",
+    "resultItemId": "brass_lantern",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 2
+      },
+      {
+        "itemId": "torch",
+        "count": 1
+      },
+      {
+        "itemId": "glass_window",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_117_spectral_lantern",
+    "resultItemId": "spectral_lantern",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      },
+      {
+        "itemId": "glowing_mushroom",
+        "count": 2
+      },
+      {
+        "itemId": "torch",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_118_timber_trapdoor",
+    "resultItemId": "timber_trapdoor",
+    "resultCount": 2,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_119_hooped_cask",
+    "resultItemId": "hooped_cask",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 8
+      },
+      {
+        "itemId": "copper_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_120_weaver_loom",
+    "resultItemId": "weaver_loom",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 6
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_121_blast_kiln",
+    "resultItemId": "blast_kiln",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "stone_brick",
+        "count": 8
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 4
+      },
+      {
+        "itemId": "furnace",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_122_smokehouse_stove",
+    "resultItemId": "smokehouse_stove",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "furnace",
+        "count": 1
+      },
+      {
+        "itemId": "wood",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_123_cartographer_desk",
+    "resultItemId": "cartographer_desk",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 6
+      },
+      {
+        "itemId": "stone_block",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_124_fletcher_bench",
+    "resultItemId": "fletcher_bench",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 6
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_125_masonry_saw",
+    "resultItemId": "masonry_saw",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "stone_brick",
+        "count": 4
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_126_archery_target",
+    "resultItemId": "archery_target",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_127_galvanic_attractor",
+    "resultItemId": "galvanic_attractor",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Furniture",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_128_fishing_rod",
+    "resultItemId": "fishing_rod",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 8
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_129_reinforced_angler_rod",
+    "resultItemId": "reinforced_angler_rod",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "spud_angler_rod",
+        "count": 1
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 6
+      },
+      {
+        "itemId": "silver_coin",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_130_gilded_master_rod",
+    "resultItemId": "gilded_master_rod",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "reinforced_angler_rod",
+        "count": 1
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 6
+      },
+      {
+        "itemId": "golden_fry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_131_astral_leviathan_rod",
+    "resultItemId": "astral_leviathan_rod",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "gilded_master_rod",
+        "count": 1
+      },
+      {
+        "itemId": "fallen_star",
+        "count": 5
+      },
+      {
+        "itemId": "portal_shard",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_132_neptune_tide_rod",
+    "resultItemId": "neptune_tide_rod",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "astral_leviathan_rod",
+        "count": 1
+      },
+      {
+        "itemId": "magma_core",
+        "count": 2
+      },
+      {
+        "itemId": "crown_of_potaria",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_133_wood_bow",
+    "resultItemId": "wood_bow",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_134_copper_shortsword",
+    "resultItemId": "copper_shortsword",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 5
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_135_copper_broadsword",
+    "resultItemId": "copper_broadsword",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 8
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_136_copper_axe",
+    "resultItemId": "copper_axe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 6
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_137_copper_pickaxe",
+    "resultItemId": "copper_pickaxe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 8
+      },
+      {
+        "itemId": "wood",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_138_iron_pickaxe",
+    "resultItemId": "iron_pickaxe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 10
+      },
+      {
+        "itemId": "wood",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_139_iron_axe",
+    "resultItemId": "iron_axe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 8
+      },
+      {
+        "itemId": "wood",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_140_iron_shovel",
+    "resultItemId": "iron_shovel",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 4
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_141_gold_broadsword",
+    "resultItemId": "gold_broadsword",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "gold_bar",
+        "count": 8
+      },
+      {
+        "itemId": "wood",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_142_gold_pickaxe",
+    "resultItemId": "gold_pickaxe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "gold_bar",
+        "count": 10
+      },
+      {
+        "itemId": "wood",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_143_gold_axe",
+    "resultItemId": "gold_axe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "gold_bar",
+        "count": 8
+      },
+      {
+        "itemId": "wood",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_144_fiber_clippers",
+    "resultItemId": "fiber_clippers",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_145_oak_buckler",
+    "resultItemId": "oak_buckler",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 10
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_146_iron_aegis",
+    "resultItemId": "iron_aegis",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 6
+      },
+      {
+        "itemId": "wood",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_147_arbalest_repeater",
+    "resultItemId": "arbalest_repeater",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 6
+      },
+      {
+        "itemId": "wood",
+        "count": 8
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_148_glowing_lumen_arrow",
+    "resultItemId": "glowing_lumen_arrow",
+    "resultCount": 25,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wooden_arrow",
+        "count": 25
+      },
+      {
+        "itemId": "glowing_mushroom",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_149_spud_quiver",
+    "resultItemId": "spud_quiver",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wood",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 4
+      },
+      {
+        "itemId": "copper_bar",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_150_totem_of_resurgence",
+    "resultItemId": "totem_of_resurgence",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "gold_bar",
+        "count": 8
+      },
+      {
+        "itemId": "portal_shard",
+        "count": 2
+      },
+      {
+        "itemId": "fallen_star",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_151_bone_bow",
+    "resultItemId": "bone_bow",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "bone",
+        "count": 12
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_152_frostburn_arrow",
+    "resultItemId": "frostburn_arrow",
+    "resultCount": 25,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wooden_arrow",
+        "count": 25
+      },
+      {
+        "itemId": "frost_core",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_153_flame_arrow",
+    "resultItemId": "flame_arrow",
+    "resultCount": 25,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wooden_arrow",
+        "count": 25
+      },
+      {
+        "itemId": "torch",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_154_astral_arrow",
+    "resultItemId": "astral_arrow",
+    "resultCount": 25,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "wooden_arrow",
+        "count": 25
+      },
+      {
+        "itemId": "fallen_star",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_155_starch_blade",
+    "resultItemId": "starch_blade",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "gold_bar",
+        "count": 8
+      },
+      {
+        "itemId": "raw_potato",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_156_cactus_sword",
+    "resultItemId": "cactus_sword",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "cactus",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_157_cactus_helmet",
+    "resultItemId": "cactus_helmet",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "cactus",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_158_cactus_chestplate",
+    "resultItemId": "cactus_chestplate",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "cactus",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_159_cactus_greaves",
+    "resultItemId": "cactus_greaves",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "cactus",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_160_celestial_axe",
+    "resultItemId": "celestial_axe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "celestial_essence",
+        "count": 1
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 8
+      },
+      {
+        "itemId": "wood",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_161_celestial_pickaxe",
+    "resultItemId": "celestial_pickaxe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "celestial_essence",
+        "count": 1
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 10
+      },
+      {
+        "itemId": "wood",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_162_magma_greatsword",
+    "resultItemId": "magma_greatsword",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "magma_core",
+        "count": 1
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_163_magma_chestplate",
+    "resultItemId": "magma_chestplate",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "magma_core",
+        "count": 2
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_164_cryo_chestplate",
+    "resultItemId": "cryo_chestplate",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "frost_core",
+        "count": 3
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_165_bone_scythe",
+    "resultItemId": "bone_scythe",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "bone",
+        "count": 16
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_166_titans_ring",
+    "resultItemId": "titans_ring",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Equipment",
+    "ingredients": [
+      {
+        "itemId": "celestial_essence",
+        "count": 1
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_167_affix_stone",
+    "resultItemId": "affix_stone",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "portal_shard",
+        "count": 3
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 5
+      },
+      {
+        "itemId": "blightstone",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_168_greater_healing_potion",
+    "resultItemId": "greater_healing_potion",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "healing_potion",
+        "count": 2
+      },
+      {
+        "itemId": "glowing_mushroom",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_169_speed_potion",
+    "resultItemId": "speed_potion",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 1
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_170_night_gazer_elixir",
+    "resultItemId": "night_gazer_elixir",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      },
+      {
+        "itemId": "glowing_mushroom",
+        "count": 2
+      },
+      {
+        "itemId": "fallen_star",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_171_zephyr_tonic",
+    "resultItemId": "zephyr_tonic",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "raw_potato",
+        "count": 2
+      },
+      {
+        "itemId": "copper_bar",
+        "count": 1
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_172_explorers_satchel",
+    "resultItemId": "explorers_satchel",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "spud_sap",
+        "count": 6
+      },
+      {
+        "itemId": "wood",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_173_magnetic_lodestone",
+    "resultItemId": "magnetic_lodestone",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "iron_bar",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_174_brass_far_seer",
+    "resultItemId": "brass_far_seer",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "copper_bar",
+        "count": 3
+      },
+      {
+        "itemId": "glass_window",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_175_solar_chronometer",
+    "resultItemId": "solar_chronometer",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "gold_bar",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_176_dungeon_rune",
+    "resultItemId": "dungeon_rune",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "gold_bar",
+        "count": 4
+      },
+      {
+        "itemId": "spud_sap",
+        "count": 5
+      },
+      {
+        "itemId": "stone_brick",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_177_desert_rune",
+    "resultItemId": "desert_rune",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "cactus",
+        "count": 6
+      },
+      {
+        "itemId": "sandstone_block",
+        "count": 8
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_178_cryo_rune",
+    "resultItemId": "cryo_rune",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "frost_core",
+        "count": 2
+      },
+      {
+        "itemId": "ice_block",
+        "count": 10
+      },
+      {
+        "itemId": "iron_bar",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_179_necro_rune",
+    "resultItemId": "necro_rune",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "bone",
+        "count": 8
+      },
+      {
+        "itemId": "blightstone_block",
+        "count": 10
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "recipeId": "recipe_180_celestial_keystone",
+    "resultItemId": "celestial_keystone",
+    "resultCount": 1,
+    "craftingStation": "WorkBench",
+    "category": "Survival",
+    "ingredients": [
+      {
+        "itemId": "portal_shard",
+        "count": 4
+      },
+      {
+        "itemId": "gold_bar",
+        "count": 5
+      },
+      {
+        "itemId": "stone_brick",
+        "count": 10
+      }
+    ]
+  }
+]

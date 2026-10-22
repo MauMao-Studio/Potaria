@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: ancestral_blade_of_genesis
+  m_EditorClassIdentifier: 
+  itemId: ancestral_blade_of_genesis
+  itemName: Ancestral Blade of Genesis
+  category: 1
+  rarity: 1
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: bcf62e77b535f484e94d57923f4e49b5, type: 3}
+  description: A formidable Uncommon blade tempered for heroic combat. Forged in
+    Potaria to conquer the subterranean depths. Echoes with primordial power from
+    the First Age.
+  lore: 
+  specialEffect: 
+  attack: 19
+  defense: 0
+  critChance: 3.6
+  speed: 0.06
+  bonusHp: 10
+  bonusMp: 13
+  mpRegen: 0.3
+  specialTag: 
+  affixSlots: 0

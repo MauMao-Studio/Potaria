@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccd6a257763fc040a3606b9507d46c4, type: 3}
+  m_Name: sacred_cyclone_scythe
+  m_EditorClassIdentifier: 
+  itemId: sacred_cyclone_scythe
+  itemName: Sacred Cyclone Scythe
+  category: 1
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 34374ba4c49b35944843bbc3dc056508, type: 3}
+  description: A heavy Mythic weapon with immense striking weight. Cleaves through
+    enemy defenses with crushing momentum. Bestows Superheated Impact.
+  lore: '''Carried by Grand Boss Sol-Rho before the heavens surrendered to radiant
+    destiny.'''
+  specialEffect: 
+  attack: 53
+  defense: 0
+  critChance: 19.7
+  speed: 0.29
+  bonusHp: 67
+  bonusMp: 69
+  mpRegen: 2.7
+  specialTag: 
+  affixSlots: 0

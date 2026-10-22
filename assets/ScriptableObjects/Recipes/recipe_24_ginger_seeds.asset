@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_24_ginger_seeds
+  m_EditorClassIdentifier: 
+  recipeId: recipe_24_ginger_seeds
+  category: Survival
+  resultItemId: ginger_seeds
+  resultItemData: {fileID: 11400000, guid: 81914e404d920824c816563826b637c3, type: 2}
+  resultCount: 2
+  craftingStation: 0
+  ingredients:
+  - itemId: ginger
+    itemData: {fileID: 11400000, guid: daadc4e5803f1424f9528e7fd7a5d678, type: 2}
+    count: 1

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: verdant_spore_hood
+  m_EditorClassIdentifier: 
+  itemId: verdant_spore_hood
+  itemName: Verdant Spore Hood
+  category: 10
+  rarity: 6
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 1916a69770a937b4ea1b504e11af557b, type: 3}
+  description: 'A protective Ancient headpiece reinforcing defense. Shields Spud
+    from overhead attacks and sharp debris. Grants Ancient Awakening: Soul Harvest.'
+  lore: '''Peer too long into its gleaming edge, and the boundless void peers back
+    into you.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 44
+  attack: 24
+  critChance: 14.1
+  speed: 0.4
+  bonusHp: 198
+  bonusMp: 125
+  mpRegen: 3.8
+  affixSlots: 0

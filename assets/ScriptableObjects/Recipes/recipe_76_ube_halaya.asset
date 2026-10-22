@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c948d031816577947a502584d6cca676, type: 3}
+  m_Name: recipe_76_ube_halaya
+  m_EditorClassIdentifier: 
+  recipeId: recipe_76_ube_halaya
+  category: Survival
+  resultItemId: ube_halaya
+  resultItemData: {fileID: 11400000, guid: ee8fa6488e9da0044843241903b72a79, type: 2}
+  resultCount: 1
+  craftingStation: 1
+  ingredients:
+  - itemId: raw_potato
+    itemData: {fileID: 11400000, guid: c094a01dde2a6ae41a38aac6619b924c, type: 2}
+    count: 2
+  - itemId: condensed_milk
+    itemData: {fileID: 11400000, guid: 1bbc5fff773d1754dac3edde17ab7c97, type: 2}
+    count: 1
+  - itemId: spud_sap
+    itemData: {fileID: 11400000, guid: 5b88732a93b76c042900156425747ba3, type: 2}
+    count: 1

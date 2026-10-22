@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d123507db9e47ae43a629c3741cac7c0, type: 3}
+  m_Name: ancient_primordial_parka
+  m_EditorClassIdentifier: 
+  itemId: ancient_primordial_parka
+  itemName: Ancient Primordial Parka
+  category: 10
+  rarity: 4
+  maxStack: 99
+  goldValue: 1
+  icon: {fileID: 21300000, guid: 55cfeff3a0dd1034baf0aba49346e99c, type: 3}
+  description: Sturdy Mythic chest armor fitted with reinforced plating. Provides
+    vital torso protection against monstrous blows. Preserves relics from the dawn
+    of Potaria. Grants Soul Harvest.
+  lore: '''Dredged from molten caverns where liquid rock flows with the fury of creation.'''
+  specialEffect: 
+  equipSlot: 1
+  setId: 
+  defense: 32
+  attack: 14
+  critChance: 8.5
+  speed: 0.2
+  bonusHp: 132
+  bonusMp: 70
+  mpRegen: 1.8
+  affixSlots: 0
