@@ -10,6 +10,7 @@
 
 | Version | Release Date | Codename / Focus | Key Milestone |
 | :--- | :--- | :--- | :--- |
+| **v1.0.0-unity-milestone2** | October 2026 | *Unity 6 LTS Procedural World Generation, 2D Tilemaps, Chunk Streaming & 2D URP Lighting (Milestone 2 Complete)* | Completed Milestone 2 of the Unity 6 LTS implementation: built dual-tilemap architecture on Grid (Terrain Tilemap with CompositeCollider2D polygons for snag-free movement, Wall Tilemap, Platforms, and Water with trigger colliders); implemented TileDatabase linking 117+ blocks and walls to item drops, tool types, and hardness; generated Tile assets and procedural 16x16 pixel sprites; ported boundless procedural generation (Perlin surface heightmaps across Forest, Desert, Snow, Blight, and Nether Dungeon biomes, subterranean cave worms, and geological vein clustering for Coal, Copper, Iron, Gold, Diamond, and Netherite ores); implemented ChunkManager streaming 16x240 tile chunks dynamically around the camera; configured active 2D Universal Render Pipeline (URP) assets and Sprite-Lit-Default materials; implemented 2D URP dynamic lighting (DayNightCycle2D global cycle, SubterraneanDarkness2D depth attenuation, and PointLightSource2D with point light pooling for torches and lamps); constructed Assets/Scenes/MainWorld.unity with 16 PPU Pixel Perfect Camera; and verified 84 / 84 automated tests passing via headless batchmode PotariaWorldTest runner (100% Green). |
 | **v1.0.0-unity-milestone1** | October 2026 | *Unity 6 LTS Engine Transition, Project Scaffold, Asset Ingestion & Core Data Layer (Milestone 1 Complete)* | Completed Milestone 1 of the Unity 6 LTS migration: transitioned primary engine from Pygame-ce 2.5.8 to Unity 6 LTS (v6000.0.58f1) with 2D Universal Render Pipeline (URP 17.0.3); verified standalone physical backup of legacy Pygame engine (770/770 tests passing, 100% Green); created and published dedicated archival branch pygame-engine on remote origin; established clean Unity 6 directory structure (Assets/, Packages/, ProjectSettings/); configured Packages/manifest.json with 2D URP, 2D Tilemap, 2D Sprite, Input System, and TextMeshPro; migrated and re-imported 2,456 pixel-art sprites to Assets/Sprites/ with Point (no filter) texture settings, uncompressed format, and 16 Pixels Per Unit; generated 36 new crop growth stage sprites in Assets/Sprites/Crops/ (4 stages each for 9 crops); migrated 34 audio files into Assets/Audio/; created typed C# data models in Assets/Scripts/Data/ (ItemData, FoodItemData, WeaponItemData, EquipmentItemData, EquipmentSetData, CropData, RecipeData); developed headless batchmode importer PotariaDataImporter.ImportAll generating and verifying 1,775 ScriptableObject assets (79 food items with 14 serialized buff parameters, 9 crops, 8 seeds, 136 materials, 630 weapons, 705 equipment pieces, 27 equipment sets with 147 piece links, 181 recipes with 100% linked items) with zero broken references, zero missing icons, and 100% valid GUID linkages. |
 | **v0.2.9a** | October 2026 | *Philippine Farming System, Tiered Cooking Durations, Fishing Escape Timer & Android APK Architecture (Legacy Pygame Final)* | Authentic Philippine farming system with 8 native crops (Rice/Palay, Garlic, Onion, Ginger, Eggplant, String Beans, Tamarind, Calamansi) with 4-stage visual growth, bamboo/iron hoes, infinite watering can, 4-block horizontal water hydration radius, cave torchlight illumination farming, wild plant spawning and seed harvesting; tiered food cooking duration (2.5s-20.0s) with single-food-per-furnace active cooking queues and direct raw fish grilling into Inihaw na [Fish]; 12.0s fishing countdown timer with sweet-spot bonus and escape penalty; responsive multi-aspect Android touch viewport (16:9 to 20:9) with buildozer.spec targeting API 30-34 (Android 11-15); robust save/load persistence for crops, active furnaces, and soil hydration timers; and 770 tests passing across 47 suites (100% Green). |
 | **v0.2.8a** | October 2026 | *Skills, Boss Signature Attacks & Timed Projectile Reflection Integration* | Full integration of Potaria Skills and Bosses Design Spec: Ancient skill `celestial_reversal` (evolves to Celestial Mirror) with dynamic projectile reflection, reflection budget (12-24), 0.40s-0.52s active timing window, 1.5x damage amplification, and celestial gold/cyan shimmer; 19 new active combat skills with 32x32 icons in `assets/skills/`; 4 dungeon mini-boss signature attacks (`blight_apocalypse`, `caldera_catastrophe`, `absolute_zero`, `kingdom_of_the_unburied`) with animated 8-frame telegraph VFX; projectile preview contact sheet at `assets/projectiles/preview_contact_sheet.png` and `docs/projectiles_preview.png`; updated `UNIQUE_ASSETS_TRACKER.md` (2,445 verified unique assets with 0 collisions); and 736 tests passing across 46 suites (100% Green). |
@@ -44,6 +45,40 @@
 ---
 
 ## Detailed Version Logs
+
+### [v1.0.0-unity-milestone2] - Unity 6 LTS Procedural World Generation, 2D Tilemaps, Chunk Streaming & 2D URP Lighting (Current Active Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **Dual-Tilemap Grid Architecture & Physics**:
+  - Implemented multi-layered 2D Tilemap system on Grid GameObject: `Terrain_Tilemap` (Solid blocks), `Wall_Tilemap` (Ambient background walls), `Platform_Tilemap` (One-way wooden platforms), and `Water_Tilemap` (Liquid blocks with trigger colliders).
+  - Configured `TilemapCollider2D` and `CompositeCollider2D` (Geometry Type: Polygons, Used By Composite) on solid terrain, eliminating tile seam snagging and edge catching for 2D platformer movement.
+  - Assigned `Universal Render Pipeline/2D/Sprite-Lit-Default` materials across all tilemap renderers so world terrain interacts with 2D lighting shaders and day/night color grading.
+- **TileDatabase & Tile Assets Pipeline**:
+  - Implemented `TileDatabase.cs` and `TileDefinition.cs` registering 117+ unique tile types with mining hardness, required tool categories (Pickaxe, Axe, Shovel, Bare-Hand), light emission, drop item links, and solid/platform collider rules.
+  - Automated batch generation of Unity `Tile` assets in `Assets/ScriptableObjects/Tiles/` and `Assets/ScriptableObjects/Walls/`.
+  - Added procedural 16x16 pixel-art sprite synthesis (16 PPU, Point filter) for farmland (dry/hydrated), crops, wild plants, and ores.
+  - Created `ItemData` ScriptableObjects for `coal`, `diamond`, `netherite`, `dirt_clod`, and `leaves`.
+- **Boundless Procedural World Generation**:
+  - Implemented `WorldGenerator.cs` and `PerlinNoise.cs` replicating Potaria's multi-octave continuous terrain generation in C#.
+  - Generated smooth surface terrain across 5 distinct biomes: Forest/Starchlands (center spawn), Desert (sand dunes, sandstone), Snow (snow hills, ice), Blight (ebonstone, corrupt foliage), and Nether Dungeon (bedrock crypt fortress).
+  - Subterranean cave generation: multi-octave density thresholds and continuous 3D Simplex/Perlin cave worm tunneling.
+  - Cave worm protection: preserved structural integrity across all 4 underground dungeons (Nether Dungeon, Magma Caverns, Glacial Crypt, Subterranean Catacombs).
+  - 6-Ore Vein Distribution: calibrated geological depth zones and cluster sizes for Coal (surface to deep), Copper, Iron, Gold, Diamond (deep caverns), and Netherite (bottom bedrock layer).
+- **Infinite Chunk Streaming & Memory Culling**:
+  - Implemented `ChunkManager.cs` and `ChunkData.cs` managing continuous 16-block wide by 240-block deep world chunks.
+  - Dynamic camera-based distance loading, asynchronous generation, active chunk caching, and automatic out-of-range memory culling.
+  - Runtime tile modification support: `SetTile`, `SetWall`, and `DamageTile` with tool tier damage scaling, bare-hand fallback, and automatic `CompositeCollider2D.GenerateGeometry()` updates.
+  - Farmland 4-block horizontal water hydration simulation and subterranean torchlight crop growth illumination.
+- **2D Universal Render Pipeline (URP) Dynamic Lighting**:
+  - Created and assigned `UniversalRenderPipeline2D.asset` (`UniversalRenderPipelineAsset`) and `UniversalRenderPipeline2D_Renderer.asset` (`Renderer2DData`) in `GraphicsSettings.defaultRenderPipeline` and `QualitySettings.renderPipeline` across all quality levels.
+  - `DayNightCycle2D.cs`: Global Light 2D component smoothly transitioning ambient sunlight color and intensity across Dawn, Noon, Golden Sunset, Dusk, and Moonlit Night.
+  - `SubterraneanDarkness2D.cs`: Depth-based ambient light attenuation transitioning surface illumination into subterranean darkness below surface elevation.
+  - `PointLightSource2D.cs` & Point Light Pooling: Automated spawning, updating, and pooling of Point Light 2D components for placed torches, lanterns, campfires, and luminescent flora, with clean lifecycle cleanup on block destruction and chunk culling.
+- **MainWorld Scene Architecture & Automated Testing**:
+  - Constructed `Assets/Scenes/MainWorld.unity` with Grid, Tilemap layers, WorldManager, Point_Lights container, DayNightCycle2D, and Pixel Perfect Camera (16 PPU, Reference Resolution 1280x720).
+  - Created headless batchmode test runner `PotariaWorldTest.cs` with 84 comprehensive automated tests covering noise determinism, tile lookups, chunk streaming, mining formulas, farmland hydration, day/night curves, ore vein clustering, dungeon protection, point light pooling, lit shaders, and URP 2D asset pipeline configuration.
+  - Result: 84 / 84 tests passed (0 errors, 100% Green).
 
 ### [v1.0.0-unity-milestone1] - Unity 6 LTS Engine Transition, Project Scaffold, Asset Ingestion & Core Data Layer (Current Active Release)
 *Release Date: October 2026*

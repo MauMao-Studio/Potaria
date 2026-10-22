@@ -5,8 +5,8 @@
 **Legacy Engine Branch:** Pure Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
 **Verification Baseline:** 770 / 770 Pygame Tests Passing (100% Green); 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
-**Current Milestone:** Milestone 1 Complete (Unity 6 Scaffold & Core Data Layer); Milestone 2 in Progress  
-**Current Version:** Unity 6 LTS Milestone 1  
+**Current Milestone:** Milestone 2 Complete (2D Tilemaps, Chunk Streaming & Procedural World Gen); Milestone 3 in Progress  
+**Current Version:** Unity 6 LTS Milestone 2  
 
 ---
 
@@ -125,6 +125,32 @@ The franchise operates under a unified **One Project Repository** architecture, 
     - 181 Crafting Recipes (100% input/output item linkages)
   - Zero broken references, zero missing icons, and 100% valid GUID linkages.
 
+### 2.11 2D Tilemaps, Procedural World Generation & 2D URP Lighting (Milestone 2 Deliverables)
+- **Multi-Layered 2D Tilemaps & Composite Colliders**:
+  - Grid hierarchy with Terrain Tilemap (solid blocks), Wall Tilemap (background walls), Platform Tilemap (one-way platforms), and Water Tilemap (liquid trigger colliders).
+  - `CompositeCollider2D` with Polygon geometry for seamless, snag-free platformer navigation.
+  - Universal Render Pipeline `Sprite-Lit-Default` materials across all tilemap renderers.
+- **TileDatabase & Tile Assets**:
+  - `TileDatabase.cs` registering 117+ tile definitions with mining hardness, tool requirements (Pickaxe, Axe, Shovel), light emission, item drops, and collider rules.
+  - Generated Unity `Tile` assets in `Assets/ScriptableObjects/Tiles/` and `Assets/ScriptableObjects/Walls/`.
+  - Procedural 16x16 pixel sprites for dry/hydrated farmland, crops, wild plants, and ores.
+- **Procedural Generation & 6-Ore Distribution**:
+  - Multi-octave Perlin heightmap generation across Forest, Desert, Snow, Blight, and Nether Dungeon biomes.
+  - Subterranean cave worm generation with boundary protection for all 4 underground dungeons.
+  - 6-Ore vein clustering across geological depth zones: Coal, Copper, Iron, Gold, Diamond, and Netherite.
+- **Boundless Chunk Streaming**:
+  - `ChunkManager.cs` dynamic 16x240 tile chunk loading, generation, caching, and distance culling.
+  - Runtime tile modification (`SetTile`, `DamageTile`) with tool tier scaling, bare-hand fallback, and live collider regeneration.
+  - 4-block horizontal water hydration for crops and cave torchlight illumination.
+- **2D URP Dynamic Lighting Pipeline**:
+  - Configured `UniversalRenderPipeline2D.asset` and `UniversalRenderPipeline2D_Renderer.asset` in project settings.
+  - `DayNightCycle2D.cs` Global Light 2D transitioning across Dawn, Noon, Sunset, and Moonlit Night.
+  - `SubterraneanDarkness2D.cs` depth attenuation for underground darkness.
+  - `PointLightSource2D.cs` with dynamic point light pooling for torches, lamps, and campfires.
+- **Scene Architecture & Batchmode Test Validation**:
+  - Sample scene `Assets/Scenes/MainWorld.unity` with Grid, Tilemaps, WorldManager, 2D Lights, and Pixel Perfect Camera (16 PPU).
+  - `PotariaWorldTest.cs` batchmode runner with 84 automated tests passing (0 errors, 100% Green).
+
 ## 3. Performance & Optimization Verification
 
 - **Frame Rate Benchmark**: 110+ FPS average under standard gameplay scenes; solid 60+ FPS under heavy stress testing with 50+ active entities.
@@ -167,13 +193,13 @@ The production roadmap transitions Potaria into a commercial multiplatform relea
    - Generated 36 new crop growth stage sprites in `Assets/Sprites/Crops/`.
    - Created C# data models (`ItemData`, `FoodItemData`, `WeaponItemData`, `EquipmentItemData`, `EquipmentSetData`, `CropData`, `RecipeData`).
    - Built headless batchmode importer generating 1,775 verified ScriptableObjects (0 broken references).
-2. **Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation (IN PROGRESS)**:
+2. **Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation (COMPLETED)**:
    - Dual-tilemap architecture: Terrain Tilemap (solid foreground) and Wall Tilemap (ambient background).
    - Chunk streaming manager handling dynamic generation and culling around camera.
    - Multi-octave Perlin noise generation for Forest, Desert, Snow, Blight, and Nether Dungeon biomes.
    - RuleTiles / Terrain Tile palettes for 117+ block types with smooth autotiling.
    - 2D URP lighting integration (Day/Night global light cycling and subterranean torch point lights).
-3. **Milestone 3: Character Controller, Physics & Action RPG Combat**:
+3. **Milestone 3: Character Controller, Physics & Action RPG Combat (IN PROGRESS)**:
    - Rigidbody2D + BoxCollider2D player controller with responsive jump physics, coyote time, and jump buffering.
    - Unity Input System actions supporting Keyboard/Mouse, Gamepad (Steam Deck / Xbox / DualSense), and Touch.
    - 100-level RPG stat progression curve (HP, MP, ATK, DEF, Crit Rate).

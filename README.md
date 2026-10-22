@@ -6,8 +6,8 @@
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
 **Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
-**Current Milestone:** Milestone 1 Complete (Unity 6 Scaffold & Core Data Layer); Milestone 2 in Progress  
-**Version:** Unity 6 LTS Milestone 1  
+**Current Milestone:** Milestone 2 Complete (2D Tilemaps, Chunk Streaming & Procedural World Gen); Milestone 3 in Progress  
+**Version:** Unity 6 LTS Milestone 2  
 
 ---
 
@@ -294,14 +294,14 @@ The production roadmap transitions Potaria from the verified Pygame foundation i
 - Created typed C# data models in `Assets/Scripts/Data/`.
 - Implemented headless batchmode importer generating 1,775 verified ScriptableObjects (0 broken references).
 
-### Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation (IN PROGRESS)
+### Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation (COMPLETED)
 - Dual-tilemap architecture: Terrain Tilemap (solid foreground) and Wall Tilemap (ambient background).
 - Chunk streaming manager handling dynamic generation and culling around the camera.
 - Multi-octave Perlin noise generation for Forest, Desert, Snow, Blight, and Nether Dungeon biomes.
 - RuleTiles / Terrain Tile palettes for 117+ block types with smooth autotiling.
 - 2D URP lighting integration (Day/Night global light cycling and subterranean torch point lights).
 
-### Milestone 3: Character Controller, Physics & Action RPG Combat
+### Milestone 3: Character Controller, Physics & Action RPG Combat (IN PROGRESS)
 - Rigidbody2D + BoxCollider2D player controller with responsive jump physics, coyote time, and jump buffering.
 - Unity Input System actions supporting Keyboard/Mouse, Gamepad (Steam Deck / Xbox / DualSense), and Touch.
 - 100-level RPG stat progression curve (HP, MP, ATK, DEF, Crit Rate).
