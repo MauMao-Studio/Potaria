@@ -40,14 +40,17 @@ android.prescale = 1
 # (int) Target Android API level (34 = Android 14)
 android.api = 34
 
-# (int) Minimum Android API level (30 = Android 11, covering Android 11, 12, 13, 14, 15)
-android.minapi = 30
+# (int) Minimum Android API level (21 = Android 5.0+, fully supports Android 12, 13, 14, 15)
+android.minapi = 21
 
 # (str) Android NDK version to use
 android.ndk = 25b
 
 # (int) Android NDK API level
 android.ndk_api = 21
+
+# (str) Extra command line arguments to pass when invoking pythonforandroid.toolchain
+p4a.extra_args = --allow-minsdk-ndkapi-mismatch
 
 # (list) Android architectures to build for
 android.archs = arm64-v8a

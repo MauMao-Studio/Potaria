@@ -95,11 +95,15 @@ if [ ! -f "buildozer.spec" ]; then
 fi
 echo "Verified workspace root: $PROJECT_ROOT"
 
-# Clean any previous failed build state to ensure clean configure pass
-echo "Cleaning any previous build caches and toolchains..."
-rm -rf .buildozer/android/platform/build-*
-if command -v buildozer &> /dev/null; then
-    buildozer android clean 2>/dev/null || true
+# Clean previous build caches if explicitly requested via --clean
+if [ "${1:-}" = "--clean" ]; then
+    echo "Clean build requested (--clean). Cleaning previous build caches and toolchains..."
+    rm -rf .buildozer/android/platform/build-*
+    if command -v buildozer &> /dev/null; then
+        buildozer android clean 2>/dev/null || true
+    fi
+else
+    echo "Reusing existing compiled distribution cache if available (use --clean for fresh build)."
 fi
 
 # Step 5: Execute Buildozer build
