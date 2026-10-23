@@ -4,8 +4,8 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 94 / 94 Combat & Physics Tests Passing (0 Errors)  
-**Current Milestone:** Milestone 3 Complete (Character Controller, Physics & Action RPG Combat); Milestone 4 in Progress (Inventory, Crafting, Equipment & Responsive UI)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 45 / 45 Overhaul Systems Tests Passing (0 Errors)  
+**Current Milestone:** Milestone 3 Complete (Character Controller, Physics, Combat, Day/Night Lighting, HUD & Localization); Milestone 4 in Progress (Inventory, Crafting, Equipment & Responsive UI)  
 **Last Updated:** October 2026  
 
 ---
@@ -126,8 +126,15 @@ All foundational systems designed and proven during the Pygame prototype phase s
 - **Objective**: Port player movement, paperdoll visual equipment rendering, 40 combat skills, and Touhou-inspired boss battles.
 - **Tasks**:
   - [x] Implement 2D Rigidbody character controller with snappy acceleration, 1-block crouch/platform drop, coyote time (0.15s), variable jump height, water swimming, and drowning.
-  - [x] Integrate Unity New Input System supporting keyboard/mouse, gamepad, and mobile touchscreen virtual controls.
-  - [x] Build visual animated character system (12 FPS walk, idle breathing, jump stretch, fall) with paperdoll weapon and equipment hooks.
+  - [x] Fix ground detection using downward BoxCastNonAlloc and multi-ray sweeps past foot boundary, contact normal detection for 45-degree slopes, and zero-friction physics material.
+  - [x] Integrate Unity New Input System supporting keyboard/mouse, gamepad, and mobile touchscreen virtual controls, with dual-backend fallback.
+  - [x] Build visual animated character system (12 FPS 8-frame walk, idle breathing, jump stretch, fall) with sprite facing flip and paperdoll hooks.
+  - [x] Implement procedural Day/Night SkyRenderer2D with cubic Hermite gradient transitions, camera clear color sync, and 140 twinkling star sprites.
+  - [x] Enable 2D dynamic shadow casting on point lights (torches at 0.70 intensity) and CompositeShadowCaster2D on foreground tilemap geometry.
+  - [x] Implement complete In-Game HUD: 10-slot hotbar (slots 1-9, 0) with selection highlight and stack count, Life text and hearts, Mana bar and MP readout, 12-hour clock badge (e.g. 12:00 PM DAY, 7:04 PM NIGHT), Radar badge, 4 skill cooldown badges (Q, F, V, R), and F3 profiler overlay.
+  - [x] Implement hostile mob behaviors: Green Slime and Purple Slime (hopping and squish/stretch), Surface Zombie (shambling with step-jumping over obstacles), and Night Gazer / Demon Eye (zero-gravity sinusoidal flight and daytime fleeing).
+  - [x] Implement MobSpawner: 15-35 tile annulus around player, 10 active mob cap, and >60 tile despawn radius.
+  - [x] Implement dual-language localization system (LocalizationManager) with instant runtime toggle ('L' key) between English (en) and Filipino (fil).
   - [x] Implement melee attack hitboxes, single-target damage enforcement, and Ancient relic cleave.
   - [x] Implement projectile ballistics: parabolic gravity arcs for arrows, homing logic for catalysts, piercing javelins, and shockwaves.
   - [x] Port RPG stat system: 100-level curve, EXP formula (100 * lvl^2.1), 5-meal buff slots with statutory caps, and natural MP regen (1.8 MP/s).
@@ -136,6 +143,7 @@ All foundational systems designed and proven during the Pygame prototype phase s
   - [x] Implement Ancient skill `celestial_reversal` with timed projectile reflection (1.5x damage amplification and reflection budget).
   - [x] Implement CameraController with follow damping, 3 discrete zoom levels (1x, 2x, 3x via 'Z'), and 3.0s cinematic pitch-black death transition.
   - [x] Verify via automated headless batchmode test runner (`PotariaCombatTest`) with 116/116 tests passing (0 errors).
+  - [x] Verify via automated overhaul test runner (`PotariaOverhaulTest`) with 45/45 tests passing (0 errors).
 
 
 ---
@@ -212,5 +220,7 @@ Development across both engines maintains strict quality baselines:
 - **Reference Integrity**: 1,775 ScriptableObjects verified (0 missing icons, 0 broken recipe links, 0 unlinked equipment set pieces).
 - **Tile Pipeline**: 73 block tiles, 13 wall tiles, TileDatabase registry, and procedural sprite synthesizers.
 - **World Gen & Systems Verification**: `PotariaWorldTest.RunTests` executed with 84 / 84 tests passing (0 failed, 0 errors).
-- **Combat & Character Physics Verification**: `PotariaCombatTest.RunTests` executed with 94 / 94 tests passing (0 failed, 0 errors).
+- **Combat & Character Physics Verification**: `PotariaCombatTest.RunTests` executed with 116 / 116 tests passing (0 failed, 0 errors).
+- **Overhaul Systems Verification**: `PotariaOverhaulTest.RunTests` executed with 45 / 45 tests passing (0 failed, 0 errors).
+- **Total Automated Unity Tests**: 245 / 245 tests passing (0 failed, 0 errors).
 - **Compilation Status**: 0 errors, 0 warnings in `Assets/Scripts/`.

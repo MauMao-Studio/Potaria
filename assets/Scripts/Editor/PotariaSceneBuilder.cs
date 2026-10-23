@@ -14,6 +14,9 @@ using Potaria.Player;
 using Potaria.RPG;
 using Potaria.Combat;
 using Potaria.Cameras;
+using Potaria.UI;
+using Potaria.Mob;
+using Potaria.Localization;
 
 namespace Potaria.Editor
 {
@@ -63,6 +66,7 @@ namespace Potaria.Editor
             pixelCam.cropFrame = PixelPerfectCamera.CropFrame.None;
 
             var camController = camObj.AddComponent<CameraController>();
+            var skyRenderer = camObj.AddComponent<SkyRenderer2D>();
 
             // 3. Grid Hierarchy & Dual Tilemaps
             var gridObj = new GameObject("Grid");
@@ -104,8 +108,17 @@ namespace Potaria.Editor
 
             var darkness = lightObj.AddComponent<SubterraneanDarkness2D>();
 
-            // 6. Placed Light Prefab (Torch with PointLightSource2D)
+            // 6. Placed Light Prefab & Spawn Torches with 2D Shadows
             BuildTorchPrefab();
+            var torchPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PREFAB_DIR}/Torch_Light.prefab");
+            if (torchPrefab != null)
+            {
+                var torch1 = (GameObject)PrefabUtility.InstantiatePrefab(torchPrefab);
+                torch1.transform.position = new Vector3(-3.5f, -66.5f, 0f);
+
+                var torch2 = (GameObject)PrefabUtility.InstantiatePrefab(torchPrefab);
+                torch2.transform.position = new Vector3(3.5f, -66.5f, 0f);
+            }
 
             // 7. Input Manager & Projectile Manager
             var inputObj = new GameObject("InputManager");
@@ -127,14 +140,18 @@ namespace Potaria.Editor
             var playerCol = playerObj.AddComponent<BoxCollider2D>();
             playerCol.size = new Vector2(0.875f, 1.0f);
             playerCol.offset = new Vector2(0f, 0.5f);
+            playerCol.sharedMaterial = new PhysicsMaterial2D("Player_Frictionless") { friction = 0f, bounciness = 0f };
 
             var playerSr = playerObj.AddComponent<SpriteRenderer>();
             playerSr.sortingLayerName = "Player";
             var idleSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Player/idle.png");
+            if (idleSprite == null) idleSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/player/idle.png");
             if (idleSprite != null) playerSr.sprite = idleSprite;
 
             var playerStats = playerObj.AddComponent<PlayerStats>();
             var playerController = playerObj.AddComponent<PlayerController>();
+            playerController.ConfigurePhysics();
+            playerController.LoadDefaultSpritesIfMissing();
 
             // Weapon Pivot Child
             var weaponPivot = new GameObject("WeaponPivot");
@@ -149,7 +166,19 @@ namespace Potaria.Editor
             // Configure Camera Follow target
             camController.SetZoomLevel(1);
 
-            // 9. Save Scene
+            // 9. Mobs & Dynamic Mob Spawner
+            var spawnerObj = new GameObject("MobSpawner");
+            spawnerObj.transform.position = Vector3.zero;
+            var spawner = spawnerObj.AddComponent<MobSpawner>();
+            spawner.SpawnInitialMobs();
+
+            // 10. Complete In-Game HUD (Canvas 1280x720)
+            var canvasObj = new GameObject("HUD_Canvas");
+            var hud = canvasObj.AddComponent<PotariaHUD>();
+            hud.LoadResourcesIfMissing();
+            hud.BuildOrValidateUI();
+
+            // 11. Save Scene
             EditorSceneManager.SaveScene(scene, SCENE_PATH);
             Debug.Log($"[PotariaSceneBuilder] Successfully constructed and saved {SCENE_PATH}.");
 
@@ -218,7 +247,6 @@ namespace Potaria.Editor
         {
             EnsureDirectories();
             string prefabPath = $"{PREFAB_DIR}/Torch_Light.prefab";
-            if (File.Exists(prefabPath)) return;
 
             var torchObj = new GameObject("Torch_Light");
             var light2D = torchObj.AddComponent<Light2D>();
@@ -227,9 +255,18 @@ namespace Potaria.Editor
             light2D.pointLightInnerRadius = 0.5f;
             light2D.pointLightOuterRadius = 6.0f;
             light2D.intensity = 1.0f;
+            light2D.shadowsEnabled = true;
+            light2D.shadowIntensity = 0.70f;
 
             var pointSource = torchObj.AddComponent<PointLightSource2D>();
             pointSource.Configure(new Color(1.0f, 0.85f, 0.40f, 1.0f), 6.0f, 1.0f, true);
+
+            var sr = torchObj.AddComponent<SpriteRenderer>();
+            sr.sortingLayerName = "Foreground";
+            sr.sortingOrder = 5;
+            var torchSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/items/torch.png");
+            if (torchSprite == null) torchSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Items/torch.png");
+            if (torchSprite != null) sr.sprite = torchSprite;
 
             PrefabUtility.SaveAsPrefabAsset(torchObj, prefabPath);
             GameObject.DestroyImmediate(torchObj);

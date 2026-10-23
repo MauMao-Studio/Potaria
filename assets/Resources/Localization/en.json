@@ -1,0 +1,43 @@
+{
+  "hud.life": "Life: {0} / {1} (Lv.{2})",
+  "hud.mp": "MP: {0} / {1}",
+  "hud.level": "Lv.{0}",
+  "hud.day": "DAY",
+  "hud.night": "NIGHT",
+  "hud.radar": "[M] RADAR",
+  "hud.clock_format": "{0}:{1:D2} {2} {3}",
+  "hud.lang_prompt": "[L] Lang: {0}",
+
+  "skill.q.abbr": "SWI",
+  "skill.q.name": "Swift Strike",
+  "skill.f.abbr": "CEL",
+  "skill.f.name": "Celestial Surge",
+  "skill.v.abbr": "POW",
+  "skill.v.name": "Power Burst",
+  "skill.r.abbr": "WHI",
+  "skill.r.name": "Celestial Reversal",
+
+  "mob.green_slime": "Green Slime",
+  "mob.purple_slime": "Purple Slime",
+  "mob.zombie": "Surface Zombie",
+  "mob.demon_eye": "Night Gazer",
+
+  "item.copper_pickaxe": "Copper Pickaxe",
+  "item.copper_broadsword": "Copper Broadsword",
+  "item.copper_axe": "Copper Axe",
+  "item.torch": "Torch",
+  "item.dirt": "Dirt Block",
+  "item.stone": "Stone Block",
+  "item.wood": "Wood",
+  "item.gel": "Gel",
+  "item.healing_potion": "Lesser Healing Potion",
+  "item.mana_potion": "Lesser Mana Potion",
+
+  "profiler.title": "Potaria Profiler (F3)",
+  "profiler.fps": "FPS: {0:F1} ({1:F2} ms)",
+  "profiler.pos": "Pos: X={0:F1}, Y={1:F1}",
+  "profiler.time": "Time: {0}:{1:D2} {2} (Phase: {3})",
+  "profiler.entities": "Entities: Mobs={0}, Bullets={1}",
+  "profiler.memory": "Memory: {0:F1} MB",
+  "profiler.language": "Language: {0} (Press L to Switch)"
+}

@@ -96,6 +96,8 @@ namespace Potaria.Player
         private bool _jumpReleasedThisFrame;
         private bool _dropPressedThisFrame;
 
+        private static readonly RaycastHit2D[] s_GroundHitBuffer = new RaycastHit2D[16];
+
         // Public Properties
         public Rigidbody2D Rigidbody { get { if (_rb == null) _rb = GetComponent<Rigidbody2D>(); return _rb; } }
         public BoxCollider2D Collider { get { if (_collider == null) _collider = GetComponent<BoxCollider2D>(); return _collider; } }
@@ -108,7 +110,7 @@ namespace Potaria.Player
         public bool IsReflecting => _reflectionTimer > 0f && reflectionBudget > 0;
         public int ReflectionBudget => reflectionBudget;
         public float ReflectionRadius => reflectionRadius;
-        public bool FacingRight => _facingRight;
+        public bool FacingRight { get => _facingRight; set => _facingRight = value; }
         public bool IsDead => _isDead;
         public Vector2 SpawnPosition { get => spawnPosition; set => spawnPosition = value; }
         public float CoyoteTimer => _coyoteTimer;
@@ -168,6 +170,18 @@ namespace Potaria.Player
                 _rb.freezeRotation = true;
             }
 
+            if (_collider != null && _collider.sharedMaterial == null)
+            {
+                var mat = new PhysicsMaterial2D("Player_Frictionless")
+                {
+                    friction = 0f,
+                    bounciness = 0f
+                };
+                _collider.sharedMaterial = mat;
+            }
+
+            if (groundLayerMask.value == 0) groundLayerMask = ~0;
+
             if (stats == null) stats = GetComponent<PlayerStats>();
             if (weaponController == null) weaponController = GetComponentInChildren<WeaponController>();
             if (input == null) input = PotariaInput.Instance;
@@ -183,12 +197,15 @@ namespace Potaria.Player
         public void LoadDefaultSpritesIfMissing()
         {
 #if UNITY_EDITOR
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
             if (walkSprites == null || walkSprites.Length == 0)
             {
                 var list = new List<Sprite>();
                 for (int i = 0; i < 8; i++)
                 {
                     var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/Player/walk_{i}.png");
+                    if (sp == null) sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/player/walk_{i}.png");
                     if (sp != null) list.Add(sp);
                 }
                 walkSprites = list.ToArray();
@@ -200,11 +217,13 @@ namespace Potaria.Player
                 for (int i = 0; i < 6; i++)
                 {
                     var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/Player/idle_frames_{i}.png");
+                    if (sp == null) sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/player/idle_frames_{i}.png");
                     if (sp != null) list.Add(sp);
                 }
                 if (list.Count == 0)
                 {
                     var idleSp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Player/idle.png");
+                    if (idleSp == null) idleSp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/player/idle.png");
                     if (idleSp != null) list.Add(idleSp);
                 }
                 idleSprites = list.ToArray();
@@ -213,11 +232,18 @@ namespace Potaria.Player
             if (jumpSprite == null)
             {
                 jumpSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Player/jump.png");
+                if (jumpSprite == null) jumpSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/player/jump.png");
             }
 
             if (fallSprite == null)
             {
                 fallSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Player/fall.png");
+                if (fallSprite == null) fallSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/player/fall.png");
+            }
+
+            if (spriteRenderer != null && spriteRenderer.sprite == null && idleSprites != null && idleSprites.Length > 0)
+            {
+                spriteRenderer.sprite = idleSprites[0];
             }
 #endif
         }
@@ -314,19 +340,102 @@ namespace Potaria.Player
             if (_iFrameTimer > 0f) _iFrameTimer = Mathf.Max(0f, _iFrameTimer - dt);
         }
 
+        private void OnCollisionStay2D(Collision2D collision)
+        {
+            EvaluateCollisionContacts(collision);
+        }
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            EvaluateCollisionContacts(collision);
+        }
+
+        private void EvaluateCollisionContacts(Collision2D collision)
+        {
+            if (collision.collider.isTrigger) return;
+            for (int i = 0; i < collision.contactCount; i++)
+            {
+                var contact = collision.GetContact(i);
+                if (contact.normal.y > 0.5f)
+                {
+                    _isGrounded = true;
+                    _coyoteTimer = coyoteTime;
+                    break;
+                }
+            }
+        }
+
         public void CheckGroundStatus()
         {
             _wasGrounded = _isGrounded;
 
             if (_collider == null) _collider = GetComponent<BoxCollider2D>();
             if (_collider == null) return;
+            if (groundLayerMask.value == 0) groundLayerMask = ~0;
 
-            // Ground detection: BoxCast below the collider
-            Vector2 boxCenter = (Vector2)transform.position + _collider.offset + (Vector2.down * 0.05f);
-            Vector2 boxSize = new Vector2(_collider.size.x * 0.9f, 0.1f);
+            // Ground detection: BoxCast below the collider feet (offset.y - size.y * 0.5)
+            float footY = transform.position.y + _collider.offset.y - (_collider.size.y * 0.5f);
+            Vector2 footCenter = new Vector2(transform.position.x + _collider.offset.x, footY);
+            Vector2 boxSize = new Vector2(_collider.size.x * 0.88f, 0.10f);
 
-            RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.down, 0.05f, groundLayerMask);
-            _isGrounded = hit.collider != null && hit.collider != _collider && !hit.collider.isTrigger && !hit.collider.transform.IsChildOf(transform);
+            // Cast from slightly inside feet downward past bottom edge
+            Vector2 castOrigin = new Vector2(footCenter.x, footCenter.y + 0.05f);
+            int boxHitCount = Physics2D.BoxCastNonAlloc(castOrigin, boxSize, 0f, Vector2.down, s_GroundHitBuffer, 0.15f, groundLayerMask);
+            bool boxHit = false;
+            for (int i = 0; i < boxHitCount; i++)
+            {
+                if (IsValidGroundHit(s_GroundHitBuffer[i]))
+                {
+                    boxHit = true;
+                    break;
+                }
+            }
+
+            // Multi-ray fallback for slopes and tile seams
+            bool rayHit = false;
+            float halfWidth = _collider.size.x * 0.44f;
+            Vector2[] rayOrigins = new Vector2[]
+            {
+                new Vector2(footCenter.x - halfWidth, footCenter.y + 0.08f),
+                new Vector2(footCenter.x, footCenter.y + 0.08f),
+                new Vector2(footCenter.x + halfWidth, footCenter.y + 0.08f)
+            };
+
+            for (int r = 0; r < rayOrigins.Length && !rayHit; r++)
+            {
+                int rayHitCount = Physics2D.RaycastNonAlloc(rayOrigins[r], Vector2.down, s_GroundHitBuffer, 0.22f, groundLayerMask);
+                for (int i = 0; i < rayHitCount; i++)
+                {
+                    if (IsValidGroundHit(s_GroundHitBuffer[i]))
+                    {
+                        rayHit = true;
+                        break;
+                    }
+                }
+            }
+
+            if (boxHit || rayHit)
+            {
+                _isGrounded = true;
+                _coyoteTimer = coyoteTime;
+            }
+            else
+            {
+                // Only clear _isGrounded if neither cast nor ongoing collision contacts hit ground
+                if (_wasGrounded && _coyoteTimer > 0f)
+                {
+                    _isGrounded = false;
+                }
+                else if (!boxHit && !rayHit)
+                {
+                    _isGrounded = false;
+                }
+            }
+        }
+
+        private bool IsValidGroundHit(RaycastHit2D hit)
+        {
+            return hit.collider != null && hit.collider != _collider && !hit.collider.isTrigger && !hit.collider.transform.IsChildOf(transform);
         }
 
         private void ApplyHorizontalMovement(float dt)
@@ -668,7 +777,7 @@ namespace Potaria.Player
             return baseRunSpeed;
         }
 
-        private void UpdateAnimation(float dt)
+        public void UpdateAnimation(float dt)
         {
             if (spriteRenderer == null) return;
 

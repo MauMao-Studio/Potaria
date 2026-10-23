@@ -48,6 +48,8 @@ namespace Potaria.World.Lighting
             pointLight.pointLightInnerRadius = innerRadius;
             pointLight.pointLightOuterRadius = outerRadius;
             pointLight.intensity = baseIntensity;
+            pointLight.shadowsEnabled = true;
+            pointLight.shadowIntensity = 0.70f;
         }
 
         private void Update()

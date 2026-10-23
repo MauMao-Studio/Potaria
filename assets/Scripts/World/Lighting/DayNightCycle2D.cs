@@ -134,6 +134,13 @@ namespace Potaria.World.Lighting
             globalLight.intensity = targetIntensity;
         }
 
+        public bool IsNight => CurrentPhase == CelestialPhase.Night;
+
+        public void GetClock(out int hour, out int minute, out bool isPm, out bool isNight)
+        {
+            SkyRenderer2D.GetClockTime(timeOfDay, out hour, out minute, out isPm, out isNight);
+        }
+
         public void SetTime(float t)
         {
             timeOfDay = Mathf.Repeat(t, 1f);

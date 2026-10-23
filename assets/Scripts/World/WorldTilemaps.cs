@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.Rendering.Universal;
 
 namespace Potaria.World
 {
@@ -122,6 +123,8 @@ namespace Potaria.World
                     compositeCollider = GetOrAddComponent<CompositeCollider2D>(foregroundTilemap.gameObject);
                     compositeCollider.geometryType = CompositeCollider2D.GeometryType.Polygons;
                 }
+
+                GetOrAddComponent<CompositeShadowCaster2D>(foregroundTilemap.gameObject);
             }
 
             // 4. Platform Tilemap (One-way jump-through platforms)

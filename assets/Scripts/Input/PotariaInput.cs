@@ -62,6 +62,9 @@ namespace Potaria.Input
         public bool CharacterPanelPressed { get; private set; } // C
         public bool InventoryPressed { get; private set; }      // E
         public bool ZoomTogglePressed { get; private set; }     // Z
+        public bool LanguageTogglePressed { get; private set; } // L
+        public bool ProfilerTogglePressed { get; private set; } // F3
+        public bool MinimapTogglePressed { get; private set; }  // M
 
         public int HotbarSlotPressed { get; private set; } = -1; // 0-9, or -1 if none
 
@@ -87,6 +90,9 @@ namespace Potaria.Input
         private bool _simCharPanel;
         private bool _simInventory;
         private bool _simZoomToggle;
+        private bool _simLangToggle;
+        private bool _simProfilerToggle;
+        private bool _simMinimapToggle;
         private int _simHotbarSlot = -1;
         private Vector2 _simAimDir = Vector2.right;
         private Vector2 _simMouseWorld;
@@ -136,56 +142,139 @@ namespace Potaria.Input
             float vertical = 0f;
 
             // 1. Keyboard / Legacy Input fallback
-            if (UnityEngine.Input.GetKey(KeyCode.A) || UnityEngine.Input.GetKey(KeyCode.LeftArrow))
-                horizontal -= 1f;
-            if (UnityEngine.Input.GetKey(KeyCode.D) || UnityEngine.Input.GetKey(KeyCode.RightArrow))
-                horizontal += 1f;
-            if (UnityEngine.Input.GetKey(KeyCode.W) || UnityEngine.Input.GetKey(KeyCode.UpArrow))
-                vertical += 1f;
-            if (UnityEngine.Input.GetKey(KeyCode.S) || UnityEngine.Input.GetKey(KeyCode.DownArrow))
-                vertical -= 1f;
+            try
+            {
+                if (UnityEngine.Input.GetKey(KeyCode.A) || UnityEngine.Input.GetKey(KeyCode.LeftArrow))
+                    horizontal -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.D) || UnityEngine.Input.GetKey(KeyCode.RightArrow))
+                    horizontal += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.W) || UnityEngine.Input.GetKey(KeyCode.UpArrow))
+                    vertical += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.S) || UnityEngine.Input.GetKey(KeyCode.DownArrow))
+                    vertical -= 1f;
+
+                JumpPressed = UnityEngine.Input.GetKeyDown(KeyCode.Space);
+                JumpHeld = UnityEngine.Input.GetKey(KeyCode.Space);
+                JumpReleased = UnityEngine.Input.GetKeyUp(KeyCode.Space);
+
+                AttackPressed = UnityEngine.Input.GetMouseButtonDown(0);
+                AttackHeld = UnityEngine.Input.GetMouseButton(0);
+
+                InteractPressed = UnityEngine.Input.GetMouseButtonDown(1);
+                InteractHeld = UnityEngine.Input.GetMouseButton(1);
+
+                DropPlatformPressed = UnityEngine.Input.GetKeyDown(KeyCode.S) || UnityEngine.Input.GetKeyDown(KeyCode.DownArrow);
+                DropPlatformHeld = UnityEngine.Input.GetKey(KeyCode.S) || UnityEngine.Input.GetKey(KeyCode.DownArrow);
+
+                Skill1Pressed = UnityEngine.Input.GetKeyDown(KeyCode.Q);
+                Skill2Pressed = UnityEngine.Input.GetKeyDown(KeyCode.F);
+                Skill3Pressed = UnityEngine.Input.GetKeyDown(KeyCode.V);
+                Skill4Pressed = UnityEngine.Input.GetKeyDown(KeyCode.R);
+
+                CharacterPanelPressed = UnityEngine.Input.GetKeyDown(KeyCode.C);
+                InventoryPressed = UnityEngine.Input.GetKeyDown(KeyCode.E);
+                ZoomTogglePressed = UnityEngine.Input.GetKeyDown(KeyCode.Z);
+                LanguageTogglePressed = UnityEngine.Input.GetKeyDown(KeyCode.L);
+                ProfilerTogglePressed = UnityEngine.Input.GetKeyDown(KeyCode.F3);
+                MinimapTogglePressed = UnityEngine.Input.GetKeyDown(KeyCode.M);
+
+                HotbarSlotPressed = -1;
+                for (int i = 0; i < 9; i++)
+                {
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1 + i))
+                    {
+                        HotbarSlotPressed = i;
+                        break;
+                    }
+                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha0))
+                {
+                    HotbarSlotPressed = 9;
+                }
+
+                MouseScreenPosition = UnityEngine.Input.mousePosition;
+            }
+            catch
+            {
+                // Legacy input may throw InvalidOperationException when activeInputHandler is strictly New Input System
+            }
+
+#if ENABLE_INPUT_SYSTEM
+            // 2. New Input System Keyboard & Mouse check
+            var kb = Keyboard.current;
+            if (kb != null)
+            {
+                if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) horizontal -= 1f;
+                if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) horizontal += 1f;
+                if (kb.wKey.isPressed || kb.upArrowKey.isPressed) vertical += 1f;
+                if (kb.sKey.isPressed || kb.downArrowKey.isPressed) vertical -= 1f;
+
+                if (kb.spaceKey.wasPressedThisFrame) JumpPressed = true;
+                if (kb.spaceKey.isPressed) JumpHeld = true;
+                if (kb.spaceKey.wasReleasedThisFrame) JumpReleased = true;
+
+                if (kb.sKey.wasPressedThisFrame || kb.downArrowKey.wasPressedThisFrame) DropPlatformPressed = true;
+                if (kb.sKey.isPressed || kb.downArrowKey.isPressed) DropPlatformHeld = true;
+
+                if (kb.qKey.wasPressedThisFrame) Skill1Pressed = true;
+                if (kb.fKey.wasPressedThisFrame) Skill2Pressed = true;
+                if (kb.vKey.wasPressedThisFrame) Skill3Pressed = true;
+                if (kb.rKey.wasPressedThisFrame) Skill4Pressed = true;
+
+                if (kb.cKey.wasPressedThisFrame) CharacterPanelPressed = true;
+                if (kb.eKey.wasPressedThisFrame) InventoryPressed = true;
+                if (kb.zKey.wasPressedThisFrame) ZoomTogglePressed = true;
+                if (kb.lKey.wasPressedThisFrame) LanguageTogglePressed = true;
+                if (kb.f3Key.wasPressedThisFrame) ProfilerTogglePressed = true;
+                if (kb.mKey.wasPressedThisFrame) MinimapTogglePressed = true;
+
+                for (int i = 0; i < 9; i++)
+                {
+                    var digitKey = kb[Key.Digit1 + i];
+                    if (digitKey != null && digitKey.wasPressedThisFrame)
+                    {
+                        HotbarSlotPressed = i;
+                        break;
+                    }
+                }
+                if (kb.digit0Key.wasPressedThisFrame)
+                {
+                    HotbarSlotPressed = 9;
+                }
+            }
+
+            var mouse = Mouse.current;
+            if (mouse != null)
+            {
+                if (mouse.leftButton.wasPressedThisFrame) AttackPressed = true;
+                if (mouse.leftButton.isPressed) AttackHeld = true;
+
+                if (mouse.rightButton.wasPressedThisFrame) InteractPressed = true;
+                if (mouse.rightButton.isPressed) InteractHeld = true;
+
+                MouseScreenPosition = mouse.position.ReadValue();
+
+                // Mouse scroll wheel for hotbar selection
+                float scroll = mouse.scroll.ReadValue().y;
+                if (scroll > 0.1f)
+                {
+                    int next = (HotbarSlotPressed < 0 ? 0 : HotbarSlotPressed) - 1;
+                    if (next < 0) next = 9;
+                    HotbarSlotPressed = next;
+                }
+                else if (scroll < -0.1f)
+                {
+                    int next = (HotbarSlotPressed < 0 ? 0 : HotbarSlotPressed) + 1;
+                    if (next > 9) next = 0;
+                    HotbarSlotPressed = next;
+                }
+            }
+#endif
 
             MoveVector = new Vector2(horizontal, vertical);
             if (MoveVector.sqrMagnitude > 1f) MoveVector = MoveVector.normalized;
 
-            JumpPressed = UnityEngine.Input.GetKeyDown(KeyCode.Space);
-            JumpHeld = UnityEngine.Input.GetKey(KeyCode.Space);
-            JumpReleased = UnityEngine.Input.GetKeyUp(KeyCode.Space);
-
-            AttackPressed = UnityEngine.Input.GetMouseButtonDown(0);
-            AttackHeld = UnityEngine.Input.GetMouseButton(0);
-
-            InteractPressed = UnityEngine.Input.GetMouseButtonDown(1);
-            InteractHeld = UnityEngine.Input.GetMouseButton(1);
-
-            DropPlatformPressed = UnityEngine.Input.GetKeyDown(KeyCode.S) || UnityEngine.Input.GetKeyDown(KeyCode.DownArrow);
-            DropPlatformHeld = UnityEngine.Input.GetKey(KeyCode.S) || UnityEngine.Input.GetKey(KeyCode.DownArrow);
-
-            Skill1Pressed = UnityEngine.Input.GetKeyDown(KeyCode.Q);
-            Skill2Pressed = UnityEngine.Input.GetKeyDown(KeyCode.F);
-            Skill3Pressed = UnityEngine.Input.GetKeyDown(KeyCode.V);
-            Skill4Pressed = UnityEngine.Input.GetKeyDown(KeyCode.R);
-
-            CharacterPanelPressed = UnityEngine.Input.GetKeyDown(KeyCode.C);
-            InventoryPressed = UnityEngine.Input.GetKeyDown(KeyCode.E);
-            ZoomTogglePressed = UnityEngine.Input.GetKeyDown(KeyCode.Z);
-
-            HotbarSlotPressed = -1;
-            for (int i = 0; i < 9; i++)
-            {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1 + i))
-                {
-                    HotbarSlotPressed = i;
-                    break;
-                }
-            }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha0))
-            {
-                HotbarSlotPressed = 9;
-            }
-
-            // Mouse & Aim
-            MouseScreenPosition = UnityEngine.Input.mousePosition;
+            // Camera / World aim point
             var cam = UnityEngine.Camera.main;
             if (cam != null)
             {
@@ -260,6 +349,9 @@ namespace Potaria.Input
             CharacterPanelPressed = _simCharPanel;
             InventoryPressed = _simInventory;
             ZoomTogglePressed = _simZoomToggle;
+            LanguageTogglePressed = _simLangToggle;
+            ProfilerTogglePressed = _simProfilerToggle;
+            MinimapTogglePressed = _simMinimapToggle;
             HotbarSlotPressed = _simHotbarSlot;
 
             AimDirection = _simAimDir;
@@ -278,6 +370,9 @@ namespace Potaria.Input
             _simCharPanel = false;
             _simInventory = false;
             _simZoomToggle = false;
+            _simLangToggle = false;
+            _simProfilerToggle = false;
+            _simMinimapToggle = false;
             _simHotbarSlot = -1;
         }
 
