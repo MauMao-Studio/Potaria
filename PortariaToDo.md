@@ -4,7 +4,7 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 45 / 45 Overhaul Systems Tests Passing (0 Errors)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 57 / 57 Overhaul Systems Tests Passing (0 Errors)  
 **Current Milestone:** Milestone 3 Complete (Character Controller, Physics, Combat, Day/Night Lighting, HUD & Localization); Milestone 4 in Progress (Inventory, Crafting, Equipment & Responsive UI)  
 **Last Updated:** October 2026  
 
@@ -143,7 +143,7 @@ All foundational systems designed and proven during the Pygame prototype phase s
   - [x] Implement Ancient skill `celestial_reversal` with timed projectile reflection (1.5x damage amplification and reflection budget).
   - [x] Implement CameraController with follow damping, 3 discrete zoom levels (1x, 2x, 3x via 'Z'), and 3.0s cinematic pitch-black death transition.
   - [x] Verify via automated headless batchmode test runner (`PotariaCombatTest`) with 116/116 tests passing (0 errors).
-  - [x] Verify via automated overhaul test runner (`PotariaOverhaulTest`) with 45/45 tests passing (0 errors).
+  - [x] Verify via automated overhaul test runner (`PotariaOverhaulTest`) with 57/57 tests passing (0 errors).
 
 
 ---

@@ -51,6 +51,7 @@ namespace Potaria.Mob
 
         public void SpawnInitialMobs()
         {
+            if (player == null) player = FindFirstObjectByType<PlayerController>();
             if (player == null) return;
             Vector2 p = player.transform.position;
 
@@ -157,6 +158,8 @@ namespace Potaria.Mob
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sortingLayerName = "Foreground";
             sr.sortingOrder = 10;
+            var litShader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
+            if (litShader != null) sr.sharedMaterial = new Material(litShader);
 
             Mob mob = null;
             if (mobType == typeof(SlimeMob))

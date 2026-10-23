@@ -71,6 +71,7 @@ namespace Potaria.Player
         // Timers & State
         private float _coyoteTimer = 0f;
         private float _jumpBufferTimer = 0f;
+        private float _jumpGraceTimer = 0f;
         private float _platformDropTimer = 0f;
         private float _drownTimer = 0f;
         private float _reflectionTimer = 0f;
@@ -79,6 +80,8 @@ namespace Potaria.Player
 
         private bool _isGrounded = false;
         private bool _wasGrounded = false;
+        private bool _hasContactGround = false;
+        private Vector2 _groundNormal = Vector2.up;
         private bool _inWater = false;
         private bool _isSubmerged = false;
         private bool _facingRight = true;
@@ -170,14 +173,18 @@ namespace Potaria.Player
                 _rb.freezeRotation = true;
             }
 
-            if (_collider != null && _collider.sharedMaterial == null)
+            if (_collider != null)
             {
-                var mat = new PhysicsMaterial2D("Player_Frictionless")
+                _collider.edgeRadius = 0.04f;
+                if (_collider.sharedMaterial == null)
                 {
-                    friction = 0f,
-                    bounciness = 0f
-                };
-                _collider.sharedMaterial = mat;
+                    var mat = new PhysicsMaterial2D("Player_Frictionless")
+                    {
+                        friction = 0f,
+                        bounciness = 0f
+                    };
+                    _collider.sharedMaterial = mat;
+                }
             }
 
             if (groundLayerMask.value == 0) groundLayerMask = ~0;
@@ -338,6 +345,9 @@ namespace Potaria.Player
             // Dash Timer & I-Frames
             if (_dashTimer > 0f) _dashTimer = Mathf.Max(0f, _dashTimer - dt);
             if (_iFrameTimer > 0f) _iFrameTimer = Mathf.Max(0f, _iFrameTimer - dt);
+
+            // Jump Grace Timer (prevents slope adhesion from immediately killing upward jumps)
+            if (_jumpGraceTimer > 0f) _jumpGraceTimer = Mathf.Max(0f, _jumpGraceTimer - dt);
         }
 
         private void OnCollisionStay2D(Collision2D collision)
@@ -356,8 +366,11 @@ namespace Potaria.Player
             for (int i = 0; i < collision.contactCount; i++)
             {
                 var contact = collision.GetContact(i);
-                if (contact.normal.y > 0.5f)
+                // 45-degree slope has normal.y = 0.707f. Any slope >= 25 deg has normal.y >= 0.42f.
+                if (contact.normal.y > 0.42f)
                 {
+                    _hasContactGround = true;
+                    _groundNormal = contact.normal;
                     _isGrounded = true;
                     _coyoteTimer = coyoteTime;
                     break;
@@ -369,6 +382,23 @@ namespace Potaria.Player
         {
             _wasGrounded = _isGrounded;
 
+            // If rising from a jump, suppress ground detection so slopes don't immediately cancel the leap
+            if (_jumpGraceTimer > 0f)
+            {
+                if (_rb != null && _rb.linearVelocity.y < -0.1f)
+                {
+                    _jumpGraceTimer = 0f; // Falling back down, cancel grace period
+                }
+                else
+                {
+                    _isGrounded = false;
+                    _coyoteTimer = 0f;
+                    _hasContactGround = false;
+                    _groundNormal = Vector2.up;
+                    return;
+                }
+            }
+
             if (_collider == null) _collider = GetComponent<BoxCollider2D>();
             if (_collider == null) return;
             if (groundLayerMask.value == 0) groundLayerMask = ~0;
@@ -376,61 +406,64 @@ namespace Potaria.Player
             // Ground detection: BoxCast below the collider feet (offset.y - size.y * 0.5)
             float footY = transform.position.y + _collider.offset.y - (_collider.size.y * 0.5f);
             Vector2 footCenter = new Vector2(transform.position.x + _collider.offset.x, footY);
-            Vector2 boxSize = new Vector2(_collider.size.x * 0.88f, 0.10f);
+            Vector2 boxSize = new Vector2(_collider.size.x * 0.90f, 0.12f);
 
-            // Cast from slightly inside feet downward past bottom edge
-            Vector2 castOrigin = new Vector2(footCenter.x, footCenter.y + 0.05f);
-            int boxHitCount = Physics2D.BoxCastNonAlloc(castOrigin, boxSize, 0f, Vector2.down, s_GroundHitBuffer, 0.15f, groundLayerMask);
+            // Cast downward 0.35f below feet to reliably reach 45-degree slopes and tile steps
+            Vector2 castOrigin = new Vector2(footCenter.x, footCenter.y + 0.06f);
+            int boxHitCount = Physics2D.BoxCastNonAlloc(castOrigin, boxSize, 0f, Vector2.down, s_GroundHitBuffer, 0.35f, groundLayerMask);
             bool boxHit = false;
             for (int i = 0; i < boxHitCount; i++)
             {
                 if (IsValidGroundHit(s_GroundHitBuffer[i]))
                 {
                     boxHit = true;
+                    if (s_GroundHitBuffer[i].normal.y > 0.42f)
+                        _groundNormal = s_GroundHitBuffer[i].normal;
                     break;
                 }
             }
 
-            // Multi-ray fallback for slopes and tile seams
+            // 5-ray fallback across full width for slopes, tile corners, and composite seams
             bool rayHit = false;
-            float halfWidth = _collider.size.x * 0.44f;
+            float halfWidth = _collider.size.x * 0.48f;
             Vector2[] rayOrigins = new Vector2[]
             {
-                new Vector2(footCenter.x - halfWidth, footCenter.y + 0.08f),
-                new Vector2(footCenter.x, footCenter.y + 0.08f),
-                new Vector2(footCenter.x + halfWidth, footCenter.y + 0.08f)
+                new Vector2(footCenter.x - halfWidth, footCenter.y + 0.10f),
+                new Vector2(footCenter.x - (halfWidth * 0.5f), footCenter.y + 0.10f),
+                new Vector2(footCenter.x, footCenter.y + 0.10f),
+                new Vector2(footCenter.x + (halfWidth * 0.5f), footCenter.y + 0.10f),
+                new Vector2(footCenter.x + halfWidth, footCenter.y + 0.10f)
             };
 
             for (int r = 0; r < rayOrigins.Length && !rayHit; r++)
             {
-                int rayHitCount = Physics2D.RaycastNonAlloc(rayOrigins[r], Vector2.down, s_GroundHitBuffer, 0.22f, groundLayerMask);
+                int rayHitCount = Physics2D.RaycastNonAlloc(rayOrigins[r], Vector2.down, s_GroundHitBuffer, 0.45f, groundLayerMask);
                 for (int i = 0; i < rayHitCount; i++)
                 {
                     if (IsValidGroundHit(s_GroundHitBuffer[i]))
                     {
                         rayHit = true;
+                        if (s_GroundHitBuffer[i].normal.y > 0.42f)
+                            _groundNormal = s_GroundHitBuffer[i].normal;
                         break;
                     }
                 }
             }
 
-            if (boxHit || rayHit)
+            // Grounded if box cast hits, raycast hits, OR physics engine collision contact registered ground
+            if (boxHit || rayHit || _hasContactGround)
             {
                 _isGrounded = true;
                 _coyoteTimer = coyoteTime;
             }
             else
             {
-                // Only clear _isGrounded if neither cast nor ongoing collision contacts hit ground
-                if (_wasGrounded && _coyoteTimer > 0f)
-                {
-                    _isGrounded = false;
-                }
-                else if (!boxHit && !rayHit)
-                {
-                    _isGrounded = false;
-                }
+                _isGrounded = false;
+                _groundNormal = Vector2.up;
             }
+
+            // Reset contact accumulator for next physics step
+            _hasContactGround = false;
         }
 
         private bool IsValidGroundHit(RaycastHit2D hit)
@@ -438,7 +471,7 @@ namespace Potaria.Player
             return hit.collider != null && hit.collider != _collider && !hit.collider.isTrigger && !hit.collider.transform.IsChildOf(transform);
         }
 
-        private void ApplyHorizontalMovement(float dt)
+        public void ApplyHorizontalMovement(float dt)
         {
             float targetSpeed = _currentMoveInput.x * GetEffectiveMoveSpeed();
 
@@ -452,7 +485,26 @@ namespace Potaria.Player
             float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? runAcceleration : runDeceleration;
             float newVx = Mathf.MoveTowards(currentVx, targetSpeed, accelRate * dt);
 
-            _rb.linearVelocity = new Vector2(newVx, _rb.linearVelocity.y);
+            // Slope-aware movement: if grounded on an incline (e.g. 45-degree slope), project movement along slope tangent
+            if (_isGrounded && _groundNormal.y > 0.42f && _groundNormal.y < 0.99f)
+            {
+                if (Mathf.Abs(_currentMoveInput.x) > 0.05f)
+                {
+                    // Tangent vector parallel to slope face
+                    Vector2 slopeTangent = new Vector2(_groundNormal.y, -_groundNormal.x).normalized;
+                    if (targetSpeed < 0f) slopeTangent = -slopeTangent;
+                    _rb.linearVelocity = slopeTangent * Mathf.Abs(newVx);
+                }
+                else
+                {
+                    // Stationary on slope: prevent sliding
+                    _rb.linearVelocity = new Vector2(0f, 0f);
+                }
+            }
+            else
+            {
+                _rb.linearVelocity = new Vector2(newVx, _rb.linearVelocity.y);
+            }
 
             // Update facing direction
             if (Mathf.Abs(_currentMoveInput.x) > 0.05f)
@@ -495,6 +547,12 @@ namespace Potaria.Player
             {
                 _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, effectiveJumpForce);
             }
+
+            _isGrounded = false;
+            _coyoteTimer = 0f;
+            _jumpGraceTimer = 0.12f;
+            _hasContactGround = false;
+            _groundNormal = Vector2.up;
 
             // Audio Check: Only play jump audio if head is NOT blocked by solid block
             if (!IsHeadBlocked())
@@ -780,6 +838,7 @@ namespace Potaria.Player
         public void UpdateAnimation(float dt)
         {
             if (spriteRenderer == null) return;
+            if (_rb == null) _rb = GetComponent<Rigidbody2D>();
 
             _animTimer += dt;
             if (_animTimer >= animFrameDuration)
@@ -787,7 +846,8 @@ namespace Potaria.Player
                 _animTimer = 0f;
                 if (_isGrounded)
                 {
-                    if (Mathf.Abs(_rb.linearVelocity.x) > 0.2f && walkSprites != null && walkSprites.Length > 0)
+                    bool isMoving = Mathf.Abs(_currentMoveInput.x) > 0.05f || (_rb != null && _rb.linearVelocity.sqrMagnitude > 0.08f);
+                    if (isMoving && walkSprites != null && walkSprites.Length > 0)
                     {
                         _walkFrameIndex = (_walkFrameIndex + 1) % walkSprites.Length;
                         spriteRenderer.sprite = walkSprites[_walkFrameIndex];
@@ -800,7 +860,8 @@ namespace Potaria.Player
                 }
                 else
                 {
-                    if (_rb.linearVelocity.y > 0.5f && jumpSprite != null)
+                    float vy = _rb != null ? _rb.linearVelocity.y : 0f;
+                    if (vy > 0.2f && jumpSprite != null)
                     {
                         spriteRenderer.sprite = jumpSprite;
                     }

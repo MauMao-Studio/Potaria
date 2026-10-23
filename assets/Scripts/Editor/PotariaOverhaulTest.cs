@@ -144,7 +144,14 @@ namespace Potaria.Editor
         // =========================================================================
         private static void TestPlayerSlopeContactHandling()
         {
+            var slopeObj = new GameObject("Test_Slope");
+            slopeObj.transform.position = new Vector3(0f, -0.5f, 0f);
+            slopeObj.transform.rotation = Quaternion.Euler(0f, 0f, 45f);
+            var slopeCol = slopeObj.AddComponent<BoxCollider2D>();
+            slopeCol.size = new Vector2(10f, 1f);
+
             var playerObj = new GameObject("Test_Player_Slope");
+            playerObj.transform.position = new Vector3(0f, 0.5f, 0f);
             var rb = playerObj.AddComponent<Rigidbody2D>();
             var col = playerObj.AddComponent<BoxCollider2D>();
             col.size = new Vector2(0.875f, 1.0f);
@@ -153,11 +160,32 @@ namespace Potaria.Editor
             var controller = playerObj.AddComponent<PlayerController>();
             controller.ConfigurePhysics();
 
-            // Verify frictionless material attached
+            // Verify frictionless material and rounded edge radius
             AssertTrue(col.sharedMaterial != null, "Player_HasFrictionlessMaterial", "Player must have physics material assigned");
             AssertTrue(Mathf.Approximately(col.sharedMaterial.friction, 0f), "Player_ZeroFriction", "Physics material friction must be 0 for smooth slope locomotion");
+            AssertTrue(col.edgeRadius > 0.01f, "Player_RoundedEdgeRadius", "BoxCollider2D must have rounded edge radius to prevent seam snagging");
+
+            // Physics collision check on 45-degree slope
+            Physics2D.SyncTransforms();
+            controller.CheckGroundStatus();
+
+            AssertTrue(controller.IsGrounded, "Player_GroundedOn45DegSlope", "Player on 45-degree slope must be detected as grounded");
+            AssertTrue(controller.CoyoteTimer >= 0.14f, "Player_CoyoteTimerRefreshedOnSlope", "Coyote timer must refresh on slope");
+
+            // Jump execution directly from 45-degree slope
+            controller.BufferJump();
+            controller.ApplyJumpAndVerticalPhysics(0.02f);
+            AssertTrue(rb.linearVelocity.y >= 11.5f, "Player_JumpExecutionOnSlope", $"Expected upward jump velocity on slope >= 11.5f, got {rb.linearVelocity.y}");
+
+            // Verify that subsequent physics frames while ascending maintain upward jump velocity (jump grace prevents slope adhesion)
+            controller.UpdateTimers(0.02f);
+            controller.CheckGroundStatus();
+            controller.ApplyHorizontalMovement(0.02f);
+            AssertTrue(!controller.IsGrounded, "Player_AirborneDuringJumpGrace", "Player must remain airborne during jump grace period");
+            AssertTrue(rb.linearVelocity.y >= 11.5f, "Player_JumpVelocityPreservedOnSlope", $"Upward jump velocity must be preserved across frames on slope, got {rb.linearVelocity.y}");
 
             UnityEngine.Object.DestroyImmediate(playerObj);
+            UnityEngine.Object.DestroyImmediate(slopeObj);
         }
 
         // =========================================================================
@@ -213,6 +241,14 @@ namespace Potaria.Editor
             AssertEqual(7, h2, "Clock_7PMHour");
             AssertTrue(pm2, "Clock_7PMIsPm");
             AssertTrue(night2, "Clock_7PMIsNight");
+
+            // 4. Starfield nocturnal suppression:
+            var skyCamObj = new GameObject("Test_Sky_Cam");
+            var cam = skyCamObj.AddComponent<Camera>();
+            var sky = skyCamObj.AddComponent<SkyRenderer2D>();
+            // At noon, stars must NOT twinkle in daylight
+            AssertTrue(sky.StarAlpha <= 0.01f, "Sky_NoonStarsSuppressed", $"Expected daytime stars to be suppressed (alpha ~0), got {sky.StarAlpha}");
+            UnityEngine.Object.DestroyImmediate(skyCamObj);
         }
 
         // =========================================================================
@@ -240,6 +276,13 @@ namespace Potaria.Editor
             var hud = canvasObj.AddComponent<PotariaHUD>();
             hud.LoadResourcesIfMissing();
             hud.BuildOrValidateUI();
+
+            // Verify UI child hierarchy
+            AssertTrue(canvasObj.transform.Find("Hotbar") != null, "HUD_HotbarCreated", "Hotbar transform must exist under Canvas");
+            AssertTrue(canvasObj.transform.Find("LifeAndMana") != null, "HUD_LifeAndManaCreated", "Life and Mana transform must exist under Canvas");
+            AssertTrue(canvasObj.transform.Find("ClockAndRadar") != null, "HUD_ClockAndRadarCreated", "Clock and Radar transform must exist under Canvas");
+            AssertTrue(canvasObj.transform.Find("SkillBadges") != null, "HUD_SkillBadgesCreated", "Skill Badges transform must exist under Canvas");
+            AssertTrue(canvasObj.transform.Find("ProfilerPanel") != null, "HUD_ProfilerPanelCreated", "Profiler panel transform must exist under Canvas");
 
             // Test slot selection 0..9
             hud.SelectSlot(0);

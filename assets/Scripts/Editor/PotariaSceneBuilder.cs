@@ -63,7 +63,8 @@ namespace Potaria.Editor
             pixelCam.assetsPPU = 16;
             pixelCam.refResolutionX = 640;
             pixelCam.refResolutionY = 360;
-            pixelCam.cropFrame = PixelPerfectCamera.CropFrame.None;
+            pixelCam.cropFrame = PixelPerfectCamera.CropFrame.StretchFill;
+            pixelCam.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
 
             var camController = camObj.AddComponent<CameraController>();
             var skyRenderer = camObj.AddComponent<SkyRenderer2D>();
@@ -170,11 +171,21 @@ namespace Potaria.Editor
             var spawnerObj = new GameObject("MobSpawner");
             spawnerObj.transform.position = Vector3.zero;
             var spawner = spawnerObj.AddComponent<MobSpawner>();
+            var spawnerSo = new SerializedObject(spawner);
+            spawnerSo.FindProperty("player").objectReferenceValue = playerController;
+            spawnerSo.FindProperty("dayNight").objectReferenceValue = dayNight;
+            spawnerSo.ApplyModifiedPropertiesWithoutUndo();
             spawner.SpawnInitialMobs();
 
             // 10. Complete In-Game HUD (Canvas 1280x720)
             var canvasObj = new GameObject("HUD_Canvas");
             var hud = canvasObj.AddComponent<PotariaHUD>();
+            var hudSo = new SerializedObject(hud);
+            hudSo.FindProperty("player").objectReferenceValue = playerController;
+            hudSo.FindProperty("playerStats").objectReferenceValue = playerStats;
+            hudSo.FindProperty("dayNightCycle").objectReferenceValue = dayNight;
+            hudSo.FindProperty("input").objectReferenceValue = inputObj.GetComponent<PotariaInput>();
+            hudSo.ApplyModifiedPropertiesWithoutUndo();
             hud.LoadResourcesIfMissing();
             hud.BuildOrValidateUI();
 

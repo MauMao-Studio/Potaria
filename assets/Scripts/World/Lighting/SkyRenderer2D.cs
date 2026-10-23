@@ -50,6 +50,8 @@ namespace Potaria.World.Lighting
         private readonly List<StarData> _stars = new List<StarData>();
         private GameObject _starfieldRoot;
         private Sprite _starPixelSprite;
+        private GameObject _skyMeshObj;
+        private Mesh _skyMesh;
 
         public Color CurrentTopSkyColor { get; private set; }
         public Color CurrentBottomSkyColor { get; private set; }
@@ -59,7 +61,40 @@ namespace Potaria.World.Lighting
         {
             if (dayNightCycle == null) dayNightCycle = FindFirstObjectByType<DayNightCycle2D>();
             if (targetCamera == null) targetCamera = UnityEngine.Camera.main;
+            InitializeSkyGradient();
             InitializeStarfield();
+        }
+
+        private void InitializeSkyGradient()
+        {
+            if (_skyMeshObj != null) return;
+
+            _skyMeshObj = new GameObject("SkyGradient");
+            _skyMeshObj.transform.SetParent(transform, false);
+
+            var mf = _skyMeshObj.AddComponent<MeshFilter>();
+            var mr = _skyMeshObj.AddComponent<MeshRenderer>();
+
+            _skyMesh = new Mesh { name = "SkyGradient_Mesh" };
+            // Quad covering wide viewport (-35 to +35 X, -22 to +22 Y)
+            _skyMesh.vertices = new Vector3[]
+            {
+                new Vector3(-35f, -22f, 0f),
+                new Vector3(35f, -22f, 0f),
+                new Vector3(-35f, 22f, 0f),
+                new Vector3(35f, 22f, 0f)
+            };
+            _skyMesh.triangles = new int[] { 0, 2, 1, 2, 3, 1 };
+            _skyMesh.colors = new Color[] { DayBot, DayBot, DayTop, DayTop };
+
+            mf.mesh = _skyMesh;
+
+            Shader unlit = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default") ?? Shader.Find("Sprites/Default");
+            var mat = new Material(unlit);
+            mat.mainTexture = Texture2D.whiteTexture;
+            mr.material = mat;
+            mr.sortingLayerName = "Background";
+            mr.sortingOrder = -100;
         }
 
         private void InitializeStarfield()
@@ -82,7 +117,7 @@ namespace Potaria.World.Lighting
                 var starObj = new GameObject($"Star_{i}");
                 starObj.transform.SetParent(_starfieldRoot.transform, false);
 
-                // Distribute across orthographic camera viewport (-20 to 20 horizontally, -12 to 12 vertically)
+                // Distribute across orthographic camera viewport (-22 to 22 horizontally, -13 to 13 vertically)
                 float x = (float)(rng.NextDouble() * 44.0 - 22.0);
                 float y = (float)(rng.NextDouble() * 26.0 - 13.0);
                 starObj.transform.localPosition = new Vector3(x, y, 0f);
@@ -113,10 +148,16 @@ namespace Potaria.World.Lighting
             if (targetCamera == null) targetCamera = UnityEngine.Camera.main;
             if (targetCamera == null) return;
 
-            // Follow camera position so starfield stays in viewport
+            var camPos = targetCamera.transform.position;
+
+            // Follow camera position so sky gradient and starfield stay centered in viewport
+            if (_skyMeshObj != null)
+            {
+                _skyMeshObj.transform.position = new Vector3(camPos.x, camPos.y, 0f);
+            }
+
             if (_starfieldRoot != null)
             {
-                var camPos = targetCamera.transform.position;
                 _starfieldRoot.transform.position = new Vector3(camPos.x, camPos.y, 0f);
             }
 
@@ -135,23 +176,32 @@ namespace Potaria.World.Lighting
             CurrentTopSkyColor = topColor;
             CurrentBottomSkyColor = botColor;
 
-            // Update Camera Background
+            // Update procedural vertical gradient quad vertex colors
+            if (_skyMesh != null)
+            {
+                _skyMesh.colors = new Color[] { botColor, botColor, topColor, topColor };
+            }
+
+            // Update Camera Background clear color
             targetCamera.backgroundColor = topColor;
 
-            // Update Starfield Alpha
-            // Stars visible during Night (0.72 -> 0.78 dusk into night, fades out 0.00 -> 0.05 dawn)
+            // Update Starfield Alpha: only visible during Night (0.72 -> 0.78 dusk, 0.78 -> 0.95 night, 0.95 -> 1.00 dawn)
             float starAlpha = 0f;
-            if (t >= 0.72f && t <= 0.78f)
+            if (t >= 0.72f && t < 0.78f)
             {
                 starAlpha = (t - 0.72f) / 0.06f; // fade in at dusk
             }
-            else if (t > 0.78f || t < 0.98f)
+            else if (t >= 0.78f && t < 0.95f)
             {
                 starAlpha = 1f; // full night
             }
-            else if (t >= 0.98f)
+            else if (t >= 0.95f && t <= 1.0f)
             {
-                starAlpha = 1f - ((t - 0.98f) / 0.04f); // fade out at dawn
+                starAlpha = 1f - ((t - 0.95f) / 0.05f); // fade out at dawn
+            }
+            else
+            {
+                starAlpha = 0f; // daytime: no stars visible
             }
 
             // Suppress stars underground

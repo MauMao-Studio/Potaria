@@ -125,6 +125,9 @@ namespace Potaria.World
                 }
 
                 GetOrAddComponent<CompositeShadowCaster2D>(foregroundTilemap.gameObject);
+                var shadowCaster = GetOrAddComponent<ShadowCaster2D>(foregroundTilemap.gameObject);
+                shadowCaster.castsShadows = true;
+                shadowCaster.selfShadows = false;
             }
 
             // 4. Platform Tilemap (One-way jump-through platforms)

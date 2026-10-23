@@ -126,15 +126,30 @@ namespace Potaria.UI
             }
 
             if (slotFrameSprite == null)
-                slotFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/slot_frame.png");
+            {
+                slotFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/slot_frame.png");
+                if (slotFrameSprite == null) slotFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/slot_frame.png");
+            }
             if (slotSelectedSprite == null)
-                slotSelectedSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/slot_selected.png");
+            {
+                slotSelectedSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/slot_selected.png");
+                if (slotSelectedSprite == null) slotSelectedSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/slot_selected.png");
+            }
             if (heartFullSprite == null)
-                heartFullSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/heart_full.png");
+            {
+                heartFullSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/heart_full.png");
+                if (heartFullSprite == null) heartFullSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/heart_full.png");
+            }
             if (heartEmptySprite == null)
-                heartEmptySprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/heart_empty.png");
+            {
+                heartEmptySprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/heart_empty.png");
+                if (heartEmptySprite == null) heartEmptySprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/heart_empty.png");
+            }
             if (manaStarSprite == null)
-                manaStarSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/mana_star.png");
+            {
+                manaStarSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Ui/mana_star.png");
+                if (manaStarSprite == null) manaStarSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ui/mana_star.png");
+            }
 #endif
         }
 
@@ -526,25 +541,41 @@ namespace Potaria.UI
         private void InitializeDefaultHotbarItems()
         {
 #if UNITY_EDITOR
-            SetItem(0, "item.copper_pickaxe", "Copper Pickaxe", LoadSprite("items/copper_pickaxe.png"), 1);
-            SetItem(1, "item.copper_broadsword", "Copper Broadsword", LoadSprite("items/copper_broadsword.png"), 1);
-            SetItem(2, "item.copper_axe", "Copper Axe", LoadSprite("items/copper_axe.png"), 1);
-            SetItem(3, "item.torch", "Torch", LoadSprite("items/torch.png"), 99);
-            SetItem(4, "item.dirt", "Dirt Block", LoadSprite("tiles/dirt.png"), 99);
-            SetItem(5, "item.stone", "Stone Block", LoadSprite("tiles/stone.png"), 99);
-            SetItem(6, "item.wood", "Wood", LoadSprite("items/wood.png"), 99);
-            SetItem(7, "item.gel", "Gel", LoadSprite("items/gel.png"), 42);
-            SetItem(8, "item.healing_potion", "Healing Potion", LoadSprite("items/potion_healing_lesser.png"), 5);
-            SetItem(9, "item.mana_potion", "Mana Potion", LoadSprite("items/potion_mana_lesser.png"), 5);
+            SetItem(0, "item.copper_pickaxe", "Copper Pickaxe", LoadSprite("copper_pickaxe.png"), 1);
+            SetItem(1, "item.copper_broadsword", "Copper Broadsword", LoadSprite("copper_broadsword.png"), 1);
+            SetItem(2, "item.copper_axe", "Copper Axe", LoadSprite("copper_axe.png"), 1);
+            SetItem(3, "item.torch", "Torch", LoadSprite("torch.png"), 99);
+            SetItem(4, "item.dirt", "Dirt Block", LoadSprite("dirt.png"), 99);
+            SetItem(5, "item.stone", "Stone Block", LoadSprite("stone.png"), 99);
+            SetItem(6, "item.wood", "Wood", LoadSprite("wood_planks.png"), 99);
+            SetItem(7, "item.gel", "Gel", LoadSprite("slime_0.png"), 42);
+            SetItem(8, "item.healing_potion", "Healing Potion", LoadSprite("speed_potion.png"), 5);
+            SetItem(9, "item.mana_potion", "Mana Potion", LoadSprite("sweet_tuber_pie.png"), 5);
 #endif
         }
 
 #if UNITY_EDITOR
-        private Sprite LoadSprite(string subpath)
+        private Sprite LoadSprite(string filename)
         {
-            var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/{subpath}");
-            if (sp == null) sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/{subpath}");
-            return sp;
+            string[] searchDirs = new[]
+            {
+                "Assets/Sprites/Craftable_items/",
+                "Assets/Sprites/Tiles/",
+                "Assets/Sprites/Ui/",
+                "Assets/Sprites/Items/",
+                "Assets/Sprites/Mobs/",
+                "Assets/Sprites/",
+                "Assets/craftable_items/",
+                "Assets/ui/",
+                "Assets/"
+            };
+
+            foreach (var dir in searchDirs)
+            {
+                var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(dir + filename);
+                if (sp != null) return sp;
+            }
+            return null;
         }
 #endif
 
