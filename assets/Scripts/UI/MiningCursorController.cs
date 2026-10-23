@@ -222,7 +222,43 @@ namespace Potaria.UI
                 }
             }
 
-            return chunkManager.DamageTile(gx, ty, power, tool, power, out _);
+            bool broken = chunkManager.DamageTile(gx, ty, power, tool, power, out Potaria.Data.ItemData droppedItem);
+            if (broken && droppedItem != null && PotariaHUD.Instance != null)
+            {
+                Sprite dropSprite = droppedItem.Icon != null ? droppedItem.Icon : ResolveItemSprite(droppedItem.ItemId);
+                PotariaHUD.Instance.AddItem(droppedItem.ItemId, droppedItem.ItemName, dropSprite, 1);
+            }
+            return broken;
+        }
+
+        private Sprite ResolveItemSprite(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId)) return null;
+            if (PotariaHUD.Instance != null)
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    var it = PotariaHUD.Instance.GetItem(i);
+                    if (it.id == itemId && it.icon != null) return it.icon;
+                }
+            }
+#if UNITY_EDITOR
+            string stripped = itemId.Replace("item.", "");
+            string[] paths = new[]
+            {
+                "Assets/Sprites/Tiles/" + stripped + ".png",
+                "Assets/Sprites/Craftable_items/" + stripped + ".png",
+                "Assets/Sprites/Items/" + stripped + ".png",
+                "Assets/Sprites/Ui/" + stripped + ".png",
+                "Assets/Sprites/" + stripped + ".png"
+            };
+            foreach (var p in paths)
+            {
+                var s = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p);
+                if (s != null) return s;
+            }
+#endif
+            return null;
         }
 
         private void HandlePlacementInput()

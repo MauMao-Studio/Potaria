@@ -195,7 +195,11 @@ namespace Potaria.Editor
             cursorObj.transform.position = Vector3.zero;
             cursorObj.AddComponent<MiningCursorController>();
 
-            // 12. Save Scene
+            // 12. Pre-paint spawn terrain corridor (oak trees, grass, stepped rock, walls) into tilemaps
+            chunkManager.StreamingTarget = playerObj.transform;
+            chunkManager.UpdateStreaming(true);
+
+            // 13. Save Scene
             EditorSceneManager.SaveScene(scene, SCENE_PATH);
             Debug.Log($"[PotariaSceneBuilder] Successfully constructed and saved {SCENE_PATH}.");
 

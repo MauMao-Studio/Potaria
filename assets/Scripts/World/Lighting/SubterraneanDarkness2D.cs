@@ -17,8 +17,11 @@ namespace Potaria.World.Lighting
         [SerializeField] private Light2D globalLight;
 
         [Header("Depth Stratum Thresholds (Grid Y)")]
-        [SerializeField] private float surfaceGridY = WorldConstants.SurfaceLevel;       // ~70
-        [SerializeField] private float undergroundGridY = WorldConstants.UndergroundLevel; // ~115
+        [SerializeField] private float surfaceGridY = 68f;
+        [SerializeField] private float undergroundGridY = 74f;
+
+        public float SurfaceGridY { get => surfaceGridY; set => surfaceGridY = value; }
+        public float UndergroundGridY { get => undergroundGridY; set => undergroundGridY = value; }
 
         private float _currentDepthAttenuation = 1.0f;
 

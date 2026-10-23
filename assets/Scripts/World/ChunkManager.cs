@@ -30,6 +30,7 @@ namespace Potaria.World
 
         public int Seed => seed;
         public int ViewDistanceChunks { get => viewDistanceChunks; set => viewDistanceChunks = value; }
+        public Transform StreamingTarget { get => streamingTarget; set => streamingTarget = value; }
         public WorldTilemaps Tilemaps { get => tilemaps; set => tilemaps = value; }
         public TileDatabase Database { get => database; set => database = value; }
         public IReadOnlyDictionary<int, ChunkData> LoadedChunks => _loadedChunks;

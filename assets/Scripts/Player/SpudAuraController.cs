@@ -16,7 +16,7 @@ namespace Potaria.Player
     {
         [Header("Aura Configuration")]
         [SerializeField] private bool enableAura = true;
-        [SerializeField] private bool enablePersonalLight = true;
+        [SerializeField] private bool enablePersonalLight = false;
         [SerializeField] private bool enableSparkles = true;
 
         [Header("Aura Palette & Radii")]
@@ -29,9 +29,9 @@ namespace Potaria.Player
 
         [Header("Personal Light 2D")]
         [SerializeField] private Color personalLightColor = new Color(0.20f, 0.85f, 1.0f, 1.0f);
-        [SerializeField] private float lightOuterRadius = 4.2f;
-        [SerializeField] private float lightInnerRadius = 0.8f;
-        [SerializeField] private float lightBaseIntensity = 0.70f;
+        [SerializeField] private float lightOuterRadius = 1.2f;
+        [SerializeField] private float lightInnerRadius = 0.2f;
+        [SerializeField] private float lightBaseIntensity = 0.25f;
 
         [Header("Sparkle Motes")]
         [SerializeField] private int sparkleCount = 4;

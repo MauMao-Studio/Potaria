@@ -13,11 +13,27 @@ namespace Potaria.World.Lighting
     /// - Automatic camera clear color synchronization
     /// - Subterranean cavern dimming when descending below surface stratum
     /// </summary>
+    [ExecuteAlways]
     public class SkyRenderer2D : MonoBehaviour
     {
+        public enum MoonPhase
+        {
+            FullMoon,
+            Crescent,
+            NewMoon_NoMoon
+        }
+
         [Header("References")]
         [SerializeField] private DayNightCycle2D dayNightCycle;
         [SerializeField] private UnityEngine.Camera targetCamera;
+
+        [Header("Celestial Bodies (Sun & Moon)")]
+        [SerializeField] private Sprite sunSprite;
+        [SerializeField] private Sprite moonSprite;
+        [SerializeField] private MoonPhase moonPhase = MoonPhase.FullMoon;
+        [SerializeField] private float celestialOrbitRadiusX = 18f;
+        [SerializeField] private float celestialOrbitRadiusY = 8.5f;
+        [SerializeField] private float celestialBaseY = 1.0f;
 
         [Header("Starfield Knobs")]
         [SerializeField] private int starCount = 140;
@@ -53,16 +69,32 @@ namespace Potaria.World.Lighting
         private GameObject _skyMeshObj;
         private Mesh _skyMesh;
 
+        private GameObject _sunObj;
+        private SpriteRenderer _sunRenderer;
+        private GameObject _moonObj;
+        private SpriteRenderer _moonRenderer;
+
         public Color CurrentTopSkyColor { get; private set; }
         public Color CurrentBottomSkyColor { get; private set; }
         public float StarAlpha { get; private set; }
+        public MoonPhase CurrentMoonPhase { get => moonPhase; set => moonPhase = value; }
+        public GameObject SunObject => _sunObj;
+        public GameObject MoonObject => _moonObj;
+        public DayNightCycle2D DayNightCycle { get => dayNightCycle; set => dayNightCycle = value; }
+        public UnityEngine.Camera TargetCamera { get => targetCamera; set => targetCamera = value; }
+
+        public void Initialize()
+        {
+            if (dayNightCycle == null) dayNightCycle = FindFirstObjectByType<DayNightCycle2D>();
+            if (targetCamera == null) targetCamera = GetComponent<UnityEngine.Camera>() ?? UnityEngine.Camera.main;
+            InitializeSkyGradient();
+            InitializeStarfield();
+            InitializeCelestialBodies();
+        }
 
         private void Awake()
         {
-            if (dayNightCycle == null) dayNightCycle = FindFirstObjectByType<DayNightCycle2D>();
-            if (targetCamera == null) targetCamera = UnityEngine.Camera.main;
-            InitializeSkyGradient();
-            InitializeStarfield();
+            Initialize();
         }
 
         private void InitializeSkyGradient()
@@ -143,6 +175,109 @@ namespace Potaria.World.Lighting
             }
         }
 
+        private void InitializeCelestialBodies()
+        {
+            if (_sunObj == null)
+            {
+                _sunObj = new GameObject("Sun_Celestial");
+                _sunObj.transform.SetParent(transform, false);
+                _sunRenderer = _sunObj.AddComponent<SpriteRenderer>();
+                _sunRenderer.sortingLayerName = "Background";
+                _sunRenderer.sortingOrder = -80;
+
+                if (sunSprite == null)
+                {
+#if UNITY_EDITOR
+                    sunSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Environment/sun.png");
+                    if (sunSprite == null) sunSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/environment/sun.png");
+#endif
+                }
+                if (sunSprite == null)
+                {
+                    sunSprite = CreateProceduralSunSprite();
+                }
+                _sunRenderer.sprite = sunSprite;
+            }
+
+            if (_moonObj == null)
+            {
+                _moonObj = new GameObject("Moon_Celestial");
+                _moonObj.transform.SetParent(transform, false);
+                _moonRenderer = _moonObj.AddComponent<SpriteRenderer>();
+                _moonRenderer.sortingLayerName = "Background";
+                _moonRenderer.sortingOrder = -75;
+
+                if (moonSprite == null)
+                {
+#if UNITY_EDITOR
+                    moonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Environment/moon.png");
+                    if (moonSprite == null) moonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/environment/moon.png");
+#endif
+                }
+                if (moonSprite == null)
+                {
+                    moonSprite = CreateProceduralMoonSprite();
+                }
+                _moonRenderer.sprite = moonSprite;
+            }
+        }
+
+        private static Sprite CreateProceduralSunSprite()
+        {
+            int size = 32;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+            float radius = size * 0.42f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Vector2.Distance(new Vector2(x, y), center);
+                    if (d <= radius)
+                    {
+                        float edge = Mathf.Clamp01((radius - d) / 1.5f);
+                        Color c = Color.Lerp(new Color(1f, 0.70f, 0.15f, 1f), new Color(1f, 0.98f, 0.65f, 1f), edge);
+                        tex.SetPixel(x, y, c);
+                    }
+                    else
+                    {
+                        tex.SetPixel(x, y, Color.clear);
+                    }
+                }
+            }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 16f);
+        }
+
+        private static Sprite CreateProceduralMoonSprite()
+        {
+            int size = 32;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+            float radius = size * 0.40f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Vector2.Distance(new Vector2(x, y), center);
+                    if (d <= radius)
+                    {
+                        tex.SetPixel(x, y, new Color(0.92f, 0.94f, 1.0f, 0.95f));
+                    }
+                    else
+                    {
+                        tex.SetPixel(x, y, Color.clear);
+                    }
+                }
+            }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 16f);
+        }
+
         private void LateUpdate()
         {
             if (targetCamera == null) targetCamera = UnityEngine.Camera.main;
@@ -164,11 +299,11 @@ namespace Potaria.World.Lighting
             float t = dayNightCycle != null ? dayNightCycle.TimeOfDay : 0.25f;
             CalculateSkyColors(t, out var topColor, out var botColor);
 
-            // Subterranean darkening check: if camera Y descends below -75 (surface ground is ~-67)
+            // Subterranean darkening check: descends below ground surface (surface ground is ~-67 to -70)
             float camY = targetCamera.transform.position.y;
-            if (camY < -75f)
+            if (camY < -69f)
             {
-                float depthFactor = Mathf.Clamp01((-75f - camY) / 25f);
+                float depthFactor = Mathf.Clamp01((-69f - camY) / 6f);
                 topColor = Color.Lerp(topColor, CaveBlack, depthFactor);
                 botColor = Color.Lerp(botColor, CaveBlack, depthFactor);
             }
@@ -184,6 +319,63 @@ namespace Potaria.World.Lighting
 
             // Update Camera Background clear color
             targetCamera.backgroundColor = topColor;
+
+            // Celestial Orbits (Sun & Moon Arc matching Pygame src/environment/sky.py)
+            bool isUnderground = camY < -70f;
+
+            // 1. Sun Celestial Body (visible during Dawn to Sunset: t <= 0.72)
+            if (_sunObj != null && _sunRenderer != null)
+            {
+                if (!isUnderground && t <= 0.74f)
+                {
+                    float sunT = Mathf.Clamp01(t / 0.72f);
+                    float sunX = Mathf.Lerp(-celestialOrbitRadiusX, celestialOrbitRadiusX, sunT);
+                    float sunY = celestialBaseY + Mathf.Sin(sunT * Mathf.PI) * celestialOrbitRadiusY;
+                    _sunObj.transform.position = new Vector3(camPos.x + sunX, camPos.y + sunY, 0f);
+
+                    float sunAlpha = 1f;
+                    if (t > 0.62f) sunAlpha = Mathf.Clamp01((0.74f - t) / 0.12f); // fade out at dusk
+                    _sunRenderer.color = new Color(1f, 1f, 1f, sunAlpha);
+                    _sunObj.SetActive(sunAlpha > 0.01f);
+                }
+                else
+                {
+                    _sunObj.SetActive(false);
+                }
+            }
+
+            // 2. Moon Celestial Body (visible during Night: t >= 0.70 or t <= 0.06)
+            if (_moonObj != null && _moonRenderer != null)
+            {
+                // New Moon / Moonless Season concept: no moon in sky, only twinkling stars and silhouettes!
+                if (!isUnderground && moonPhase != MoonPhase.NewMoon_NoMoon && (t >= 0.68f || t <= 0.08f))
+                {
+                    float moonT = (t >= 0.68f) ? (t - 0.68f) / 0.38f : (t + 1f - 0.68f) / 0.38f;
+                    moonT = Mathf.Clamp01(moonT);
+                    float moonX = Mathf.Lerp(-celestialOrbitRadiusX, celestialOrbitRadiusX, moonT);
+                    float moonY = celestialBaseY + Mathf.Sin(moonT * Mathf.PI) * celestialOrbitRadiusY;
+                    _moonObj.transform.position = new Vector3(camPos.x + moonX, camPos.y + moonY, 0f);
+
+                    float moonAlpha = 1f;
+                    if (t >= 0.68f && t < 0.76f) moonAlpha = (t - 0.68f) / 0.08f; // fade in at dusk
+                    else if (t > 0.96f || t <= 0.08f)
+                    {
+                        float dawnFade = (t > 0.96f) ? (t - 0.96f) : (t + 0.04f);
+                        moonAlpha = Mathf.Clamp01(1f - (dawnFade / 0.12f));
+                    }
+
+                    Color baseCol = (moonPhase == MoonPhase.Crescent)
+                        ? new Color(0.90f, 0.95f, 1.0f, moonAlpha * 0.75f)
+                        : new Color(1f, 1f, 1f, moonAlpha);
+
+                    _moonRenderer.color = baseCol;
+                    _moonObj.SetActive(moonAlpha > 0.01f);
+                }
+                else
+                {
+                    _moonObj.SetActive(false);
+                }
+            }
 
             // Update Starfield Alpha: only visible during Night (0.72 -> 0.78 dusk, 0.78 -> 0.95 night, 0.95 -> 1.00 dawn)
             float starAlpha = 0f;
@@ -205,9 +397,9 @@ namespace Potaria.World.Lighting
             }
 
             // Suppress stars underground
-            if (camY < -75f)
+            if (camY < -69f)
             {
-                starAlpha *= Mathf.Clamp01(1f - ((-75f - camY) / 10f));
+                starAlpha *= Mathf.Clamp01(1f - ((-69f - camY) / 5f));
             }
 
             StarAlpha = starAlpha;

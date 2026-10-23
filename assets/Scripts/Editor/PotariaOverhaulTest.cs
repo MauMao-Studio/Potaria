@@ -56,6 +56,9 @@ namespace Potaria.Editor
                 TestLocalizationManagerEnglishAndFilipino();
                 TestMiningCursorController();
                 TestSpudAuraAndPersonalLight();
+                TestSubterraneanDarknessPitchBlack();
+                TestCelestialBodiesAndMoonlessNight();
+                TestPotariaHUDAddItemAndInventory();
             }
             catch (Exception ex)
             {
@@ -444,8 +447,110 @@ namespace Potaria.Editor
             AssertTrue(personalLight.lightType == Light2D.LightType.Point, "Aura_LightIsPoint", "Personal light must be Point Light 2D");
             AssertTrue(personalLight.color.b > 0.8f, "Aura_LightIsCyan", $"Personal light must be cyan colored, got {personalLight.color}");
             AssertTrue(!personalLight.shadowsEnabled, "Aura_LightNoShadows", "Personal light should not cast harsh shadows for performance");
+            AssertTrue(!aura.EnablePersonalLight, "Aura_PersonalLightDisabledByDefault", "Personal light must default to disabled to prevent flooding caves");
 
             UnityEngine.Object.DestroyImmediate(playerObj);
+        }
+
+        // =========================================================================
+        // 12. Subterranean Darkness & Pitch Black Cavern Attenuation
+        // =========================================================================
+        private static void TestSubterraneanDarknessPitchBlack()
+        {
+            var lightObj = new GameObject("Test_Subterranean");
+            var darkness = lightObj.AddComponent<SubterraneanDarkness2D>();
+
+            AssertEqual(68f, darkness.SurfaceGridY, "Subterranean_SurfaceThresholdIs68");
+            AssertEqual(74f, darkness.UndergroundGridY, "Subterranean_UndergroundThresholdIs74");
+
+            // At surface (worldY = -65), light attenuation is 1.0 (full daylight)
+            float attenSurface = darkness.CalculateAttenuationAt(-65f);
+            AssertTrue(Mathf.Approximately(attenSurface, 1.0f), "Subterranean_SurfaceIsFullDaylight", $"Expected 1.0 at -65, got {attenSurface}");
+
+            // In transition zone (worldY = -70, gridY = 70), light is partially attenuated
+            float attenMid = darkness.CalculateAttenuationAt(-70f);
+            AssertTrue(attenMid > 0f && attenMid < 1.0f, "Subterranean_TransitionDimming", $"Expected between 0 and 1 at -70, got {attenMid}");
+
+            // Deep underground (worldY = -74 and -80, gridY >= 74), light is absolute pitch black (0.0f)
+            float attenDeep74 = darkness.CalculateAttenuationAt(-74f);
+            AssertEqual(0f, attenDeep74, "Subterranean_CavernPitchBlack74");
+
+            float attenDeep80 = darkness.CalculateAttenuationAt(-80f);
+            AssertEqual(0f, attenDeep80, "Subterranean_CavernPitchBlack80");
+
+            UnityEngine.Object.DestroyImmediate(lightObj);
+        }
+
+        // =========================================================================
+        // 13. Celestial Bodies (Sun & Moon) & Moonless Season Night
+        // =========================================================================
+        private static void TestCelestialBodiesAndMoonlessNight()
+        {
+            var camObj = new GameObject("Test_CelestialCam");
+            var cam = camObj.AddComponent<Camera>();
+            camObj.transform.position = new Vector3(0f, -65f, -10f); // Surface altitude
+
+            var dayNightObj = new GameObject("Test_DayNight");
+            var dn = dayNightObj.AddComponent<DayNightCycle2D>();
+
+            var sky = camObj.AddComponent<SkyRenderer2D>();
+            sky.DayNightCycle = dn;
+            sky.TargetCamera = cam;
+            sky.Initialize();
+
+            AssertTrue(sky.SunObject != null, "Celestial_SunObjectExists", "Sun celestial GameObject must be created");
+            AssertTrue(sky.MoonObject != null, "Celestial_MoonObjectExists", "Moon celestial GameObject must be created");
+
+            // Test Moon Phases
+            sky.CurrentMoonPhase = SkyRenderer2D.MoonPhase.FullMoon;
+            AssertEqual(SkyRenderer2D.MoonPhase.FullMoon, sky.CurrentMoonPhase, "Celestial_MoonPhaseFullMoon");
+
+            sky.CurrentMoonPhase = SkyRenderer2D.MoonPhase.NewMoon_NoMoon;
+            AssertEqual(SkyRenderer2D.MoonPhase.NewMoon_NoMoon, sky.CurrentMoonPhase, "Celestial_MoonPhaseNewMoonNoMoon");
+
+            UnityEngine.Object.DestroyImmediate(dayNightObj);
+            UnityEngine.Object.DestroyImmediate(camObj);
+        }
+
+        // =========================================================================
+        // 14. HUD AddItem & Tile Drop Collection
+        // =========================================================================
+        private static void TestPotariaHUDAddItemAndInventory()
+        {
+            var canvasObj = new GameObject("Test_HUD_AddItem");
+            var hud = canvasObj.AddComponent<PotariaHUD>();
+            hud.LoadResourcesIfMissing();
+            hud.BuildOrValidateUI();
+
+            // Clear slot 4
+            hud.SetItem(4, "", "", null, 0);
+            var item4 = hud.GetItem(4);
+            AssertTrue(string.IsNullOrEmpty(item4.id), "HUD_Slot4InitiallyEmpty", "Slot 4 must be empty");
+
+            // Add new item to empty slot
+            bool added = hud.AddItem("item.dirt", "Dirt Block", null, 5);
+            AssertTrue(added, "HUD_AddItemSuccess", "Adding item must succeed");
+
+            var slotWithDirt = -1;
+            for (int i = 0; i < 10; i++)
+            {
+                if (hud.GetItem(i).id == "item.dirt")
+                {
+                    slotWithDirt = i;
+                    break;
+                }
+            }
+            AssertTrue(slotWithDirt >= 0, "HUD_DirtItemFoundInSlot", "item.dirt should be located in a hotbar slot");
+
+            int initialStack = hud.GetItem(slotWithDirt).stack;
+            AssertTrue(initialStack >= 5, "HUD_DirtInitialStack", $"Expected stack >= 5, got {initialStack}");
+
+            // Stack more into existing slot
+            bool stacked = hud.AddItem("item.dirt", "Dirt Block", null, 3);
+            AssertTrue(stacked, "HUD_StackItemSuccess", "Stacking item must succeed");
+            AssertEqual(initialStack + 3, hud.GetItem(slotWithDirt).stack, "HUD_DirtStackIncremented");
+
+            UnityEngine.Object.DestroyImmediate(canvasObj);
         }
     }
 }

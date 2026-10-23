@@ -40,10 +40,15 @@ namespace Potaria.Editor
         [MenuItem("Potaria/Generate Pixel TMP Font", priority = 6)]
         public static void GeneratePixelFontAsset()
         {
-            string ttfPath = "Assets/Fonts/PixelifySans-Regular.ttf";
-            string assetPath = "Assets/Fonts/PixelifySans-Regular SDF.asset";
+            string ttfPath = "Assets/fonts/PixelifySans-Regular.ttf";
+            string assetPath = "Assets/fonts/PixelifySans-Regular SDF.asset";
 
             var font = AssetDatabase.LoadAssetAtPath<Font>(ttfPath);
+            if (font == null)
+            {
+                ttfPath = "Assets/Fonts/PixelifySans-Regular.ttf";
+                font = AssetDatabase.LoadAssetAtPath<Font>(ttfPath);
+            }
             if (font == null)
             {
                 Debug.LogWarning($"[PotariaTMPSetup] Font at {ttfPath} not found.");

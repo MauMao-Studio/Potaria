@@ -27,7 +27,7 @@ namespace Potaria.World.Lighting
         [SerializeField] private float flickerIntensityVariance = 0.12f;
 
         [Header("Distance Occlusion Culling")]
-        [SerializeField] private float cullingDistance = 25.0f;
+        [SerializeField] private float cullingDistance = 20.0f;
 
         private float _flickerSeed;
         private Transform _cameraTransform;

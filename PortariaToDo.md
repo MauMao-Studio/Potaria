@@ -4,7 +4,7 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 74 / 74 Overhaul Systems Tests Passing (0 Errors); Total 274 / 274 Tests Passing  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 91 / 91 Overhaul Systems Tests Passing (0 Errors); Total 291 / 291 Tests Passing  
 **Current Milestone:** Milestone 3 Complete (Character Controller, Physics, Combat, Day/Night Lighting, HUD, TextMeshPro, Reticle Mining, Spud Aura & Localization); Milestone 4 in Progress (Inventory, Crafting, Equipment & Responsive UI)  
 **Last Updated:** October 2026  
 
@@ -149,8 +149,8 @@ All foundational systems designed and proven during the Pygame prototype phase s
   - [x] Implement CameraController with follow damping, 3 discrete zoom levels (1x, 2x, 3x via 'Z'), and 3.0s cinematic pitch-black death transition.
   - [x] Verify via automated headless batchmode test runner (`PotariaCombatTest`) with 116/116 tests passing (0 errors).
   - [x] Verify via automated world test runner (`PotariaWorldTest`) with 84/84 tests passing (0 errors).
-  - [x] Verify via automated overhaul test runner (`PotariaOverhaulTest`) with 74/74 tests passing (0 errors).
-  - [x] Total automated test suite passing: 274 / 274 tests (0 errors, 100% Green).
+  - [x] Verify via automated overhaul test runner (`PotariaOverhaulTest`) with 91/91 tests passing (0 errors).
+  - [x] Total automated test suite passing: 291 / 291 tests (0 errors, 100% Green).
 
 
 ---
@@ -228,6 +228,6 @@ Development across both engines maintains strict quality baselines:
 - **Tile Pipeline**: 73 block tiles, 13 wall tiles, TileDatabase registry, and procedural sprite synthesizers.
 - **World Gen & Systems Verification**: `PotariaWorldTest.RunTests` executed with 84 / 84 tests passing (0 failed, 0 errors).
 - **Combat & Character Physics Verification**: `PotariaCombatTest.RunTests` executed with 116 / 116 tests passing (0 failed, 0 errors).
-- **Overhaul Systems Verification**: `PotariaOverhaulTest.RunTests` executed with 74 / 74 tests passing (0 failed, 0 errors).
-- **Total Automated Unity Tests**: 274 / 274 tests passing (0 failed, 0 errors, 100% Green).
+- **Overhaul Systems Verification**: `PotariaOverhaulTest.RunTests` executed with 91 / 91 tests passing (0 failed, 0 errors).
+- **Total Automated Unity Tests**: 291 / 291 tests passing (0 failed, 0 errors, 100% Green).
 - **Compilation Status**: 0 errors in `Assets/Scripts/`.

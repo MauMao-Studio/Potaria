@@ -123,8 +123,15 @@ namespace Potaria.UI
 #if UNITY_EDITOR
             if (tmpFont == null)
             {
-                tmpFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/PixelifySans-Regular SDF.asset");
-                if (tmpFont == null) tmpFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+                var pixelSdf = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/fonts/PixelifySans-Regular SDF.asset");
+                if (pixelSdf != null && pixelSdf.atlasTextures != null && pixelSdf.atlasTextures.Length > 0 && pixelSdf.atlasTextures[0] != null)
+                {
+                    tmpFont = pixelSdf;
+                }
+                else
+                {
+                    tmpFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+                }
                 if (tmpFont == null) tmpFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
             }
 
@@ -652,6 +659,57 @@ namespace Potaria.UI
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds an item or stack count to the hotbar inventory.
+        /// First attempts to stack with an existing item of matching id.
+        /// If no existing slot or stack is full, places in the first empty slot.
+        /// Returns true if item was successfully added, false if inventory is full.
+        /// </summary>
+        public bool AddItem(string id, string fallbackName, Sprite icon, int count = 1)
+        {
+            if (string.IsNullOrEmpty(id) || count <= 0) return false;
+
+            // 1. Try to stack into existing slot
+            for (int i = 0; i < 10; i++)
+            {
+                if (_hotbarData[i].id == id)
+                {
+                    _hotbarData[i].stack += count;
+                    if (icon != null && _hotbarData[i].icon == null)
+                    {
+                        _hotbarData[i].icon = icon;
+                        if (_slotItems[i] != null)
+                        {
+                            _slotItems[i].sprite = icon;
+                            _slotItems[i].color = Color.white;
+                        }
+                    }
+                    if (_slotCounts[i] != null)
+                    {
+                        _slotCounts[i].text = _hotbarData[i].stack > 1 ? _hotbarData[i].stack.ToString() : "";
+                    }
+                    return true;
+                }
+            }
+
+            // 2. Find first empty slot
+            for (int i = 0; i < 10; i++)
+            {
+                if (string.IsNullOrEmpty(_hotbarData[i].id) || _hotbarData[i].stack <= 0)
+                {
+                    SetItem(i, id, fallbackName, icon, count);
+                    return true;
+                }
+            }
+
+            return false; // Inventory full
+        }
+
+        public bool AddItem(string id, int count = 1)
+        {
+            return AddItem(id, id, null, count);
         }
 
         private void Update()
