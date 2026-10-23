@@ -7,6 +7,7 @@
 **Verification Baseline:** 770 / 770 Pygame Tests Passing (100% Green); 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
 **Current Milestone:** Milestone 3 Complete (Character Controller, Physics & Action RPG Combat); Milestone 4 in Progress  
 **Current Version:** Unity 6 LTS Milestone 3  
+**Master Parity Documentation:** [docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md](docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md)  
 
 ---
 
@@ -20,6 +21,11 @@ To deliver maximum performance, native multiplatform export (Steam PC, Steam Dec
 - **Legacy Foundation (`pygame-engine` branch)**: The complete, working Python 3.13 + Pygame-ce game with Smart OpenGL HAL, 770 automated regression tests, and full gameplay loop is permanently preserved on the `pygame-engine` branch.
 
 The franchise operates under a unified **One Project Repository** architecture, cleanly separating the boundless sandbox base game ("Potaria") from the narrative campaign flagship ("Potaria: Root Realm"). All data, sprites, and item logic are synchronized across both engines.
+
+### Master Feature Parity Reference:
+The complete, audited cross-engine mapping and technical specification is documented in:
+- [Pygame to Unity Master Feature Parity Documentation](docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md)
+This master reference details all 65 Python files (123 classes, 1,170 methods, 153 standalone functions), numeric gameplay constants, statutory meal buff caps (19 caps), 27 equipment sets, 40 combat skills, 10 fish species, 8 crops, locomotion kinematics, damage mitigation formulas, and the comprehensive parity status of every subsystem mapped to Unity 6 C# scripts.
 
 ---
 
@@ -209,6 +215,16 @@ The franchise operates under a unified **One Project Repository** architecture, 
 - **Status**: **770 / 770 automated tests passing with zero errors across 47 test suites (100% Green).**
 - **Headless CI/CD Compatibility**: All tests execute cleanly in dummy video/audio driver environments (`SDL_VIDEODRIVER=dummy`, `SDL_AUDIODRIVER=dummy`).
 - **Regression Protection**: Automated test coverage spans inventory safety, combat calculations, equipment set bonuses, procedural terrain, trader state machines, bullet-hell hitboxes, crafting categories, world persistence, renderer HAL abstraction, GLSL Bloom pipeline, projectile batching, and Philippine agriculture/cooking systems.
+
+### 3. Master Feature Parity & Architectural Specification
+- **Master Documentation Deliverable**: [docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md](docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md)
+- **Scope & Depth**:
+  - Full Table of Contents with working internal anchors.
+  - Complete AST inventory of all 65 Python source files, 123 classes, 1,170 methods, and 153 standalone functions.
+  - Master mathematical and balancing reference: locomotion kinematics, liquid physics, damage mitigation formula, 19 statutory meal buff caps, 7-tier item rarity scaling, +1 to +7 enhancement success and break risk tables, affix slot caps, 27 equipment sets, 40 combat skills, 10 fish species, and 8 native crops.
+  - HUD and UI rendering architecture: inventory layout, katabi comparison cards, hotbars, buff tray, minimap radar, profiler overlay, and 3 complete algorithmic pseudo-code blocks.
+  - Comprehensive Parity Audit Matrix mapping every legacy system and class to active Unity 6 C# scripts in `Assets/Scripts/` with status tags (`[IMPLEMENTED]`, `[PARTIALLY IMPLEMENTED]`, `[PENDING / NEED TO IMPLEMENT]`).
+  - Strategic porting backlog covering Milestones 4 through 7.
 
 ---
 

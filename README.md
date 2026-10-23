@@ -8,6 +8,7 @@
 **Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
 **Current Milestone:** Milestone 3 Complete (Character Controller, Physics & Action RPG Combat); Milestone 4 in Progress  
 **Version:** Unity 6 LTS Milestone 3  
+**Master Parity Documentation:** [docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md](docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md)  
 
 ---
 
@@ -23,6 +24,10 @@ To prepare Potaria for commercial release on Steam (PC/Mac/Steam Deck) and the G
 ### Franchise Architecture: One Project Repository
 - **Potaria (The Base Game)**: Boundless procedural sandbox survival, mining, building, 181 crafting recipes, Philippine agriculture, and seamless co-op multiplayer.
 - **Potaria: Root Realm (The Flagship ARPG)**: Narrative episodic story campaign featuring chapter progression, Heartroot world transformation mechanics, the POTAdex journal, and curated subterranean puzzle dungeons.
+
+### Master Feature Parity Reference & Architecture Guide
+For the complete technical specification detailing every Python file, class, method, numeric formula, mechanics balance table, HUD layout, and migration audit status from the legacy Pygame codebase to the active Unity 6 LTS architecture, see:
+- [Pygame to Unity Master Feature Parity Documentation](docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md)
 
 ---
 
