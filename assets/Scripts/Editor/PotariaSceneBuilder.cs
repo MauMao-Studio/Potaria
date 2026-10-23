@@ -150,6 +150,11 @@ namespace Potaria.Editor
             if (idleSprite != null) playerSr.sprite = idleSprite;
 
             var playerStats = playerObj.AddComponent<PlayerStats>();
+            var playerInv = playerObj.AddComponent<PlayerInventory>();
+            var playerEquip = playerObj.AddComponent<PlayerEquipment>();
+            playerEquip.Stats = playerStats;
+            playerEquip.Inventory = playerInv;
+
             var playerController = playerObj.AddComponent<PlayerController>();
             playerController.ConfigurePhysics();
             playerController.LoadDefaultSpritesIfMissing();

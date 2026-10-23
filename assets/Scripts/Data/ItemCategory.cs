@@ -17,7 +17,10 @@ namespace Potaria.Data
         Special,
         Accessory,
         Currency,
-        Armor
+        Armor,
+        Armor_Head,
+        Armor_Chest,
+        Armor_Legs
     }
 
     public static class ItemCategoryExtensions
@@ -38,6 +41,16 @@ namespace Potaria.Data
                 "accessory" => ItemCategory.Accessory,
                 "currency" => ItemCategory.Currency,
                 "armor" => ItemCategory.Armor,
+                "armor_head" => ItemCategory.Armor_Head,
+                "armor_chest" => ItemCategory.Armor_Chest,
+                "armor_legs" => ItemCategory.Armor_Legs,
+                "helmet" => ItemCategory.Armor_Head,
+                "head" => ItemCategory.Armor_Head,
+                "chest" => ItemCategory.Armor_Chest,
+                "chestplate" => ItemCategory.Armor_Chest,
+                "legs" => ItemCategory.Armor_Legs,
+                "greaves" => ItemCategory.Armor_Legs,
+                "boots" => ItemCategory.Armor_Legs,
                 "equipment" => ItemCategory.Armor,
                 _ => ItemCategory.Material
             };

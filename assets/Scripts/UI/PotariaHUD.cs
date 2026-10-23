@@ -24,7 +24,18 @@ namespace Potaria.UI
     public class PotariaHUD : MonoBehaviour
     {
         private static PotariaHUD _instance;
-        public static PotariaHUD Instance => _instance;
+        public static PotariaHUD Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindFirstObjectByType<PotariaHUD>();
+                }
+                return _instance;
+            }
+            set => _instance = value;
+        }
 
         [Header("Target References")]
         [SerializeField] private PlayerController player;
@@ -113,6 +124,11 @@ namespace Potaria.UI
             LocalizationManager.OnLanguageChanged -= RefreshLocalizedLabels;
         }
 
+        private void OnDestroy()
+        {
+            if (_instance == this) _instance = null;
+        }
+
         private void Start()
         {
             RefreshLocalizedLabels();
@@ -190,6 +206,51 @@ namespace Potaria.UI
             BuildClockAndRadar();
             BuildSkillBadges();
             BuildProfiler();
+            BuildMilestone4Panels();
+        }
+
+        private void BuildMilestone4Panels()
+        {
+            if (GetComponent<KatabiTooltipUI>() == null)
+            {
+                var tooltip = gameObject.AddComponent<KatabiTooltipUI>();
+                tooltip.BuildCardHierarchyIfMissing();
+            }
+
+            if (GetComponent<InventoryUI>() == null)
+            {
+                var invUI = gameObject.AddComponent<InventoryUI>();
+                invUI.LoadResourcesIfMissing();
+                invUI.BuildUIHierarchy();
+            }
+
+            if (GetComponent<CharacterPanelUI>() == null)
+            {
+                var charUI = gameObject.AddComponent<CharacterPanelUI>();
+                charUI.LoadResourcesIfMissing();
+                charUI.BuildUIHierarchy();
+            }
+
+            if (GetComponent<CraftingUI>() == null)
+            {
+                var craftUI = gameObject.AddComponent<CraftingUI>();
+                craftUI.LoadResourcesIfMissing();
+                craftUI.BuildUIHierarchy();
+            }
+
+            if (GetComponent<ForgeUI>() == null)
+            {
+                var forgeUI = gameObject.AddComponent<ForgeUI>();
+                forgeUI.LoadResourcesIfMissing();
+                forgeUI.BuildUIHierarchy();
+            }
+
+            if (GetComponent<ChestUI>() == null)
+            {
+                var chestUI = gameObject.AddComponent<ChestUI>();
+                chestUI.LoadResourcesIfMissing();
+                chestUI.BuildUIHierarchy();
+            }
         }
 
         private void BuildHotbar()
@@ -661,15 +722,29 @@ namespace Potaria.UI
             }
         }
 
+        public void ClearItem(int slotIndex)
+        {
+            SetItem(slotIndex, "", "", null, 0);
+        }
+
         /// <summary>
         /// Adds an item or stack count to the hotbar inventory.
-        /// First attempts to stack with an existing item of matching id.
-        /// If no existing slot or stack is full, places in the first empty slot.
-        /// Returns true if item was successfully added, false if inventory is full.
+        /// If player possesses PlayerInventory, adds to the 40-slot backpack which automatically syncs to hotbar.
+        /// Otherwise falls back to standalone local hotbar array.
         /// </summary>
         public bool AddItem(string id, string fallbackName, Sprite icon, int count = 1)
         {
             if (string.IsNullOrEmpty(id) || count <= 0) return false;
+
+            if (player != null)
+            {
+                var pInv = player.GetComponent<PlayerInventory>();
+                if (pInv != null)
+                {
+                    bool added = pInv.AddItem(id, count);
+                    if (added) return true;
+                }
+            }
 
             // 1. Try to stack into existing slot
             for (int i = 0; i < 10; i++)

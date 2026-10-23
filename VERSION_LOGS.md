@@ -9,7 +9,7 @@
 ## Version History Overview
 
 | Version | Release Date | Codename / Focus | Key Milestone |
-| :--- | :--- | :--- | :--- |
+| **v1.0.0-unity-milestone4** | October 2026 | *Unity 6 40-Slot Backpack, Paperdoll Equipment, Katabi Comparison Tooltips, 5-Tab Crafting, Forge Master & Chest Storage (Milestone 4 Complete)* | Completed Milestone 4 of the Unity 6 LTS implementation: master 40-slot backpack inventory (`PlayerInventory.cs`, `InventoryUI.cs`, `E` key) with 4x10 grid, hotbar sync (slots 0-9), slot swapping, stack splitting, quick-trash/drop, auto-sorting (category, rarity, name), and gap compaction (`[ORGANIZE]`); 10-slot paperdoll equipment manager (`PlayerEquipment.cs`, `CharacterPanelUI.cs`, `C` key) for Head, Chest, Legs, Weapon, and 6 Accessories with immediate `PlayerStats` recalculation and active 27 equipment set milestone bonuses (2-piece, 4-piece, 5-piece); side-by-side 'Katabi' comparison tooltips (`KatabiTooltipUI.cs`) showing candidate item alongside equipped gear with `[ CURRENTLY EQUIPPED ]` badge, TextMeshProUGUI, screen clamping, circular affix sockets `(●) / (○)`, weapon perks, and stat diffs; 5-tab crafting interface (`CraftingUI.cs`) supporting Hand, Workbench, Furnace, Anvil, and Cooking Pot with 4-block proximity detection or 'Show All', green/red material sufficiency highlights, and one-click crafting; Forge Master enhancement engine (`ForgeSystem.cs`, `ForgeUI.cs`) with +1 to +7 enhancement curve, failure/break risks, 1 Gold (10,000 Copper) repair, and affix stone carving/embedding; 30-slot storage chest container entity and modal UI (`StorageChest.cs`, `ChestUI.cs`) with Quick-Deposit and Loot-All; dedicated Coin Purse with automatic 100:1 conversion; and verified 126 / 126 automated tests passing via headless batchmode PotariaInventoryTest runner (417 total Unity 6 tests passing across inventory, overhaul, world, and combat test suites, 100% Green). |
 | **v1.0.0-unity-overhaul** | October 2026 | *Unity 6 TextMeshPro Typography, Dynamic Light Occlusion, 1920x1080 Parity, Reticle Mining, Celestial Sun/Moon & Spud Energy Aura* | Major parity overhaul for the Unity 6 LTS engine: full TextMeshPro migration for crystal-clear HUD typography across all slots, stats, clock, skills, and profiler; solved frame rate drops by removing solid terrain CompositeShadowCasters and unculled Light2D components, implementing dynamic camera-distance occlusion culling (>20 units disabled) in PointLightSource2D and soft radial falloff (0.5f intensity); configured native 1920x1080 resolution across Canvas Scaler (match 0.5) and PixelPerfectCamera (CropFrame.None); enforced absolute subterranean pitch-black darkness (0.0f intensity) between grid Y 68 and 74, celestial Sun and Moon orbiting across sky with moonless night starry silhouettes; implemented MiningCursorController with 1x1 grid cell snapping, reach distance checking (<= 5.5 blocks orange bracket [ ], > 5.5 blocks translucent red), progressive block breaking bar, right-click block/torch placement, and direct tile drop collection into hotbar via PotariaHUD.AddItem; implemented SpudAuraController featuring Spud's signature pulsating cyan energy shield aura, golden inner mandala ring, 4 orbiting starlight sparkle motes, and non-floodlight cave personal lighting; verified 291 total automated tests passing across PotariaOverhaulTest (91/91), PotariaWorldTest (84/84), and PotariaCombatTest (116/116) with 0 errors (100% Green). |
 | **v1.0.0-unity-milestone3** | October 2026 | *Unity 6 LTS Player Controller, 2D Rigidbody Physics, RPG Stats & Danmaku Combat (Milestone 3 Complete)* | Completed Milestone 3 of the Unity 6 LTS implementation: responsive 2D Rigidbody character controller (PlayerController.cs) with coyote time (0.15s), jump buffering (0.12s), variable jump height, 1-block platform drop-through, water swimming buoyancy, oxygen meter, drowning damage, and head-blocked jump sound check; animated character rendering with 8-frame walk cycle, idle breathing, jump stretch, and fall frames; input system (PotariaInput.cs) supporting Keyboard/Mouse, Gamepad (Steam Deck/Xbox), and mobile virtual controls; RPG progression (CharacterStats.cs, PlayerStats.cs, MealBuffManager.cs) with 100-level curve, defense formula max(1, ATK - DEF), MP natural regeneration (1.8 MP/s), and 5-active-meal buff slots (Offense, Defense, Mobility, Resource, Utility) with statutory caps and replacement rules; weapon controller (WeaponController.cs) with rotational melee arcs, single-target combat enforcement, and Ancient cleave; projectile ballistics (Projectile.cs, ProjectileManager.cs) with parabolic arrow gravity, homing magic, and Celestial Reversal timed projectile reflection (0.40s-0.52s window, 1.5x damage amplification, reflection budget); Touhou-inspired danmaku boss system (BossController.cs, DanmakuEmitter.cs) featuring Sol-Rho two-phase boss encounter with 16-way spiral novas, celestial cross beams, 52% fair lethal core hitboxes, and 175% perimeter graze (+1 MP reward and sparks); camera system (CameraController.cs) with smooth follow damping, 3 discrete zoom levels (1x, 2x, 3x via Z), and 3.0s cinematic pitch-black death transition with spawn point snapping; and verified 116 / 116 automated tests passing via headless batchmode PotariaCombatTest runner (200 total Unity 6 tests passing across combat and world suites, 100% Green). |
 | **v1.0.0-unity-milestone2** | October 2026 | *Unity 6 LTS Procedural World Generation, 2D Tilemaps, Chunk Streaming & 2D URP Lighting (Milestone 2 Complete)* | Completed Milestone 2 of the Unity 6 LTS implementation: built dual-tilemap architecture on Grid (Terrain Tilemap with CompositeCollider2D polygons for snag-free movement, Wall Tilemap, Platforms, and Water with trigger colliders); implemented TileDatabase linking 117+ blocks and walls to item drops, tool types, and hardness; generated Tile assets and procedural 16x16 pixel sprites; ported boundless procedural generation (Perlin surface heightmaps across Forest, Desert, Snow, Blight, and Nether Dungeon biomes, subterranean cave worms, and geological vein clustering for Coal, Copper, Iron, Gold, Diamond, and Netherite ores); implemented ChunkManager streaming 16x240 tile chunks dynamically around the camera; configured active 2D Universal Render Pipeline (URP) assets and Sprite-Lit-Default materials; implemented 2D URP dynamic lighting (DayNightCycle2D global cycle, SubterraneanDarkness2D depth attenuation, and PointLightSource2D with point light pooling for torches and lamps); constructed Assets/Scenes/MainWorld.unity with 16 PPU Pixel Perfect Camera; and verified 84 / 84 automated tests passing via headless batchmode PotariaWorldTest runner (100% Green). |
@@ -48,7 +48,50 @@
 
 ## Detailed Version Logs
 
-### [v1.0.0-unity-overhaul] - Unity 6 TextMeshPro Typography, Dynamic Light Occlusion, 1920x1080 Parity, Reticle Mining & Spud Energy Aura (Current Active Release)
+### [v1.0.0-unity-milestone4] - Unity 6 40-Slot Backpack, Paperdoll Equipment, Katabi Comparison Tooltips, 5-Tab Crafting, Forge Master & Chest Storage (Current Active Release)
+*Release Date: October 2026*
+
+#### Added & Improved
+- **40-Slot Backpack Inventory & Hotbar Integration (`PlayerInventory.cs`, `InventoryUI.cs`)**:
+  - Implemented 4 rows x 10 columns grid (`_slots[40]`) representing the master player backpack inventory.
+  - Seamless 10-slot hotbar synchronization where slots 0 to 9 map directly to `PotariaHUD` hotbar row 0.
+  - Interactive inventory capabilities: item stack dragging, slot swapping, stack splitting (halving stacks into empty/matching slots), quick-trash disposal, and drop into the world.
+  - Multi-criterion auto-sorting: Category, Rarity (Mythic/Ancient first), or Alphabetical Name.
+  - `[ORGANIZE]` gap compaction: shifts all non-null items forward into earlier empty slots preserving item sequence without changing order.
+- **10-Slot Paperdoll Equipment & Character Panel (`PlayerEquipment.cs`, `CharacterPanelUI.cs`)**:
+  - Implemented 10 equipment slots: Head, Chest, Legs, Weapon, and 6 Accessory slots (Accessory 1 to 6).
+  - Immediate `PlayerStats` recalculation upon equip/unequip, updating Max HP, Max MP, Attack, Defense, Damage Reduction %, Movement Speed, Critical Strike Chance %, and Critical Damage Multiplier.
+  - Automatic detection and milestone activation for all 27 equipment sets (2-piece, 4-piece, and 5-piece set bonuses) with real-time HUD character panel bonus listings.
+  - Dynamic slot validation preventing invalid gear placement into inappropriate paperdoll slots.
+- **Side-by-Side "Katabi" Comparison Tooltips (`KatabiTooltipUI.cs`)**:
+  - Renders hovered candidate item tooltip side-by-side with the currently equipped item in the corresponding slot when the Character Panel is open (`C` key).
+  - Equipped card prominently features a gold `[ CURRENTLY EQUIPPED ]` header badge.
+  - Screen boundary clamping dynamically repositioning tooltips away from viewport edges to prevent clipping across 16:9, 18:9, 19.5:9, and 20:9 aspect ratios.
+  - Clean single-line circular affix sockets `(●) / (○)` strictly adhering to item rarity limits (Common/Uncommon/Rare: 0, Epic/Legendary: 1, Mythic/Ancient: 2).
+  - Stat comparison differentials displaying green `(+X)` for improvements and red `(-X)` for lower stats.
+- **5-Tab Crafting Interface (`CraftingUI.cs`)**:
+  - 5 Crafting station tabs: Hand (Basic), Workbench, Furnace, Anvil, and Cooking Pot / Campfire.
+  - Proximity detection automatically filtering available recipes when within 4-block Euclidean range of world crafting stations, with a "Show All" toggle.
+  - Material sufficiency highlighting with green counts when adequate and red counts when materials are insufficient.
+  - One-click instant crafting consuming exact ingredient counts and depositing the result item into the player's 40-slot backpack.
+- **Forge Master Enhancement & 1 Gold Repair (`ForgeSystem.cs`, `ForgeUI.cs`)**:
+  - Enhancement anvil upgrading gear from +1 to +7 with progressive stat scaling (`1.0 + lvl/7.0`, achieving 2x baseline stats at +7).
+  - Success rates scaling from 100% (+1) down to 25% (+7); break risks starting at +4 (10% at +4, 15% at +5, 20% at +6, 30% at +7).
+  - Broken item state rendering broken status with zeroed combat bonuses until restored.
+  - 1 Gold (10,000 Copper) repair mechanism restoring broken gear to fully functional state at current enhancement level.
+  - Affix stone carving and embedding allowing custom affix insertion up to the item rarity's socket cap.
+- **30-Slot Storage Chest Container (`StorageChest.cs`, `ChestUI.cs`)**:
+  - 30-slot persistent chest inventory (3 rows x 10 cols).
+  - Quick-Deposit functionality scanning player backpack and transferring items that match chest contents.
+  - Loot-All button transferring all items from chest to backpack in a single click.
+- **Dedicated Coin Purse & Currency Conversion**:
+  - Automatic 100:1 conversion (100 Copper = 1 Silver, 100 Silver = 1 Gold; 10,000 Copper = 1 Gold).
+  - Dedicated currency readout displaying Copper, Silver, and Gold counts with transaction change calculation.
+- **Automated Verification**:
+  - Implemented `PotariaInventoryTest.cs` batchmode test suite with 126 automated tests covering all 12 Milestone 4 systems.
+  - Full passing rate: 126/126 tests passing with 0 errors. Total automated test count across all suites reached 417 / 417 (100% Green).
+
+### [v1.0.0-unity-overhaul] - Unity 6 TextMeshPro Typography, Dynamic Light Occlusion, 1920x1080 Parity, Reticle Mining & Spud Energy Aura
 *Release Date: October 2026*
 
 #### Added & Improved

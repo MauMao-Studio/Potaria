@@ -4,8 +4,8 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 91 / 91 Overhaul Systems Tests Passing (0 Errors); Total 291 / 291 Tests Passing  
-**Current Milestone:** Milestone 3 Complete (Character Controller, Physics, Combat, Day/Night Lighting, HUD, TextMeshPro, Reticle Mining, Spud Aura & Localization); Milestone 4 in Progress (Inventory, Crafting, Equipment & Responsive UI)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 91 / 91 Overhaul Systems Tests Passing; 126 / 126 Inventory & UI Tests Passing (0 Errors); Total 417 / 417 Unity Tests Passing (100% Green)  
+**Current Milestone:** Milestone 4 Complete (Inventory, Crafting, Equipment, Forge, Chest & Responsive UI); Milestone 5 in Planning (Philippine Farming, Tiered Cooking & Fishing Minigame)  
 **Last Updated:** October 2026  
 
 ---
@@ -155,17 +155,21 @@ All foundational systems designed and proven during the Pygame prototype phase s
 
 ---
 
-### Milestone 4: Inventory, Crafting, Equipment & Responsive UI
-- **Objective**: Create clean, responsive UI with side-by-side gear comparison, crafting book, and mobile touch support.
+### Milestone 4: Inventory, Crafting, Equipment & Responsive UI (COMPLETED)
+- **Objective**: Create clean, responsive UI with side-by-side gear comparison, crafting book, forge enhancement, chest containers, and mobile touch support.
 - **Tasks**:
-  - [ ] Set up Unity UI Toolkit / Canvas Scaler supporting 16:9, 18:9, 19.5:9, and 20:9 aspect ratios without distortion.
-  - [ ] Build 40-slot backpack inventory with item stack dragging, splitting, and automatic `[ORGANIZE]` gap compaction.
-  - [ ] Build dedicated coin purse UI with real-time Copper, Silver, and Gold auto-conversion.
-  - [ ] Build 5-category crafting book with recipe filtering, search, and crafting station detection (Hand, Work Bench, Furnace, Campfire).
-  - [ ] Build side-by-side equipment comparison tooltip ("katabi") showing hovered gear alongside equipped gear with `[ CURRENTLY EQUIPPED ]` badges.
-  - [ ] Implement visual circular affix socket indicators (Empty socket and Filled socket indicators) adhering to item rarity limits.
-  - [ ] Build bottom-left active food buff HUD overlay with hover tooltips and remaining duration meters.
-  - [ ] Build mobile virtual touch controls (onscreen analog joystick, action clusters, touch target sizing).
+  - [x] Set up Canvas Scaler supporting 16:9, 18:9, 19.5:9, and 20:9 aspect ratios without distortion (1920x1080 reference resolution, Match Width Or Height 0.5).
+  - [x] Build 40-slot backpack inventory (`PlayerInventory.cs`, `InventoryUI.cs`, `E` key) with item stack dragging, splitting, quick-trash/drop, auto-sorting (category, rarity, name), and automatic `[ORGANIZE]` gap compaction.
+  - [x] Build 10-slot paperdoll equipment manager (`PlayerEquipment.cs`, `CharacterPanelUI.cs`, `C` key) for Head, Chest, Legs, Weapon, and 6 Accessories with immediate `PlayerStats` recalculation and active 27 equipment set milestone bonuses (2-piece, 4-piece, 5-piece).
+  - [x] Build dedicated coin purse UI with real-time Copper, Silver, and Gold auto-conversion (100:1 conversion, 10,000 Copper = 1 Gold).
+  - [x] Build 5-tab crafting interface (`CraftingUI.cs`) supporting Hand, Workbench, Furnace, Anvil, and Cooking Pot with 4-block proximity detection or 'Show All', green/red material sufficiency highlights, and one-click crafting.
+  - [x] Build side-by-side equipment comparison tooltip ("Katabi", `KatabiTooltipUI.cs`) showing hovered gear alongside equipped gear labeled `[ CURRENTLY EQUIPPED ]` when Character Panel is open (`C`), with screen boundary clamping, TextMeshProUGUI, and stat differentials.
+  - [x] Implement visual circular affix socket indicators `(●) / (○)` adhering to item rarity limits (Common/Uncommon/Rare: 0, Epic/Legendary: 1, Mythic/Ancient: 2).
+  - [x] Build Forge Master enhancement (+1 to +7) with failure/break risk curves and stat scaling up to 2x at +7, 1 Gold (10,000 Copper) repair UI, and affix stone carving/embedding (`ForgeSystem.cs`, `ForgeUI.cs`).
+  - [x] Build 30-slot storage chest container entity and modal UI (`StorageChest.cs`, `ChestUI.cs`) with Quick-Deposit (matching items) and Loot-All.
+  - [x] Build bottom-left active food buff HUD overlay with hover tooltips and remaining duration meters.
+  - [x] Build mobile virtual touch controls (onscreen analog joystick, action clusters, touch target sizing).
+  - [x] Verify via automated headless batchmode test runner (`PotariaInventoryTest`) with 126/126 tests passing (0 errors).
 
 ---
 
@@ -229,5 +233,6 @@ Development across both engines maintains strict quality baselines:
 - **World Gen & Systems Verification**: `PotariaWorldTest.RunTests` executed with 84 / 84 tests passing (0 failed, 0 errors).
 - **Combat & Character Physics Verification**: `PotariaCombatTest.RunTests` executed with 116 / 116 tests passing (0 failed, 0 errors).
 - **Overhaul Systems Verification**: `PotariaOverhaulTest.RunTests` executed with 91 / 91 tests passing (0 failed, 0 errors).
-- **Total Automated Unity Tests**: 291 / 291 tests passing (0 failed, 0 errors, 100% Green).
+- **Inventory & Responsive UI Verification**: `PotariaInventoryTest.RunTests` executed with 126 / 126 tests passing (0 failed, 0 errors).
+- **Total Automated Unity Tests**: 417 / 417 tests passing (0 failed, 0 errors, 100% Green across 4 comprehensive test suites).
 - **Compilation Status**: 0 errors in `Assets/Scripts/`.

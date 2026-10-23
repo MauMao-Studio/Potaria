@@ -5,9 +5,9 @@
 **Legacy Engine Branch:** Pure Python 3.13 + Pygame Community Edition (`pygame-ce` 2.5.8+ with SDL 2.32, preserved on `pygame-engine` branch)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode (0 Errors)  
-**Current Milestone:** Milestone 3 Complete (Character Controller, Physics & Action RPG Combat); Milestone 4 in Progress  
-**Version:** Unity 6 LTS Milestone 3  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode; 417 / 417 Unity Automated Tests Passing across 4 Suites (0 Errors, 100% Green)  
+**Current Milestone:** Milestone 4 Complete (Inventory, Crafting, Equipment, Forge, Chest & Responsive UI); Milestone 5 in Planning  
+**Version:** Unity 6 LTS Milestone 4  
 **Master Parity Documentation:** [docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md](docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md)  
 
 ---
@@ -316,12 +316,14 @@ The production roadmap transitions Potaria from the verified Pygame foundation i
 - 40 Skill Book abilities with VFX, cooldowns, and bullet-reflection mechanics (`Celestial Reversal`).
 - Danmaku boss combat system with 52% core lethal hitboxes and perimeter grazing (+1 MP).
 
-### Milestone 4: Inventory, Crafting, Equipment & Responsive UI (IN PROGRESS)
-- 40-slot backpack inventory with item stack dragging, splitting, and `[ORGANIZE]` gap compaction.
-- Dedicated coin purse UI with real-time Copper, Silver, and Gold auto-conversion.
-- 5-category crafting book with station filtering (Hand, Work Bench, Furnace, Campfire).
-- Side-by-side equipment comparison tooltip ("katabi") with `[ CURRENTLY EQUIPPED ]` badges.
-- Visual circular affix socket indicators ((Empty Socket) and (Filled Socket)) adhering to rarity limits.
+### Milestone 4: Inventory, Crafting, Equipment & Responsive UI (COMPLETED)
+- 40-slot backpack inventory (`PlayerInventory.cs`, `InventoryUI.cs`, `E` key) with item stack dragging, splitting, quick-trash/drop, auto-sort, and `[ORGANIZE]` gap compaction.
+- 10-slot paperdoll equipment and character panel (`PlayerEquipment.cs`, `CharacterPanelUI.cs`, `C` key) with immediate `PlayerStats` recalculation and active 27 equipment set milestone bonuses (2-piece, 4-piece, 5-piece).
+- Dedicated coin purse UI with real-time Copper, Silver, and Gold auto-conversion (100:1 conversion, 10,000 Copper = 1 Gold).
+- 5-category crafting interface (`CraftingUI.cs`) with 4-block station proximity filtering (Hand, Workbench, Furnace, Anvil, Cooking Pot / Campfire), material sufficiency highlights, and one-click crafting.
+- Side-by-side equipment comparison tooltip ("Katabi", `KatabiTooltipUI.cs`) with `[ CURRENTLY EQUIPPED ]` badges, TextMeshProUGUI, screen clamping, circular affix sockets `(●) / (○)`, weapon perks, and stat diffs.
+- Forge Master enhancement (+1 to +7) with failure/break risk curves and stat scaling up to 2x at +7, 1 Gold (10,000 Copper) repair UI, and affix stone carving/embedding (`ForgeSystem.cs`, `ForgeUI.cs`).
+- 30-slot storage chest container entity and modal UI (`StorageChest.cs`, `ChestUI.cs`) with Quick-Deposit and Loot-All.
 - Bottom-left food buff HUD overlay with hover tooltips and remaining duration meters.
 
 ### Milestone 5: Philippine Farming, Tiered Cooking & Fishing Minigame

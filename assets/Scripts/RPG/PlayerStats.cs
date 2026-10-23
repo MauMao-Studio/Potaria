@@ -29,6 +29,8 @@ namespace Potaria.RPG
         [SerializeField] private float bonusSpeed = 0f;
         [SerializeField] private float bonusAtkSpeed = 0f;
         [SerializeField] private float bonusMpRegen = 0f;
+        [SerializeField] private float bonusDamageReduction = 0f;
+        [SerializeField] private float bonusCritDamage = 0f;
 
         [Header("Regeneration")]
         [SerializeField] private float baseMpRegen = 1.8f; // 1.8 MP/s baseline
@@ -90,6 +92,8 @@ namespace Potaria.RPG
             bonusSpeed = 0f;
             bonusAtkSpeed = 0f;
             bonusMpRegen = 0f;
+            bonusDamageReduction = 0f;
+            bonusCritDamage = 0f;
 
             _mpFraction = 0f;
             _hpRegenTimer = 0f;
@@ -196,7 +200,12 @@ namespace Potaria.RPG
 
         public float TotalCritMultiplier
         {
-            get => critMultiplier + MealBuffs.GetCritDamageMultiplier();
+            get => critMultiplier + bonusCritDamage + MealBuffs.GetCritDamageMultiplier();
+        }
+
+        public float TotalDamageReduction
+        {
+            get => bonusDamageReduction + MealBuffs.GetDamageReduction();
         }
 
         public override float TotalMoveSpeed
@@ -276,7 +285,7 @@ namespace Potaria.RPG
 
         public override int TakeDamage(int incomingAtk, bool ignoreDef = false, float damageReduction = 0f, float magicRes = 0f, bool isMagic = false)
         {
-            float totalDmgRed = damageReduction + MealBuffs.GetDamageReduction();
+            float totalDmgRed = damageReduction + TotalDamageReduction;
             float totalMagicRes = magicRes + MealBuffs.GetMagicResistance();
             return base.TakeDamage(incomingAtk, ignoreDef, totalDmgRed, totalMagicRes, isMagic);
         }
@@ -310,7 +319,7 @@ namespace Potaria.RPG
 
         // --- Equipment Link Hooks ---
 
-        public void SetBonusStats(int hp, int mp, int atk, int def, float crit, float speed, float atkSpd, float mpRegen)
+        public void SetBonusStats(int hp, int mp, int atk, int def, float crit, float speed, float atkSpd, float mpRegen, float damageReduction = 0f, float critDamage = 0f)
         {
             bonusMaxHp = hp;
             bonusMaxMp = mp;
@@ -320,6 +329,8 @@ namespace Potaria.RPG
             bonusSpeed = speed;
             bonusAtkSpeed = atkSpd;
             bonusMpRegen = mpRegen;
+            bonusDamageReduction = damageReduction;
+            bonusCritDamage = critDamage;
         }
     }
 }
