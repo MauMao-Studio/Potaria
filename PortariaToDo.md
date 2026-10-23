@@ -4,8 +4,8 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 57 / 57 Overhaul Systems Tests Passing (0 Errors)  
-**Current Milestone:** Milestone 3 Complete (Character Controller, Physics, Combat, Day/Night Lighting, HUD & Localization); Milestone 4 in Progress (Inventory, Crafting, Equipment & Responsive UI)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 74 / 74 Overhaul Systems Tests Passing (0 Errors); Total 274 / 274 Tests Passing  
+**Current Milestone:** Milestone 3 Complete (Character Controller, Physics, Combat, Day/Night Lighting, HUD, TextMeshPro, Reticle Mining, Spud Aura & Localization); Milestone 4 in Progress (Inventory, Crafting, Equipment & Responsive UI)  
 **Last Updated:** October 2026  
 
 ---
@@ -130,7 +130,12 @@ All foundational systems designed and proven during the Pygame prototype phase s
   - [x] Integrate Unity New Input System supporting keyboard/mouse, gamepad, and mobile touchscreen virtual controls, with dual-backend fallback.
   - [x] Build visual animated character system (12 FPS 8-frame walk, idle breathing, jump stretch, fall) with sprite facing flip and paperdoll hooks.
   - [x] Implement procedural Day/Night SkyRenderer2D with cubic Hermite gradient transitions, camera clear color sync, and 140 twinkling star sprites.
-  - [x] Enable 2D dynamic shadow casting on point lights (torches at 0.70 intensity) and CompositeShadowCaster2D on foreground tilemap geometry.
+   - [x] Migrate all HUD text across PotariaHUD.cs to TextMeshPro (TextMeshProUGUI via TMPro) with deployed TMP Essential Resources and PixelifySans SDF font generation, achieving crystal-clear typography.
+  - [x] Optimize 2D lighting performance: implemented dynamic camera-distance occlusion culling (>25 units disabled) in PointLightSource2D.cs, soft radial falloff (0.5f intensity without polygon blockiness), removed CompositeShadowCaster2D from solid terrain tilemaps, raised light emitter spawning threshold (LightEmission >= 5), and tightened chunk streaming window to 2 chunks (viewDistanceChunks = 2), guaranteeing steady 60+ FPS.
+  - [x] Configure native 1920x1080 resolution across Canvas Scaler (Scale With Screen Size, match 0.5) and PixelPerfectCamera (refResolution 1920x1080, CropFrame.None).
+  - [x] Enforce absolute underground pitch-black darkness in SubterraneanDarkness2D.cs (globalLight.intensity = dayNightCycle.CurrentBaseIntensity * _currentDepthAttenuation; yielding 0.0f intensity underground) and maintain surface night silhouettes against unlit twinkling starfield.
+  - [x] Implement interactive MiningCursorController (Assets/Scripts/UI/MiningCursorController.cs): 1x1 grid cell snapping, reach distance check (<= 5.5 units orange bracket box [ ], > 5.5 units translucent red), left-click continuous mining with tool power scaling, progressive block breaking progress bar (dark backing, gold border, yellow-to-orange fill), and right-click block/torch placement from active hotbar item.
+  - [x] Implement SpudAuraController (Assets/Scripts/Player/SpudAuraController.cs): pulsating cyan outer energy shield ring, golden inner ring, 4 orbiting shimmering golden sparkle motes, and soft personal cyan Point Light 2D.
   - [x] Implement complete In-Game HUD: 10-slot hotbar (slots 1-9, 0) with selection highlight and stack count, Life text and hearts, Mana bar and MP readout, 12-hour clock badge (e.g. 12:00 PM DAY, 7:04 PM NIGHT), Radar badge, 4 skill cooldown badges (Q, F, V, R), and F3 profiler overlay.
   - [x] Implement hostile mob behaviors: Green Slime and Purple Slime (hopping and squish/stretch), Surface Zombie (shambling with step-jumping over obstacles), and Night Gazer / Demon Eye (zero-gravity sinusoidal flight and daytime fleeing).
   - [x] Implement MobSpawner: 15-35 tile annulus around player, 10 active mob cap, and >60 tile despawn radius.
@@ -143,7 +148,9 @@ All foundational systems designed and proven during the Pygame prototype phase s
   - [x] Implement Ancient skill `celestial_reversal` with timed projectile reflection (1.5x damage amplification and reflection budget).
   - [x] Implement CameraController with follow damping, 3 discrete zoom levels (1x, 2x, 3x via 'Z'), and 3.0s cinematic pitch-black death transition.
   - [x] Verify via automated headless batchmode test runner (`PotariaCombatTest`) with 116/116 tests passing (0 errors).
-  - [x] Verify via automated overhaul test runner (`PotariaOverhaulTest`) with 57/57 tests passing (0 errors).
+  - [x] Verify via automated world test runner (`PotariaWorldTest`) with 84/84 tests passing (0 errors).
+  - [x] Verify via automated overhaul test runner (`PotariaOverhaulTest`) with 74/74 tests passing (0 errors).
+  - [x] Total automated test suite passing: 274 / 274 tests (0 errors, 100% Green).
 
 
 ---
@@ -221,6 +228,6 @@ Development across both engines maintains strict quality baselines:
 - **Tile Pipeline**: 73 block tiles, 13 wall tiles, TileDatabase registry, and procedural sprite synthesizers.
 - **World Gen & Systems Verification**: `PotariaWorldTest.RunTests` executed with 84 / 84 tests passing (0 failed, 0 errors).
 - **Combat & Character Physics Verification**: `PotariaCombatTest.RunTests` executed with 116 / 116 tests passing (0 failed, 0 errors).
-- **Overhaul Systems Verification**: `PotariaOverhaulTest.RunTests` executed with 45 / 45 tests passing (0 failed, 0 errors).
-- **Total Automated Unity Tests**: 245 / 245 tests passing (0 failed, 0 errors).
-- **Compilation Status**: 0 errors, 0 warnings in `Assets/Scripts/`.
+- **Overhaul Systems Verification**: `PotariaOverhaulTest.RunTests` executed with 74 / 74 tests passing (0 failed, 0 errors).
+- **Total Automated Unity Tests**: 274 / 274 tests passing (0 failed, 0 errors, 100% Green).
+- **Compilation Status**: 0 errors in `Assets/Scripts/`.

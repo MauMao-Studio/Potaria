@@ -42,10 +42,13 @@ namespace Potaria.World.Lighting
             Night
         }
 
+        private float _currentBaseIntensity = 1.0f;
+
         public float TimeOfDay { get => timeOfDay; set => timeOfDay = Mathf.Repeat(value, 1f); }
         public float CycleDuration { get => cycleDuration; set => cycleDuration = Mathf.Max(1f, value); }
         public bool PauseCycle { get => pauseCycle; set => pauseCycle = value; }
         public Light2D GlobalLight { get => globalLight; set => globalLight = value; }
+        public float CurrentBaseIntensity => _currentBaseIntensity;
 
         public CelestialPhase CurrentPhase
         {
@@ -130,6 +133,7 @@ namespace Potaria.World.Lighting
                 targetIntensity = Mathf.Lerp(nightIntensity, dawnIntensity, t);
             }
 
+            _currentBaseIntensity = targetIntensity;
             globalLight.color = targetColor;
             globalLight.intensity = targetIntensity;
         }

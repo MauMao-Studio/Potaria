@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Potaria.Input;
 using Potaria.Player;
 using Potaria.RPG;
@@ -17,6 +18,7 @@ namespace Potaria.UI
     /// - Top-Right: Life hearts readout (Life: X / Y Lv.Z), Mana bar (MP: A / B), Radar [M], Clock badge
     /// - Bottom-Center: 4 Skill badges (Q, F, V, R with Lv and localized abbreviation)
     /// - Top/Mid-Left: Real-time F3 Profiler overlay
+    /// - Crystal-clear typography powered 100% by TextMeshPro (TMP) at 1920x1080 reference resolution
     /// - Fully localized via LocalizationManager (EN / FIL) with instant L-key switching
     /// </summary>
     public class PotariaHUD : MonoBehaviour
@@ -31,6 +33,7 @@ namespace Potaria.UI
         [SerializeField] private PotariaInput input;
 
         [Header("Fonts & Sprites")]
+        [SerializeField] private TMP_FontAsset tmpFont;
         [SerializeField] private Font pixelFont;
         [SerializeField] private Sprite slotFrameSprite;
         [SerializeField] private Sprite slotSelectedSprite;
@@ -46,29 +49,29 @@ namespace Potaria.UI
         private GameObject _hotbarRoot;
         private Image[] _slotFrames = new Image[10];
         private Image[] _slotItems = new Image[10];
-        private Text[] _slotCounts = new Text[10];
-        private Text[] _slotNumbers = new Text[10];
+        private TextMeshProUGUI[] _slotCounts = new TextMeshProUGUI[10];
+        private TextMeshProUGUI[] _slotNumbers = new TextMeshProUGUI[10];
         private RectTransform _selectionFrame;
         private int _selectedSlot = 0;
 
         // Life & Mana
-        private Text _lifeText;
-        private Text _manaText;
+        private TextMeshProUGUI _lifeText;
+        private TextMeshProUGUI _manaText;
         private Image[] _heartIcons = new Image[10];
         private Image _manaBarFill;
 
         // Clock & Radar
-        private Text _clockText;
-        private Text _radarText;
+        private TextMeshProUGUI _clockText;
+        private TextMeshProUGUI _radarText;
 
         // Skills (Q, F, V, R)
         private Image[] _skillBadges = new Image[4];
-        private Text[] _skillTexts = new Text[4];
+        private TextMeshProUGUI[] _skillTexts = new TextMeshProUGUI[4];
         private Image[] _skillCooldownOverlays = new Image[4];
 
         // Profiler (F3)
         private GameObject _profilerPanel;
-        private Text _profilerText;
+        private TextMeshProUGUI _profilerText;
         private bool _profilerActive = false;
         private float _fpsAccumulator = 0f;
         private int _fpsFrames = 0;
@@ -118,6 +121,13 @@ namespace Potaria.UI
         public void LoadResourcesIfMissing()
         {
 #if UNITY_EDITOR
+            if (tmpFont == null)
+            {
+                tmpFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/PixelifySans-Regular SDF.asset");
+                if (tmpFont == null) tmpFont = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+                if (tmpFont == null) tmpFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+            }
+
             if (pixelFont == null)
             {
                 pixelFont = UnityEditor.AssetDatabase.LoadAssetAtPath<Font>("Assets/fonts/PixelifySans-Bold.ttf");
@@ -163,7 +173,7 @@ namespace Potaria.UI
             _scaler = GetComponent<CanvasScaler>();
             if (_scaler == null) _scaler = gameObject.AddComponent<CanvasScaler>();
             _scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            _scaler.referenceResolution = new Vector2(1280f, 720f);
+            _scaler.referenceResolution = new Vector2(1920f, 1080f);
             _scaler.matchWidthOrHeight = 0.5f;
 
             if (GetComponent<GraphicRaycaster>() == null) gameObject.AddComponent<GraphicRaycaster>();
@@ -228,12 +238,12 @@ namespace Potaria.UI
                 nrt.pivot = new Vector2(0f, 1f);
                 nrt.anchoredPosition = new Vector2(3f, -2f);
                 nrt.sizeDelta = new Vector2(14f, 14f);
-                var numText = numObj.AddComponent<Text>();
-                numText.font = pixelFont;
-                numText.fontSize = 11;
+                var numText = numObj.AddComponent<TextMeshProUGUI>();
+                if (tmpFont != null) numText.font = tmpFont;
+                numText.fontSize = 12;
                 numText.text = (i == 9) ? "0" : (i + 1).ToString();
                 numText.color = new Color(1f, 0.9f, 0.4f, 1f);
-                numText.alignment = TextAnchor.UpperLeft;
+                numText.alignment = TextAlignmentOptions.TopLeft;
                 _slotNumbers[i] = numText;
 
                 // Quantity / Stack Count Text
@@ -245,12 +255,12 @@ namespace Potaria.UI
                 crt.pivot = new Vector2(1f, 0f);
                 crt.anchoredPosition = new Vector2(-2f, 2f);
                 crt.sizeDelta = new Vector2(30f, 14f);
-                var countText = countObj.AddComponent<Text>();
-                countText.font = pixelFont;
+                var countText = countObj.AddComponent<TextMeshProUGUI>();
+                if (tmpFont != null) countText.font = tmpFont;
                 countText.fontSize = 11;
                 countText.text = "";
                 countText.color = Color.white;
-                countText.alignment = TextAnchor.LowerRight;
+                countText.alignment = TextAlignmentOptions.BottomRight;
                 _slotCounts[i] = countText;
             }
 
@@ -298,10 +308,10 @@ namespace Potaria.UI
             lrt.pivot = new Vector2(1f, 1f);
             lrt.anchoredPosition = new Vector2(0f, 0f);
             lrt.sizeDelta = new Vector2(280f, 18f);
-            _lifeText = lifeTextObj.AddComponent<Text>();
-            _lifeText.font = pixelFont;
-            _lifeText.fontSize = 13;
-            _lifeText.alignment = TextAnchor.MiddleRight;
+            _lifeText = lifeTextObj.AddComponent<TextMeshProUGUI>();
+            if (tmpFont != null) _lifeText.font = tmpFont;
+            _lifeText.fontSize = 14;
+            _lifeText.alignment = TextAlignmentOptions.Right;
             _lifeText.color = new Color(1.0f, 0.4f, 0.4f, 1f);
             _lifeText.text = "Life: 100 / 100 (Lv.1)";
 
@@ -341,10 +351,10 @@ namespace Potaria.UI
             mrt.pivot = new Vector2(1f, 1f);
             mrt.anchoredPosition = new Vector2(0f, -44f);
             mrt.sizeDelta = new Vector2(280f, 18f);
-            _manaText = manaTextObj.AddComponent<Text>();
-            _manaText.font = pixelFont;
-            _manaText.fontSize = 13;
-            _manaText.alignment = TextAnchor.MiddleRight;
+            _manaText = manaTextObj.AddComponent<TextMeshProUGUI>();
+            if (tmpFont != null) _manaText.font = tmpFont;
+            _manaText.fontSize = 14;
+            _manaText.alignment = TextAlignmentOptions.Right;
             _manaText.color = new Color(0.4f, 0.7f, 1.0f, 1f);
             _manaText.text = "MP: 50 / 50";
 
@@ -405,10 +415,10 @@ namespace Potaria.UI
             rtrt.anchorMax = Vector2.one;
             rtrt.offsetMin = Vector2.zero;
             rtrt.offsetMax = Vector2.zero;
-            _radarText = radarTextObj.AddComponent<Text>();
-            _radarText.font = pixelFont;
+            _radarText = radarTextObj.AddComponent<TextMeshProUGUI>();
+            if (tmpFont != null) _radarText.font = tmpFont;
             _radarText.fontSize = 11;
-            _radarText.alignment = TextAnchor.MiddleCenter;
+            _radarText.alignment = TextAlignmentOptions.Center;
             _radarText.color = new Color(0.85f, 0.95f, 1.0f, 1f);
             _radarText.text = "[M] RADAR";
 
@@ -432,10 +442,10 @@ namespace Potaria.UI
             ctrt.anchorMax = Vector2.one;
             ctrt.offsetMin = Vector2.zero;
             ctrt.offsetMax = Vector2.zero;
-            _clockText = clockTextObj.AddComponent<Text>();
-            _clockText.font = pixelFont;
+            _clockText = clockTextObj.AddComponent<TextMeshProUGUI>();
+            if (tmpFont != null) _clockText.font = tmpFont;
             _clockText.fontSize = 11;
-            _clockText.alignment = TextAnchor.MiddleCenter;
+            _clockText.alignment = TextAlignmentOptions.Center;
             _clockText.color = new Color(1.0f, 0.9f, 0.4f, 1f);
             _clockText.text = "12:00 PM DAY";
         }
@@ -480,10 +490,10 @@ namespace Potaria.UI
                 trt.anchorMax = Vector2.one;
                 trt.offsetMin = Vector2.zero;
                 trt.offsetMax = Vector2.zero;
-                var text = textObj.AddComponent<Text>();
-                text.font = pixelFont;
+                var text = textObj.AddComponent<TextMeshProUGUI>();
+                if (tmpFont != null) text.font = tmpFont;
                 text.fontSize = 11;
-                text.alignment = TextAnchor.MiddleCenter;
+                text.alignment = TextAlignmentOptions.Center;
                 text.color = new Color(1f, 0.95f, 0.7f, 1f);
                 text.text = $"{keys[i]} Lv.{levels[i]} {defaultAbbrs[i]}";
                 _skillTexts[i] = text;
@@ -527,11 +537,11 @@ namespace Potaria.UI
             trt.offsetMin = new Vector2(8f, 8f);
             trt.offsetMax = new Vector2(-8f, -8f);
 
-            _profilerText = textObj.AddComponent<Text>();
-            _profilerText.font = pixelFont;
+            _profilerText = textObj.AddComponent<TextMeshProUGUI>();
+            if (tmpFont != null) _profilerText.font = tmpFont;
             _profilerText.fontSize = 11;
             _profilerText.lineSpacing = 1.15f;
-            _profilerText.alignment = TextAnchor.UpperLeft;
+            _profilerText.alignment = TextAlignmentOptions.TopLeft;
             _profilerText.color = new Color(0.85f, 0.95f, 0.8f, 1f);
             _profilerText.text = "Potaria Profiler (F3)";
 
@@ -607,6 +617,40 @@ namespace Potaria.UI
             if (_slotCounts[slotIndex] != null)
             {
                 _slotCounts[slotIndex].text = (count > 1) ? count.ToString() : "";
+            }
+        }
+
+        public HotbarItem GetActiveItem()
+        {
+            if (_selectedSlot >= 0 && _selectedSlot < _hotbarData.Length)
+                return _hotbarData[_selectedSlot];
+            return default;
+        }
+
+        public HotbarItem GetItem(int index)
+        {
+            if (index >= 0 && index < _hotbarData.Length)
+                return _hotbarData[index];
+            return default;
+        }
+
+        public void DecrementActiveItem()
+        {
+            if (_selectedSlot >= 0 && _selectedSlot < _hotbarData.Length)
+            {
+                if (_hotbarData[_selectedSlot].stack > 0)
+                {
+                    _hotbarData[_selectedSlot].stack--;
+                    if (_hotbarData[_selectedSlot].stack <= 0)
+                    {
+                        SetItem(_selectedSlot, "", "", null, 0);
+                    }
+                    else
+                    {
+                        if (_slotCounts[_selectedSlot] != null)
+                            _slotCounts[_selectedSlot].text = _hotbarData[_selectedSlot].stack > 1 ? _hotbarData[_selectedSlot].stack.ToString() : "";
+                    }
+                }
             }
         }
 

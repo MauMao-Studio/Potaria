@@ -7,6 +7,7 @@ using Potaria.Input;
 using Potaria.Player;
 using Potaria.RPG;
 using Potaria.Combat;
+using Potaria.World;
 using Potaria.World.Lighting;
 using Potaria.Localization;
 using Potaria.UI;
@@ -53,6 +54,8 @@ namespace Potaria.Editor
                 TestMobsLocomotionAndAI();
                 TestMobSpawnerAnnulusAndLimits();
                 TestLocalizationManagerEnglishAndFilipino();
+                TestMiningCursorController();
+                TestSpudAuraAndPersonalLight();
             }
             catch (Exception ex)
             {
@@ -395,6 +398,54 @@ namespace Potaria.Editor
 
             // Restore English
             LocalizationManager.SetLanguage(LocalizationManager.LANG_EN);
+        }
+
+        // =========================================================================
+        // 10. Interactive Mining Cursor Controller & Parity
+        // =========================================================================
+        private static void TestMiningCursorController()
+        {
+            var cursorObj = new GameObject("Test_Cursor");
+            var cursor = cursorObj.AddComponent<MiningCursorController>();
+            cursor.InitializeVisuals();
+
+            AssertTrue(cursorObj.transform.Find("MiningReticle") != null, "Cursor_ReticleCreated", "MiningReticle child must be created");
+            AssertTrue(cursorObj.transform.Find("BreakProgressBar") != null, "Cursor_BreakBarCreated", "BreakProgressBar child must be created");
+            AssertTrue(cursor.MaxReachDistance <= 6.0f && cursor.MaxReachDistance >= 5.0f, "Cursor_ReachDistance5_5", $"Reach distance must be ~5.5, got {cursor.MaxReachDistance}");
+
+            // Verify item ID resolution to tile ID
+            AssertEqual(WorldConstants.TileTorch, MiningCursorController.ResolveTileIdFromItem("item.torch"), "Cursor_ResolveTorch");
+            AssertEqual(WorldConstants.TileDirt, MiningCursorController.ResolveTileIdFromItem("item.dirt"), "Cursor_ResolveDirt");
+            AssertEqual(WorldConstants.TileStone, MiningCursorController.ResolveTileIdFromItem("item.stone"), "Cursor_ResolveStone");
+            AssertEqual(WorldConstants.TileWoodPlanks, MiningCursorController.ResolveTileIdFromItem("item.wood"), "Cursor_ResolveWood");
+            AssertEqual(WorldConstants.TileAir, MiningCursorController.ResolveTileIdFromItem("item.copper_pickaxe"), "Cursor_ResolveNonBlock");
+
+            UnityEngine.Object.DestroyImmediate(cursorObj);
+        }
+
+        // =========================================================================
+        // 11. Spud's Cyan Energy Shield Aura & Golden Sparkles
+        // =========================================================================
+        private static void TestSpudAuraAndPersonalLight()
+        {
+            var playerObj = new GameObject("Test_Player_Aura");
+            var aura = playerObj.AddComponent<SpudAuraController>();
+            aura.BuildAuraHierarchy();
+
+            var effectsRoot = playerObj.transform.Find("SpudAura_Effects");
+            AssertTrue(effectsRoot != null, "Aura_RootCreated", "SpudAura_Effects root must exist");
+            AssertTrue(effectsRoot.Find("Personal_CyanLight2D") != null, "Aura_PersonalLightCreated", "Personal_CyanLight2D child must exist");
+            AssertTrue(effectsRoot.Find("CyanOuterRing") != null, "Aura_CyanRingCreated", "CyanOuterRing LineRenderer must exist");
+            AssertTrue(effectsRoot.Find("GoldenInnerRing") != null, "Aura_GoldRingCreated", "GoldenInnerRing LineRenderer must exist");
+            AssertTrue(effectsRoot.Find("SparkleMote_0") != null, "Aura_SparkleMote0Created", "Sparkle motes must be instantiated");
+
+            var personalLight = aura.PersonalLight;
+            AssertTrue(personalLight != null, "Aura_PersonalLightComponent", "Light2D component must be attached");
+            AssertTrue(personalLight.lightType == Light2D.LightType.Point, "Aura_LightIsPoint", "Personal light must be Point Light 2D");
+            AssertTrue(personalLight.color.b > 0.8f, "Aura_LightIsCyan", $"Personal light must be cyan colored, got {personalLight.color}");
+            AssertTrue(!personalLight.shadowsEnabled, "Aura_LightNoShadows", "Personal light should not cast harsh shadows for performance");
+
+            UnityEngine.Object.DestroyImmediate(playerObj);
         }
     }
 }

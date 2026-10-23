@@ -66,8 +66,8 @@ namespace Potaria.World.Lighting
             // Modulate global light intensity if present
             if (globalLight != null && dayNightCycle != null)
             {
-                // DayNightCycle sets base intensity; depth attenuation clamps unlit underground
-                globalLight.intensity *= Mathf.Clamp01(_currentDepthAttenuation + 0.05f); // 5% minimum ambient visibility
+                // DayNightCycle sets base intensity; depth attenuation guarantees 0.0f (pitch black) underground
+                globalLight.intensity = dayNightCycle.CurrentBaseIntensity * _currentDepthAttenuation;
             }
         }
 

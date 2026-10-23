@@ -124,10 +124,11 @@ namespace Potaria.World
                     compositeCollider.geometryType = CompositeCollider2D.GeometryType.Polygons;
                 }
 
-                GetOrAddComponent<CompositeShadowCaster2D>(foregroundTilemap.gameObject);
-                var shadowCaster = GetOrAddComponent<ShadowCaster2D>(foregroundTilemap.gameObject);
-                shadowCaster.castsShadows = true;
-                shadowCaster.selfShadows = false;
+                // Shadow casters removed from solid terrain to guarantee 60+ FPS and smooth soft radial torchlight
+                var oldCompCaster = foregroundTilemap.GetComponent<CompositeShadowCaster2D>();
+                if (oldCompCaster != null) DestroyImmediate(oldCompCaster);
+                var oldCaster = foregroundTilemap.GetComponent<ShadowCaster2D>();
+                if (oldCaster != null) DestroyImmediate(oldCaster);
             }
 
             // 4. Platform Tilemap (One-way jump-through platforms)
@@ -306,8 +307,8 @@ namespace Potaria.World
                             }
                         }
 
-                        // Point Light 2D for placed torches, lamps, fireplaces, glowing flora
-                        if (tileDef != null && tileDef.LightEmission > 0)
+                        // Point Light 2D for placed light fixtures (torches, lamps, lanterns, fireplaces, candelabras, chandeliers, mushroom caps)
+                        if (tileDef != null && tileDef.LightEmission >= 5)
                         {
                             SpawnOrUpdateLight(gx, ty, tileDef);
                         }
@@ -337,7 +338,7 @@ namespace Potaria.World
                     }
                 }
 
-                if (tileDef != null && tileDef.LightEmission > 0)
+                if (tileDef != null && tileDef.LightEmission >= 5)
                 {
                     SpawnOrUpdateLight(gx, ty, tileDef);
                 }

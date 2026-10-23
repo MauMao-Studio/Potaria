@@ -61,9 +61,9 @@ namespace Potaria.Editor
 
             var pixelCam = camObj.AddComponent<PixelPerfectCamera>();
             pixelCam.assetsPPU = 16;
-            pixelCam.refResolutionX = 640;
-            pixelCam.refResolutionY = 360;
-            pixelCam.cropFrame = PixelPerfectCamera.CropFrame.StretchFill;
+            pixelCam.refResolutionX = 1920;
+            pixelCam.refResolutionY = 1080;
+            pixelCam.cropFrame = PixelPerfectCamera.CropFrame.None;
             pixelCam.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
 
             var camController = camObj.AddComponent<CameraController>();
@@ -84,7 +84,7 @@ namespace Potaria.Editor
             worldManagerObj.transform.position = Vector3.zero;
 
             var chunkManager = worldManagerObj.AddComponent<ChunkManager>();
-            chunkManager.ViewDistanceChunks = 4;
+            chunkManager.ViewDistanceChunks = 2;
             chunkManager.Tilemaps = worldTilemaps;
 
             var db = AssetDatabase.LoadAssetAtPath<TileDatabase>("Assets/ScriptableObjects/TileDatabase.asset");
@@ -163,6 +163,7 @@ namespace Potaria.Editor
             weaponSr.sortingOrder = 1;
 
             playerObj.AddComponent<WeaponController>();
+            playerObj.AddComponent<SpudAuraController>();
 
             // Configure Camera Follow target
             camController.SetZoomLevel(1);
@@ -177,7 +178,7 @@ namespace Potaria.Editor
             spawnerSo.ApplyModifiedPropertiesWithoutUndo();
             spawner.SpawnInitialMobs();
 
-            // 10. Complete In-Game HUD (Canvas 1280x720)
+            // 10. Complete In-Game HUD (Canvas 1920x1080)
             var canvasObj = new GameObject("HUD_Canvas");
             var hud = canvasObj.AddComponent<PotariaHUD>();
             var hudSo = new SerializedObject(hud);
@@ -189,7 +190,12 @@ namespace Potaria.Editor
             hud.LoadResourcesIfMissing();
             hud.BuildOrValidateUI();
 
-            // 11. Save Scene
+            // 11. Interactive Mining & Block Placement Reticle Cursor
+            var cursorObj = new GameObject("MiningCursor");
+            cursorObj.transform.position = Vector3.zero;
+            cursorObj.AddComponent<MiningCursorController>();
+
+            // 12. Save Scene
             EditorSceneManager.SaveScene(scene, SCENE_PATH);
             Debug.Log($"[PotariaSceneBuilder] Successfully constructed and saved {SCENE_PATH}.");
 

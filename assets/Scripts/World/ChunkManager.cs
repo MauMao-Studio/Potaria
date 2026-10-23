@@ -15,7 +15,7 @@ namespace Potaria.World
     {
         [Header("Configuration")]
         [SerializeField] private int seed = 12345;
-        [SerializeField] private int viewDistanceChunks = 3;
+        [SerializeField] private int viewDistanceChunks = 2;
         [SerializeField] private Transform streamingTarget;
 
         [Header("System Dependencies")]
@@ -251,6 +251,16 @@ namespace Potaria.World
                 _tileDamageMap[posKey] = currentDamage;
                 return false;
             }
+        }
+
+        public int GetTileDamage(int gx, int ty)
+        {
+            return _tileDamageMap.TryGetValue(new Vector2Int(gx, ty), out int d) ? d : 0;
+        }
+
+        public void ClearTileDamage(int gx, int ty)
+        {
+            _tileDamageMap.Remove(new Vector2Int(gx, ty));
         }
 
         /// <summary>

@@ -103,9 +103,11 @@ MonoBehaviour:
   outerRadius: 6
   innerRadius: 0.5
   baseIntensity: 1
+  enableShadows: 1
   enableFlicker: 1
   flickerSpeed: 8
   flickerIntensityVariance: 0.12
+  cullingDistance: 25
 --- !u!212 &4546687000227705813
 SpriteRenderer:
   m_ObjectHideFlags: 0
