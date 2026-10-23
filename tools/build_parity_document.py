@@ -18,6 +18,7 @@ import os
 import sys
 import glob
 import re
+import ast
 
 # Ensure tools directory is in sys.path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -35,70 +36,98 @@ UNITY_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 PYGAME_DIR = os.path.abspath(os.path.join(UNITY_DIR, "..", "Potaria_Pygame_Backup"))
 OUTPUT_FILE = os.path.join(UNITY_DIR, "docs", "PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md")
 
+def github_slug(text):
+    """Generates standard GitHub Flavored Markdown header slug."""
+    clean = re.sub(r'[`\*]', '', text).strip().lower()
+    clean = re.sub(r'[^\w\s-]', '', clean)
+    clean = re.sub(r'\s+', '-', clean)
+    return clean.strip('-')
+
+def parse_single_file(fpath, base_dir):
+    rel = os.path.relpath(fpath, base_dir).replace("\\", "/")
+    try:
+        with open(fpath, "r", encoding="utf-8") as f:
+            code = f.read()
+        tree = ast.parse(code)
+    except Exception as e:
+        return None
+
+    file_doc = ast.get_docstring(tree) or ""
+    lines = len(code.splitlines())
+    size_bytes = len(code.encode("utf-8"))
+
+    classes = []
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef):
+            c_doc = ast.get_docstring(node) or ""
+            methods = []
+            for item in node.body:
+                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    m_doc = ast.get_docstring(item) or ""
+                    try:
+                        sig = ast.unparse(item.args)
+                    except Exception:
+                        sig = ", ".join(a.arg for a in item.args.args)
+                    methods.append({
+                        "name": item.name,
+                        "sig": sig,
+                        "doc": m_doc.strip().split("\n")[0] if m_doc else "",
+                        "lineno": item.lineno
+                    })
+            classes.append({
+                "name": node.name,
+                "doc": c_doc.strip().split("\n")[0] if c_doc else "",
+                "methods": methods,
+                "lineno": node.lineno
+            })
+
+    functions = []
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            f_doc = ast.get_docstring(node) or ""
+            try:
+                sig = ast.unparse(node.args)
+            except Exception:
+                sig = ", ".join(a.arg for a in node.args.args)
+            functions.append({
+                "name": node.name,
+                "sig": sig,
+                "doc": f_doc.strip().split("\n")[0] if f_doc else "",
+                "lineno": node.lineno
+            })
+
+    return {
+        "path": rel,
+        "lines": lines,
+        "bytes": size_bytes,
+        "doc": file_doc.strip().split("\n")[0] if file_doc else "",
+        "classes": classes,
+        "functions": functions
+    }
+
 def parse_all_python_files():
-    import ast
     py_files = [os.path.join(PYGAME_DIR, "main.py")] + sorted(glob.glob(os.path.join(PYGAME_DIR, "src", "**", "*.py"), recursive=True))
     file_records = []
-
     for fpath in py_files:
-        rel = os.path.relpath(fpath, PYGAME_DIR).replace("\\", "/")
-        try:
-            with open(fpath, "r", encoding="utf-8") as f:
-                code = f.read()
-            tree = ast.parse(code)
-        except Exception as e:
-            continue
-
-        file_doc = ast.get_docstring(tree) or ""
-        lines = len(code.splitlines())
-        size_bytes = len(code.encode("utf-8"))
-
-        classes = []
-        for node in tree.body:
-            if isinstance(node, ast.ClassDef):
-                c_doc = ast.get_docstring(node) or ""
-                methods = []
-                for item in node.body:
-                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                        m_doc = ast.get_docstring(item) or ""
-                        args = [a.arg for a in item.args.args]
-                        methods.append({
-                            "name": item.name,
-                            "args": args,
-                            "doc": m_doc.strip().split("\n")[0] if m_doc else "",
-                            "lineno": item.lineno
-                        })
-                classes.append({
-                    "name": node.name,
-                    "doc": c_doc.strip().split("\n")[0] if c_doc else "",
-                    "methods": methods,
-                    "lineno": node.lineno
-                })
-
-        functions = []
-        for node in tree.body:
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                f_doc = ast.get_docstring(node) or ""
-                args = [a.arg for a in node.args.args]
-                functions.append({
-                    "name": node.name,
-                    "args": args,
-                    "doc": f_doc.strip().split("\n")[0] if f_doc else "",
-                    "lineno": node.lineno
-                })
-
-        file_records.append({
-            "path": rel,
-            "lines": lines,
-            "bytes": size_bytes,
-            "doc": file_doc.strip().split("\n")[0] if file_doc else "",
-            "classes": classes,
-            "functions": functions
-        })
-
+        rec = parse_single_file(fpath, PYGAME_DIR)
+        if rec:
+            file_records.append(rec)
     return file_records
 
-def build_section_1():
+def parse_tooling_python_files():
+    root_benchmarks = ["benchmark.py", "profile_pixelarray.py", "test_lighting_perf.py", "test_smoothscale.py"]
+    tooling_files = [os.path.join(PYGAME_DIR, f) for f in root_benchmarks if os.path.exists(os.path.join(PYGAME_DIR, f))]
+    tooling_files += sorted(glob.glob(os.path.join(PYGAME_DIR, "scripts", "*.py")))
+    tooling_files += sorted(glob.glob(os.path.join(PYGAME_DIR, "tools", "*.py")))
+    
+    records = []
+    for fpath in tooling_files:
+        rec = parse_single_file(fpath, PYGAME_DIR)
+        if rec:
+            records.append(rec)
+    return records
+
+def build_section_1_header():
     return """# Potaria: Exhaustive Pygame-CE to Unity 6 LTS Feature Parity Specification & Technical Architecture Reference
 
 **Author & Developer:** Kurados  
@@ -109,79 +138,10 @@ def build_section_1():
 **Document Classification:** Production-Grade Technical Specification, Codebase Census, and Implementation Parity Audit  
 
 ---
+"""
 
-## Master Table of Contents
-
-- [1. Executive Technical Architecture & Migration Overview](#1-executive-technical-architecture--migration-overview)
-  - [1.1 Franchise Strategy & One Project Repository Model](#11-franchise-strategy--one-project-repository-model)
-  - [1.2 Legacy Engine Specification: Python 3.13 + Pygame-CE](#12-legacy-engine-specification-python-313--pygame-ce)
-  - [1.3 Active Target Engine Specification: Unity 6 LTS + 2D URP](#13-active-target-engine-specification-unity-6-lts--2d-urp)
-  - [1.4 Verified Migration Milestones & Test Baselines](#14-verified-migration-milestones--test-baselines)
-- [2. System-by-System Deep Technical Architecture Breakdown](#2-system-by-system-deep-technical-architecture-breakdown)
-  - [2.1 World Generation, Infinite Chunk Streaming & Procedural Terrain](#21-world-generation-infinite-chunk-streaming--procedural-terrain)
-  - [2.2 Dual Tilemap Geometry, Composite Colliders & Snag-Free Platforming](#22-dual-tilemap-geometry-composite-colliders--snag-free-platforming)
-  - [2.3 2D Dynamic Lighting, Celestial Day/Night Phases & Subterranean Darkness](#23-2d-dynamic-lighting-celestial-daynight-phases--subterranean-darkness)
-  - [2.4 Locomotion, Kinematic Physics & Player Character Controller](#24-locomotion-kinematic-physics--player-character-controller)
-  - [2.5 Liquid Physics, Buoyancy, Swimming Mechanics & Oxygen Drowning](#25-liquid-physics-buoyancy-swimming-mechanics--oxygen-drowning)
-  - [2.6 Combat Engine: Weapon Archetypes, Attack Speeds & Single-Target Rules](#26-combat-engine-weapon-archetypes-attack-speeds--single-target-rules)
-  - [2.7 Ballistics Engine: Parabolic Gravity, Homing, Piercing & Shockwaves](#27-ballistics-engine-parabolic-gravity-homing-piercing--shockwaves)
-  - [2.8 Touhou-Inspired Bullet-Hell Boss Encounters & Danmaku Novas](#28-touhou-inspired-bullet-hell-boss-encounters--danmaku-novas)
-  - [2.9 Grazing Mechanics, Precision Dodge Sparking & Mana Rewards](#29-grazing-mechanics-precision-dodge-sparking--mana-rewards)
-  - [2.10 Celestial Reversal: Timed Projectile Reflection Mechanics](#210-celestial-reversal-timed-projectile-reflection-mechanics)
-  - [2.11 Action RPG Statistics, 100-Level EXP Curve & Attribute Scaling](#211-action-rpg-statistics-100-level-exp-curve--attribute-scaling)
-  - [2.12 Damage Mitigation Formulas, Defense Curves & Critical Strike Scaling](#212-damage-mitigation-formulas-defense-curves--critical-strike-scaling)
-  - [2.13 Philippine Culinary System, 79 Recipes & 5-Meal Buff Framework](#213-philippine-culinary-system-79-recipes--5-meal-buff-framework)
-  - [2.14 19 Statutory Meal Buff Contribution Caps](#214-19-statutory-meal-buff-contribution-caps)
-  - [2.15 Philippine Agricultural Simulation, Soil Tilling & 8 Native Crops](#215-philippine-agricultural-simulation-soil-tilling--8-native-crops)
-  - [2.16 2D Fishing Battle Minigame & 10 Native Philippine Aquatic Species](#216-2d-fishing-battle-minigame--10-native-philippine-aquatic-species)
-  - [2.17 Chroisen-Style Paperdoll Equipment System & 10 Equipment Slots](#217-chroisen-style-paperdoll-equipment-system--10-equipment-slots)
-  - [2.18 27 Progressive Equipment Sets & Tiered Milestone Synergies](#218-27-progressive-equipment-sets--tiered-milestone-synergies)
-  - [2.19 Canonical 7-Tier Rarity Engine & Stat Roll Distribution](#219-canonical-7-tier-rarity-engine--stat-roll-distribution)
-  - [2.20 Item Enhancement (+1 to +7) Strategic Risk Curves & Break Risks](#220-item-enhancement-1-to-7-strategic-risk-curves--break-risks)
-  - [2.21 Affix Engine, Affix Stone Carving & Slot Allotment Caps](#221-affix-engine-affix-stone-carving--slot-allotment-caps)
-  - [2.22 Mobs & Boss AI State Machines (33 Mob Types & 5 Boss Titans)](#222-mobs--boss-ai-state-machines-33-mob-types--5-boss-titans)
-  - [2.23 Nomadic Animated Traders, Turtle Shell Shield Defense & 1 Gold Repair](#223-nomadic-animated-traders-turtle-shell-shield-defense--1-gold-repair)
-  - [2.24 Housing Validity, Room Enclosure Checks & Village Settlement](#224-housing-validity-room-enclosure-checks--village-settlement)
-  - [2.25 HUD Architecture: Hotbars, Hearts, Mana, Clock Badge & Minimap Radar](#225-hud-architecture-hotbars-hearts-mana-clock-badge--minimap-radar)
-  - [2.26 Side-by-Side Equipment Comparison Cards ('Katabi') & Tooltips](#226-side-by-side-equipment-comparison-cards-katabi--tooltips)
-  - [2.27 F3 Real-Time Profiler Overlay & Frame Telemetry](#227-f3-real-time-profiler-overlay--frame-telemetry)
-  - [2.28 Mobile Touch Virtual Controller, Virtual Joystick & Action Clusters](#228-mobile-touch-virtual-controller-virtual-joystick--action-clusters)
-  - [2.29 Audio Engine: Synthesized SFX, Dynamic Biome BGM & Narrator Speech](#229-audio-engine-synthesized-sfx-dynamic-biome-bgm--narrator-speech)
-  - [2.30 Multi-Layer Save Engine, HMAC Security Signatures & World Caching](#230-multi-layer-save-engine-hmac-security-signatures--world-caching)
-  - [2.31 Multiplayer Architecture: LAN UDP Discovery & FishNet/Steamworks P2P](#231-multiplayer-architecture-lan-udp-discovery--fishnetsteamworks-p2p)
-  - [2.32 Modding & DLC Content Pack Extensibility System](#232-modding--dlc-content-pack-extensibility-system)
-- [3. Exhaustive Inventory of All Pygame-CE Codebase Classes, Functions & Methods](#3-exhaustive-inventory-of-all-pygame-ce-codebase-classes-functions--methods)
-- [4. Master Reference of Exact Numeric Values, Formulas & Physical Constants](#4-master-reference-of-exact-numeric-values-formulas--physical-constants)
-  - [4.1 Canonical Master Constants Reference (`src/constants.py`)](#41-canonical-master-constants-reference-srcconstantspy)
-  - [4.2 Kinematic & Locomotion Tuning Constants](#42-kinematic--locomotion-tuning-constants)
-  - [4.3 Fluid Mechanics & Oxygen Depletion Formula](#43-fluid-mechanics--oxygen-depletion-formula)
-  - [4.4 Combat & Damage Calculation Formulas](#44-combat--damage-calculation-formulas)
-  - [4.5 100-Level RPG Progression & EXP Formulas](#45-100-level-rpg-progression--exp-formulas)
-  - [4.6 Statutory Meal Buff Contribution Caps (`MEAL_BUFF_CAPS`)](#46-statutory-meal-buff-contribution-caps-meal_buff_caps)
-  - [4.7 7-Tier Rarity Engine Tables & Affix Budgets](#47-7-tier-rarity-engine-tables--affix-budgets)
-  - [4.8 Item Enhancement (+1 to +7) Requirements, Success Curves & Break Risks](#48-item-enhancement-1-to-7-requirements-success-curves--break-risks)
-  - [4.9 Maximum Additional Affix Slots (`MAX_ADDITIONAL_AFFIX_SLOTS`)](#49-maximum-additional-affix-slots-max_additional_affix_slots)
-  - [4.10 Complete 27 Equipment Sets Reference Table](#410-complete-27-equipment-sets-reference-table)
-  - [4.11 Complete 40 Action Combat Skills Roster](#411-complete-40-action-combat-skills-roster)
-  - [4.12 10 Native Philippine Aquatic Species Tuning Table](#412-10-native-philippine-aquatic-species-tuning-table)
-  - [4.13 8 Native Philippine Crops Agricultural Table](#413-8-native-philippine-crops-agricultural-table)
-- [5. HUD & UI Layout Specifications, Rendering Logic & Algorithms](#5-hud--ui-layout-specifications-rendering-logic--algorithms)
-  - [5.1 Viewport Coordinates & Anchor Offsets](#51-viewport-coordinates--anchor-offsets)
-  - [5.2 10-Slot Hotbar Visual & Functional Specification](#52-10-slot-hotbar-visual--functional-specification)
-  - [5.3 Life Hearts & Mana Star Render Pipelines](#53-life-hearts--mana-star-render-pipelines)
-  - [5.4 Active Meal Buff Tray & Countdown Timers](#54-active-meal-buff-tray--countdown-timers)
-  - [5.5 Side-by-Side Equipment Comparison ('Katabi') Layout Algorithm](#55-side-by-side-equipment-comparison-katabi-layout-algorithm)
-  - [5.6 Comprehensive Tooltip Line Construction Pipeline](#56-comprehensive-tooltip-line-construction-pipeline)
-  - [5.7 Real-Time Profiler Overlay Layout (F3)](#57-real-time-profiler-overlay-layout-f3)
-  - [5.8 Pseudo-Code: Celestial Reversal Projectile Reflection Algorithm](#58-pseudo-code-celestial-reversal-projectile-reflection-algorithm)
-  - [5.9 Pseudo-Code: 52% Core Hitbox vs. Graze Detection Algorithm](#59-pseudo-code-52-core-hitbox-vs-graze-detection-algorithm)
-  - [5.10 Pseudo-Code: Dual-Tilemap Snag-Free Platforming with BoxCast & Normal Detection](#510-pseudo-code-dual-tilemap-snag-free-platforming-with-boxcast--normal-detection)
-- [6. Comprehensive Unity 6 Parity Audit Matrix](#6-comprehensive-unity-6-parity-audit-matrix)
-- [7. Strategic Porting Roadmap & Prioritized Backlog (Milestones 4 through 7)](#7-strategic-porting-roadmap--prioritized-backlog-milestones-4-through-7)
-
----
-
-## 1. Executive Technical Architecture & Migration Overview
+def build_section_1_body():
+    return """## 1. Executive Technical Architecture & Migration Overview
 
 ### 1.1 Franchise Strategy & One Project Repository Model
 Potaria is architected under a unified **One Project Repository** model. The repository contains both the sandbox foundation and the narrative flagship:
@@ -220,20 +180,50 @@ The active development branch (`main`) is built upon:
 """
 
 def generate_parity_document():
-    print("Parsing Python reference codebase...")
+    print("Parsing Python reference engine codebase...")
     records = parse_all_python_files()
-    print(f"Parsed {len(records)} files successfully.")
+    print(f"Parsed {len(records)} engine source files successfully.")
+
+    print("Parsing Python developer tooling and benchmarks...")
+    tooling_records = parse_tooling_python_files()
+    print(f"Parsed {len(tooling_records)} tooling/benchmark scripts.")
 
     print("Compiling markdown document sections...")
-    sec1 = build_section_1()
+    sec1_hdr = build_section_1_header()
+    sec1_body = build_section_1_body()
     sec2 = build_section_2()
-    sec3 = build_section_3(records)
+    sec3 = build_section_3(records, tooling_records)
     sec4 = build_section_4()
     sec5 = build_section_5()
     sec6 = build_section_6()
     sec7 = build_section_7()
 
-    full_document = "\n".join([sec1, sec2, sec3, sec4, sec5, sec6, sec7])
+    body_combined = "\n".join([sec1_body, sec2, sec3, sec4, sec5, sec6, sec7])
+
+    # Extract all ## and ### headings for the dynamic Table of Contents
+    heading_matches = re.findall(r'^(#{2,3})\s+(.+)$', body_combined, re.MULTILINE)
+    
+    toc_lines = ["## Master Table of Contents", ""]
+    for level, title in heading_matches:
+        slug = github_slug(title)
+        indent = "  " if level == "###" else ""
+        toc_lines.append(f"{indent}- [{title}](#{slug})")
+    
+    toc_lines.append("")
+    toc_lines.append("---")
+    toc_lines.append("")
+    toc_block = "\n".join(toc_lines)
+
+    # Insert explicit HTML anchors for every ## and ### heading to guarantee 100% anchor navigation
+    def add_explicit_anchor(match):
+        level = match.group(1)
+        title = match.group(2)
+        slug = github_slug(title)
+        return f'<a id="{slug}"></a>\n{level} {title}'
+
+    body_with_anchors = re.sub(r'^(#{2,3})\s+(.+)$', add_explicit_anchor, body_combined, flags=re.MULTILINE)
+
+    full_document = f"{sec1_hdr}\n{toc_block}\n{body_with_anchors}"
 
     # Quality and Constraint Verification
     # 1. Strictly NO emojis
