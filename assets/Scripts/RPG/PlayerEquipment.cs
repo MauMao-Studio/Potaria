@@ -188,12 +188,24 @@ namespace Potaria.RPG
             if (!CanEquipInSlot(item, targetSlot)) return false;
 
             var oldItem = _equippedSlots[targetSlot];
-            _equippedSlots[targetSlot] = item.Clone(1);
 
             if (oldItem != null && returnInventory != null)
             {
-                returnInventory.AddItem(oldItem);
+                if (!returnInventory.AddItem(oldItem))
+                {
+                    if (returnInventory.HeldItem == null)
+                    {
+                        returnInventory.HeldItem = oldItem;
+                    }
+                    else
+                    {
+                        // Cannot safely return old item without loss
+                        return false;
+                    }
+                }
             }
+
+            _equippedSlots[targetSlot] = item.Clone(1);
 
             RecalculateStats();
             OnEquipmentChanged?.Invoke();
@@ -206,11 +218,23 @@ namespace Potaria.RPG
             var unequipped = _equippedSlots[slotIndex];
             if (unequipped == null) return null;
 
-            _equippedSlots[slotIndex] = null;
             if (returnInventory != null)
             {
-                returnInventory.AddItem(unequipped);
+                if (!returnInventory.AddItem(unequipped))
+                {
+                    if (returnInventory.HeldItem == null)
+                    {
+                        returnInventory.HeldItem = unequipped;
+                    }
+                    else
+                    {
+                        // Cannot unequip: inventory is completely full and cursor is occupied
+                        return null;
+                    }
+                }
             }
+
+            _equippedSlots[slotIndex] = null;
 
             RecalculateStats();
             OnEquipmentChanged?.Invoke();
@@ -251,6 +275,7 @@ namespace Potaria.RPG
                 rawAtkSpd += piece.GetEffectiveAtkSpeed();
                 rawMpRegen += piece.GetEffectiveMpRegen();
                 rawDmgRed += piece.GetEffectiveDamageReduction();
+                rawCritDmg += piece.GetEffectiveCritDamage();
             }
 
             // 2. Check 27 Equipment Sets and apply threshold synergies (2-pc, 4-pc, 5-pc)

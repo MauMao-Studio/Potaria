@@ -211,9 +211,15 @@ namespace Potaria.UI
 
         private void BuildMilestone4Panels()
         {
-            if (GetComponent<KatabiTooltipUI>() == null)
+            var existingDirect = GetComponent<KatabiTooltipUI>();
+            if (existingDirect != null) DestroyImmediate(existingDirect);
+
+            var existingChild = GetComponentInChildren<KatabiTooltipUI>();
+            if (existingChild == null)
             {
-                var tooltip = gameObject.AddComponent<KatabiTooltipUI>();
+                var tooltipObj = new GameObject("KatabiTooltip");
+                tooltipObj.transform.SetParent(transform, false);
+                var tooltip = tooltipObj.AddComponent<KatabiTooltipUI>();
                 tooltip.BuildCardHierarchyIfMissing();
             }
 

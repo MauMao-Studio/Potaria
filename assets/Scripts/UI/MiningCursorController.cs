@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using Potaria.World;
 using Potaria.Player;
+using Potaria.Data;
 
 namespace Potaria.UI
 {
@@ -267,6 +268,48 @@ namespace Potaria.UI
 
             if (UnityEngine.Input.GetMouseButtonDown(1) && _inReach)
             {
+                int currentTile = chunkManager.GetTile(_currentGx, _currentTy);
+                if (currentTile == WorldConstants.TileChest || currentTile == WorldConstants.TileIronChest)
+                {
+                    string chestName = (currentTile == WorldConstants.TileIronChest) ? "Iron Storage Chest" : "Wooden Storage Chest";
+                    var chest = StorageChest.GetOrCreateAt(_currentGx, _currentTy, chestName);
+                    if (ChestUI.Instance != null)
+                    {
+                        ChestUI.Instance.OpenChest(chest);
+                    }
+                    return;
+                }
+
+                if (currentTile == WorldConstants.TileWorkBench)
+                {
+                    if (CraftingUI.Instance != null)
+                    {
+                        CraftingUI.Instance.SetOpen(true);
+                        CraftingUI.Instance.SelectStation(CraftingStation.Workbench);
+                    }
+                    return;
+                }
+
+                if (currentTile == WorldConstants.TileFurnace)
+                {
+                    if (CraftingUI.Instance != null)
+                    {
+                        CraftingUI.Instance.SetOpen(true);
+                        CraftingUI.Instance.SelectStation(CraftingStation.Furnace);
+                    }
+                    return;
+                }
+
+                if (currentTile == WorldConstants.TileFireplace)
+                {
+                    if (CraftingUI.Instance != null)
+                    {
+                        CraftingUI.Instance.SetOpen(true);
+                        CraftingUI.Instance.SelectStation(CraftingStation.CookingPot);
+                    }
+                    return;
+                }
+
                 ExecutePlacementAction(_currentGx, _currentTy);
             }
         }
@@ -308,12 +351,19 @@ namespace Potaria.UI
         {
             if (string.IsNullOrEmpty(itemId)) return WorldConstants.TileAir;
 
-            if (itemId.Contains("torch")) return WorldConstants.TileTorch;
-            if (itemId.Contains("dirt")) return WorldConstants.TileDirt;
-            if (itemId.Contains("stone")) return WorldConstants.TileStone;
-            if (itemId.Contains("wood")) return WorldConstants.TileWoodPlanks;
-            if (itemId.Contains("copper_ore")) return WorldConstants.TileCopperOre;
-            if (itemId.Contains("iron_ore")) return WorldConstants.TileIronOre;
+            string id = itemId.ToLowerInvariant();
+            if (id.Contains("torch")) return WorldConstants.TileTorch;
+            if (id.Contains("stone_brick")) return WorldConstants.TileStoneBrick;
+            if (id.Contains("iron_chest")) return WorldConstants.TileIronChest;
+            if (id.Contains("chest")) return WorldConstants.TileChest;
+            if (id.Contains("workbench")) return WorldConstants.TileWorkBench;
+            if (id.Contains("furnace")) return WorldConstants.TileFurnace;
+            if (id.Contains("fireplace")) return WorldConstants.TileFireplace;
+            if (id.Contains("copper_ore")) return WorldConstants.TileCopperOre;
+            if (id.Contains("iron_ore")) return WorldConstants.TileIronOre;
+            if (id.Contains("stone")) return WorldConstants.TileStone;
+            if (id.Contains("dirt")) return WorldConstants.TileDirt;
+            if (id.Contains("wood")) return WorldConstants.TileWoodPlanks;
 
             return WorldConstants.TileAir;
         }

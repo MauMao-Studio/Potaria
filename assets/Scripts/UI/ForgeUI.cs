@@ -89,7 +89,7 @@ namespace Potaria.UI
             prt.anchorMax = new Vector2(0.5f, 0.5f);
             prt.pivot = new Vector2(0.5f, 0.5f);
             prt.sizeDelta = new Vector2(500f, 380f);
-            prt.anchoredPosition = new Vector2(-60f, -40f);
+            prt.anchoredPosition = new Vector2(-550f, -40f);
 
             var bg = _panelRoot.AddComponent<Image>();
             bg.color = new Color(0.09f, 0.08f, 0.07f, 0.96f);
@@ -109,6 +109,31 @@ namespace Potaria.UI
             titleText.fontSize = 16;
             titleText.fontStyle = FontStyles.Bold;
             titleText.text = "<color=#FF9900><b>FORGE MASTER ANVIL</b></color> <color=#A0A0A0>(+1 to +7 & Repair)</color>";
+
+            var closeBtnObj = new GameObject("CloseButton");
+            closeBtnObj.transform.SetParent(titleObj.transform, false);
+            var cbrt = closeBtnObj.AddComponent<RectTransform>();
+            cbrt.anchorMin = new Vector2(1f, 0.5f);
+            cbrt.anchorMax = new Vector2(1f, 0.5f);
+            cbrt.pivot = new Vector2(1f, 0.5f);
+            cbrt.anchoredPosition = new Vector2(0f, 0f);
+            cbrt.sizeDelta = new Vector2(24f, 22f);
+            var cbImg = closeBtnObj.AddComponent<Image>();
+            cbImg.color = new Color(0.35f, 0.15f, 0.15f, 1f);
+            var cbBtn = closeBtnObj.AddComponent<Button>();
+            cbBtn.targetGraphic = cbImg;
+            cbBtn.onClick.AddListener(() => SetOpen(false));
+            var cbTxtObj = new GameObject("Text");
+            cbTxtObj.transform.SetParent(closeBtnObj.transform, false);
+            var cbTxtRt = cbTxtObj.AddComponent<RectTransform>();
+            cbTxtRt.anchorMin = Vector2.zero;
+            cbTxtRt.anchorMax = Vector2.one;
+            var cbTxt = cbTxtObj.AddComponent<TextMeshProUGUI>();
+            if (tmpFont != null) cbTxt.font = tmpFont;
+            cbTxt.fontSize = 11;
+            cbTxt.fontStyle = FontStyles.Bold;
+            cbTxt.alignment = TextAlignmentOptions.Center;
+            cbTxt.text = "X";
 
             // Anvil Slot (Center Top)
             var slotObj = new GameObject("AnvilSlot");
@@ -459,6 +484,14 @@ namespace Potaria.UI
             SetOpen(!_isOpen);
         }
 
+        private void Update()
+        {
+            if (_isOpen && UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            {
+                SetOpen(false);
+            }
+        }
+
         public void SetOpen(bool open)
         {
             _isOpen = open;
@@ -467,6 +500,22 @@ namespace Potaria.UI
             if (_isOpen)
             {
                 RefreshDisplay();
+            }
+            else
+            {
+                // Return slotted item to inventory or held item when closing
+                if (_slottedItem != null)
+                {
+                    if (inventory != null)
+                    {
+                        if (!inventory.AddItem(_slottedItem))
+                        {
+                            if (inventory.HeldItem == null)
+                                inventory.HeldItem = _slottedItem;
+                        }
+                    }
+                    _slottedItem = null;
+                }
             }
         }
     }

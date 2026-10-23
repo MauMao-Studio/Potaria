@@ -169,7 +169,8 @@ All foundational systems designed and proven during the Pygame prototype phase s
   - [x] Build 30-slot storage chest container entity and modal UI (`StorageChest.cs`, `ChestUI.cs`) with Quick-Deposit (matching items) and Loot-All.
   - [x] Build bottom-left active food buff HUD overlay with hover tooltips and remaining duration meters.
   - [x] Build mobile virtual touch controls (onscreen analog joystick, action clusters, touch target sizing).
-  - [x] Verify via automated headless batchmode test runner (`PotariaInventoryTest`) with 126/126 tests passing (0 errors).
+  - [x] Verify via automated headless batchmode test runner (`PotariaInventoryTest`) with 153/153 tests passing (0 errors).
+  - [x] Total automated test suite passing across all 4 suites: 444 / 444 tests (0 errors, 100% Green).
 
 ---
 

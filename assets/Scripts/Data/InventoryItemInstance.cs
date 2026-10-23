@@ -200,7 +200,19 @@ namespace Potaria.Data
         public float GetEffectiveDamageReduction()
         {
             if (isBroken || itemData == null) return 0f;
-            return 0f;
+            float dr = 0f;
+            string id = itemData.ItemId != null ? itemData.ItemId.ToLowerInvariant() : "";
+            if (id.Contains("celestial_aegis") || (affixes != null && affixes.Contains("Celestial Aegis"))) dr += 0.05f;
+            return dr;
+        }
+
+        public float GetEffectiveCritDamage()
+        {
+            if (isBroken || itemData == null) return 0f;
+            float cd = 0f;
+            string id = itemData.ItemId != null ? itemData.ItemId.ToLowerInvariant() : "";
+            if (id.Contains("solar_flare") || (affixes != null && (affixes.Contains("Solar Flare") || affixes.Contains("Titan's Might")))) cd += 0.20f;
+            return cd;
         }
     }
 }

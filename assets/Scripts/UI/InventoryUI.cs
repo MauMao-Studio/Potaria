@@ -135,7 +135,7 @@ namespace Potaria.UI
             prt.anchorMax = new Vector2(0.5f, 0.5f);
             prt.pivot = new Vector2(0.5f, 0.5f);
             prt.sizeDelta = new Vector2(520f, 320f);
-            prt.anchoredPosition = new Vector2(-60f, -40f);
+            prt.anchoredPosition = new Vector2(0f, -40f);
 
             var bg = _panelRoot.AddComponent<Image>();
             bg.color = new Color(0.06f, 0.07f, 0.09f, 0.95f);
@@ -155,6 +155,12 @@ namespace Potaria.UI
             titleText.fontSize = 16;
             titleText.fontStyle = FontStyles.Bold;
             titleText.text = "<color=#FFD700><b>BACKPACK INVENTORY</b></color> <color=#A0A0A0>(40 Slots)</color>";
+
+            // Header Buttons: [CRAFT], [FORGE], [CHAR], [X]
+            CreateButton(titleObj, "BtnCraft", "CRAFT", new Vector2(245f, 0), new Vector2(50, 20), () => CraftingUI.Instance?.Toggle());
+            CreateButton(titleObj, "BtnForge", "FORGE", new Vector2(300f, 0), new Vector2(50, 20), () => ForgeUI.Instance?.Toggle());
+            CreateButton(titleObj, "BtnChar", "CHAR", new Vector2(355f, 0), new Vector2(46, 20), () => CharacterPanelUI.Instance?.Toggle());
+            CreateButton(titleObj, "BtnClose", "X", new Vector2(415f, 0), new Vector2(24, 20), () => SetOpen(false));
 
             // Grid Container (4 rows x 10 cols)
             var gridObj = new GameObject("Grid");
@@ -458,8 +464,10 @@ namespace Potaria.UI
                 // Return held item to inventory if closing
                 if (inventory != null && inventory.HeldItem != null)
                 {
-                    inventory.AddItem(inventory.HeldItem);
-                    inventory.HeldItem = null;
+                    if (inventory.AddItem(inventory.HeldItem))
+                    {
+                        inventory.HeldItem = null;
+                    }
                 }
             }
         }
@@ -509,18 +517,47 @@ namespace Potaria.UI
 
             if (isShiftClick)
             {
-                // Quick-Transfer: Move between Hotbar (0..9) and Backpack (10..39), or into open chest/equipment
+                // Quick-Transfer: Move into open chest, or equip piece, or move between Hotbar (0..9) and Backpack (10..39)
                 if (slotItem != null)
                 {
-                    // Check if equippable and character panel is open
-                    if (equipment != null && (characterPanel == null || characterPanel.IsOpen) && equipment.GetMatchingSlot(slotItem) >= 0)
+                    // 1. If chest is open, quick-transfer into chest
+                    if (ChestUI.Instance != null && ChestUI.Instance.IsOpen && ChestUI.Instance.ActiveChest != null)
                     {
-                        equipment.EquipItem(slotItem, -1, inventory);
-                        inventory.SetSlot(slotIndex, null);
+                        if (ChestUI.Instance.ActiveChest.AddItem(slotItem))
+                        {
+                            inventory.SetSlot(slotIndex, null);
+                        }
+                        else
+                        {
+                            inventory.SetSlot(slotIndex, slotItem);
+                        }
                         return;
                     }
 
-                    // Otherwise swap between hotbar and backpack
+                    // 2. Check if equippable and character panel is open
+                    if (equipment != null && (characterPanel == null || characterPanel.IsOpen) && equipment.GetMatchingSlot(slotItem) >= 0)
+                    {
+                        if (slotItem.Count > 1)
+                        {
+                            var one = slotItem.Clone(1);
+                            if (equipment.EquipItem(one, -1, inventory))
+                            {
+                                slotItem.Count -= 1;
+                                inventory.SetSlot(slotIndex, slotItem);
+                            }
+                        }
+                        else
+                        {
+                            inventory.SetSlot(slotIndex, null);
+                            if (!equipment.EquipItem(slotItem, -1, inventory))
+                            {
+                                inventory.SetSlot(slotIndex, slotItem);
+                            }
+                        }
+                        return;
+                    }
+
+                    // 3. Otherwise swap between hotbar and backpack
                     int targetStart = (slotIndex < PlayerInventory.HOTBAR_SLOTS) ? PlayerInventory.HOTBAR_SLOTS : 0;
                     int targetEnd = (slotIndex < PlayerInventory.HOTBAR_SLOTS) ? PlayerInventory.TOTAL_SLOTS : PlayerInventory.HOTBAR_SLOTS;
 
@@ -538,13 +575,21 @@ namespace Potaria.UI
 
             if (isRightClick)
             {
-                // Right-Click: Split half stack, or place 1 from held item
-                if (held == null && slotItem != null && slotItem.Count > 1)
+                // Right-Click: Pick up single item or split half stack, or place 1 from held item
+                if (held == null && slotItem != null)
                 {
-                    int take = (slotItem.Count + 1) / 2;
-                    inventory.HeldItem = slotItem.Clone(take);
-                    slotItem.Count -= take;
-                    inventory.SetSlot(slotIndex, slotItem);
+                    if (slotItem.Count == 1)
+                    {
+                        inventory.HeldItem = slotItem;
+                        inventory.SetSlot(slotIndex, null);
+                    }
+                    else
+                    {
+                        int take = (slotItem.Count + 1) / 2;
+                        inventory.HeldItem = slotItem.Clone(take);
+                        slotItem.Count -= take;
+                        inventory.SetSlot(slotIndex, slotItem);
+                    }
                 }
                 else if (held != null)
                 {

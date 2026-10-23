@@ -72,19 +72,34 @@ namespace Potaria.RPG
             }
         }
 
+        public void SetFromCopper(int totalCopper)
+        {
+            if (stats != null)
+            {
+                stats.SetFromCopper(totalCopper);
+            }
+            else
+            {
+                totalCopper = Mathf.Max(0, totalCopper);
+                localGold = totalCopper / 10000;
+                int rem = totalCopper % 10000;
+                localSilver = rem / 100;
+                localCopper = rem % 100;
+            }
+            OnCoinsChanged?.Invoke(CopperCoins, SilverCoins, GoldCoins);
+        }
+
+        public void SetCoins(int copper = 0, int silver = 0, int gold = 0)
+        {
+            SetFromCopper(copper + silver * 100 + gold * 10000);
+        }
+
         public int CopperCoins
         {
             get => stats != null ? stats.CopperCoins : localCopper;
             set
             {
-                if (stats != null)
-                {
-                    stats.SetFromCopper(TotalCopperValue - (CopperCoins - value));
-                }
-                else
-                {
-                    localCopper = value;
-                }
+                SetFromCopper(TotalCopperValue - (CopperCoins - value));
                 OnCoinsChanged?.Invoke(CopperCoins, SilverCoins, GoldCoins);
             }
         }
@@ -94,14 +109,7 @@ namespace Potaria.RPG
             get => stats != null ? stats.SilverCoins : localSilver;
             set
             {
-                if (stats != null)
-                {
-                    stats.SetFromCopper(TotalCopperValue - ((SilverCoins - value) * 100));
-                }
-                else
-                {
-                    localSilver = value;
-                }
+                SetFromCopper(TotalCopperValue - ((SilverCoins - value) * 100));
                 OnCoinsChanged?.Invoke(CopperCoins, SilverCoins, GoldCoins);
             }
         }
@@ -111,14 +119,7 @@ namespace Potaria.RPG
             get => stats != null ? stats.GoldCoins : localGold;
             set
             {
-                if (stats != null)
-                {
-                    stats.SetFromCopper(TotalCopperValue - ((GoldCoins - value) * 10000));
-                }
-                else
-                {
-                    localGold = value;
-                }
+                SetFromCopper(TotalCopperValue - ((GoldCoins - value) * 10000));
                 OnCoinsChanged?.Invoke(CopperCoins, SilverCoins, GoldCoins);
             }
         }
@@ -230,9 +231,31 @@ namespace Potaria.RPG
                 return true;
             }
 
-            var itemData = ItemDatabase.Instance.GetItem(itemId);
+            var itemData = ItemDatabase.Instance != null ? ItemDatabase.Instance.GetItem(itemId) : null;
+            if (itemData == null)
+            {
+                for (int i = 0; i < TOTAL_SLOTS; i++)
+                {
+                    if (_slots[i] != null && _slots[i].ItemId != null && _slots[i].ItemId.Equals(itemId, StringComparison.OrdinalIgnoreCase) && _slots[i].ItemData != null)
+                    {
+                        itemData = _slots[i].ItemData;
+                        break;
+                    }
+                }
+            }
             if (itemData == null) return false;
             return AddItem(itemData, count);
+        }
+
+        public void Clear()
+        {
+            for (int i = 0; i < TOTAL_SLOTS; i++)
+            {
+                _slots[i] = null;
+                NotifySlotChanged(i);
+            }
+            HeldItem = null;
+            OnInventoryChanged?.Invoke();
         }
 
         public bool AddItem(InventoryItemInstance item)
@@ -282,16 +305,20 @@ namespace Potaria.RPG
                 }
             }
 
-            // 2. Place into first empty slot
+            // 2. Place into empty slots (respecting maxStack)
             for (int i = 0; i < TOTAL_SLOTS; i++)
             {
                 if (_slots[i] == null)
                 {
-                    _slots[i] = item.Clone();
-                    item.Count = 0;
+                    int take = Mathf.Min(item.MaxStack, item.Count);
+                    _slots[i] = item.Clone(take);
+                    item.Count -= take;
                     NotifySlotChanged(i);
-                    OnInventoryChanged?.Invoke();
-                    return true;
+                    if (item.Count <= 0)
+                    {
+                        OnInventoryChanged?.Invoke();
+                        return true;
+                    }
                 }
             }
 

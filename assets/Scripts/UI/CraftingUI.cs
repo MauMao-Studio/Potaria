@@ -92,7 +92,7 @@ namespace Potaria.UI
             prt.anchorMax = new Vector2(0.5f, 0.5f);
             prt.pivot = new Vector2(0.5f, 0.5f);
             prt.sizeDelta = new Vector2(560f, 420f);
-            prt.anchoredPosition = new Vector2(-60f, -40f);
+            prt.anchoredPosition = new Vector2(-550f, -40f);
 
             var bg = _panelRoot.AddComponent<Image>();
             bg.color = new Color(0.06f, 0.08f, 0.10f, 0.96f);
@@ -112,6 +112,31 @@ namespace Potaria.UI
             titleText.fontSize = 16;
             titleText.fontStyle = FontStyles.Bold;
             titleText.text = "<color=#FFD700><b>CRAFTING LEDGER</b></color> <color=#A0A0A0>(5 Stations)</color>";
+
+            var closeBtnObj = new GameObject("CloseButton");
+            closeBtnObj.transform.SetParent(titleObj.transform, false);
+            var cbrt = closeBtnObj.AddComponent<RectTransform>();
+            cbrt.anchorMin = new Vector2(1f, 0.5f);
+            cbrt.anchorMax = new Vector2(1f, 0.5f);
+            cbrt.pivot = new Vector2(1f, 0.5f);
+            cbrt.anchoredPosition = new Vector2(0f, 0f);
+            cbrt.sizeDelta = new Vector2(24f, 22f);
+            var cbImg = closeBtnObj.AddComponent<Image>();
+            cbImg.color = new Color(0.35f, 0.15f, 0.15f, 1f);
+            var cbBtn = closeBtnObj.AddComponent<Button>();
+            cbBtn.targetGraphic = cbImg;
+            cbBtn.onClick.AddListener(() => SetOpen(false));
+            var cbTxtObj = new GameObject("Text");
+            cbTxtObj.transform.SetParent(closeBtnObj.transform, false);
+            var cbTxtRt = cbTxtObj.AddComponent<RectTransform>();
+            cbTxtRt.anchorMin = Vector2.zero;
+            cbTxtRt.anchorMax = Vector2.one;
+            var cbTxt = cbTxtObj.AddComponent<TextMeshProUGUI>();
+            if (tmpFont != null) cbTxt.font = tmpFont;
+            cbTxt.fontSize = 11;
+            cbTxt.fontStyle = FontStyles.Bold;
+            cbTxt.alignment = TextAlignmentOptions.Center;
+            cbTxt.text = "X";
 
             // 5 Tabs Header
             BuildTabsHeader();
@@ -515,21 +540,56 @@ namespace Potaria.UI
                 if (inventory.CountItem(ingId) < ing.Count) return false;
             }
 
-            // 2. Deduct materials
+            // 2. Resolve result item
+            string resId = !string.IsNullOrEmpty(recipe.ResultItemId) ? recipe.ResultItemId : (recipe.ResultItemData != null ? recipe.ResultItemData.ItemId : "");
+            var resItem = recipe.ResultItemData != null ? recipe.ResultItemData : (ItemDatabase.Instance != null ? ItemDatabase.Instance.GetItem(resId) : null);
+            if (resItem == null) return false;
+
+            // 3. Deduct materials
+            var deducted = new List<(ItemData data, string id, int count)>();
             foreach (var ing in recipe.Ingredients)
             {
                 string ingId = (ing.ItemData != null) ? ing.ItemData.ItemId : ing.ItemId;
-                inventory.RemoveItem(ingId, ing.Count);
+                ItemData ingData = ing.ItemData != null ? ing.ItemData : (ItemDatabase.Instance != null ? ItemDatabase.Instance.GetItem(ingId) : null);
+                if (inventory.RemoveItem(ingId, ing.Count))
+                {
+                    deducted.Add((ingData, ingId, ing.Count));
+                }
             }
 
-            // 3. Add result item
-            string resId = !string.IsNullOrEmpty(recipe.ResultItemId) ? recipe.ResultItemId : (recipe.ResultItemData != null ? recipe.ResultItemData.ItemId : "");
-            var resItem = recipe.ResultItemData != null ? recipe.ResultItemData : ItemDatabase.Instance.GetItem(resId);
-
-            inventory.AddItem(resItem, recipe.ResultCount);
+            // 4. Add result item (refund if inventory full)
+            bool added = inventory.AddItem(resItem, recipe.ResultCount);
+            if (!added)
+            {
+                foreach (var (data, id, count) in deducted)
+                {
+                    if (data != null)
+                    {
+                        inventory.AddItem(data, count);
+                    }
+                    else
+                    {
+                        inventory.AddItem(id, count);
+                    }
+                }
+                return false;
+            }
 
             RefreshRecipes();
             return true;
+        }
+
+        public void SelectStation(CraftingStation station)
+        {
+            SelectTab(station);
+        }
+
+        private void Update()
+        {
+            if (_isOpen && UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            {
+                SetOpen(false);
+            }
         }
 
         public void Toggle()

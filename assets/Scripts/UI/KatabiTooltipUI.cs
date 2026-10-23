@@ -49,7 +49,6 @@ namespace Potaria.UI
         private void Awake()
         {
             s_instance = this;
-            if (containerRect == null) containerRect = GetComponent<RectTransform>();
             _rootCanvas = GetComponentInParent<Canvas>();
             if (_rootCanvas != null) _canvasRect = _rootCanvas.GetComponent<RectTransform>();
 
@@ -61,24 +60,37 @@ namespace Potaria.UI
         {
             if (candidateCardObj != null && equippedCardObj != null) return;
 
-            // Ensure container rect
-            if (containerRect == null) containerRect = GetComponent<RectTransform>();
-            if (containerRect == null) containerRect = gameObject.AddComponent<RectTransform>();
+            _rootCanvas = GetComponentInParent<Canvas>();
+            if (_rootCanvas != null) _canvasRect = _rootCanvas.GetComponent<RectTransform>();
 
-            containerRect.anchorMin = Vector2.zero;
-            containerRect.anchorMax = Vector2.zero;
-            containerRect.pivot = new Vector2(0f, 1f);
-
-            // 1. Build Candidate Card
-            if (candidateCardObj == null)
+            // Create or find a dedicated TooltipContainer child so we do not mutate HUD_Canvas
+            var containerObj = transform.Find("TooltipContainer");
+            if (containerObj == null)
             {
-                candidateCardObj = CreateCardObject("CandidateCard", new Vector2(0, 0), out candidateBorder, out candidateHeader, out candidateStatsText, out candidateAffixText, out candidateLoreText);
+                var go = new GameObject("TooltipContainer");
+                go.transform.SetParent(transform, false);
+                containerRect = go.AddComponent<RectTransform>();
+                containerRect.anchorMin = new Vector2(0.5f, 0.5f);
+                containerRect.anchorMax = new Vector2(0.5f, 0.5f);
+                containerRect.pivot = new Vector2(0.5f, 0.5f);
+                containerRect.anchoredPosition = Vector2.zero;
+                containerRect.sizeDelta = Vector2.zero;
+            }
+            else
+            {
+                containerRect = containerObj.GetComponent<RectTransform>();
             }
 
-            // 2. Build Equipped Card
+            // 1. Build Candidate Card under containerRect
+            if (candidateCardObj == null)
+            {
+                candidateCardObj = CreateCardObject("CandidateCard", containerRect.transform, out candidateBorder, out candidateHeader, out candidateStatsText, out candidateAffixText, out candidateLoreText);
+            }
+
+            // 2. Build Equipped Card under containerRect
             if (equippedCardObj == null)
             {
-                equippedCardObj = CreateCardObject("EquippedCard", new Vector2(310, 0), out equippedBorder, out equippedHeader, out equippedStatsText, out equippedAffixText, out equippedLoreText);
+                equippedCardObj = CreateCardObject("EquippedCard", containerRect.transform, out equippedBorder, out equippedHeader, out equippedStatsText, out equippedAffixText, out equippedLoreText);
                 
                 // Add equipped badge to equipped card
                 var badgeObj = new GameObject("EquippedBadge");
@@ -99,17 +111,17 @@ namespace Potaria.UI
             }
         }
 
-        private GameObject CreateCardObject(string name, Vector2 localPos, out Image border, out TextMeshProUGUI header, out TextMeshProUGUI stats, out TextMeshProUGUI affixes, out TextMeshProUGUI lore)
+        private GameObject CreateCardObject(string name, Transform parent, out Image border, out TextMeshProUGUI header, out TextMeshProUGUI stats, out TextMeshProUGUI affixes, out TextMeshProUGUI lore)
         {
             var card = new GameObject(name);
-            card.transform.SetParent(transform, false);
+            card.transform.SetParent(parent, false);
 
             var rt = card.AddComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.zero;
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0f, 1f);
-            rt.anchoredPosition = localPos;
-            rt.sizeDelta = new Vector2(300f, 380f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.sizeDelta = new Vector2(300f, 420f);
 
             var bg = card.AddComponent<Image>();
             bg.color = new Color(0.08f, 0.09f, 0.12f, 0.96f);
@@ -179,6 +191,7 @@ namespace Potaria.UI
 
             BuildCardHierarchyIfMissing();
             gameObject.SetActive(true);
+            if (containerRect != null) containerRect.gameObject.SetActive(true);
 
             // Populate Candidate Card
             PopulateCandidateCard(candidate, equipped);
@@ -327,6 +340,28 @@ namespace Potaria.UI
                 lines.Add($"<color=#59F273>SPD: +{candSpd:0.##}</color>{diffStr}");
             }
 
+            float candDr = cand.GetEffectiveDamageReduction();
+            float eqDr = eq != null ? eq.GetEffectiveDamageReduction() : 0f;
+            if (candDr > 0f || eqDr > 0f)
+            {
+                float diff = candDr - eqDr;
+                string diffStr = (eq != null && Mathf.Abs(diff) > 0.001f)
+                    ? (diff > 0 ? $" <color=#4CD964>(+{diff * 100f:0.#}%)</color>" : $" <color=#FF4D4D>({diff * 100f:0.#}%)</color>")
+                    : "";
+                lines.Add($"<color=#99FFCC>DMG RED: +{candDr * 100f:0.#}%</color>{diffStr}");
+            }
+
+            float candCd = cand.GetEffectiveCritDamage();
+            float eqCd = eq != null ? eq.GetEffectiveCritDamage() : 0f;
+            if (candCd > 0f || eqCd > 0f)
+            {
+                float diff = candCd - eqCd;
+                string diffStr = (eq != null && Mathf.Abs(diff) > 0.001f)
+                    ? (diff > 0 ? $" <color=#4CD964>(+{diff * 100f:0.#}%)</color>" : $" <color=#FF4D4D>({diff * 100f:0.#}%)</color>")
+                    : "";
+                lines.Add($"<color=#FFAA00>CRIT DMG: +{candCd * 100f:0.#}%</color>{diffStr}");
+            }
+
             // Weapon Perks / Special Tag
             if (cand.ItemData is WeaponItemData wep && !string.IsNullOrEmpty(wep.SpecialTag))
             {
@@ -356,6 +391,12 @@ namespace Potaria.UI
 
             float spd = item.GetEffectiveSpeed();
             if (spd != 0) lines.Add($"<color=#59F273>SPD: +{spd:0.##}</color>");
+
+            float dr = item.GetEffectiveDamageReduction();
+            if (dr > 0f) lines.Add($"<color=#99FFCC>DMG RED: +{dr * 100f:0.#}%</color>");
+
+            float cd = item.GetEffectiveCritDamage();
+            if (cd > 0f) lines.Add($"<color=#FFAA00>CRIT DMG: +{cd * 100f:0.#}%</color>");
 
             if (item.ItemData is WeaponItemData wep && !string.IsNullOrEmpty(wep.SpecialTag))
             {
@@ -404,7 +445,7 @@ namespace Potaria.UI
             RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRect, screenPos, _rootCanvas.worldCamera, out var localPos);
 
             float cardW = 300f;
-            float cardH = 380f;
+            float cardH = 420f;
             float spacing = 12f;
             float totalW = hasEquipped ? (cardW * 2 + spacing) : cardW;
 
@@ -442,6 +483,7 @@ namespace Potaria.UI
         {
             if (candidateCardObj != null) candidateCardObj.SetActive(false);
             if (equippedCardObj != null) equippedCardObj.SetActive(false);
+            if (containerRect != null) containerRect.gameObject.SetActive(false);
             gameObject.SetActive(false);
         }
     }

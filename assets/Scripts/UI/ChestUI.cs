@@ -41,6 +41,7 @@ namespace Potaria.UI
         public bool IsOpen => _isOpen;
 
         public StorageChest TargetChest => targetChest;
+        public StorageChest ActiveChest => targetChest;
 
         private void Awake()
         {
@@ -81,7 +82,7 @@ namespace Potaria.UI
             prt.anchorMax = new Vector2(0.5f, 0.5f);
             prt.pivot = new Vector2(0.5f, 0.5f);
             prt.sizeDelta = new Vector2(520f, 260f);
-            prt.anchoredPosition = new Vector2(-60f, 200f);
+            prt.anchoredPosition = new Vector2(0f, 260f);
 
             var bg = _panelRoot.AddComponent<Image>();
             bg.color = new Color(0.08f, 0.07f, 0.05f, 0.95f);
@@ -101,6 +102,31 @@ namespace Potaria.UI
             _titleText.fontSize = 15;
             _titleText.fontStyle = FontStyles.Bold;
             _titleText.text = "<color=#E69138><b>WOODEN STORAGE CHEST</b></color> <color=#A0A0A0>(30 Slots)</color>";
+
+            var closeBtnObj = new GameObject("CloseButton");
+            closeBtnObj.transform.SetParent(titleObj.transform, false);
+            var cbrt = closeBtnObj.AddComponent<RectTransform>();
+            cbrt.anchorMin = new Vector2(1f, 0.5f);
+            cbrt.anchorMax = new Vector2(1f, 0.5f);
+            cbrt.pivot = new Vector2(1f, 0.5f);
+            cbrt.anchoredPosition = new Vector2(0f, 0f);
+            cbrt.sizeDelta = new Vector2(24f, 22f);
+            var cbImg = closeBtnObj.AddComponent<Image>();
+            cbImg.color = new Color(0.35f, 0.15f, 0.15f, 1f);
+            var cbBtn = closeBtnObj.AddComponent<Button>();
+            cbBtn.targetGraphic = cbImg;
+            cbBtn.onClick.AddListener(() => CloseChest());
+            var cbTxtObj = new GameObject("Text");
+            cbTxtObj.transform.SetParent(closeBtnObj.transform, false);
+            var cbTxtRt = cbTxtObj.AddComponent<RectTransform>();
+            cbTxtRt.anchorMin = Vector2.zero;
+            cbTxtRt.anchorMax = Vector2.one;
+            var cbTxt = cbTxtObj.AddComponent<TextMeshProUGUI>();
+            if (tmpFont != null) cbTxt.font = tmpFont;
+            cbTxt.fontSize = 11;
+            cbTxt.fontStyle = FontStyles.Bold;
+            cbTxt.alignment = TextAlignmentOptions.Center;
+            cbTxt.text = "X";
 
             // Grid Container (3 rows x 10 cols)
             var gridObj = new GameObject("Grid");
@@ -168,7 +194,11 @@ namespace Potaria.UI
                     int slotIdx = index;
                     var trigger = slotObj.AddComponent<EventTrigger>();
                     var click = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
-                    click.callback.AddListener((_) => HandleChestSlotClick(slotIdx));
+                    click.callback.AddListener((data) =>
+                    {
+                        var pData = (PointerEventData)data;
+                        HandleChestSlotClick(slotIdx, pData.button == PointerEventData.InputButton.Right, UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.RightShift));
+                    });
                     trigger.triggers.Add(click);
 
                     var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
@@ -321,7 +351,32 @@ namespace Potaria.UI
             }
         }
 
-        private void HandleChestSlotClick(int slotIndex)
+        private void Update()
+        {
+            if (_isOpen)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                {
+                    CloseChest();
+                    return;
+                }
+
+                if (targetChest != null)
+                {
+                    var player = FindFirstObjectByType<Potaria.Player.PlayerController>();
+                    if (player != null)
+                    {
+                        float dist = Vector2.Distance(player.transform.position, targetChest.transform.position);
+                        if (dist > 8f)
+                        {
+                            CloseChest();
+                        }
+                    }
+                }
+            }
+        }
+
+        private void HandleChestSlotClick(int slotIndex, bool isRightClick = false, bool isShiftClick = false)
         {
             if (targetChest == null) return;
             if (playerInventory == null) playerInventory = FindFirstObjectByType<PlayerInventory>();
@@ -329,6 +384,56 @@ namespace Potaria.UI
 
             var chestItem = targetChest.GetSlot(slotIndex);
             var held = playerInventory.HeldItem;
+
+            if (isShiftClick)
+            {
+                // Quick-Transfer from chest directly into player inventory
+                if (chestItem != null)
+                {
+                    bool added = playerInventory.AddItem(chestItem);
+                    if (chestItem.Count <= 0)
+                    {
+                        targetChest.SetSlot(slotIndex, null);
+                    }
+                    else
+                    {
+                        targetChest.SetSlot(slotIndex, chestItem);
+                    }
+                }
+                RefreshAllSlots();
+                return;
+            }
+
+            if (isRightClick)
+            {
+                // Right-Click: Split half stack from chest to held item, or place 1 from held item into chest
+                if (held == null && chestItem != null)
+                {
+                    int take = (chestItem.Count > 1) ? (chestItem.Count + 1) / 2 : 1;
+                    playerInventory.HeldItem = chestItem.Clone(take);
+                    chestItem.Count -= take;
+                    targetChest.SetSlot(slotIndex, chestItem.Count > 0 ? chestItem : null);
+                }
+                else if (held != null)
+                {
+                    if (chestItem == null)
+                    {
+                        var one = held.Clone(1);
+                        targetChest.SetSlot(slotIndex, one);
+                        held.Count -= 1;
+                        if (held.Count <= 0) playerInventory.HeldItem = null;
+                    }
+                    else if (chestItem.CanStackWith(held) && chestItem.Count < chestItem.MaxStack)
+                    {
+                        chestItem.Count += 1;
+                        held.Count -= 1;
+                        if (held.Count <= 0) playerInventory.HeldItem = null;
+                        targetChest.SetSlot(slotIndex, chestItem);
+                    }
+                }
+                RefreshAllSlots();
+                return;
+            }
 
             if (held == null)
             {

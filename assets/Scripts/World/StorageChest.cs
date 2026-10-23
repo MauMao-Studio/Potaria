@@ -21,6 +21,27 @@ namespace Potaria.World
         [SerializeField] private string chestId = "chest_default";
         [SerializeField] private string chestName = "Wooden Chest";
 
+        private static readonly Dictionary<Vector2Int, StorageChest> s_worldChests = new Dictionary<Vector2Int, StorageChest>();
+
+        public static StorageChest GetOrCreateAt(int gx, int gy, string name = "Storage Chest")
+        {
+            var pos = new Vector2Int(gx, gy);
+            if (!s_worldChests.TryGetValue(pos, out var chest) || chest == null)
+            {
+                var go = new GameObject($"Chest_{gx}_{gy}");
+                chest = go.AddComponent<StorageChest>();
+                chest.ChestId = $"chest_{gx}_{gy}";
+                chest.ChestName = name;
+                s_worldChests[pos] = chest;
+            }
+            return chest;
+        }
+
+        public static void ClearWorldChests()
+        {
+            s_worldChests.Clear();
+        }
+
         private readonly InventoryItemInstance[] _slots = new InventoryItemInstance[TOTAL_CHEST_SLOTS];
 
         public event Action OnChestChanged;
@@ -70,15 +91,19 @@ namespace Potaria.World
                 }
             }
 
-            // 2. First empty slot
+            // 2. Empty slots (respecting maxStack)
             for (int i = 0; i < TOTAL_CHEST_SLOTS; i++)
             {
                 if (_slots[i] == null)
                 {
-                    _slots[i] = item.Clone();
-                    item.Count = 0;
-                    OnChestChanged?.Invoke();
-                    return true;
+                    int take = Mathf.Min(item.MaxStack, item.Count);
+                    _slots[i] = item.Clone(take);
+                    item.Count -= take;
+                    if (item.Count <= 0)
+                    {
+                        OnChestChanged?.Invoke();
+                        return true;
+                    }
                 }
             }
 

@@ -53,6 +53,7 @@ namespace Potaria.Editor
                 TestForgeAffixCarvingAndEmbedding();
                 Test30SlotStorageChestQuickDepositAndLootAll();
                 TestHotbarIntegrationWithBackpack();
+                TestMilestone4BugFixesAndRobustness();
             }
             catch (Exception ex)
             {
@@ -875,6 +876,177 @@ namespace Potaria.Editor
 
                 UnityEngine.Object.DestroyImmediate(pick);
                 UnityEngine.Object.DestroyImmediate(playerObj);
+                UnityEngine.Object.DestroyImmediate(hudObj);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(go);
+            }
+        }
+
+        // ====================================================================
+        // 13. Deep Verification of Milestone 4 Bug Fixes & Edge-Case Robustness
+        // ====================================================================
+        private static void TestMilestone4BugFixesAndRobustness()
+        {
+            Debug.Log("--- 13. Testing Milestone 4 Bug Fixes & Edge-Case Robustness ---");
+
+            var go = new GameObject("TestBugFixesHolder");
+            try
+            {
+                // A. KatabiTooltipUI: Attached to child object under HUD_Canvas; Hide() deactivates tooltip, HUD_Canvas remains active
+                var hudObj = new GameObject("HUD_Canvas");
+                hudObj.AddComponent<Canvas>();
+                var tooltipObj = new GameObject("KatabiTooltip");
+                tooltipObj.transform.SetParent(hudObj.transform, false);
+                var tooltip = tooltipObj.AddComponent<KatabiTooltipUI>();
+
+                var testItemData = ScriptableObject.CreateInstance<EquipmentItemData>();
+                testItemData.ItemId = "test_helmet";
+                testItemData.ItemName = "Test Helmet";
+                testItemData.EquipSlot = EquipSlot.Helmet;
+                testItemData.Defense = 10;
+                var testItem = new InventoryItemInstance(testItemData, 1);
+
+                tooltip.Show(testItem, null, new Vector2(500, 500));
+                AssertTrue(hudObj.activeSelf, "KatabiTooltip_Show_HUDCanvasActive");
+                AssertTrue(tooltip.gameObject.activeSelf, "KatabiTooltip_Show_TooltipActive");
+
+                tooltip.Hide();
+                AssertTrue(hudObj.activeSelf, "KatabiTooltip_Hide_HUDCanvasRemainsActive");
+                AssertTrue(!tooltip.gameObject.activeSelf, "KatabiTooltip_InactiveOnHide");
+
+                // B. PlayerInventory: SetFromCopper / Coin Purse auto-conversion without PlayerStats
+                var invObj = new GameObject("PlayerInventory");
+                var inv = invObj.AddComponent<PlayerInventory>();
+                inv.CopperCoins = 10000;
+                AssertEqual(1, inv.GoldCoins, "CoinPurse_Set10000Copper_Yields1Gold");
+                AssertEqual(0, inv.SilverCoins, "CoinPurse_Set10000Copper_Yields0Silver");
+                AssertEqual(0, inv.CopperCoins, "CoinPurse_Set10000Copper_Yields0Copper");
+
+                inv.SetCoins(0, 0, 0);
+                inv.CopperCoins = 250;
+                AssertEqual(0, inv.GoldCoins, "CoinPurse_Set250Copper_Yields0Gold");
+                AssertEqual(2, inv.SilverCoins, "CoinPurse_Set250Copper_Yields2Silver");
+                AssertEqual(50, inv.CopperCoins, "CoinPurse_Set250Copper_Yields50Copper");
+
+                // C. PlayerInventory: AddItem stack chunking into empty slots up to maxStack
+                var stackData = ScriptableObject.CreateInstance<ItemData>();
+                stackData.ItemId = "test_stack_item";
+                stackData.ItemName = "Stack Item";
+                stackData.MaxStack = 99;
+
+                var largeStack = new InventoryItemInstance(stackData, 150);
+                bool addedLarge = inv.AddItem(largeStack);
+                AssertTrue(addedLarge, "Inventory_AddItem_LargeStackChunked_Success");
+                AssertEqual(99, inv.GetSlot(0).Count, "Inventory_AddItem_Slot0ChunkedToMaxStack99");
+                AssertEqual(51, inv.GetSlot(1).Count, "Inventory_AddItem_Slot1TakesRemainder51");
+
+                // D. PlayerEquipment: EquipItem & UnequipItem safe handling when inventory is full
+                var eqObj = new GameObject("PlayerEquipment");
+                var equipment = eqObj.AddComponent<PlayerEquipment>();
+                var statsObj = new GameObject("PlayerStats");
+                var stats = statsObj.AddComponent<PlayerStats>();
+                equipment.Stats = stats;
+
+                // Fill all 40 slots
+                for (int i = 0; i < PlayerInventory.TOTAL_SLOTS; i++)
+                {
+                    inv.SetSlot(i, new InventoryItemInstance(stackData, 10));
+                }
+
+                // Equip helmet 1
+                var helmet1Data = ScriptableObject.CreateInstance<EquipmentItemData>();
+                helmet1Data.ItemId = "helmet_iron";
+                helmet1Data.ItemName = "Iron Helmet";
+                helmet1Data.EquipSlot = EquipSlot.Helmet;
+                var helmet1 = new InventoryItemInstance(helmet1Data, 1);
+                equipment.EquipItem(helmet1, (int)PaperdollSlot.Head, null);
+                AssertEqual("helmet_iron", equipment.GetEquipped((int)PaperdollSlot.Head).ItemId, "Equipment_EquipHelmet1_Success");
+
+                // Unequip helmet 1 when inventory is 100% full -> should land in HeldItem rather than being destroyed
+                var unequipped = equipment.UnequipItem((int)PaperdollSlot.Head, inv);
+                AssertTrue(unequipped != null, "Equipment_UnequipWhenInvFull_DoesNotReturnNull");
+                AssertTrue(inv.HeldItem != null && inv.HeldItem.ItemId == "helmet_iron", "Equipment_UnequipWhenInvFull_SafelyHeldInHeldItem");
+
+                // E. PlayerEquipment: RecalculateStats aggregates CritDamage & DamageReduction
+                var celestialAegisData = ScriptableObject.CreateInstance<EquipmentItemData>();
+                celestialAegisData.ItemId = "celestial_aegis";
+                celestialAegisData.ItemName = "Celestial Aegis";
+                celestialAegisData.EquipSlot = EquipSlot.Accessory;
+                var aegisInst = new InventoryItemInstance(celestialAegisData, 1);
+                aegisInst.Affixes.Add("Celestial Aegis");
+                equipment.EquipItem(aegisInst, (int)PaperdollSlot.Accessory1, null);
+                AssertTrue(stats.TotalDamageReduction >= 0.05f, "Equipment_CelestialAegis_ProvidesDamageReduction");
+
+                var solarFlareData = ScriptableObject.CreateInstance<EquipmentItemData>();
+                solarFlareData.ItemId = "solar_flare_ring";
+                solarFlareData.ItemName = "Solar Flare Ring";
+                solarFlareData.EquipSlot = EquipSlot.Accessory;
+                var solarInst = new InventoryItemInstance(solarFlareData, 1);
+                solarInst.Affixes.Add("Solar Flare");
+                equipment.EquipItem(solarInst, (int)PaperdollSlot.Accessory2, null);
+                AssertTrue(stats.TotalCritMultiplier >= 1.70f, "Equipment_SolarFlareRing_ProvidesCritDamage");
+
+                // F. CraftingUI: ExecuteCraft material refund on full inventory
+                var craftUIObj = new GameObject("CraftingUI");
+                var craftUI = craftUIObj.AddComponent<CraftingUI>();
+                craftUI.BuildUIHierarchy();
+
+                var woodData = ScriptableObject.CreateInstance<ItemData>();
+                woodData.ItemId = "craft_wood";
+                woodData.ItemName = "Wood";
+                woodData.MaxStack = 99;
+
+                var recipe = ScriptableObject.CreateInstance<RecipeData>();
+                recipe.CraftingStation = CraftingStation.Hand;
+                recipe.Ingredients.Add(new RecipeIngredient("craft_wood", 2, woodData));
+                recipe.ResultItemId = "wood_plank";
+                recipe.ResultCount = 4;
+
+                // Inventory has 10 wood and 39 stone (full)
+                inv.Clear();
+                inv.SetSlot(0, new InventoryItemInstance(woodData, 10));
+                for (int i = 1; i < PlayerInventory.TOTAL_SLOTS; i++)
+                {
+                    inv.SetSlot(i, new InventoryItemInstance(stackData, 10));
+                }
+
+                // Result cannot fit because all 40 slots are full!
+                // ExecuteCraft should either fail and preserve ingredients, or refund them
+                bool crafted = craftUI.ExecuteCraft(recipe);
+                AssertEqual(10, inv.CountItem("craft_wood"), "Crafting_FullInventory_IngredientsPreservedOrRefunded");
+
+                // G. StorageChest: GetOrCreateAt and AddItem chunking
+                StorageChest.ClearWorldChests();
+                var chestA = StorageChest.GetOrCreateAt(15, 30, "World Chest A");
+                var chestB = StorageChest.GetOrCreateAt(15, 30, "World Chest A");
+                AssertTrue(chestA == chestB, "StorageChest_GetOrCreateAt_RetrievesSameInstance");
+
+                var chestLargeStack = new InventoryItemInstance(stackData, 120);
+                chestA.AddItem(chestLargeStack);
+                AssertEqual(99, chestA.GetSlot(0).Count, "StorageChest_AddItem_Slot0ChunkedToMaxStack99");
+                AssertEqual(21, chestA.GetSlot(1).Count, "StorageChest_AddItem_Slot1TakesRemainder21");
+
+                // H. MiningCursorController: ResolveTileIdFromItem
+                AssertEqual(WorldConstants.TileChest, MiningCursorController.ResolveTileIdFromItem("wooden_chest"), "MiningCursor_ResolveTile_Chest");
+                AssertEqual(WorldConstants.TileIronChest, MiningCursorController.ResolveTileIdFromItem("iron_chest"), "MiningCursor_ResolveTile_IronChest");
+                AssertEqual(WorldConstants.TileWorkBench, MiningCursorController.ResolveTileIdFromItem("crafting_workbench"), "MiningCursor_ResolveTile_WorkBench");
+                AssertEqual(WorldConstants.TileFurnace, MiningCursorController.ResolveTileIdFromItem("stone_furnace"), "MiningCursor_ResolveTile_Furnace");
+                AssertEqual(WorldConstants.TileFireplace, MiningCursorController.ResolveTileIdFromItem("cozy_fireplace"), "MiningCursor_ResolveTile_Fireplace");
+
+                // Cleanup
+                UnityEngine.Object.DestroyImmediate(recipe);
+                UnityEngine.Object.DestroyImmediate(woodData);
+                UnityEngine.Object.DestroyImmediate(craftUIObj);
+                UnityEngine.Object.DestroyImmediate(celestialAegisData);
+                UnityEngine.Object.DestroyImmediate(solarFlareData);
+                UnityEngine.Object.DestroyImmediate(helmet1Data);
+                UnityEngine.Object.DestroyImmediate(statsObj);
+                UnityEngine.Object.DestroyImmediate(eqObj);
+                UnityEngine.Object.DestroyImmediate(stackData);
+                UnityEngine.Object.DestroyImmediate(invObj);
+                UnityEngine.Object.DestroyImmediate(testItemData);
                 UnityEngine.Object.DestroyImmediate(hudObj);
             }
             finally
