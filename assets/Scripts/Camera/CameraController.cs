@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.U2D;
+using UnityEngine.Rendering.Universal;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
