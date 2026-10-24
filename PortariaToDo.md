@@ -34,7 +34,7 @@ Potaria is an authentic Philippine-themed 2D boundless sandbox action RPG combin
 
 Following player feedback regarding cluttered systems and complex overlays prematurely crowding the gameplay experience, the active gameplay scene (`Assets/Scenes/MainWorld.unity`) has been deliberately reset to **Step 1: Pristine World Generation and Camera Only**:
 - **Pure World Generation**: Dual-Tilemaps on Grid (`Terrain_Tilemap`, `Wall_Tilemap`, `Platform_Tilemap`, `Water_Tilemap`), ChunkManager boundless procedural generation, and subterranean cave/ore distribution.
-- **Pristine 1920x1080 Camera**: Pixel-Perfect Camera (16 PPU, upscale render texture) with smooth free camera panning (WASD / Arrows) and 3-level discrete zoom ('Z' key).
+- **Pristine 1920x1080 Camera**: Pixel-Perfect Camera (16 PPU, upscale render texture) with smooth free camera panning (WASD / Arrows, Shift fast-pan at 50 units/s), 3-level discrete zoom ('Z' key), and pure 2D ambient global illumination (no night darkening or subterranean pitch-black blackout).
 - **Zero Scene Clutter**: Removed all mob swarms, spawners, HUD canvas overlays, complex panels, chests, and forge objects from the active scene.
 - **100% Asset Preservation**: All 2,456 pixel sprites, crop sprites, audio clips, and 1,775 ScriptableObjects remain intact in `Assets/`.
 - **Authoritative Pygame Baseline**: The proven Python 3.13 + Pygame-ce codebase is preserved in `Potaria_Pygame_Backup` and on the `pygame-engine` branch, serving as our definitive reference for building each mechanic step by step.

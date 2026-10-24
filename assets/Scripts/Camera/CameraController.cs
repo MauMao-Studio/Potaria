@@ -132,6 +132,12 @@ namespace Potaria.Cameras
             {
                 ToggleZoomLevel();
             }
+#if ENABLE_INPUT_SYSTEM
+            else if (Keyboard.current != null && Keyboard.current.zKey.wasPressedThisFrame && !_isDeathTransitionActive)
+            {
+                ToggleZoomLevel();
+            }
+#endif
 
             // 2. Smooth zoom interpolation
             if (_cam != null)
@@ -177,7 +183,28 @@ namespace Potaria.Cameras
 #endif
                 if (move.sqrMagnitude > 0.001f)
                 {
-                    float panSpeed = 20.0f;
+                    if (move.sqrMagnitude > 1.0f)
+                    {
+                        move.Normalize();
+                    }
+
+                    bool isFastPan = false;
+#if ENABLE_INPUT_SYSTEM
+                    if (Keyboard.current != null && (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed))
+                    {
+                        isFastPan = true;
+                    }
+#endif
+                    try
+                    {
+                        if (UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.RightShift))
+                        {
+                            isFastPan = true;
+                        }
+                    }
+                    catch { }
+
+                    float panSpeed = isFastPan ? 50.0f : 20.0f;
                     transform.position += new Vector3(move.x, move.y, 0f) * (panSpeed * Time.deltaTime);
                 }
                 return;

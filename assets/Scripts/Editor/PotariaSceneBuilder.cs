@@ -67,7 +67,6 @@ namespace Potaria.Editor
             pixelCam.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
 
             var camController = camObj.AddComponent<CameraController>();
-            var skyRenderer = camObj.AddComponent<SkyRenderer2D>();
 
             // 3. Grid Hierarchy & Dual Tilemaps
             var gridObj = new GameObject("Grid");
@@ -95,19 +94,14 @@ namespace Potaria.Editor
             }
             chunkManager.Database = db;
 
-            // 5. 2D Lighting Hierarchy (Ambient global sunlight for terrain illumination)
+            // 5. 2D Ambient Global Light (Clean static illumination for Sprite-Lit 2D tilemaps)
             var lightObj = new GameObject("Global Light 2D");
             lightObj.transform.position = Vector3.zero;
 
             var globalLight = lightObj.AddComponent<Light2D>();
             globalLight.lightType = Light2D.LightType.Global;
-            globalLight.color = new Color(1.0f, 0.98f, 0.92f, 1.0f);
+            globalLight.color = Color.white;
             globalLight.intensity = 1.0f;
-
-            var dayNight = lightObj.AddComponent<DayNightCycle2D>();
-            dayNight.GlobalLight = globalLight;
-
-            var darkness = lightObj.AddComponent<SubterraneanDarkness2D>();
 
             // 6. Input Manager (Supports WASD / Arrow camera panning and Z zoom)
             var inputObj = new GameObject("InputManager");
