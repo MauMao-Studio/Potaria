@@ -410,7 +410,11 @@ namespace Potaria.Player
 
             // Cast downward 0.35f below feet to reliably reach 45-degree slopes and tile steps
             Vector2 castOrigin = new Vector2(footCenter.x, footCenter.y + 0.06f);
-            int boxHitCount = Physics2D.BoxCastNonAlloc(castOrigin, boxSize, 0f, Vector2.down, s_GroundHitBuffer, 0.35f, groundLayerMask);
+            ContactFilter2D groundFilter = new ContactFilter2D();
+            groundFilter.SetLayerMask(groundLayerMask);
+            groundFilter.useLayerMask = true;
+            groundFilter.useTriggers = false;
+            int boxHitCount = Physics2D.BoxCast(castOrigin, boxSize, 0f, Vector2.down, groundFilter, s_GroundHitBuffer, 0.35f);
             bool boxHit = false;
             for (int i = 0; i < boxHitCount; i++)
             {
@@ -437,7 +441,7 @@ namespace Potaria.Player
 
             for (int r = 0; r < rayOrigins.Length && !rayHit; r++)
             {
-                int rayHitCount = Physics2D.RaycastNonAlloc(rayOrigins[r], Vector2.down, s_GroundHitBuffer, 0.45f, groundLayerMask);
+                int rayHitCount = Physics2D.Raycast(rayOrigins[r], Vector2.down, groundFilter, s_GroundHitBuffer, 0.45f);
                 for (int i = 0; i < rayHitCount; i++)
                 {
                     if (IsValidGroundHit(s_GroundHitBuffer[i]))
