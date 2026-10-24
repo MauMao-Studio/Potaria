@@ -5,9 +5,9 @@
 **Legacy Engine Branch:** Pure Python 3.13 + Pygame Community Edition (`pygame-ce` 2.5.8+ with SDL 2.32, preserved on `pygame-engine` branch)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
 **Franchise Model:** One Project Repository (Unified Codebase with Dual-Profile Architecture)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode; 417 / 417 Unity Automated Tests Passing across 4 Suites (0 Errors, 100% Green)  
-**Current Milestone:** Milestone 4 Complete (Inventory, Crafting, Equipment, Forge, Chest & Responsive UI); Milestone 5 in Planning  
-**Version:** Unity 6 LTS Milestone 4  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated via Batchmode; 84 / 84 World Gen Tests Passing (0 Errors, 100% Green)  
+**Current Milestone:** Step 1 Clean Reset: Pristine World Generation & Camera Only (Active Gameplay Scene Reset); Building Mechanics Step-by-Step from Pygame Baseline  
+**Version:** Unity 6 LTS Step 1 Reset  
 **Master Parity Documentation:** [docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md](docs/PYGAME_TO_UNITY_FEATURE_PARITY_DOCUMENTATION.md)  
 
 ---
@@ -16,10 +16,12 @@
 
 Potaria is an authentic Philippine-themed boundless 2D sandbox action RPG developed by Kurados. You play as Spud, an ordinary potato who sprouted with an extraordinary destiny. Explore an infinite, boundary-free open world populated by diverse biomes, mine valuable ores, discover hidden underground treasure chests, level up your RPG character from Level 1 to 100, equip tiered armor, weapons, and accessories in a classic Chroisen-style paperdoll system, wield ballistic bows, staves, rods, scepters, and celestial blades, cultivate native Philippine crops, master devastating Skill Book spells, trade with nomadic animated merchants, enhance your gear up to +7, carve custom affix sockets, dodge intricate bullet-hell danmaku patterns in boss gauntlets, and challenge the two-phase Grand Boss: SOL-RHO THE CELESTIAL TITAN - solo or in Cooperative Multiplayer (1 to 5 Players).
 
-### Dual-Engine Development Strategy
-To prepare Potaria for commercial release on Steam (PC/Mac/Steam Deck) and the Google Play Store (Android):
-- **Active Development (`main` branch)**: Built on **Unity 6 LTS (v6000.0.58f1)** utilizing the 2D Universal Render Pipeline (URP), 2D Tilemap system, C# ScriptableObject architecture, and FishNet / Steamworks P2P networking.
-- **Legacy Foundation (`pygame-engine` branch)**: The complete, working Python 3.13 + Pygame-ce implementation (with Smart OpenGL HAL, 770 automated unit tests, and full gameplay loop) is permanently preserved on the `pygame-engine` branch.
+### Step 1 Clean Reset & Step-by-Step Rebuild Strategy
+To ensure the high quality, responsiveness, and authentic feel of the original Pygame version is faithfully captured:
+- **Active Gameplay Scene (`Assets/Scenes/MainWorld.unity`)**: Cleanly reset to **Step 1: Pristine World Generation & Camera Only**. Contains exclusively Grid dual-tilemaps (`Terrain_Tilemap`, `Wall_Tilemap`, `Platform_Tilemap`, `Water_Tilemap`), ChunkManager boundless chunk streaming, subterranean caves and ore veins, and 1920x1080 Pixel-Perfect Camera with smooth WASD/arrow free panning and 'Z' key discrete zoom. All mob swarms, complex panels, chests, and HUD overlays were removed from the active scene.
+- **Step-by-Step Implementation**: Every gameplay mechanic will be implemented one step at a time alongside the user, directly referencing the proven Python 3.13 + Pygame-ce baseline.
+- **Full Asset Library Retained**: All 2,456 pixel sprites, crop growth animations, audio clips, and 1,775 ScriptableObjects remain 100% intact in `Assets/`.
+- **Legacy Foundation (`pygame-engine` branch & `Potaria_Pygame_Backup`)**: The complete, working Pygame-ce implementation (with 770 automated unit tests) remains permanently preserved as the definitive reference.
 
 ### Franchise Architecture: One Project Repository
 - **Potaria (The Base Game)**: Boundless procedural sandbox survival, mining, building, 181 crafting recipes, Philippine agriculture, and seamless co-op multiplayer.

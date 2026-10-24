@@ -95,7 +95,7 @@ namespace Potaria.Editor
             }
             chunkManager.Database = db;
 
-            // 5. 2D Lighting Hierarchy
+            // 5. 2D Lighting Hierarchy (Ambient global sunlight for terrain illumination)
             var lightObj = new GameObject("Global Light 2D");
             lightObj.transform.position = Vector3.zero;
 
@@ -109,102 +109,18 @@ namespace Potaria.Editor
 
             var darkness = lightObj.AddComponent<SubterraneanDarkness2D>();
 
-            // 6. Placed Light Prefab & Spawn Torches with 2D Shadows
-            BuildTorchPrefab();
-            var torchPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PREFAB_DIR}/Torch_Light.prefab");
-            if (torchPrefab != null)
-            {
-                var torch1 = (GameObject)PrefabUtility.InstantiatePrefab(torchPrefab);
-                torch1.transform.position = new Vector3(-3.5f, -66.5f, 0f);
-
-                var torch2 = (GameObject)PrefabUtility.InstantiatePrefab(torchPrefab);
-                torch2.transform.position = new Vector3(3.5f, -66.5f, 0f);
-            }
-
-            // 7. Input Manager & Projectile Manager
+            // 6. Input Manager (Supports WASD / Arrow camera panning and Z zoom)
             var inputObj = new GameObject("InputManager");
             inputObj.AddComponent<PotariaInput>();
 
-            var projManagerObj = new GameObject("ProjectileManager");
-            projManagerObj.AddComponent<ProjectileManager>();
-
-            // 8. Player Character Spud Hero
-            var playerObj = new GameObject("Player_Spud");
-            playerObj.tag = "Player";
-            playerObj.transform.position = new Vector3(0f, -67f, 0f);
-
-            var playerRb = playerObj.AddComponent<Rigidbody2D>();
-            playerRb.interpolation = RigidbodyInterpolation2D.Interpolate;
-            playerRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-            playerRb.freezeRotation = true;
-
-            var playerCol = playerObj.AddComponent<BoxCollider2D>();
-            playerCol.size = new Vector2(0.875f, 1.0f);
-            playerCol.offset = new Vector2(0f, 0.5f);
-            playerCol.sharedMaterial = new PhysicsMaterial2D("Player_Frictionless") { friction = 0f, bounciness = 0f };
-
-            var playerSr = playerObj.AddComponent<SpriteRenderer>();
-            playerSr.sortingLayerName = "Player";
-            var idleSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/Player/idle.png");
-            if (idleSprite == null) idleSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/player/idle.png");
-            if (idleSprite != null) playerSr.sprite = idleSprite;
-
-            var playerStats = playerObj.AddComponent<PlayerStats>();
-            var playerInv = playerObj.AddComponent<PlayerInventory>();
-            var playerEquip = playerObj.AddComponent<PlayerEquipment>();
-            playerEquip.Stats = playerStats;
-            playerEquip.Inventory = playerInv;
-
-            var playerController = playerObj.AddComponent<PlayerController>();
-            playerController.ConfigurePhysics();
-            playerController.LoadDefaultSpritesIfMissing();
-
-            // Weapon Pivot Child
-            var weaponPivot = new GameObject("WeaponPivot");
-            weaponPivot.transform.SetParent(playerObj.transform, false);
-            weaponPivot.transform.localPosition = new Vector3(0.2f, 0.5f, 0f);
-            var weaponSr = weaponPivot.AddComponent<SpriteRenderer>();
-            weaponSr.sortingLayerName = "Player";
-            weaponSr.sortingOrder = 1;
-
-            playerObj.AddComponent<WeaponController>();
-            playerObj.AddComponent<SpudAuraController>();
-
-            // Configure Camera Follow target
+            // 7. Configure Camera Zoom (Default 1x)
             camController.SetZoomLevel(1);
 
-            // 9. Mobs & Dynamic Mob Spawner
-            var spawnerObj = new GameObject("MobSpawner");
-            spawnerObj.transform.position = Vector3.zero;
-            var spawner = spawnerObj.AddComponent<MobSpawner>();
-            var spawnerSo = new SerializedObject(spawner);
-            spawnerSo.FindProperty("player").objectReferenceValue = playerController;
-            spawnerSo.FindProperty("dayNight").objectReferenceValue = dayNight;
-            spawnerSo.ApplyModifiedPropertiesWithoutUndo();
-            spawner.SpawnInitialMobs();
-
-            // 10. Complete In-Game HUD (Canvas 1920x1080)
-            var canvasObj = new GameObject("HUD_Canvas");
-            var hud = canvasObj.AddComponent<PotariaHUD>();
-            var hudSo = new SerializedObject(hud);
-            hudSo.FindProperty("player").objectReferenceValue = playerController;
-            hudSo.FindProperty("playerStats").objectReferenceValue = playerStats;
-            hudSo.FindProperty("dayNightCycle").objectReferenceValue = dayNight;
-            hudSo.FindProperty("input").objectReferenceValue = inputObj.GetComponent<PotariaInput>();
-            hudSo.ApplyModifiedPropertiesWithoutUndo();
-            hud.LoadResourcesIfMissing();
-            hud.BuildOrValidateUI();
-
-            // 11. Interactive Mining & Block Placement Reticle Cursor
-            var cursorObj = new GameObject("MiningCursor");
-            cursorObj.transform.position = Vector3.zero;
-            cursorObj.AddComponent<MiningCursorController>();
-
-            // 12. Pre-paint spawn terrain corridor (oak trees, grass, stepped rock, walls) into tilemaps
-            chunkManager.StreamingTarget = playerObj.transform;
+            // 8. Pre-paint spawn terrain corridor around the Camera into tilemaps
+            chunkManager.StreamingTarget = camObj.transform;
             chunkManager.UpdateStreaming(true);
 
-            // 13. Save Scene
+            // 9. Save Scene
             EditorSceneManager.SaveScene(scene, SCENE_PATH);
             Debug.Log($"[PotariaSceneBuilder] Successfully constructed and saved {SCENE_PATH}.");
 

@@ -1,5 +1,8 @@
 using System;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 using Potaria.Input;
 using Potaria.Player;
 
@@ -146,7 +149,39 @@ namespace Potaria.Cameras
 
         private void LateUpdate()
         {
-            if (target == null) return;
+            if (target == null)
+            {
+                // Free camera pan when exploring world without a follow target
+                Vector2 move = Vector2.zero;
+                if (input == null) input = PotariaInput.Instance;
+                if (input != null)
+                {
+                    move = input.MoveVector;
+                }
+#if ENABLE_INPUT_SYSTEM
+                if (move == Vector2.zero && Keyboard.current != null)
+                {
+                    float h = 0f;
+                    float v = 0f;
+                    if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) h -= 1f;
+                    if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) h += 1f;
+                    if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) v += 1f;
+                    if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) v -= 1f;
+                    move = new Vector2(h, v);
+                }
+#else
+                if (move == Vector2.zero)
+                {
+                    move = new Vector2(UnityEngine.Input.GetAxisRaw("Horizontal"), UnityEngine.Input.GetAxisRaw("Vertical"));
+                }
+#endif
+                if (move.sqrMagnitude > 0.001f)
+                {
+                    float panSpeed = 20.0f;
+                    transform.position += new Vector3(move.x, move.y, 0f) * (panSpeed * Time.deltaTime);
+                }
+                return;
+            }
 
             // If death snap just executed, snap position instantly
             if (_deathSnapExecuted && _deathTimer > (deathTransitionDuration * 0.45f))

@@ -4,39 +4,54 @@
 **Active Engine:** Unity 6 LTS (v6000.0.58f1) + 2D Universal Render Pipeline (URP)  
 **Legacy Engine Branch:** Python 3.13 + Pygame-ce 2.5.8 (Preserved on `pygame-engine` branch, 100% Offline Standalone)  
 **Architecture:** 2D Boundless Sandbox Action RPG & Multiplayer (FishNet / Steamworks P2P)  
-**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing; 116 / 116 Combat Tests Passing; 91 / 91 Overhaul Systems Tests Passing; 126 / 126 Inventory & UI Tests Passing (0 Errors); Total 417 / 417 Unity Tests Passing (100% Green)  
-**Current Milestone:** Milestone 4 Complete (Inventory, Crafting, Equipment, Forge, Chest & Responsive UI); Milestone 5 in Planning (Philippine Farming, Tiered Cooking & Fishing Minigame)  
+**Verification Baseline:** 770 / 770 Pygame Tests Passing; 1,775 Unity ScriptableObjects Validated; 84 / 84 World Gen Tests Passing (0 Errors, 100% Green)  
+**Current Milestone:** Step 1 Clean Reset: Pristine World Generation & Camera Only (Active Gameplay Scene Reset); Building Mechanics Step-by-Step from Pygame Baseline  
 **Last Updated:** October 2026  
 
 ---
 
 ## Table of Contents
-1. [Executive Summary & Engine Migration](#1-executive-summary--engine-migration)
-2. [Completed Systems: Pygame Legacy Foundation (v0.1 - v0.2.9a)](#2-completed-systems-pygame-legacy-foundation-v01---v029a)
-3. [Unity 6 LTS Master Implementation Roadmap](#3-unity-6-lts-master-implementation-roadmap)
-   - [Milestone 1: Project Scaffold, Asset Ingestion & Core Data Layer (COMPLETED)](#milestone-1-project-scaffold-asset-ingestion--core-data-layer-completed)
-   - [Milestone 2: 2D Tilemap, Chunk Streaming & Procedural World Generation](#milestone-2-2d-tilemap-chunk-streaming--procedural-world-generation)
-   - [Milestone 3: Character Controller, Physics & Action RPG Combat](#milestone-3-character-controller-physics--action-rpg-combat)
-   - [Milestone 4: Inventory, Crafting, Equipment & Responsive UI](#milestone-4-inventory-crafting-equipment--responsive-ui)
-   - [Milestone 5: Philippine Farming, Tiered Cooking & Fishing Minigame](#milestone-5-philippine-farming-tiered-cooking--fishing-minigame)
-   - [Milestone 6: Steamworks Integration & P2P / LAN Multiplayer](#milestone-6-steamworks-integration--p2p--lan-multiplayer)
-   - [Milestone 7: Multiplatform Commercial Release (Steam & Google Play Store)](#milestone-7-multiplatform-commercial-release-steam--google-play-store)
-4. [Dual-Product Vision: Sandbox Base Game vs. Flagship Story Edition](#4-dual-product-vision-sandbox-base-game-vs-flagship-story-edition)
-5. [Automated Verification & QA Matrix](#5-automated-verification--qa-matrix)
+1. [Executive Summary & Step 1 Clean Reset](#1-executive-summary--step-1-clean-reset)
+2. [Step-by-Step Rebuilding Roadmap (Mirrored from Pygame Reference)](#2-step-by-step-rebuilding-roadmap-mirrored-from-pygame-reference)
+3. [Completed Systems: Pygame Legacy Foundation (v0.1 - v0.2.9a)](#3-completed-systems-pygame-legacy-foundation-v01---v029a)
+4. [Unity 6 LTS Master Implementation Roadmap](#4-unity-6-lts-master-implementation-roadmap)
+   - [Step 1: Clean World Generation & Camera View (CURRENT ACTIVE STATE)](#step-1-clean-world-generation--camera-view-current-active-state)
+   - [Step 2: Player Movement, Controls & Physics](#step-2-player-movement-controls--physics)
+   - [Step 3: Mining & Block Placement Interaction](#step-3-mining--block-placement-interaction)
+   - [Step 4: Minimal HUD & Vital Gauges](#step-4-minimal-hud--vital-gauges)
+   - [Step 5: Inventory, Crafting & Chest Storage](#step-5-inventory-crafting--chest-storage)
+   - [Step 6: Combat, Mobs & Ballistics](#step-6-combat-mobs--ballistics)
+   - [Step 7: Philippine Farming, Cooking & Fishing](#step-7-philippine-farming-cooking--fishing)
+   - [Step 8: Steamworks Integration & Multiplayer](#step-8-steamworks-integration--multiplayer)
+5. [Dual-Product Vision: Sandbox Base Game vs. Flagship Story Edition](#5-dual-product-vision-sandbox-base-game-vs-flagship-story-edition)
+6. [Automated Verification & QA Matrix](#6-automated-verification--qa-matrix)
 
 ---
 
-## 1. Executive Summary & Engine Migration
+## 1. Executive Summary & Step 1 Clean Reset
 
 Potaria is an authentic Philippine-themed 2D boundless sandbox action RPG combining the infinite terrain generation, mining, and building mechanics of Terraria with the deep character progression, 40-skill roster, paperdoll equipment customization, and boss gauntlets of classic action RPGs.
 
-Following extensive architectural evaluation, the project has officially transitioned from the Python/Pygame prototype engine to **Unity 6 LTS (6000.0.58f1)** utilizing the **2D Universal Render Pipeline (URP)**. This migration unlocks:
-- **High-Performance Execution**: C# compiled via IL2CPP into native 64-bit C++, eliminating Python's Global Interpreter Lock (GIL) and enabling high frame rates with thousands of active tiles, fluids, and projectiles.
-- **Cinematic 2D Lighting**: Native 2D URP dynamic lights, normal-mapped sprites, shadows, and bloom running identically across PC and mobile GPUs.
-- **Commercial Publishing**: Native Google Play App Bundle (`.aab`) export targeting Android 14+ (API 34) and official Steamworks integration (Steam Cloud, Achievements, Rich Presence) with zero antivirus false positives.
-- **Seamless Multiplayer**: Steam P2P lobby invites via Valve's Steam Datagram Relay (SDR) with zero port forwarding, alongside local Wi-Fi LAN discovery.
+Following player feedback regarding cluttered systems and complex overlays prematurely crowding the gameplay experience, the active gameplay scene (`Assets/Scenes/MainWorld.unity`) has been deliberately reset to **Step 1: Pristine World Generation and Camera Only**:
+- **Pure World Generation**: Dual-Tilemaps on Grid (`Terrain_Tilemap`, `Wall_Tilemap`, `Platform_Tilemap`, `Water_Tilemap`), ChunkManager boundless procedural generation, and subterranean cave/ore distribution.
+- **Pristine 1920x1080 Camera**: Pixel-Perfect Camera (16 PPU, upscale render texture) with smooth free camera panning (WASD / Arrows) and 3-level discrete zoom ('Z' key).
+- **Zero Scene Clutter**: Removed all mob swarms, spawners, HUD canvas overlays, complex panels, chests, and forge objects from the active scene.
+- **100% Asset Preservation**: All 2,456 pixel sprites, crop sprites, audio clips, and 1,775 ScriptableObjects remain intact in `Assets/`.
+- **Authoritative Pygame Baseline**: The proven Python 3.13 + Pygame-ce codebase is preserved in `Potaria_Pygame_Backup` and on the `pygame-engine` branch, serving as our definitive reference for building each mechanic step by step.
 
-The original Python codebase is preserved in its entirety on the `pygame-engine` branch and in a verified physical backup on disk.
+---
+
+## 2. Step-by-Step Rebuilding Roadmap (Mirrored from Pygame Reference)
+
+We are building the game step-by-step alongside the user, directly referencing the feel and design of the Pygame version:
+- **Step 1 (ACTIVE)**: Pristine World Generation (Grid, Tilemaps, ChunkManager) and 1920x1080 Pixel-Perfect Camera with smooth pan/zoom.
+- **Step 2**: Player Character (Spud), responsive physics (coyote time, variable jump, slope handling), and walk/idle animations.
+- **Step 3**: Block interaction (Mining reticle, hardness calculation, tool tiers, block and torch placement).
+- **Step 4**: Minimalist HUD (Hearts, Mana, Hotbar, Day/Night clock) without distracting clutter.
+- **Step 5**: Inventory backpack, simple crafting stations, paperdoll equipment, and storage chests.
+- **Step 6**: Combat mechanics, weapon controllers, mob behaviors, and boss encounters.
+- **Step 7**: Philippine agriculture (8 native crops), tiered furnace cooking, and tension fishing.
+- **Step 8**: Multiplayer networking (Steamworks P2P / LAN co-op).
 
 ---
 
