@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.U2D;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -24,9 +25,9 @@ namespace Potaria.Cameras
 
         [Header("3-Level Discrete Zoom (Z key)")]
         [SerializeField] private int currentZoomLevel = 1; // 1, 2, 3
-        [SerializeField] private float zoom1OrthoSize = 10.0f; // 1x
-        [SerializeField] private float zoom2OrthoSize = 7.5f;  // 2x
-        [SerializeField] private float zoom3OrthoSize = 5.0f;  // 3x
+        [SerializeField] private float zoom1OrthoSize = 11.25f; // 1x: 40x22.5 tiles (Matches Pygame 1280x720 / 32px)
+        [SerializeField] private float zoom2OrthoSize = 5.625f; // 2x: 20x11.25 tiles
+        [SerializeField] private float zoom3OrthoSize = 3.75f;  // 3x: 13.3x7.5 tiles
         [SerializeField] private float zoomLerpSpeed = 10.0f;
 
         [Header("Cinematic Pitch-Black Death Transition")]
@@ -44,6 +45,7 @@ namespace Potaria.Cameras
         private UnityEngine.Camera _cam;
         private UnityEngine.Camera Cam => _cam != null ? _cam : (_cam = GetComponent<UnityEngine.Camera>());
         private Texture2D _blackoutTexture;
+        private PixelPerfectCamera _pixelCam;
 
         public int CurrentZoomLevel => currentZoomLevel;
         public float TargetOrthoSize => GetTargetOrthoSize();
@@ -62,6 +64,7 @@ namespace Potaria.Cameras
         private void Awake()
         {
             _cam = GetComponent<UnityEngine.Camera>();
+            _pixelCam = GetComponent<PixelPerfectCamera>();
             if (input == null) input = PotariaInput.Instance;
             if (player == null) player = FindAnyObjectByType<PlayerController>();
 
@@ -109,6 +112,7 @@ namespace Potaria.Cameras
             {
                 _cam.orthographicSize = GetTargetOrthoSize();
             }
+            SyncPixelCamera();
 
             SubscribeToPlayer();
         }
@@ -229,12 +233,14 @@ namespace Potaria.Cameras
         {
             currentZoomLevel++;
             if (currentZoomLevel > 3) currentZoomLevel = 1;
+            SyncPixelCamera();
             OnZoomChanged?.Invoke(currentZoomLevel);
         }
 
         public void SetZoomLevel(int level)
         {
             currentZoomLevel = Mathf.Clamp(level, 1, 3);
+            SyncPixelCamera();
             OnZoomChanged?.Invoke(currentZoomLevel);
         }
 
@@ -315,6 +321,16 @@ namespace Potaria.Cameras
                 GUI.color = new Color(0f, 0f, 0f, _blackoutAlpha);
                 GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _blackoutTexture);
                 GUI.color = prevColor;
+            }
+        }
+        public void SyncPixelCamera()
+        {
+            if (_pixelCam == null) _pixelCam = GetComponent<PixelPerfectCamera>();
+            if (_pixelCam != null)
+            {
+                _pixelCam.refResolutionX = 640;
+                _pixelCam.refResolutionY = 360;
+                _pixelCam.assetsPPU = 16 * currentZoomLevel;
             }
         }
     }

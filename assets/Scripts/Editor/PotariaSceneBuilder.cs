@@ -52,17 +52,17 @@ namespace Potaria.Editor
 
             var cam = camObj.AddComponent<Camera>();
             cam.orthographic = true;
-            cam.orthographicSize = 10f;
+            cam.orthographicSize = 11.25f; // Exactly 22.5 tiles tall (matches Pygame 1280x720 / 32px)
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.40f, 0.65f, 0.95f, 1.0f); // Bright sky blue
+            cam.backgroundColor = new Color(0.50f, 0.76f, 0.84f, 1.0f); // Soft daylight pastel cyan sky matching Pygame reference
 
             var uCamData = camObj.AddComponent<UniversalAdditionalCameraData>();
             uCamData.renderPostProcessing = true;
 
             var pixelCam = camObj.AddComponent<PixelPerfectCamera>();
             pixelCam.assetsPPU = 16;
-            pixelCam.refResolutionX = 1920;
-            pixelCam.refResolutionY = 1080;
+            pixelCam.refResolutionX = 640;
+            pixelCam.refResolutionY = 360;
             pixelCam.cropFrame = PixelPerfectCamera.CropFrame.None;
             pixelCam.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
 
